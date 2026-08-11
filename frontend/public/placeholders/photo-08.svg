@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 900" width="1200" height="900" role="img" aria-label="여행 사진 자리표시자">
+  <defs>
+    <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#0a1626"/>
+      <stop offset="100%" stop-color="#1d3a52"/>
+    </linearGradient>
+    <radialGradient id="glow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#e8703a" stop-opacity="0.85"/>
+      <stop offset="60%" stop-color="#e8703a" stop-opacity="0.18"/>
+      <stop offset="100%" stop-color="#e8703a" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="haze" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#e8703a" stop-opacity="0.14"/>
+      <stop offset="100%" stop-color="#e8703a" stop-opacity="0"/>
+    </linearGradient>
+  </defs>
+
+  <rect width="1200" height="900" fill="url(#sky)"/>
+  <circle cx="480.0" cy="306.0" r="306.0" fill="url(#glow)"/>
+  <circle cx="480.0" cy="306.0" r="76.5" fill="#e8703a" opacity="0.92"/>
+  <rect y="396.0" width="1200" height="162.0" fill="url(#haze)"/>
+
+  <polygon points="0.0,584.6 100.0,596.0 200.0,598.1 300.0,590.3 400.0,574.7 500.0,555.0 600.0,536.0 700.0,522.4 800.0,517.5 900.0,522.5 1000.0,536.3 1100.0,555.3 1200.0,575.0 1200,900 0,900" fill="#16283a" opacity="0.95"/>
+  <polygon points="0.0,677.5 100.0,663.5 200.0,647.9 300.0,634.6 400.0,626.7 500.0,626.3 600.0,633.3 700.0,646.2 800.0,661.7 900.0,676.1 1000.0,685.8 1100.0,688.4 1200.0,683.4 1200,900 0,900" fill="#0f1c2a"/>
+  <polygon points="0.0,799.6 100.0,806.5 200.0,809.8 300.0,808.8 400.0,803.7 500.0,795.7 600.0,786.8 700.0,779.2 800.0,774.7 900.0,774.4 1000.0,778.5 1100.0,785.8 1200.0,794.7 1200,900 0,900" fill="#080f18"/>
+</svg>

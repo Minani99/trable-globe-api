@@ -1,0 +1,304 @@
+@import "tailwindcss";
+
+/*
+ * Travel Globe design tokens.
+ *
+ * One dark theme only. The globe is the subject of every screen, so the surface palette
+ * stays close to black and the single accent is reserved for one job: marking where the
+ * traveller has actually been. Nothing else in the UI is allowed to use it.
+ */
+:root {
+  --background: #05070a;
+  --background-elevated: #080b11;
+  --surface: #0b1017;
+  --surface-raised: #111823;
+  --surface-hover: #16202d;
+
+  --border: #1b2431;
+  --border-strong: #2a3746;
+
+  --text-primary: #f4f6f8;
+  --text-secondary: #929caa;
+  --text-tertiary: #626d7c;
+
+  /* Warm amber against the cold ocean sphere - a visited country reads instantly. */
+  --accent: #e8703a;
+  --accent-strong: #ff8a52;
+  --accent-soft: rgba(232, 112, 58, 0.14);
+  --accent-border: rgba(232, 112, 58, 0.38);
+
+  /* Globe body colours, shared between the WebGL scene and its CSS surroundings. */
+  --globe-ocean: #0a1522;
+  --globe-land: #16202c;
+  --globe-land-hover: #202c3b;
+  --globe-atmosphere: #2f6d9e;
+
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 16px;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-background-elevated: var(--background-elevated);
+  --color-surface: var(--surface);
+  --color-surface-raised: var(--surface-raised);
+  --color-surface-hover: var(--surface-hover);
+  --color-border-subtle: var(--border);
+  --color-border-strong: var(--border-strong);
+  --color-content: var(--text-primary);
+  --color-content-muted: var(--text-secondary);
+  --color-content-faint: var(--text-tertiary);
+  --color-accent: var(--accent);
+  --color-accent-strong: var(--accent-strong);
+  --color-accent-soft: var(--accent-soft);
+
+  --font-sans: var(--font-geist-sans), "Pretendard", "Apple SD Gothic Neo", "Malgun Gothic",
+    system-ui, -apple-system, sans-serif;
+  --font-mono: var(--font-geist-mono), ui-monospace, monospace;
+}
+
+html {
+  color-scheme: dark;
+}
+
+body {
+  background: var(--background);
+  color: var(--text-primary);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+}
+
+/*
+ * Typography scale. Five steps, three weights - a travel record should read like an
+ * essay, not a dashboard.
+ */
+@layer components {
+  .text-display {
+    font-size: clamp(2.4rem, 6vw, 4.25rem);
+    line-height: 1.02;
+    letter-spacing: -0.035em;
+    font-weight: 300;
+  }
+
+  .text-heading {
+    font-size: clamp(1.6rem, 3.4vw, 2.3rem);
+    line-height: 1.15;
+    letter-spacing: -0.025em;
+    font-weight: 400;
+  }
+
+  .text-title {
+    font-size: clamp(1.05rem, 1.8vw, 1.3rem);
+    line-height: 1.35;
+    letter-spacing: -0.015em;
+    font-weight: 500;
+  }
+
+  .text-body {
+    font-size: 0.95rem;
+    line-height: 1.7;
+    color: var(--text-secondary);
+  }
+
+  .text-caption {
+    font-size: 0.8rem;
+    line-height: 1.5;
+    color: var(--text-tertiary);
+  }
+
+  /* Small uppercase label above a heading or beside a statistic. */
+  .eyebrow {
+    font-size: 0.7rem;
+    font-weight: 500;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--text-tertiary);
+  }
+
+  /* The numerals in the profile panel and stat rows. */
+  .stat-figure {
+    font-size: clamp(1.75rem, 3vw, 2.4rem);
+    line-height: 1;
+    font-weight: 300;
+    letter-spacing: -0.03em;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .panel {
+    background: color-mix(in srgb, var(--surface) 88%, transparent);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    backdrop-filter: blur(14px);
+  }
+
+  .hairline {
+    border-top: 1px solid var(--border);
+  }
+}
+
+/* One focus treatment everywhere, visible against both the page and the globe. */
+:where(a, button, [tabindex]):focus-visible {
+  outline: 2px solid var(--accent-strong);
+  outline-offset: 3px;
+  border-radius: var(--radius-sm);
+}
+
+/* Visually hidden but reachable by a screen reader and by keyboard focus. */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
+}
+
+.skip-link {
+  position: absolute;
+  left: 1rem;
+  top: -4rem;
+  z-index: 100;
+  padding: 0.6rem 1rem;
+  background: var(--surface-raised);
+  border: 1px solid var(--accent-border);
+  border-radius: var(--radius-sm);
+  transition: top 0.15s ease;
+}
+
+.skip-link:focus {
+  top: 1rem;
+}
+
+::selection {
+  background: var(--accent-soft);
+  color: var(--text-primary);
+}
+
+/*
+ * WCAG 2.3.3. The globe still rotates and pans on demand - only the ambient motion
+ * (auto-rotation, marker pulses, entrance transitions) is dropped.
+ */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/*
+ * Globe marker layer.
+ *
+ * These elements are built with document.createElement inside globe.gl's CSS3D layer, so
+ * Tailwind's class scanner never sees them - they are styled here instead.
+ */
+.tg-marker {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  transform: translate(-50%, -50%);
+  cursor: pointer;
+  user-select: none;
+  transition: opacity 0.25s ease;
+}
+
+.tg-marker__ring {
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 999px;
+  border: 1.5px solid var(--accent);
+  background: rgba(8, 13, 20, 0.72);
+  color: var(--text-primary);
+  font-size: 0.72rem;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  box-shadow: 0 0 0 4px rgba(232, 112, 58, 0.1);
+  transition:
+    transform 0.2s ease,
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.tg-marker__label {
+  font-size: 0.66rem;
+  letter-spacing: 0.04em;
+  color: var(--text-secondary);
+  white-space: nowrap;
+  text-shadow: 0 1px 6px rgba(0, 0, 0, 0.9);
+  transition: color 0.2s ease;
+}
+
+.tg-marker.is-hovered .tg-marker__ring,
+.tg-marker.is-selected .tg-marker__ring {
+  transform: scale(1.18);
+  border-color: var(--accent-strong);
+  box-shadow: 0 0 0 6px rgba(232, 112, 58, 0.18);
+}
+
+.tg-marker.is-hovered .tg-marker__label,
+.tg-marker.is-selected .tg-marker__label {
+  color: var(--text-primary);
+}
+
+/* Selecting one country pushes the others back without hiding them. */
+.tg-marker.is-dimmed {
+  opacity: 0.38;
+}
+
+/* globe.gl tooltip body, also injected outside React. */
+.tg-tip {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 8px 11px;
+  font-family: var(--font-sans);
+}
+
+.tg-tip strong {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.tg-tip span {
+  font-size: 0.7rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-secondary);
+}
+
+.tg-tip em {
+  font-style: normal;
+  font-size: 0.74rem;
+  color: var(--accent-strong);
+}
+
+.tg-tip--muted {
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+}
+
+@keyframes tg-fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-up {
+  animation: tg-fade-up 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
