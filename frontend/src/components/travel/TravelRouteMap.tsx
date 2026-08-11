@@ -32,10 +32,15 @@ const MIN_SPAN_DEGREES = 3.5;
 export function TravelRouteMap({ places, countryCodes }: TravelRouteMapProps) {
   const [features, setFeatures] = useState<CountryFeature[]>([]);
 
+  // Depend on the codes themselves rather than the array instance: callers build this
+  // list inline, so a new array on every render would refetch the atlas each time.
+  const countryKey = countryCodes.join(",");
+
   useEffect(() => {
     if (places.length === 0) {
       return;
     }
+    const wanted = new Set(countryKey.split(",").filter(Boolean));
     let cancelled = false;
 
     fetch("/geo/countries.geo.json")
@@ -46,7 +51,7 @@ export function TravelRouteMap({ places, countryCodes }: TravelRouteMapProps) {
         }
         setFeatures(
           collection.features.filter(
-            (entry) => entry.properties.iso2 && countryCodes.includes(entry.properties.iso2),
+            (entry) => entry.properties.iso2 !== null && wanted.has(entry.properties.iso2),
           ),
         );
       })
@@ -56,8 +61,7 @@ export function TravelRouteMap({ places, countryCodes }: TravelRouteMapProps) {
     return () => {
       cancelled = true;
     };
-    // countryCodes is derived from places, so places alone identifies the request.
-  }, [places, countryCodes]);
+  }, [places, countryKey]);
 
   const projection = useMemo(() => createProjection(places), [places]);
 

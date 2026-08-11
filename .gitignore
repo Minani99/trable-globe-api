@@ -50,6 +50,13 @@ npm-debug.log*
 application-secret.yaml
 application-local-override.yaml
 
+### Provider CLI state ###
+# Local project linkage written by hosting CLIs. Machine-specific, and a future version
+# of these files may carry tokens - keep them out of the repository.
+.neon
+.vercel
+.render
+
 ### OS ###
 .DS_Store
 Thumbs.db

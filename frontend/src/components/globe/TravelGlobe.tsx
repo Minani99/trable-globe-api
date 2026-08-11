@@ -252,6 +252,15 @@ export function TravelGlobe({ countries, selectedCode, onSelect, onHover }: Trav
   // Markers are imperative DOM, so selection state is applied as a class rather than by
   // rebuilding the elements (which would drop them for a frame on every click).
   useEffect(() => {
+    // globe.gl discards the DOM for countries that leave the data set, so drop those
+    // entries here too - otherwise the map grows with every profile the user visits.
+    const liveCodes = new Set(markerData.map((country) => country.iso2Code));
+    markerElements.current.forEach((_, code) => {
+      if (!liveCodes.has(code)) {
+        markerElements.current.delete(code);
+      }
+    });
+
     markerElements.current.forEach((element, code) => {
       element.classList.toggle("is-selected", code === selectedCode);
       element.classList.toggle("is-hovered", code === hoveredCode);

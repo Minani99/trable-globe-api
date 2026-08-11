@@ -1,0 +1,4 @@
+# Runs before any bean is created, so a missing production variable is reported by name
+# instead of failing later inside the connection pool.
+org.springframework.boot.EnvironmentPostProcessor=\
+com.travelglobe.trableglobeapi.global.config.RequiredProductionProperties
