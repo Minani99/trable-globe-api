@@ -38,6 +38,16 @@ export class ApiError extends Error {
 }
 
 /**
+ * How long to wait before treating the API as unreachable.
+ *
+ * A misconfigured or sleeping backend does not refuse the connection - it accepts and
+ * never answers. Without a deadline the page hangs until the hosting platform kills the
+ * request, so the visitor sees a spinner forever instead of the "API에 연결할 수 없습니다"
+ * state. Kept under a typical 10s serverless limit so our error wins the race.
+ */
+const REQUEST_TIMEOUT_MS = 8000;
+
+/**
  * GETs a path from the API and unwraps the response envelope.
  *
  * Not cached: a profile is personal, frequently edited data and a stale globe is worse
@@ -51,9 +61,21 @@ export async function apiGet<T>(path: string): Promise<T> {
     response = await fetch(url, {
       headers: { Accept: "application/json" },
       cache: "no-store",
+      signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
     });
-  } catch {
-    throw new ApiError(0, `API에 연결할 수 없습니다: ${url}`);
+  } catch (error) {
+    const timedOut = error instanceof Error && error.name === "TimeoutError";
+    // The visitor only sees a generic message, so log the target for the server logs -
+    // an unset API_BASE_URL shows up here as a localhost URL.
+    console.error(
+      `[api] ${timedOut ? `no response within ${REQUEST_TIMEOUT_MS}ms` : "request failed"}: ${url}`,
+    );
+    throw new ApiError(
+      0,
+      timedOut
+        ? `API 응답이 없습니다 (${REQUEST_TIMEOUT_MS / 1000}초 초과): ${url}`
+        : `API에 연결할 수 없습니다: ${url}`,
+    );
   }
 
   const envelope = await readEnvelope<T>(response);
