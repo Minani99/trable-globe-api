@@ -31,3 +31,26 @@ build/
 
 ### VS Code ###
 .vscode/
+
+### Node / Next.js ###
+# frontend/.gitignore covers the frontend itself; these catch stray copies elsewhere.
+node_modules/
+.next/
+out/
+npm-debug.log*
+*.tsbuildinfo
+
+### Secrets and local configuration ###
+# Never commit real credentials. Templates (.env.example) are committed on purpose.
+.env
+.env.local
+.env.*.local
+!.env.example
+*.pem
+application-secret.yaml
+application-local-override.yaml
+
+### OS ###
+.DS_Store
+Thumbs.db
+desktop.ini

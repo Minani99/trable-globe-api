@@ -1,0 +1,12 @@
+.git
+.github
+.idea
+.vscode
+frontend
+node_modules
+target
+docs
+*.iml
+*.log
+.env
+.env.*

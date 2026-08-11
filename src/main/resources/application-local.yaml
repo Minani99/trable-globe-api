@@ -1,0 +1,31 @@
+# Local development profile.
+#
+# Runs entirely in memory so a new developer can start the API without installing
+# PostgreSQL. The schema is created by Hibernate from the entity model and the
+# mock travel data is inserted on startup.
+#
+# PostgreSQL is still the deployment target - switch with:
+#   mvnw.cmd spring-boot:run "-Dspring-boot.run.profiles=postgres"
+spring:
+  datasource:
+    url: jdbc:h2:mem:travelglobe;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE;MODE=PostgreSQL
+    driver-class-name: org.h2.Driver
+    username: sa
+    password:
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+    properties:
+      hibernate:
+        format_sql: true
+  flyway:
+    # Migrations are written in PostgreSQL dialect; H2 uses the entity model instead.
+    enabled: false
+
+travel-globe:
+  seed:
+    enabled: true
+
+logging:
+  level:
+    com.travelglobe.trableglobeapi: DEBUG

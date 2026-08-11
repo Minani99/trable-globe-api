@@ -130,7 +130,9 @@ cd frontend && npm install && npm run dev
 
 | 변수 | 사용처 | 기본값 | 필수 |
 | --- | --- | --- | --- |
-| `NEXT_PUBLIC_API_BASE_URL` | Frontend | `http://localhost:8080` | 배포 시 필수 |
+| `API_BASE_URL` | Frontend 서버·`/api` 프록시 | `http://localhost:8080` | 백엔드가 다른 호스트일 때 필수 |
+| `NEXT_PUBLIC_API_BASE_URL` | Frontend 브라우저 직접 호출(선택) | 동일 출처 `/api` 프록시 | 선택 |
+| `NEXT_ALLOWED_DEV_ORIGINS` | Next.js 개발 서버 추가 Origin | 로컬 LAN IPv4 자동 감지 | 선택 |
 | `DB_URL` | Backend (`postgres`, `prod`) | postgres 프로필은 localhost 기본값 | `prod` 필수 |
 | `DB_USERNAME` | Backend | 동일 | `prod` 필수 |
 | `DB_PASSWORD` | Backend | 동일 | `prod` 필수 |
@@ -138,6 +140,8 @@ cd frontend && npm install && npm run dev
 | `SERVER_PORT` | Backend | `8080` | 선택 |
 
 - 비밀번호와 키는 **어떤 yaml에도 하드코딩되어 있지 않습니다.** 모두 환경변수입니다.
+- 프론트엔드는 기본적으로 동일 출처 `/api`를 백엔드로 프록시하므로 LAN의 다른 기기에서도
+  그 기기의 `localhost`를 잘못 호출하지 않습니다. 백엔드 주소가 다를 때만 `API_BASE_URL`을 설정하세요.
 - `frontend/.env.example`을 `frontend/.env.local`로 복사해서 쓰세요. `.env.local`은 git 제외 대상입니다.
 - `prod` 프로필은 위 변수가 없으면 기동 단계에서 실패합니다(의도된 fail-fast).
 
@@ -175,6 +179,12 @@ cd frontend && npm run dev
 ```bash
 curl http://localhost:8080/api/health
 ```
+
+## Deployment
+
+무료 티어 기준 권장 구성은 **Vercel(Frontend) + Render(Backend) + Neon(PostgreSQL)** 입니다.
+백엔드 컨테이너와 Render Blueprint는 저장소 루트의 `Dockerfile`, `render.yaml`에 있으며,
+환경변수와 배포 순서는 [docs/deployment.md](docs/deployment.md)를 참고하세요.
 
 ## API
 

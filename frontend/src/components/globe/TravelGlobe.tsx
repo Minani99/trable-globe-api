@@ -121,6 +121,36 @@ export function TravelGlobe({ countries, selectedCode, onSelect, onHover }: Trav
     return () => observer.disconnect();
   }, []);
 
+  // OrbitControls consumes wheel events across its entire canvas, including the empty
+  // space around the sphere. Intercept only those misses before they reach the canvas;
+  // not preventing the default lets the browser continue scrolling the page.
+  useEffect(() => {
+    const element = containerRef.current;
+    if (!element) {
+      return;
+    }
+
+    const handleWheelCapture = (event: WheelEvent) => {
+      const globe = globeRef.current;
+      if (!globe) {
+        return;
+      }
+
+      const canvas = globe.renderer().domElement;
+      const bounds = canvas.getBoundingClientRect();
+      const x = event.clientX - bounds.left;
+      const y = event.clientY - bounds.top;
+      const insideCanvas = x >= 0 && x <= bounds.width && y >= 0 && y <= bounds.height;
+
+      if (!insideCanvas || globe.toGlobeCoords(x, y) === null) {
+        event.stopPropagation();
+      }
+    };
+
+    element.addEventListener("wheel", handleWheelCapture, { capture: true, passive: true });
+    return () => element.removeEventListener("wheel", handleWheelCapture, true);
+  }, []);
+
   // --- camera + controls --------------------------------------------------
 
   const handleReady = useCallback(() => {

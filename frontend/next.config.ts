@@ -1,7 +1,36 @@
+import { networkInterfaces } from "node:os";
+
 import type { NextConfig } from "next";
 
+const DEFAULT_API_BASE_URL = "http://localhost:8080";
+
+const apiBaseUrl = (
+  process.env.API_BASE_URL?.trim() ||
+  process.env.NEXT_PUBLIC_API_BASE_URL?.trim() ||
+  DEFAULT_API_BASE_URL
+).replace(/\/+$/, "");
+
+const configuredDevOrigins = (process.env.NEXT_ALLOWED_DEV_ORIGINS ?? "")
+  .split(",")
+  .map((origin) => origin.trim())
+  .filter(Boolean);
+
+const localNetworkOrigins = Object.values(networkInterfaces())
+  .flatMap((addresses) => addresses ?? [])
+  .filter((address) => address.family === "IPv4" && !address.internal)
+  .map((address) => address.address);
+
 const nextConfig: NextConfig = {
-  /* config options here */
+  // Next.js 16 blocks dev assets requested from a LAN origin unless it is explicitly allowed.
+  allowedDevOrigins: [...new Set([...configuredDevOrigins, ...localNetworkOrigins])],
+  async rewrites() {
+    return [
+      {
+        source: "/api/:path*",
+        destination: `${apiBaseUrl}/api/:path*`,
+      },
+    ];
+  },
 };
 
 export default nextConfig;

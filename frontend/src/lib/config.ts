@@ -20,12 +20,23 @@ const DEFAULT_API_BASE_URL = "http://localhost:8080";
 /**
  * Base URL of the Spring Boot API.
  *
- * `NEXT_PUBLIC_` because the browser calls the API directly; there is nothing secret in
- * it. Server Components read the same value.
+ * Browsers default to the same-origin Next.js proxy. Server Components use `API_BASE_URL`
+ * (localhost in development). `NEXT_PUBLIC_API_BASE_URL` remains an opt-in direct URL for
+ * deployments that intentionally expose the API on a separate origin.
  */
 export function getApiBaseUrl(): string {
-  const configured = process.env.NEXT_PUBLIC_API_BASE_URL?.trim();
-  return (configured && configured.length > 0 ? configured : DEFAULT_API_BASE_URL).replace(/\/+$/, "");
+  const publicUrl = process.env.NEXT_PUBLIC_API_BASE_URL?.trim();
+  if (publicUrl) {
+    return publicUrl.replace(/\/+$/, "");
+  }
+
+  // Browsers use the same-origin /api rewrite, so LAN clients never call their own localhost.
+  if (typeof window !== "undefined") {
+    return "";
+  }
+
+  const serverUrl = process.env.API_BASE_URL?.trim();
+  return (serverUrl || DEFAULT_API_BASE_URL).replace(/\/+$/, "");
 }
 
 /** Public profile path for a handle, e.g. `/traveler`. */

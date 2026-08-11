@@ -1,0 +1,28 @@
+# Local PostgreSQL profile.
+#
+# Flyway owns the schema (src/main/resources/db/migration); Hibernate only validates
+# that the entity model matches it. Seed data is still inserted so the globe has
+# something to render.
+#
+# Expected environment variables (see README "Environment Variables"):
+#   DB_URL, DB_USERNAME, DB_PASSWORD
+spring:
+  datasource:
+    url: ${DB_URL:jdbc:postgresql://localhost:5432/travelglobe}
+    username: ${DB_USERNAME:travelglobe}
+    password: ${DB_PASSWORD:travelglobe}
+  jpa:
+    hibernate:
+      ddl-auto: validate
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+    baseline-on-migrate: true
+
+travel-globe:
+  seed:
+    enabled: true
+
+logging:
+  level:
+    com.travelglobe.trableglobeapi: DEBUG
