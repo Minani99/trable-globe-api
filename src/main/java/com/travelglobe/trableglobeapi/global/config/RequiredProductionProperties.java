@@ -50,6 +50,38 @@ public class RequiredProductionProperties implements EnvironmentPostProcessor, O
         if (!missing.isEmpty()) {
             throw new IllegalStateException(buildMessage(missing));
         }
+
+        verifyJdbcUrl(environment.getProperty("DB_URL"));
+    }
+
+    /**
+     * Rejects a native PostgreSQL connection string early.
+     *
+     * <p>Hosted database providers hand out {@code postgresql://user:pass@host/db}, which is
+     * the natural thing to paste into DB_URL. The driver needs the {@code jdbc:} form with
+     * credentials supplied separately, and without this check the mistake surfaces as
+     * {@code 'url' must start with "jdbc"} from deep inside the connection pool.
+     */
+    private static void verifyJdbcUrl(String url) {
+        if (url == null || url.startsWith("jdbc:")) {
+            return;
+        }
+
+        throw new IllegalStateException(String.join(System.lineSeparator(),
+                "",
+                "DB_URL is not a JDBC URL.",
+                "",
+                "  found:    " + redactCredentials(url),
+                "  expected: jdbc:postgresql://<host>/<database>?sslmode=require",
+                "",
+                "Providers such as Neon show a native connection string. Convert it: add the",
+                "\"jdbc:\" prefix and move the user and password into DB_USERNAME / DB_PASSWORD.",
+                ""));
+    }
+
+    /** Keeps a pasted {@code user:password@} out of the logs. */
+    private static String redactCredentials(String url) {
+        return url.replaceAll("//[^/@]*@", "//<credentials>@");
     }
 
     private static boolean isProduction(ConfigurableEnvironment environment) {

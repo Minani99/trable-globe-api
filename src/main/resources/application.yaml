@@ -11,7 +11,10 @@ spring:
     open-in-view: false
 
 server:
-  port: ${SERVER_PORT:8080}
+  # Render, Fly, Heroku and Cloud Run all inject PORT and route only to that port. Honour
+  # it first so the app binds where the platform is listening without extra configuration;
+  # SERVER_PORT stays available as an explicit override.
+  port: ${PORT:${SERVER_PORT:8080}}
   error:
     include-stacktrace: never
     include-message: never
