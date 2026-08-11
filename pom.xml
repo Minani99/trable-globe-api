@@ -44,7 +44,14 @@
         </dependency>
 
         <!-- Flyway owns the PostgreSQL schema (see docs/database.md).
+             Spring Boot 4 splits auto-configuration into per-technology modules, so
+             spring-boot-flyway is required as well: with flyway-core alone the migrations
+             are on the classpath but nothing ever runs them.
              flyway-database-postgresql is required from Flyway 10 onward. -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-flyway</artifactId>
+        </dependency>
         <dependency>
             <groupId>org.flywaydb</groupId>
             <artifactId>flyway-core</artifactId>
