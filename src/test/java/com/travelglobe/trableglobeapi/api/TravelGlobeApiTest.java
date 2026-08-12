@@ -121,4 +121,23 @@ class TravelGlobeApiTest {
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.error.code").value("RESOURCE_NOT_FOUND"));
     }
+
+    @Test
+    @DisplayName("루트 경로는 API 안내를 반환한다")
+    void rootDescribesTheService() throws Exception {
+        mockMvc.perform(get("/"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.success").value(true))
+                .andExpect(jsonPath("$.data.service").value("Travel Globe API"))
+                .andExpect(jsonPath("$.data.endpoints").isNotEmpty());
+    }
+
+    @Test
+    @DisplayName("매핑되지 않은 경로는 500 이 아니라 404 를 반환한다")
+    void unmappedPathReturnsNotFoundRatherThanServerError() throws Exception {
+        mockMvc.perform(get("/favicon.ico"))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.success").value(false))
+                .andExpect(jsonPath("$.error.code").value("RESOURCE_NOT_FOUND"));
+    }
 }

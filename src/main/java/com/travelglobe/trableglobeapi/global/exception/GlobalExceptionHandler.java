@@ -13,6 +13,7 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
+import org.springframework.web.servlet.resource.NoResourceFoundException;
 
 /**
  * Translates exceptions into the shared {@link ApiResponse} envelope.
@@ -60,6 +61,22 @@ public class GlobalExceptionHandler {
                 .body(ApiResponse.failure("입력값이 올바르지 않습니다.",
                         ApiError.of(ErrorCode.VALIDATION_FAILED.name(),
                                 List.of(new FieldErrorDetail(field, "형식이 올바르지 않습니다.")))));
+    }
+
+    /**
+     * An unmapped path is a 404, not a server error.
+     *
+     * <p>Without this the catch-all below turned every request for a path this API does
+     * not serve - the service root, {@code /favicon.ico}, anything a crawler tries - into
+     * a 500 with a full stack trace in the logs. Logged at debug because it says nothing
+     * about the health of the application.
+     */
+    @ExceptionHandler(NoResourceFoundException.class)
+    public ResponseEntity<ApiResponse<Void>> handleNoResource(NoResourceFoundException ex) {
+        log.debug("No handler for {}", ex.getResourcePath());
+        return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                .body(ApiResponse.failure("존재하지 않는 경로입니다.",
+                        ApiError.of(ErrorCode.RESOURCE_NOT_FOUND.name())));
     }
 
     @ExceptionHandler(Exception.class)
