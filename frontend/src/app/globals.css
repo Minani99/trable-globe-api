@@ -2291,6 +2291,7 @@ body {
   position: relative;
   min-height: 32rem;
   overflow: hidden;
+  overscroll-behavior: contain;
   cursor: grab;
   touch-action: none;
   user-select: none;

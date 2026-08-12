@@ -1,7 +1,7 @@
 "use client";
 
 import type { PointerEvent, WheelEvent } from "react";
-import { useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 
 import { formatDate } from "@/lib/utils/format";
 import type { TravelPlace } from "@/types";
@@ -26,25 +26,72 @@ interface MapTile {
   size: number;
 }
 
-const VIEW_WIDTH = 960;
-const VIEW_HEIGHT = 620;
+interface ViewportSize {
+  width: number;
+  height: number;
+}
+
+const DEFAULT_VIEWPORT: ViewportSize = { width: 960, height: 620 };
 const TILE_SIZE = 256;
 const MIN_ZOOM = 3;
 const MAX_ZOOM = 18;
 
 /** A raster city map whose route, selected stop and itinerary stay synchronized. */
 export function TravelRouteMap({ places }: TravelRouteMapProps) {
-  const initialView = useMemo(() => createInitialView(places), [places]);
+  const initialView = useMemo(
+    () => createInitialView(places, DEFAULT_VIEWPORT.width, DEFAULT_VIEWPORT.height),
+    [places],
+  );
   const [selectedId, setSelectedId] = useState(places[0]?.id ?? null);
   const [zoom, setZoom] = useState(initialView.zoom);
   const [center, setCenter] = useState({ x: initialView.centerX, y: initialView.centerY });
+  const [viewportSize, setViewportSize] = useState(DEFAULT_VIEWPORT);
   const [isDragging, setIsDragging] = useState(false);
   const [loadedTileCount, setLoadedTileCount] = useState(0);
+  const canvasRef = useRef<HTMLDivElement | null>(null);
   const panState = useRef<PanState | null>(null);
+  const measuredWidthRef = useRef<number | null>(null);
+
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) {
+      return;
+    }
+
+    // React's delegated wheel listener can be passive in some browsers. A native non-passive
+    // listener owns the gesture so zooming the map never scrolls the surrounding article.
+    const preventPageScroll = (event: globalThis.WheelEvent) => event.preventDefault();
+    canvas.addEventListener("wheel", preventPageScroll, { passive: false });
+
+    const resizeObserver = new ResizeObserver(([entry]) => {
+      if (!entry) {
+        return;
+      }
+      const nextSize = {
+        width: Math.max(1, Math.round(entry.contentRect.width)),
+        height: Math.max(1, Math.round(entry.contentRect.height)),
+      };
+      setViewportSize(nextSize);
+
+      const previousWidth = measuredWidthRef.current;
+      if (previousWidth === null || Math.abs(previousWidth - nextSize.width) >= 64) {
+        const fitted = createInitialView(places, nextSize.width, nextSize.height);
+        setZoom(fitted.zoom);
+        setCenter({ x: fitted.centerX, y: fitted.centerY });
+      }
+      measuredWidthRef.current = nextSize.width;
+    });
+    resizeObserver.observe(canvas);
+
+    return () => {
+      canvas.removeEventListener("wheel", preventPageScroll);
+      resizeObserver.disconnect();
+    };
+  }, [places]);
 
   const viewport = useMemo(
-    () => buildViewport(places, center.x, center.y, zoom),
-    [places, center.x, center.y, zoom],
+    () => buildViewport(places, center.x, center.y, zoom, viewportSize.width, viewportSize.height),
+    [places, center.x, center.y, zoom, viewportSize.width, viewportSize.height],
   );
   const selectedIndex = Math.max(0, places.findIndex((place) => place.id === selectedId));
   const selectedPlace = places[selectedIndex] ?? places[0];
@@ -65,8 +112,9 @@ export function TravelRouteMap({ places }: TravelRouteMapProps) {
   };
 
   const resetViewport = () => {
-    setZoom(initialView.zoom);
-    setCenter({ x: initialView.centerX, y: initialView.centerY });
+    const fitted = createInitialView(places, viewportSize.width, viewportSize.height);
+    setZoom(fitted.zoom);
+    setCenter({ x: fitted.centerX, y: fitted.centerY });
   };
 
   const selectPlace = (place: TravelPlace) => {
@@ -103,8 +151,8 @@ export function TravelRouteMap({ places }: TravelRouteMapProps) {
       return;
     }
     const bounds = event.currentTarget.getBoundingClientRect();
-    const pixelScaleX = VIEW_WIDTH / bounds.width;
-    const pixelScaleY = VIEW_HEIGHT / bounds.height;
+    const pixelScaleX = viewportSize.width / bounds.width;
+    const pixelScaleY = viewportSize.height / bounds.height;
     setCenter({
       x: previous.centerX - (event.clientX - previous.x) * pixelScaleX,
       y: previous.centerY - (event.clientY - previous.y) * pixelScaleY,
@@ -134,6 +182,7 @@ export function TravelRouteMap({ places }: TravelRouteMapProps) {
         </div>
 
         <div
+          ref={canvasRef}
           className={`travel-route-map-canvas${isDragging ? " is-dragging" : ""}`}
           role="application"
           aria-label={`${places.map((place) => place.placeName).join(", ")} 방문 순서를 보여주는 실제 도시 지도`}
@@ -161,7 +210,11 @@ export function TravelRouteMap({ places }: TravelRouteMapProps) {
             ))}
           </div>
 
-          <svg viewBox={`0 0 ${VIEW_WIDTH} ${VIEW_HEIGHT}`} aria-label="방문 순서 경로">
+          <svg
+            viewBox={`0 0 ${viewportSize.width} ${viewportSize.height}`}
+            preserveAspectRatio="none"
+            aria-label="방문 순서 경로"
+          >
             {viewport.points.length > 1 ? (
               <>
                 <polyline
@@ -187,6 +240,7 @@ export function TravelRouteMap({ places }: TravelRouteMapProps) {
 
             {viewport.points.map((point, index) => {
               const active = point.place.id === selectedPlace.id;
+              const markerOffset = Math.hypot(point.x - point.anchorX, point.y - point.anchorY);
               return (
                 <g
                   key={point.place.id}
@@ -203,6 +257,18 @@ export function TravelRouteMap({ places }: TravelRouteMapProps) {
                     }
                   }}
                 >
+                  {markerOffset > 3 ? (
+                    <line
+                      x1={point.anchorX}
+                      y1={point.anchorY}
+                      x2={point.x}
+                      y2={point.y}
+                      stroke="var(--accent-strong)"
+                      strokeWidth="1.5"
+                      strokeOpacity="0.72"
+                      strokeDasharray="3 3"
+                    />
+                  ) : null}
                   {active ? (
                     <circle cx={point.x} cy={point.y} r="29" fill="var(--accent)" fillOpacity="0.16" />
                   ) : null}
@@ -294,7 +360,7 @@ export function TravelRouteMap({ places }: TravelRouteMapProps) {
   );
 }
 
-function createInitialView(places: TravelPlace[]) {
+function createInitialView(places: TravelPlace[], viewportWidth: number, viewportHeight: number) {
   if (places.length === 0) {
     const fallback = lngLatToWorld(0, 0, 3);
     return { zoom: 3, centerX: fallback.x, centerY: fallback.y };
@@ -306,10 +372,12 @@ function createInitialView(places: TravelPlace[]) {
   const maxY = Math.max(...projected.map((point) => point.y));
   const spanX = Math.max(maxX - minX, 1 / 2 ** 16);
   const spanY = Math.max(maxY - minY, 1 / 2 ** 16);
+  const horizontalPadding = clamp(viewportWidth * 0.28, 80, 180);
+  const verticalPadding = clamp(viewportHeight * 0.24, 80, 150);
   const fitZoom = Math.floor(
     Math.min(
-      Math.log2((VIEW_WIDTH - 180) / spanX / TILE_SIZE),
-      Math.log2((VIEW_HEIGHT - 180) / spanY / TILE_SIZE),
+      Math.log2(Math.max(viewportWidth - horizontalPadding, 140) / spanX),
+      Math.log2(Math.max(viewportHeight - verticalPadding, 140) / spanY),
     ),
   );
   const zoom = clamp(Number.isFinite(fitZoom) ? fitZoom : 14, 11, 16);
@@ -326,14 +394,19 @@ function buildViewport(
   centerX: number,
   centerY: number,
   zoom: number,
+  viewportWidth: number,
+  viewportHeight: number,
 ) {
   const worldSize = TILE_SIZE * 2 ** zoom;
-  const originX = centerX - VIEW_WIDTH / 2;
-  const originY = centerY - VIEW_HEIGHT / 2;
+  const originX = centerX - viewportWidth / 2;
+  const originY = centerY - viewportHeight / 2;
   const startX = Math.floor(originX / TILE_SIZE) - 1;
-  const endX = Math.floor((originX + VIEW_WIDTH) / TILE_SIZE) + 1;
+  const endX = Math.floor((originX + viewportWidth) / TILE_SIZE) + 1;
   const startY = Math.max(0, Math.floor(originY / TILE_SIZE) - 1);
-  const endY = Math.min(2 ** zoom - 1, Math.floor((originY + VIEW_HEIGHT) / TILE_SIZE) + 1);
+  const endY = Math.min(
+    2 ** zoom - 1,
+    Math.floor((originY + viewportHeight) / TILE_SIZE) + 1,
+  );
   const tiles: MapTile[] = [];
 
   for (let y = startY; y <= endY; y += 1) {
@@ -349,19 +422,56 @@ function buildViewport(
     }
   }
 
-  const points = places.map((place) => {
+  const anchorPoints = places.map((place) => {
     const world = lngLatToWorld(place.longitude, place.latitude, zoom);
     let x = world.x - originX;
     if (x < -worldSize / 2) x += worldSize;
-    if (x > VIEW_WIDTH + worldSize / 2) x -= worldSize;
-    return { place, x, y: world.y - originY };
+    if (x > viewportWidth + worldSize / 2) x -= worldSize;
+    const y = world.y - originY;
+    return { place, anchorX: x, anchorY: y, x, y };
   });
+  const points = spreadCloseMarkers(anchorPoints, viewportWidth, viewportHeight);
 
   return {
     tiles,
     points,
-    routeLine: points.map((point) => `${point.x.toFixed(1)},${point.y.toFixed(1)}`).join(" "),
+    routeLine: anchorPoints
+      .map((point) => `${point.anchorX.toFixed(1)},${point.anchorY.toFixed(1)}`)
+      .join(" "),
   };
+}
+
+function spreadCloseMarkers<T extends { anchorX: number; anchorY: number; x: number; y: number }>(
+  source: T[],
+  viewportWidth: number,
+  viewportHeight: number,
+) {
+  const points = source.map((point) => ({ ...point }));
+  const minimumDistance = viewportWidth < 480 ? 42 : 48;
+
+  for (let pass = 0; pass < 5; pass += 1) {
+    for (let first = 0; first < points.length; first += 1) {
+      for (let second = first + 1; second < points.length; second += 1) {
+        const dx = points[second].x - points[first].x;
+        const dy = points[second].y - points[first].y;
+        const distance = Math.hypot(dx, dy);
+        if (distance >= minimumDistance) {
+          continue;
+        }
+
+        const angle = distance > 0.5 ? Math.atan2(dy, dx) : (second * Math.PI) / points.length;
+        const adjustment = (minimumDistance - distance) / 2;
+        const pushX = Math.cos(angle) * adjustment;
+        const pushY = Math.sin(angle) * adjustment;
+        points[first].x = clamp(points[first].x - pushX, 30, viewportWidth - 30);
+        points[first].y = clamp(points[first].y - pushY, 30, viewportHeight - 30);
+        points[second].x = clamp(points[second].x + pushX, 30, viewportWidth - 30);
+        points[second].y = clamp(points[second].y + pushY, 30, viewportHeight - 30);
+      }
+    }
+  }
+
+  return points;
 }
 
 function lngLatToWorld(lng: number, lat: number, zoom: number) {
