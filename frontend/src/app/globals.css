@@ -229,6 +229,82 @@ body {
   right: 7%;
 }
 
+/* A visible, accessible hand-off while the WebGL bundle and renderer initialise. */
+.globe-loading-veil {
+  background:
+    radial-gradient(circle at center, rgba(14, 36, 55, 0.48), transparent 38%),
+    rgba(5, 7, 10, 0.72);
+  backdrop-filter: blur(2px);
+}
+
+.globe-loader {
+  position: relative;
+  width: 5.5rem;
+  height: 5.5rem;
+}
+
+.globe-loader__sphere {
+  position: absolute;
+  inset: 0.65rem;
+  overflow: hidden;
+  border: 1px solid rgba(82, 126, 161, 0.68);
+  border-radius: 50%;
+  background:
+    linear-gradient(90deg, transparent 49%, rgba(97, 140, 174, 0.2) 50%, transparent 51%),
+    linear-gradient(transparent 49%, rgba(97, 140, 174, 0.2) 50%, transparent 51%),
+    radial-gradient(circle at 34% 28%, #173653, #0a1522 62%, #050a10);
+  box-shadow:
+    inset -0.65rem -0.45rem 1rem rgba(0, 0, 0, 0.45),
+    0 0 2.2rem rgba(47, 109, 158, 0.24);
+  animation: globe-loader-breathe 1.8s ease-in-out infinite;
+}
+
+.globe-loader__orbit {
+  position: absolute;
+  inset: 2.15rem -0.15rem;
+  border: 1px solid rgba(232, 112, 58, 0.56);
+  border-right-color: transparent;
+  border-left-color: transparent;
+  border-radius: 50%;
+  transform: rotate(-18deg);
+  animation: globe-loader-orbit 1.35s linear infinite;
+}
+
+.globe-loader__marker {
+  position: absolute;
+  top: 1.35rem;
+  right: 1.25rem;
+  width: 0.42rem;
+  height: 0.42rem;
+  border: 1px solid #ffd2be;
+  border-radius: 50%;
+  background: var(--accent);
+  box-shadow:
+    0 0 0 0.3rem rgba(232, 112, 58, 0.13),
+    0 0 1rem rgba(255, 138, 82, 0.6);
+}
+
+@keyframes globe-loader-breathe {
+  0%,
+  100% {
+    opacity: 0.72;
+    transform: scale(0.96);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes globe-loader-orbit {
+  from {
+    transform: rotate(-18deg);
+  }
+  to {
+    transform: rotate(342deg);
+  }
+}
+
 .hero-coordinate--bottom {
   bottom: 12%;
   left: 5%;

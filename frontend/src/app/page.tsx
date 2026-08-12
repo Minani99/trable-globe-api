@@ -30,7 +30,7 @@ export default function LandingPage() {
                 href={profilePath(siteConfig.demoUsername)}
                 className="rounded-full bg-[var(--accent)] px-5 py-2.5 text-[0.85rem] font-semibold text-[#130a06] transition-[background-color,transform] hover:-translate-y-0.5 hover:bg-[var(--accent-strong)]"
               >
-                샘플 지구본 둘러보기
+                실제 지구본 돌려보기
               </Link>
               <Link
                 href="/about"

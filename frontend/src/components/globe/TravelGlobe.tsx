@@ -5,6 +5,7 @@ import { useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore
 import * as THREE from "three";
 import type { GlobeMethods } from "react-globe.gl";
 
+import { GlobeLoadingIndicator } from "@/components/globe/GlobeLoadingIndicator";
 import { globeTheme, visitedColor } from "@/components/globe/globeTheme";
 import type { VisitedCountry } from "@/types";
 
@@ -15,7 +16,9 @@ import type { VisitedCountry } from "@/types";
  */
 const Globe = dynamic(() => import("react-globe.gl"), {
   ssr: false,
-  loading: () => <GlobeLoadingVeil />,
+  // The parent owns the loading state so the bundle fallback and WebGL-ready
+  // fallback never render two stacked indicators.
+  loading: () => null,
 });
 
 interface CountryFeature {
@@ -39,11 +42,14 @@ const ALTITUDE_DEFAULT = 2.4;
 const ALTITUDE_FOCUSED = 1.5;
 const ALTITUDE_MIN = 0.6;
 const ALTITUDE_MAX = 4;
+const LOADING_INDICATOR_MINIMUM_MS = 650;
 
 export function TravelGlobe({ countries, selectedCode, onSelect, onHover }: TravelGlobeProps) {
   const globeRef = useRef<GlobeMethods | undefined>(undefined);
   const containerRef = useRef<HTMLDivElement>(null);
   const markerElements = useRef(new Map<string, HTMLElement>());
+  const loadingStartedAt = useRef<number | null>(null);
+  const readyTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const [size, setSize] = useState({ width: 0, height: 0 });
   const [features, setFeatures] = useState<CountryFeature[]>([]);
@@ -154,7 +160,12 @@ export function TravelGlobe({ countries, selectedCode, onSelect, onHover }: Trav
   // --- camera + controls --------------------------------------------------
 
   const handleReady = useCallback(() => {
-    setReady(true);
+    // Keep very fast loads from flashing the indicator for only a single frame.
+    // A short minimum makes the transition readable without making the globe feel slow.
+    const elapsed = loadingStartedAt.current === null ? 0 : Date.now() - loadingStartedAt.current;
+    const remaining = Math.max(0, LOADING_INDICATOR_MINIMUM_MS - elapsed);
+    readyTimer.current = setTimeout(() => setReady(true), remaining);
+
     const controls = globeRef.current?.controls();
     if (!controls) {
       return;
@@ -172,6 +183,19 @@ export function TravelGlobe({ countries, selectedCode, onSelect, onHover }: Trav
       controls.autoRotate = false;
     });
   }, [reduceMotion]);
+
+  useEffect(
+    () => {
+      loadingStartedAt.current = Date.now();
+
+      return () => {
+        if (readyTimer.current) {
+          clearTimeout(readyTimer.current);
+        }
+      };
+    },
+    [],
+  );
 
   useEffect(() => {
     const controls = globeRef.current?.controls();
@@ -420,6 +444,7 @@ export function TravelGlobe({ countries, selectedCode, onSelect, onHover }: Trav
         ref={containerRef}
         tabIndex={0}
         role="application"
+        aria-busy={!ready}
         aria-label="여행 지구본. 방향키로 회전, 플러스·마이너스 키로 확대·축소, 0 키로 초기화합니다. 국가 선택은 아래 목록에서도 할 수 있습니다."
         onKeyDown={handleKeyDown}
         className="h-full w-full cursor-grab active:cursor-grabbing"
@@ -465,9 +490,15 @@ export function TravelGlobe({ countries, selectedCode, onSelect, onHover }: Trav
         ) : null}
       </div>
 
-      {!ready ? <GlobeLoadingVeil /> : null}
+      {!ready ? <GlobeLoadingIndicator className="absolute inset-0 z-20" /> : null}
 
-      <GlobeViewControls onZoomIn={() => zoomBy(0.8)} onZoomOut={() => zoomBy(1.25)} onReset={resetView} />
+      {ready ? (
+        <GlobeViewControls
+          onZoomIn={() => zoomBy(0.8)}
+          onZoomOut={() => zoomBy(1.25)}
+          onReset={resetView}
+        />
+      ) : null}
 
       {geoFailed ? (
         <p
@@ -513,14 +544,6 @@ function GlobeViewControls({
       >
         1:1
       </button>
-    </div>
-  );
-}
-
-function GlobeLoadingVeil() {
-  return (
-    <div className="pointer-events-none absolute inset-0 flex items-center justify-center" aria-hidden="true">
-      <div className="h-[52%] max-h-[420px] min-h-[180px] aspect-square animate-pulse rounded-full bg-[radial-gradient(circle_at_35%_30%,rgba(47,109,158,0.22),rgba(10,21,34,0.6)_58%,transparent_72%)]" />
     </div>
   );
 }
