@@ -3,19 +3,17 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { cache } from "react";
 
-import { SectionHeading } from "@/components/common/SectionHeading";
 import { StateMessage } from "@/components/common/StateMessage";
 import { TravelImage } from "@/components/common/TravelImage";
 import { SiteFooter } from "@/components/layout/SiteFooter";
 import { SiteHeader } from "@/components/layout/SiteHeader";
 import { PhotoGallery } from "@/components/travel/PhotoGallery";
-import { TravelPlaceList } from "@/components/travel/TravelPlaceList";
 import { TravelRouteMap } from "@/components/travel/TravelRouteMap";
 import { ApiError } from "@/lib/api/client";
 import { fetchTravelDetail } from "@/lib/api/travel";
 import { profilePath, travelPath } from "@/lib/config";
-import { formatDateRange, formatDuration } from "@/lib/utils/format";
-import type { TravelDetail } from "@/types";
+import { formatDate, formatDateRange, formatDuration } from "@/lib/utils/format";
+import type { TravelDetail, TravelNavigationLink } from "@/types";
 
 const loadTravel = cache((travelId: number) => fetchTravelDetail(travelId));
 
@@ -81,120 +79,141 @@ export default async function TravelDetailPage(
     );
   }
 
-  // The trip is addressed by id, so the handle in the URL has to match its real owner -
-  // otherwise any username would render someone else's trip under their profile.
   if (travel.owner.username !== username.toLowerCase()) {
     notFound();
   }
 
   const countryCodes = travel.countries.map((country) => country.iso2Code);
-  const locationLine = [
-    travel.countries.map((country) => country.nameKo).join(", "),
-    travel.places[0]?.city?.nameKo,
-  ]
-    .filter(Boolean)
-    .join(" · ");
+  const countryNames = travel.countries.map((country) => country.nameKo);
+  const cityNames = Array.from(
+    new Set(
+      travel.places
+        .map((place) => place.city?.nameKo)
+        .filter((name): name is string => Boolean(name)),
+    ),
+  );
+  const locationLabel = cityNames.length > 0 ? cityNames.join(" → ") : countryNames.join(" · ");
 
   return (
     <>
       <SiteHeader username={travel.owner.username} />
 
-      <main id="main" className="flex-1">
-        {/* Hero */}
-        <div className="relative h-[46vh] max-h-[520px] min-h-[280px] w-full overflow-hidden">
-          <TravelImage
-            src={travel.coverImageUrl}
-            alt={`${travel.title} 대표 이미지`}
-            fallbackLabel={countryCodes[0]}
-            priority
-            className="h-full w-full object-cover"
-          />
-          <div
-            aria-hidden="true"
-            className="absolute inset-0 bg-gradient-to-t from-[var(--background)] via-[var(--background)]/45 to-transparent"
-          />
-        </div>
-
-        <article className="mx-auto w-full max-w-[840px] px-5 sm:px-8">
-          <header className="relative -mt-24 pb-12">
-            <p className="eyebrow mb-4">{locationLine}</p>
-            <h1 className="text-display text-content text-[clamp(2rem,4.6vw,3.2rem)]">
-              {travel.title}
-            </h1>
-            <p className="text-content-muted mt-4 font-mono text-[0.82rem]">
-              {formatDateRange(travel.startDate, travel.endDate)}
-              <span className="mx-2" aria-hidden="true">
-                ·
-              </span>
-              {formatDuration(travel.durationDays)}
-              <span className="mx-2" aria-hidden="true">
-                ·
-              </span>
-              장소 {travel.places.length}곳
-            </p>
-
-            <Link
-              href={profilePath(travel.owner.username)}
-              className="text-content-faint mt-6 inline-flex items-center gap-2 text-[0.8rem] transition-colors hover:text-[var(--accent-strong)]"
-            >
+      <main id="main" className="travel-detail-page flex-1">
+        <article className="mx-auto w-full max-w-[1360px] px-5 sm:px-8 lg:px-10">
+          <nav aria-label="현재 위치" className="travel-detail-breadcrumb">
+            <Link href={profilePath(travel.owner.username)}>
               <span aria-hidden="true">←</span>
-              {travel.owner.displayName}의 지구본으로
+              {travel.owner.displayName}의 지구본
             </Link>
+            <span aria-hidden="true">/</span>
+            <span>여행 기록</span>
+          </nav>
+
+          <header className="travel-detail-hero">
+            <div className="travel-detail-hero__media">
+              <TravelImage
+                src={travel.coverImageUrl}
+                alt={`${travel.title} 대표 이미지`}
+                fallbackLabel={countryCodes[0] ?? travel.title.slice(0, 2)}
+                priority
+                className="h-full w-full object-cover"
+              />
+              <div className="travel-detail-hero__veil" aria-hidden="true" />
+              <div className="travel-detail-hero__location">
+                <span>{countryCodes.join(" · ") || "TRIP"}</span>
+                <strong>{locationLabel || "여행의 한 장면"}</strong>
+              </div>
+            </div>
+
+            <div className="travel-detail-hero__content">
+              <div>
+                <p className="eyebrow">Travel journal · {countryNames.join(" / ")}</p>
+                <h1>{travel.title}</h1>
+                <p className="travel-detail-hero__date">
+                  {formatDateRange(travel.startDate, travel.endDate)}
+                </p>
+              </div>
+
+              {travel.description ? (
+                <p className="travel-detail-hero__description">{travel.description}</p>
+              ) : (
+                <p className="travel-detail-hero__description">
+                  지도 위의 경로와 사진으로 다시 꺼내 보는 여행입니다.
+                </p>
+              )}
+
+              <dl className="travel-detail-stats">
+                <div>
+                  <dt>Duration</dt>
+                  <dd>{formatDuration(travel.durationDays)}</dd>
+                </div>
+                <div>
+                  <dt>Stops</dt>
+                  <dd>{String(travel.places.length).padStart(2, "0")}</dd>
+                </div>
+                <div>
+                  <dt>Scenes</dt>
+                  <dd>{String(travel.photos.length).padStart(2, "0")}</dd>
+                </div>
+              </dl>
+
+              <a href="#route" className="travel-detail-hero__jump">
+                여정 살펴보기
+                <span aria-hidden="true">↓</span>
+              </a>
+            </div>
           </header>
 
-          {travel.description ? (
-            <p className="text-body hairline pt-10 text-[1rem] leading-[1.85] whitespace-pre-line">
-              {travel.description}
-            </p>
-          ) : null}
+          <section id="route" aria-labelledby="route-heading" className="travel-detail-section">
+            <div className="travel-detail-section__heading">
+              <div>
+                <p className="eyebrow">Route &amp; itinerary</p>
+                <h2 id="route-heading">여정을 따라가 보세요</h2>
+              </div>
+              <p>
+                지도에서 방문 지점을 선택하거나 휠과 버튼으로 확대해 보세요. 장소 이름과 메모는
+                오른쪽 일정에서 겹치지 않게 확인할 수 있습니다.
+              </p>
+            </div>
 
-          {travel.places.length > 0 ? (
-            <section aria-labelledby="route-heading" className="pt-16">
-              <SectionHeading id="route-heading" eyebrow="Route" title="여행 경로" />
+            {travel.places.length > 0 ? (
               <TravelRouteMap places={travel.places} countryCodes={countryCodes} />
-            </section>
-          ) : null}
-
-          <section aria-labelledby="places-heading" className="pt-16">
-            <SectionHeading
-              id="places-heading"
-              eyebrow="Itinerary"
-              title="방문 장소"
-              aside={
-                <span className="text-content-faint font-mono text-[0.78rem]">
-                  {travel.places.length} places
-                </span>
-              }
-            />
-            <TravelPlaceList places={travel.places} />
+            ) : (
+              <div className="travel-detail-empty">아직 기록된 방문 장소가 없습니다.</div>
+            )}
           </section>
 
-          <section aria-labelledby="photos-heading" className="pt-16">
-            <SectionHeading
-              id="photos-heading"
-              eyebrow="Gallery"
-              title="사진"
-              aside={
-                <span className="text-content-faint font-mono text-[0.78rem]">
-                  {travel.photos.length} photos
-                </span>
-              }
-            />
+          <section aria-labelledby="photos-heading" className="travel-detail-section">
+            <div className="travel-detail-section__heading">
+              <div>
+                <p className="eyebrow">Scenes</p>
+                <h2 id="photos-heading">여행의 장면들</h2>
+              </div>
+              <p>
+                이동 순서와는 다른 리듬으로, 오래 기억하고 싶은 순간들을 모았습니다.
+              </p>
+            </div>
             <PhotoGallery photos={travel.photos} travelTitle={travel.title} />
           </section>
 
-          <nav aria-label="이전 다음 여행" className="hairline mt-20 grid grid-cols-2 gap-4 pt-8">
-            <TravelNavLink
-              travel={travel.previousTravel}
-              username={travel.owner.username}
-              direction="previous"
-            />
-            <TravelNavLink
-              travel={travel.nextTravel}
-              username={travel.owner.username}
-              direction="next"
-            />
-          </nav>
+          <section className="travel-detail-more" aria-labelledby="more-travel-heading">
+            <div>
+              <p className="eyebrow">Keep exploring</p>
+              <h2 id="more-travel-heading">다른 여행으로 이어보기</h2>
+            </div>
+            <nav aria-label="이전·다음 여행" className="travel-detail-navigation">
+              <TravelNavCard
+                travel={travel.previousTravel}
+                username={travel.owner.username}
+                direction="previous"
+              />
+              <TravelNavCard
+                travel={travel.nextTravel}
+                username={travel.owner.username}
+                direction="next"
+              />
+            </nav>
+          </section>
         </article>
       </main>
 
@@ -203,36 +222,40 @@ export default async function TravelDetailPage(
   );
 }
 
-function TravelNavLink({
+function TravelNavCard({
   travel,
   username,
   direction,
 }: {
-  travel: TravelDetail["previousTravel"];
+  travel: TravelNavigationLink | null;
   username: string;
   direction: "previous" | "next";
 }) {
   const isPrevious = direction === "previous";
-  const label = isPrevious ? "이전 여행" : "다음 여행";
+  const label = isPrevious ? "Previous journey" : "Next journey";
+  const arrow = isPrevious ? "←" : "→";
 
   if (!travel) {
     return (
-      <div className={isPrevious ? "" : "text-right"}>
-        <p className="eyebrow mb-2">{label}</p>
-        <p className="text-content-faint text-[0.85rem]">없음</p>
+      <div className="travel-detail-nav-card is-empty" aria-disabled="true">
+        <span className="travel-detail-nav-card__meta">{label}</span>
+        <strong>{isPrevious ? "첫 번째 기록입니다" : "마지막 기록입니다"}</strong>
+        <span className="travel-detail-nav-card__arrow" aria-hidden="true">
+          {arrow}
+        </span>
       </div>
     );
   }
 
   return (
-    <Link
-      href={travelPath(username, travel.id)}
-      className={`group block ${isPrevious ? "" : "text-right"}`}
-    >
-      <p className="eyebrow mb-2">{label}</p>
-      <p className="text-content text-[0.92rem] transition-colors group-hover:text-[var(--accent-strong)]">
-        {travel.title}
-      </p>
+    <Link href={travelPath(username, travel.id)} className="travel-detail-nav-card">
+      <span className="travel-detail-nav-card__meta">
+        {label} · {formatDate(travel.startDate)}
+      </span>
+      <strong>{travel.title}</strong>
+      <span className="travel-detail-nav-card__arrow" aria-hidden="true">
+        {arrow}
+      </span>
     </Link>
   );
 }

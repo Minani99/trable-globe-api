@@ -9,32 +9,29 @@ interface PhotoGalleryProps {
 
 export function PhotoGallery({ photos, travelTitle }: PhotoGalleryProps) {
   if (photos.length === 0) {
-    return <p className="text-body">등록된 사진이 없습니다.</p>;
+    return <div className="travel-detail-empty">아직 기록된 사진이 없습니다.</div>;
   }
 
   return (
-    <ul className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
-      {photos.map((photo) => (
-        <li key={photo.id}>
-          <figure className="m-0">
-            <div className="border-border-subtle aspect-[4/3] overflow-hidden rounded-[12px] border">
+    <ul className={`travel-gallery travel-gallery--${Math.min(photos.length, 4)}`}>
+      {photos.map((photo, index) => (
+        <li key={photo.id} className={index === 0 ? "is-featured" : ""}>
+          <figure>
+            <div className="travel-gallery__media">
               <TravelImage
                 src={photo.imageUrl}
-                alt={photo.caption ?? `${travelTitle} 사진`}
+                alt={photo.caption ?? `${travelTitle} 사진 ${index + 1}`}
                 fallbackLabel={travelTitle.slice(0, 2)}
                 className="h-full w-full object-cover"
               />
+              <span className="travel-gallery__index">
+                {String(index + 1).padStart(2, "0")}
+              </span>
             </div>
-            {photo.caption ? (
-              <figcaption className="text-content-muted mt-2.5 flex items-baseline justify-between gap-3 text-[0.8rem]">
-                <span>{photo.caption}</span>
-                {photo.takenAt ? (
-                  <time dateTime={photo.takenAt} className="text-content-faint shrink-0 font-mono text-[0.7rem]">
-                    {formatDate(photo.takenAt)}
-                  </time>
-                ) : null}
-              </figcaption>
-            ) : null}
+            <figcaption>
+              <span>{photo.caption ?? "기억하고 싶은 장면"}</span>
+              {photo.takenAt ? <time dateTime={photo.takenAt}>{formatDate(photo.takenAt)}</time> : null}
+            </figcaption>
           </figure>
         </li>
       ))}
