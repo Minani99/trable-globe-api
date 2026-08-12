@@ -40,7 +40,8 @@ class FlywayMigrationTest {
 
     /** Every table the entity model maps. */
     private static final List<String> EXPECTED_TABLES =
-            List.of("members", "countries", "cities", "travels", "travel_places", "travel_photos");
+            List.of("members", "member_credentials", "auth_sessions", "countries", "cities",
+                    "travels", "travel_places", "travel_photos");
 
     @Autowired
     private DataSource dataSource;

@@ -127,3 +127,62 @@ export interface HealthStatus {
   status: string;
   serverTime: string;
 }
+
+export interface AuthMember {
+  id: number;
+  username: string;
+  displayName: string;
+  bio: string | null;
+  profileImageUrl: string | null;
+  email: string;
+}
+
+export interface OwnedTravelSummary {
+  travel: TravelSummary;
+  visibility: Visibility;
+  updatedAt: string;
+}
+
+export interface CountryWriteInput {
+  iso2Code: string;
+  iso3Code: string;
+  nameEn: string;
+  nameKo: string;
+  latitude: number;
+  longitude: number;
+}
+
+export interface CityWriteInput {
+  nameEn: string;
+  nameKo: string;
+  latitude: number;
+  longitude: number;
+}
+
+export interface TravelPlaceWriteInput {
+  country: CountryWriteInput;
+  city: CityWriteInput | null;
+  placeName: string;
+  latitude: number | null;
+  longitude: number | null;
+  visitedAt: string | null;
+  memo: string | null;
+}
+
+export interface TravelPhotoWriteInput {
+  imageUrl: string;
+  caption: string | null;
+  takenAt: string | null;
+  placeIndex: number | null;
+}
+
+export interface TravelWriteInput {
+  title: string;
+  description: string | null;
+  startDate: string;
+  endDate: string;
+  coverImageUrl: string | null;
+  visibility: Visibility;
+  places: TravelPlaceWriteInput[];
+  photos: TravelPhotoWriteInput[];
+}

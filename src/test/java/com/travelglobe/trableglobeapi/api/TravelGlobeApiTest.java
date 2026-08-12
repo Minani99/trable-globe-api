@@ -1,6 +1,10 @@
 package com.travelglobe.trableglobeapi.api;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -10,6 +14,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.http.MediaType;
 
 /**
  * End-to-end HTTP checks over the seeded database: routing, the response envelope and
@@ -139,5 +144,137 @@ class TravelGlobeApiTest {
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.success").value(false))
                 .andExpect(jsonPath("$.error.code").value("RESOURCE_NOT_FOUND"));
+    }
+
+    @Test
+    @DisplayName("회원가입 후 자신의 프로필과 여행을 생성·조회·수정·삭제할 수 있다")
+    void accountAndOwnedTravelCrud() throws Exception {
+        String registerBody = """
+                {
+                  "username": "archive_writer",
+                  "displayName": "여행 기록자",
+                  "email": "writer@example.com",
+                  "password": "correct-horse-42"
+                }
+                """;
+
+        String registerResponse = mockMvc.perform(post("/api/auth/register")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(registerBody))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.member.username").value("archive_writer"))
+                .andExpect(jsonPath("$.data.member.email").value("writer@example.com"))
+                .andExpect(jsonPath("$.data.member.passwordHash").doesNotExist())
+                .andReturn().getResponse().getContentAsString();
+        String token = stringValue(registerResponse, "token");
+
+        mockMvc.perform(get("/api/auth/me").header("Authorization", "Bearer " + token))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.displayName").value("여행 기록자"));
+
+        mockMvc.perform(patch("/api/auth/profile")
+                        .header("Authorization", "Bearer " + token)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {"displayName":"느린 여행자","bio":"도시를 오래 걷습니다.","profileImageUrl":null}
+                                """))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.displayName").value("느린 여행자"));
+
+        String createResponse = mockMvc.perform(post("/api/private/travels")
+                        .header("Authorization", "Bearer " + token)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(travelPayload("서울의 하루", "PUBLIC")))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.data.owner.username").value("archive_writer"))
+                .andExpect(jsonPath("$.data.places[0].country.iso2Code").value("KR"))
+                .andReturn().getResponse().getContentAsString();
+        long travelId = Long.parseLong(numberValue(createResponse, "id"));
+
+        mockMvc.perform(get("/api/private/travels/" + travelId)
+                        .header("Authorization", "Bearer " + token))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.title").value("서울의 하루"));
+
+        mockMvc.perform(put("/api/private/travels/" + travelId)
+                        .header("Authorization", "Bearer " + token)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(travelPayload("서울, 다시", "PRIVATE")))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.title").value("서울, 다시"))
+                .andExpect(jsonPath("$.data.visibility").value("PRIVATE"));
+
+        mockMvc.perform(get("/api/travels/" + travelId))
+                .andExpect(status().isNotFound());
+
+        mockMvc.perform(delete("/api/private/travels/" + travelId)
+                        .header("Authorization", "Bearer " + token))
+                .andExpect(status().isOk());
+
+        mockMvc.perform(get("/api/private/travels/" + travelId)
+                        .header("Authorization", "Bearer " + token))
+                .andExpect(status().isNotFound());
+
+        mockMvc.perform(post("/api/auth/logout").header("Authorization", "Bearer " + token))
+                .andExpect(status().isOk());
+        mockMvc.perform(get("/api/auth/me").header("Authorization", "Bearer " + token))
+                .andExpect(status().isUnauthorized())
+                .andExpect(jsonPath("$.error.code").value("AUTHENTICATION_REQUIRED"));
+    }
+
+    @Test
+    @DisplayName("인증 토큰이 없으면 개인 쓰기 API를 사용할 수 없다")
+    void privateWritesRequireAuthentication() throws Exception {
+        mockMvc.perform(post("/api/private/travels")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{}"))
+                .andExpect(status().isUnauthorized())
+                .andExpect(jsonPath("$.error.code").value("AUTHENTICATION_REQUIRED"));
+    }
+
+    private static String travelPayload(String title, String visibility) {
+        return """
+                {
+                  "title": "%s",
+                  "description": "천천히 걸은 하루",
+                  "startDate": "2026-08-01",
+                  "endDate": "2026-08-01",
+                  "coverImageUrl": null,
+                  "visibility": "%s",
+                  "places": [{
+                    "country": {
+                      "iso2Code": "KR", "iso3Code": "KOR",
+                      "nameEn": "South Korea", "nameKo": "대한민국",
+                      "latitude": 35.907757, "longitude": 127.766922
+                    },
+                    "city": {
+                      "nameEn": "Seoul", "nameKo": "서울",
+                      "latitude": 37.566535, "longitude": 126.977969
+                    },
+                    "placeName": "서울숲",
+                    "latitude": 37.544387,
+                    "longitude": 127.037442,
+                    "visitedAt": "2026-08-01",
+                    "memo": "오래 걸었다."
+                  }],
+                  "photos": []
+                }
+                """.formatted(title, visibility);
+    }
+
+    private static String stringValue(String json, String field) {
+        String marker = "\"" + field + "\":\"";
+        int start = json.indexOf(marker) + marker.length();
+        return json.substring(start, json.indexOf('"', start));
+    }
+
+    private static String numberValue(String json, String field) {
+        String marker = "\"" + field + "\":";
+        int start = json.indexOf(marker) + marker.length();
+        int end = start;
+        while (end < json.length() && Character.isDigit(json.charAt(end))) {
+            end++;
+        }
+        return json.substring(start, end);
     }
 }

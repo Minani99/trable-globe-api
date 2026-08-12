@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import { useState } from "react";
 
 import { ThemeToggle } from "@/components/theme/ThemeToggle";
+import { AccountNavigation } from "@/components/layout/AccountNavigation";
 import { profilePath, siteConfig } from "@/lib/config";
 
 interface HeaderNavigationProps {
@@ -46,6 +47,7 @@ export function HeaderNavigation({ username }: HeaderNavigationProps) {
             @{username}
           </Link>
         ) : null}
+        <AccountNavigation />
       </nav>
 
       <ThemeToggle />
@@ -93,6 +95,7 @@ export function HeaderNavigation({ username }: HeaderNavigationProps) {
             <span aria-hidden="true">→</span>
           </Link>
         ) : null}
+        <AccountNavigation mobile onNavigate={() => setMenuOpen(false)} />
       </nav>
     </div>
   );

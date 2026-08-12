@@ -43,6 +43,10 @@ Base URL: `http://localhost:8080` (개발). Next.js 서버와 동일 출처 `/ap
 | `RESOURCE_NOT_FOUND` | 404 | 프로필·여행·국가가 없거나 비공개 |
 | `INVALID_REQUEST` | 400 | 사용자명이 비었거나 너무 김, 국가 코드 형식 오류 |
 | `VALIDATION_FAILED` | 400 | Bean Validation 실패 (`error.fieldErrors` 포함) |
+| `AUTHENTICATION_REQUIRED` | 401 | 없거나 만료·폐기된 세션 |
+| `AUTHENTICATION_FAILED` | 401 | 로그인 정보 불일치 |
+| `ACCESS_DENIED` | 403 | 허용되지 않은 출처 또는 작업 |
+| `CONFLICT` | 409 | 중복 사용자명·이메일 |
 | `INTERNAL_ERROR` | 500 | 예기치 못한 예외 — 상세는 서버 로그에만 |
 
 `VALIDATION_FAILED`일 때만 필드 오류가 함께 옵니다:
@@ -351,10 +355,25 @@ Base URL: `http://localhost:8080` (개발). Next.js 서버와 동일 출처 `/ap
 
 ---
 
-## 아직 없는 것
+## 인증과 쓰기 API
 
-쓰기 API(POST/PUT/DELETE)는 이번 단계에 없습니다. 인증이 함께 들어와야
-소유권 검사를 제대로 붙일 수 있기 때문에, 껍데기 엔드포인트도 열지 않았습니다.
+브라우저는 Next.js의 `/api/auth/*`, `/api/private/*` BFF를 사용합니다. BFF가 원문
+세션 토큰을 HttpOnly·SameSite=Lax 쿠키에 보관하고 Spring API에는 Bearer 헤더로
+전달합니다. 모바일 앱은 아래 Spring 엔드포인트의 토큰을 OS 보안 저장소에 보관해
+같은 쓰기 API를 사용할 수 있습니다.
 
-조회 서비스는 `TravelQueryService`라는 이름으로 두어 `TravelCommandService`가
-추가될 자리를 비워 두었습니다.
+| Method | Path | 설명 |
+| --- | --- | --- |
+| POST | `/api/auth/register` | 회원가입 후 DB 세션 발급 |
+| POST | `/api/auth/login` | 로그인 후 DB 세션 발급 |
+| GET | `/api/auth/me` | 현재 계정 DTO (`Authorization: Bearer ...`) |
+| PATCH | `/api/auth/profile` | 공개 프로필 수정 |
+| POST | `/api/auth/logout` | 현재 세션 즉시 폐기 |
+| GET | `/api/private/travels` | 내 공개·비공개 여행 목록 |
+| GET | `/api/private/travels/{id}` | 내 여행 상세 |
+| POST | `/api/private/travels` | 여행·장소·사진 URL 생성 |
+| PUT | `/api/private/travels/{id}` | 여행 aggregate 전체 수정 |
+| DELETE | `/api/private/travels/{id}` | 여행과 장소·사진 삭제 |
+
+모든 `/api/private/**` 조회와 변경은 `travel_id`만 보지 않고 인증된 `member_id`까지
+같이 조회합니다. 다른 사용자의 ID를 알아도 404만 반환합니다.

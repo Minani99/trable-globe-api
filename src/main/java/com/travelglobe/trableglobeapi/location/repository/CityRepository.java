@@ -7,4 +7,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
 public interface CityRepository extends JpaRepository<City, Long> {
 
     Optional<City> findByCountryIso2CodeAndNameEn(String iso2Code, String nameEn);
+
+    Optional<City> findByCountryIso2CodeAndNameEnIgnoreCase(String iso2Code, String nameEn);
 }

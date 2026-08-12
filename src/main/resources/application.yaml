@@ -27,6 +27,10 @@ server:
 travel-globe:
   cors:
     allowed-origins: http://localhost:3000
+  auth:
+    # Opaque sessions are persisted so a user can log out from one device immediately.
+    # The browser keeps only the raw token in an HttpOnly cookie owned by Next.js.
+    session-days: ${AUTH_SESSION_DAYS:30}
   seed:
     enabled: false
 

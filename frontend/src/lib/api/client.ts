@@ -1,7 +1,7 @@
 import { getApiBaseUrl } from "@/lib/config";
 
 /** Shape every `/api` endpoint returns. */
-interface ApiEnvelope<T> {
+export interface ApiEnvelope<T> {
   success: boolean;
   data: T | null;
   message: string | null;
@@ -95,8 +95,43 @@ export async function apiGet<T>(path: string): Promise<T> {
   return envelope.data;
 }
 
+/** Same-origin mutation helper used by the HttpOnly-cookie BFF routes. */
+export async function apiMutation<T>(
+  path: string,
+  method: "POST" | "PUT" | "PATCH" | "DELETE",
+  body?: unknown,
+): Promise<T | null> {
+  let response: Response;
+  try {
+    response = await fetch(path, {
+      method,
+      credentials: "same-origin",
+      headers: {
+        Accept: "application/json",
+        ...(body === undefined ? {} : { "Content-Type": "application/json" }),
+      },
+      body: body === undefined ? undefined : JSON.stringify(body),
+      signal: AbortSignal.timeout(20_000),
+    });
+  } catch {
+    throw new ApiError(0, "서버에 연결할 수 없습니다. 잠시 후 다시 시도해 주세요.");
+  }
+
+  const envelope = await readEnvelope<T>(response);
+  if (!response.ok || !envelope?.success) {
+    const error = new ApiError(
+      response.status,
+      envelope?.message ?? `요청이 실패했습니다 (HTTP ${response.status})`,
+      envelope?.error?.code ?? null,
+    );
+    Object.assign(error, { fieldErrors: envelope?.error?.fieldErrors ?? [] });
+    throw error;
+  }
+  return envelope.data;
+}
+
 /** Tolerates a non-JSON body (proxy error page, empty 500) instead of throwing a SyntaxError. */
-async function readEnvelope<T>(response: Response): Promise<ApiEnvelope<T> | null> {
+export async function readEnvelope<T>(response: Response): Promise<ApiEnvelope<T> | null> {
   try {
     return (await response.json()) as ApiEnvelope<T>;
   } catch {

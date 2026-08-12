@@ -1,0 +1,19 @@
+import type { Metadata } from "next";
+import Link from "next/link";
+import { redirect } from "next/navigation";
+
+import { SiteFooter } from "@/components/layout/SiteFooter";
+import { SiteHeader } from "@/components/layout/SiteHeader";
+import { TravelEditor } from "@/components/studio/TravelEditor";
+import { getCurrentMember } from "@/lib/api/server-session";
+import { countryOptions } from "@/lib/countries";
+
+export const metadata: Metadata = { title: "새 여행 기록", robots: { index: false, follow: false } };
+
+export default async function NewTravelPage() {
+  const member = await getCurrentMember();
+  if (!member) redirect("/login?next=/studio/travels/new");
+  return (
+    <><SiteHeader username={member.username} /><main id="main" className="studio-page flex-1"><div className="site-shell travel-editor-shell"><nav className="studio-breadcrumb"><Link href="/studio">← 내 여행 관리</Link></nav><header className="travel-editor-hero"><p className="eyebrow">New journey</p><h1>새 여행 기록</h1><p>기본 정보와 방문 순서만으로 지구본과 상세 지도가 함께 완성됩니다.</p></header><TravelEditor username={member.username} countries={countryOptions} /></div></main><SiteFooter /></>
+  );
+}

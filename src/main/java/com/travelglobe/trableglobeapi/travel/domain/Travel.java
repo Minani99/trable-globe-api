@@ -84,16 +84,34 @@ public class Travel extends BaseTimeEntity {
 
     public static Travel create(Member member, String title, String description, LocalDate startDate,
                                 LocalDate endDate, String coverImageUrl, Visibility visibility) {
-        if (endDate.isBefore(startDate)) {
-            throw new IllegalArgumentException("여행 종료일은 시작일보다 빠를 수 없습니다.");
-        }
+        validateDateRange(startDate, endDate);
         return new Travel(member, title, description, startDate, endDate, coverImageUrl, visibility);
+    }
+
+    public void updateDetails(String title, String description, LocalDate startDate,
+                              LocalDate endDate, String coverImageUrl, Visibility visibility) {
+        validateDateRange(startDate, endDate);
+        this.title = title;
+        this.description = description;
+        this.startDate = startDate;
+        this.endDate = endDate;
+        this.coverImageUrl = coverImageUrl;
+        this.visibility = visibility;
     }
 
     /** Appends a place to the itinerary and keeps both sides of the association in sync. */
     public void addPlace(TravelPlace place) {
         places.add(place);
         place.assignTo(this);
+    }
+
+    public void replacePlaces(List<TravelPlace> newPlaces) {
+        places.clear();
+        newPlaces.forEach(this::addPlace);
+    }
+
+    public boolean isOwnedBy(Long memberId) {
+        return member != null && member.getId() != null && member.getId().equals(memberId);
     }
 
     public List<TravelPlace> getPlaces() {
@@ -107,5 +125,14 @@ public class Travel extends BaseTimeEntity {
     /** Trip length in days, counting both the arrival and departure day. */
     public int getDurationDays() {
         return (int) java.time.temporal.ChronoUnit.DAYS.between(startDate, endDate) + 1;
+    }
+
+    private static void validateDateRange(LocalDate startDate, LocalDate endDate) {
+        if (startDate == null || endDate == null) {
+            throw new IllegalArgumentException("여행 시작일과 종료일이 필요합니다.");
+        }
+        if (endDate.isBefore(startDate)) {
+            throw new IllegalArgumentException("여행 종료일은 시작일보다 빠를 수 없습니다.");
+        }
     }
 }

@@ -14,6 +14,10 @@ secret in the provider dashboard.
 > the `traveler` sample. Before storing real user data, change the profile to `prod`. The
 > production profile never creates sample records.
 
+The current account/CRUD screens make the showcase suitable for a closed beta, not an open
+public launch. Before public registration, use a separate production database and add email
+verification, password reset and edge rate limiting.
+
 ## 1. Create the PostgreSQL database
 
 Create a Neon project and copy the **direct (unpooled)** connection details. Flyway runs schema
@@ -94,6 +98,13 @@ Then open `/traveler` in a WebGL-capable browser and check:
 - selecting a country filters travel cards;
 - a travel card opens its detail page.
 
+Then test the authenticated flow:
+
+- `/register` creates an account and moves to `/studio`;
+- a private trip can be created, edited and deleted without appearing on the public profile;
+- switching it to public adds it to the profile and makes its detail URL available;
+- logout removes access to `/studio` and private APIs.
+
 ## Required production variables
 
 ### Render backend
@@ -123,3 +134,14 @@ Before accepting real user records:
 3. Set the final HTTPS frontend origin in `CORS_ALLOWED_ORIGINS`.
 4. Set the same frontend origin in Vercel's `SITE_URL`.
 5. Redeploy both services and repeat the smoke test.
+6. Enable Neon point-in-time recovery or scheduled backups and perform one restore rehearsal.
+7. Add rate limits for registration and login at the edge, then add email verification and reset.
+
+## Data and media policy
+
+- PostgreSQL stores accounts, sessions and travel metadata. Neon remains a suitable first
+  production database when backups, connection limits and monitoring are configured.
+- Do not store image bytes in PostgreSQL or the Render container filesystem. Use object storage
+  such as Cloudflare R2 or S3, generate responsive derivatives, and save only URLs in this DB.
+- The `world-countries` catalog used by the writer is ODbL data. Keep its attribution and license
+  obligations visible when the product moves beyond a private beta.

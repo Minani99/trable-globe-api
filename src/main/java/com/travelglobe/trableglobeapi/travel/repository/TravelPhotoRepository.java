@@ -6,6 +6,7 @@ import java.util.Collection;
 import java.util.List;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.repository.query.Param;
 
 /**
@@ -33,4 +34,8 @@ public interface TravelPhotoRepository extends JpaRepository<TravelPhoto, Long> 
             group by ph.travel.id
             """)
     List<TravelPhotoCountProjection> countByTravelIds(@Param("travelIds") Collection<Long> travelIds);
+
+    @Modifying
+    @Query("delete from TravelPhoto ph where ph.travel.id = :travelId")
+    void deleteAllForTravel(@Param("travelId") Long travelId);
 }

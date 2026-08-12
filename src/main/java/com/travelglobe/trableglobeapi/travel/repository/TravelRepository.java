@@ -30,6 +30,29 @@ public interface TravelRepository extends JpaRepository<Travel, Long> {
               left join fetch t.places p
               left join fetch p.country
               left join fetch p.city
+            where t.member.id = :memberId
+            order by t.startDate desc, t.id desc
+            """)
+    List<Travel> findOwnedTravels(@Param("memberId") Long memberId);
+
+    @Query("""
+            select t
+            from Travel t
+              join fetch t.member
+              left join fetch t.places p
+              left join fetch p.country
+              left join fetch p.city
+            where t.id = :travelId and t.member.id = :memberId
+            """)
+    Optional<Travel> findOwnedDetail(@Param("travelId") Long travelId,
+                                     @Param("memberId") Long memberId);
+
+    @Query("""
+            select t
+            from Travel t
+              left join fetch t.places p
+              left join fetch p.country
+              left join fetch p.city
             where t.member.username = :username
               and t.visibility = :visibility
             order by t.startDate desc, t.id desc

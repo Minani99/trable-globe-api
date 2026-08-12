@@ -2,7 +2,8 @@
 
 ## 스키마의 정답
 
-`src/main/resources/db/migration/V1__init_travel_globe_schema.sql` 하나입니다.
+`src/main/resources/db/migration/` 아래의 순차 Flyway 마이그레이션이 정답입니다.
+`V1`은 여행 스키마, `V2`는 계정 자격 증명과 로그인 세션을 추가합니다.
 
 | 프로필 | DB | 스키마를 만드는 주체 | Hibernate |
 | --- | --- | --- | --- |
@@ -22,7 +23,17 @@ H2 호환 버전을 따로 유지하면 두 스키마가 서서히 어긋나므�
 ## ERD
 
 ```
-                    ┌──────────────────┐
+              ┌──────────────────────┐       ┌──────────────────┐
+              │ member_credentials   │       │  auth_sessions   │
+              │──────────────────────│       │──────────────────│
+              │ member_id      FK/UQ │       │ id UUID       PK │
+              │ email             UQ │       │ member_id     FK │
+              │ password_hash         │       │ token_hash     UQ │
+              └──────────┬───────────┘       │ expires_at       │
+                         │ 1                 │ revoked_at       │
+                         │                   └────────┬─────────┘
+                         │                           │ N
+                    ┌────▼─────────────┐◄────────────┘
                     │     members      │
                     │──────────────────│
                     │ id           PK  │
@@ -88,6 +99,8 @@ H2 호환 버전을 따로 유지하면 두 스키마가 서서히 어긋나므�
 | 관계 | 카디널리티 | Null | 삭제 동작 |
 | --- | --- | --- | --- |
 | members → travels | 1 : N | 필수 | 제한 (기본) |
+| members → member_credentials | 1 : 0..1 | 선택(데모 계정) | `ON DELETE CASCADE` |
+| members → auth_sessions | 1 : N | 필수 | `ON DELETE CASCADE` |
 | travels → travel_places | 1 : N | 필수 | `ON DELETE CASCADE` |
 | travels → travel_photos | 1 : N | 필수 | `ON DELETE CASCADE` |
 | travel_places → countries | N : 1 | **필수** | 제한 |
@@ -112,6 +125,9 @@ H2 호환 버전을 따로 유지하면 두 스키마가 서서히 어긋나므�
 | `idx_travel_places_country` | `travel_places(country_id)` | 방문 국가 집계 GROUP BY |
 | `idx_travel_places_city` | `travel_places(city_id)` | 방문 도시 집계 |
 | `idx_travel_photos_travel` | `travel_photos(travel_id, sort_order)` | 상세 화면 사진 조회 |
+| `uk_member_credentials_email` | `member_credentials(email)` | 로그인 식별자 및 중복 가입 방지 |
+| `uk_auth_sessions_token_hash` | `auth_sessions(token_hash)` | 원문 토큰을 저장하지 않는 세션 조회 |
+| `idx_auth_sessions_expiry` | `auth_sessions(revoked_at, expires_at)` | 만료·폐기 세션 정리 |
 
 ## 타입 선택
 
@@ -152,3 +168,8 @@ H2 호환 버전을 따로 유지하면 두 스키마가 서서히 어긋나므�
 - **페이지네이션 부재**: 여행 목록 조회가 fetch join으로 컬렉션을 함께 가져오므로
   현재 페이징을 붙일 수 없습니다. 한 사용자의 여행이 수백 건을 넘기 시작하면
   목록 쿼리를 요약 전용 projection으로 분리해야 합니다.
+- **비밀번호**: PBKDF2-HMAC-SHA256(개별 salt, 310,000회) 결과만 저장합니다.
+- **세션**: 브라우저가 받은 원문 토큰은 Next.js의 HttpOnly 쿠키에만 있고 DB에는
+  SHA-256 해시만 저장합니다. 로그아웃 시 해당 세션을 즉시 폐기합니다.
+- **출시 전 분리**: 공개 샘플용 DB와 실제 회원 DB를 공유하지 않습니다. Neon의
+  별도 프로젝트/브랜치와 최소 권한 애플리케이션 role을 사용합니다.
