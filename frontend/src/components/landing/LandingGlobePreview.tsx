@@ -4,8 +4,6 @@ import Image from "next/image";
 import Link from "next/link";
 import type { PointerEvent } from "react";
 
-import heroGlobe from "@/app/opengraph-image.png";
-
 interface LandingGlobePreviewProps {
   href: string;
 }
@@ -38,8 +36,8 @@ export function LandingGlobePreview({ href }: LandingGlobePreviewProps) {
       >
         <div className="landing-globe-frame">
           <Image
-            src={heroGlobe}
-            alt="아시아와 유럽의 여행 경로가 빛나는 검푸른 지구본"
+            src="/images/hero-globe-korea-v2.png"
+            alt="대한민국을 중심으로 일본과 대만 여행 경로가 빛나는 검푸른 지구본"
             fill
             priority
             sizes="(max-width: 1023px) 92vw, 52vw"
@@ -49,16 +47,9 @@ export function LandingGlobePreview({ href }: LandingGlobePreviewProps) {
           <span className="landing-globe-grid" aria-hidden="true" />
 
           <div className="landing-globe-meta" aria-hidden="true">
-            <span>LIVE ARCHIVE</span>
+            <span>SEOUL · 37.5665° N</span>
             <span>04 COUNTRIES · 07 CITIES</span>
           </div>
-
-          <span className="landing-globe-pin landing-globe-pin--europe" aria-hidden="true">
-            <span>EUROPE</span>
-          </span>
-          <span className="landing-globe-pin landing-globe-pin--asia" aria-hidden="true">
-            <span>TAIPEI · 25.03° N</span>
-          </span>
 
           <div className="landing-memory-card">
             <div>

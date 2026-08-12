@@ -388,10 +388,10 @@ body {
 }
 
 .landing-globe-image {
-  object-fit: cover;
-  object-position: 100% 50%;
+  object-fit: contain;
+  object-position: 50% 50%;
   filter: saturate(0.9) contrast(1.04);
-  transform: scale(1.16) translate3d(calc(var(--pointer-x) * -8px), calc(var(--pointer-y) * -8px), 0);
+  transform: scale(1.015) translate3d(calc(var(--pointer-x) * -8px), calc(var(--pointer-y) * -8px), 0);
   transition:
     filter 0.6s ease,
     transform 0.8s cubic-bezier(0.22, 1, 0.36, 1);
@@ -399,7 +399,7 @@ body {
 
 .landing-globe-link:hover .landing-globe-image {
   filter: saturate(1.05) contrast(1.06) brightness(1.06);
-  transform: scale(1.2) translate3d(calc(var(--pointer-x) * -12px), calc(var(--pointer-y) * -12px), 0);
+  transform: scale(1.055) translate3d(calc(var(--pointer-x) * -12px), calc(var(--pointer-y) * -12px), 0);
 }
 
 .landing-globe-vignette,
@@ -438,43 +438,6 @@ body {
   font-family: var(--font-mono);
   font-size: 0.58rem;
   letter-spacing: 0.15em;
-}
-
-.landing-globe-pin {
-  position: absolute;
-  z-index: 2;
-  display: flex;
-  align-items: center;
-  gap: 0.55rem;
-  color: rgba(232, 236, 240, 0.74);
-  font-family: var(--font-mono);
-  font-size: 0.56rem;
-  letter-spacing: 0.08em;
-  text-shadow: 0 2px 8px #000;
-  opacity: 0;
-  animation: landing-pin-in 0.6s 1.05s ease-out forwards;
-}
-
-.landing-globe-pin::before {
-  width: 0.5rem;
-  height: 0.5rem;
-  content: "";
-  border: 1px solid #ffe0d1;
-  border-radius: 50%;
-  background: var(--accent);
-  box-shadow:
-    0 0 0 0.38rem rgba(232, 112, 58, 0.12),
-    0 0 1.4rem rgba(255, 138, 82, 0.72);
-}
-
-.landing-globe-pin--europe {
-  top: 33%;
-  left: 23%;
-}
-
-.landing-globe-pin--asia {
-  top: 47%;
-  right: 6%;
 }
 
 .landing-memory-card {
@@ -651,12 +614,6 @@ body {
   }
 }
 
-@keyframes landing-pin-in {
-  to {
-    opacity: 1;
-  }
-}
-
 @keyframes landing-signal {
   0% {
     opacity: 0.7;
@@ -713,13 +670,8 @@ body {
     left: 1rem;
   }
 
-  .landing-globe-meta span:last-child,
-  .landing-globe-pin span {
+  .landing-globe-meta span:last-child {
     display: none;
-  }
-
-  .landing-globe-pin--europe {
-    left: 19%;
   }
 
   .landing-memory-card {
