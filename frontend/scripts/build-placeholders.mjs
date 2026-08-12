@@ -3,8 +3,8 @@
  *
  * The MVP has no upload pipeline, and depending on a random-image service would make the
  * UI flicker differently on every load (and break offline). These are deterministic,
- * self-contained SVGs: abstract horizons that read as travel photography at card size
- * without pretending to be a real photo.
+ * self-contained SVGs: soft editorial landscapes that read as destination postcards at
+ * card size without pretending to be real photos.
  *
  * Regenerate with `npm run placeholders:build`. The output is committed.
  */
@@ -14,18 +14,18 @@ import { fileURLToPath } from "node:url";
 
 const OUT_DIR = resolve(dirname(fileURLToPath(import.meta.url)), "../public/placeholders");
 
-/** [sky top, sky bottom, sun, far ridge, near ridge, foreground] */
+/** [sky top, sky bottom, glow, far ridge, near ridge, foreground] */
 const PALETTES = [
-  ["#0a1626", "#1d3a52", "#e8703a", "#16283a", "#0f1c2a", "#080f18"],
-  ["#140f22", "#3a2145", "#e0567f", "#241732", "#180e22", "#0d0714"],
-  ["#061a20", "#0f4152", "#4fd1c5", "#0a2f3c", "#07202a", "#04141b"],
-  ["#1a1005", "#4a2a10", "#f0a63c", "#301c0c", "#1f1208", "#130a04"],
-  ["#0a1410", "#17402f", "#7fd6a2", "#102b20", "#0a1c15", "#05100c"],
-  ["#12101f", "#2b2a52", "#8f9bff", "#1c1b38", "#131226", "#0a0917"],
-  ["#200c16", "#4f1b32", "#ff7a9c", "#33101f", "#210a14", "#12060b"],
-  ["#081a1a", "#134040", "#5ecfcf", "#0d2c2c", "#081d1d", "#041111"],
-  ["#1c1408", "#4d3413", "#ffc861", "#332211", "#20150a", "#120c05"],
-  ["#0d1220", "#243456", "#6ea8ff", "#18223a", "#101728", "#080c15"],
+  ["#d8edf7", "#f6dfcc", "#fff5cf", "#88a8a3", "#587b79", "#294f55"],
+  ["#e8dff3", "#f8e0df", "#fff0d7", "#9b8fa9", "#6b637d", "#37364f"],
+  ["#ccebee", "#e9f4e9", "#fff8cf", "#71a8a7", "#437b7c", "#24515b"],
+  ["#f7dfbe", "#f6c9a9", "#fff0c6", "#be8b68", "#8d6048", "#573b32"],
+  ["#dceedd", "#f2e8cd", "#fff8d9", "#85a681", "#587b5e", "#34523e"],
+  ["#d9e2f5", "#e8dcf3", "#fff3d1", "#8993bb", "#5d678f", "#343c68"],
+  ["#f5dbe4", "#f6e2d0", "#fff1d0", "#bd8498", "#8a5b73", "#57394f"],
+  ["#d2eeeb", "#e3f3df", "#fff7cf", "#74a5a0", "#477a75", "#285651"],
+  ["#f3e5c7", "#efd8b6", "#fff4c9", "#b49a70", "#806d50", "#504430"],
+  ["#d7e5f7", "#e7edf7", "#fff6d5", "#7899bd", "#4e7195", "#2e4d70"],
 ];
 
 /**
@@ -36,13 +36,12 @@ const PALETTES = [
  * @param {number} height
  */
 function scene(index, width, height) {
-  const [skyTop, skyBottom, sun, farRidge, nearRidge, foreground] =
+  const [skyTop, skyBottom, glow, farRidge, nearRidge, foreground] =
     PALETTES[index % PALETTES.length];
 
   const horizon = height * 0.62;
-  const sunX = width * (0.22 + ((index * 0.13) % 0.56));
-  const sunY = horizon - height * (0.14 + ((index * 0.05) % 0.18));
-  const sunR = height * 0.085;
+  const glowX = 22 + ((index * 13) % 56);
+  const glowY = 25 + ((index * 7) % 24);
 
   // Two ridge lines, offset per index so no two placeholders share a silhouette.
   const ridge = (baseY, amplitude, phase) => {
@@ -60,25 +59,26 @@ function scene(index, width, height) {
       <stop offset="0%" stop-color="${skyTop}"/>
       <stop offset="100%" stop-color="${skyBottom}"/>
     </linearGradient>
-    <radialGradient id="glow" cx="50%" cy="50%" r="50%">
-      <stop offset="0%" stop-color="${sun}" stop-opacity="0.85"/>
-      <stop offset="60%" stop-color="${sun}" stop-opacity="0.18"/>
-      <stop offset="100%" stop-color="${sun}" stop-opacity="0"/>
+    <radialGradient id="glow" cx="${glowX}%" cy="${glowY}%" r="68%">
+      <stop offset="0%" stop-color="${glow}" stop-opacity="0.82"/>
+      <stop offset="55%" stop-color="${glow}" stop-opacity="0.16"/>
+      <stop offset="100%" stop-color="${glow}" stop-opacity="0"/>
     </radialGradient>
     <linearGradient id="haze" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0%" stop-color="${sun}" stop-opacity="0.14"/>
-      <stop offset="100%" stop-color="${sun}" stop-opacity="0"/>
+      <stop offset="0%" stop-color="#ffffff" stop-opacity="0.3"/>
+      <stop offset="100%" stop-color="#ffffff" stop-opacity="0"/>
     </linearGradient>
   </defs>
 
   <rect width="${width}" height="${height}" fill="url(#sky)"/>
-  <circle cx="${sunX.toFixed(1)}" cy="${sunY.toFixed(1)}" r="${(sunR * 4).toFixed(1)}" fill="url(#glow)"/>
-  <circle cx="${sunX.toFixed(1)}" cy="${sunY.toFixed(1)}" r="${sunR.toFixed(1)}" fill="${sun}" opacity="0.92"/>
+  <rect width="${width}" height="${height}" fill="url(#glow)"/>
   <rect y="${(horizon - height * 0.18).toFixed(1)}" width="${width}" height="${(height * 0.18).toFixed(1)}" fill="url(#haze)"/>
 
-  <polygon points="${ridge(horizon, height * 0.045, index * 0.7)}" fill="${farRidge}" opacity="0.95"/>
+  <path d="M0 ${(horizon - height * 0.08).toFixed(1)} C ${(width * 0.22).toFixed(1)} ${(horizon - height * 0.13).toFixed(1)}, ${(width * 0.64).toFixed(1)} ${(horizon + height * 0.01).toFixed(1)}, ${width} ${(horizon - height * 0.12).toFixed(1)}" fill="none" stroke="#ffffff" stroke-opacity="0.48" stroke-width="${(height * 0.008).toFixed(1)}"/>
+  <polygon points="${ridge(horizon, height * 0.045, index * 0.7)}" fill="${farRidge}" opacity="0.82"/>
   <polygon points="${ridge(horizon + height * 0.11, height * 0.035, index * 1.3 + 2)}" fill="${nearRidge}"/>
   <polygon points="${ridge(horizon + height * 0.26, height * 0.02, index * 0.9 + 4)}" fill="${foreground}"/>
+  <path d="M0 ${(height * 0.86).toFixed(1)} Q ${(width * 0.38).toFixed(1)} ${(height * 0.76).toFixed(1)} ${width} ${(height * 0.9).toFixed(1)}" fill="none" stroke="#ffffff" stroke-opacity="0.16" stroke-width="${(height * 0.006).toFixed(1)}"/>
 </svg>
 `;
 }

@@ -3,11 +3,40 @@
 /*
  * Travel Globe design tokens.
  *
- * One dark theme only. The globe is the subject of every screen, so the surface palette
- * stays close to black and the single accent is reserved for one job: marking where the
- * traveller has actually been. Nothing else in the UI is allowed to use it.
+ * Light is the first-visit default, with a dark archive mode kept one tap away. Both
+ * palettes share the same warm accent so visited places remain the strongest signal.
  */
 :root {
+  --background: #f7f8f5;
+  --background-elevated: #eef4f5;
+  --surface: #ffffff;
+  --surface-raised: #f5f7f4;
+  --surface-hover: #eaf1f1;
+
+  --border: #dce4e3;
+  --border-strong: #bdccca;
+
+  --text-primary: #13252d;
+  --text-secondary: #5f7075;
+  --text-tertiary: #89979a;
+
+  --accent: #e8703a;
+  --accent-strong: #c94f20;
+  --accent-soft: rgba(232, 112, 58, 0.12);
+  --accent-border: rgba(201, 79, 32, 0.34);
+
+  --globe-ocean: #78c4e2;
+  --globe-land: #e3eadb;
+  --globe-land-hover: #f1b091;
+  --globe-atmosphere: #80d5f3;
+
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 16px;
+  --font-editorial: var(--font-gowun-batang), "Batang", serif;
+}
+
+:root[data-theme="dark"] {
   --background: #05070a;
   --background-elevated: #080b11;
   --surface: #0b1017;
@@ -33,10 +62,6 @@
   --globe-land-hover: #202c3b;
   --globe-atmosphere: #2f6d9e;
 
-  --radius-sm: 6px;
-  --radius-md: 10px;
-  --radius-lg: 16px;
-  --font-editorial: var(--font-gowun-batang), "Batang", serif;
 }
 
 @theme inline {
@@ -60,6 +85,10 @@
 }
 
 html {
+  color-scheme: light;
+}
+
+html[data-theme="dark"] {
   color-scheme: dark;
 }
 
@@ -68,6 +97,9 @@ body {
   color: var(--text-primary);
   font-family: var(--font-sans);
   -webkit-font-smoothing: antialiased;
+  transition:
+    background-color 0.35s ease,
+    color 0.35s ease;
 }
 
 /* Landing page ----------------------------------------------------------- */
@@ -153,6 +185,61 @@ body {
 .site-nav-link:hover::after {
   transform: scaleX(1);
   transform-origin: left;
+}
+
+.theme-toggle {
+  display: inline-flex;
+  min-height: 2rem;
+  align-items: center;
+  gap: 0.5rem;
+  color: var(--text-secondary);
+  font-size: 0.7rem;
+  transition: color 0.25s ease;
+}
+
+.theme-toggle:hover {
+  color: var(--text-primary);
+}
+
+.theme-toggle__track {
+  position: relative;
+  width: 2.55rem;
+  height: 1.45rem;
+  padding: 0.15rem;
+  border: 1px solid var(--border-strong);
+  border-radius: 999px;
+  background: var(--surface-raised);
+  box-shadow: inset 0 1px 3px rgba(19, 37, 45, 0.08);
+  transition:
+    border-color 0.3s ease,
+    background-color 0.3s ease;
+}
+
+.theme-toggle__thumb {
+  display: grid;
+  width: 1.05rem;
+  height: 1.05rem;
+  place-items: center;
+  border-radius: 50%;
+  background: #ffffff;
+  color: #d85f2f;
+  box-shadow: 0 2px 8px rgba(19, 37, 45, 0.16);
+  transform: translateX(0);
+  transition:
+    color 0.3s ease,
+    background-color 0.3s ease,
+    transform 0.35s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.theme-toggle__thumb svg {
+  width: 0.72rem;
+  height: 0.72rem;
+}
+
+:root[data-theme="dark"] .theme-toggle__thumb {
+  color: #b9d9ef;
+  background: #182534;
+  transform: translateX(1.05rem);
 }
 
 .landing-hero::after {
@@ -594,6 +681,99 @@ body {
   transform: translate(0, 0);
 }
 
+/* Light archive mode ----------------------------------------------------- */
+:root:not([data-theme="dark"]) .landing-hero::before {
+  background:
+    radial-gradient(circle at 72% 36%, rgba(99, 184, 218, 0.2), transparent 32%),
+    radial-gradient(circle at 42% 48%, rgba(232, 112, 58, 0.09), transparent 26%);
+}
+
+:root:not([data-theme="dark"]) .landing-hero::after {
+  opacity: 0.48;
+  background-image: linear-gradient(rgba(30, 67, 82, 0.055) 1px, transparent 1px);
+}
+
+:root:not([data-theme="dark"]) .site-header {
+  box-shadow: 0 1px 0 rgba(19, 37, 45, 0.04);
+}
+
+:root:not([data-theme="dark"]) .site-wordmark__mark {
+  border-color: rgba(48, 126, 163, 0.58);
+  box-shadow: inset -2px -1px 3px rgba(29, 83, 105, 0.12);
+}
+
+:root:not([data-theme="dark"]) .landing-title-line--two {
+  color: #246b86;
+}
+
+:root:not([data-theme="dark"]) .landing-secondary-cta {
+  background: rgba(255, 255, 255, 0.68);
+  box-shadow: 0 8px 24px rgba(32, 74, 91, 0.06);
+}
+
+:root:not([data-theme="dark"]) .landing-secondary-cta:hover {
+  border-color: rgba(36, 107, 134, 0.34);
+  background: #ffffff;
+}
+
+:root:not([data-theme="dark"]) .landing-globe-frame {
+  border-color: rgba(78, 137, 159, 0.26);
+  background: #e9f4f8;
+  box-shadow:
+    0 34px 84px rgba(37, 91, 111, 0.15),
+    0 0 70px rgba(110, 190, 220, 0.12);
+}
+
+:root:not([data-theme="dark"]) .landing-globe-link:hover .landing-globe-frame {
+  border-color: rgba(53, 135, 169, 0.46);
+  box-shadow:
+    0 42px 96px rgba(37, 91, 111, 0.19),
+    0 0 84px rgba(110, 190, 220, 0.18);
+}
+
+:root:not([data-theme="dark"]) .landing-globe-image {
+  filter: saturate(0.94) contrast(1.01);
+}
+
+:root:not([data-theme="dark"]) .landing-globe-link:hover .landing-globe-image {
+  filter: saturate(1.04) contrast(1.02) brightness(1.015);
+}
+
+:root:not([data-theme="dark"]) .landing-globe-vignette {
+  background:
+    linear-gradient(90deg, rgba(246, 249, 248, 0.34), transparent 24%),
+    linear-gradient(0deg, rgba(238, 246, 248, 0.48), transparent 28%),
+    radial-gradient(circle at 66% 43%, transparent 45%, rgba(194, 220, 230, 0.2));
+}
+
+:root:not([data-theme="dark"]) .landing-globe-grid {
+  opacity: 0.38;
+  background-image:
+    linear-gradient(rgba(37, 101, 125, 0.07) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(37, 101, 125, 0.06) 1px, transparent 1px);
+}
+
+:root:not([data-theme="dark"]) .landing-globe-meta {
+  color: rgba(27, 77, 96, 0.62);
+}
+
+:root:not([data-theme="dark"]) .landing-memory-card {
+  border-color: rgba(83, 126, 140, 0.26);
+  background: rgba(255, 255, 255, 0.78);
+  box-shadow: 0 18px 50px rgba(45, 91, 106, 0.13);
+}
+
+:root:not([data-theme="dark"]) .landing-globe-link:hover .landing-memory-card {
+  border-color: var(--accent-border);
+  background: rgba(255, 255, 255, 0.9);
+}
+
+:root:not([data-theme="dark"]) .landing-globe-cta {
+  border-color: rgba(68, 111, 128, 0.24);
+  background: rgba(255, 255, 255, 0.88);
+  box-shadow: 0 12px 34px rgba(37, 82, 98, 0.14);
+}
+
 @keyframes landing-title-in {
   to {
     opacity: 1;
@@ -656,6 +836,10 @@ body {
 }
 
 @media (max-width: 639px) {
+  .theme-toggle__label {
+    display: none;
+  }
+
   .landing-title {
     font-size: clamp(2.8rem, 13vw, 4.2rem);
   }
@@ -739,6 +923,23 @@ body {
   box-shadow:
     0 0 0 0.3rem rgba(232, 112, 58, 0.13),
     0 0 1rem rgba(255, 138, 82, 0.6);
+}
+
+:root:not([data-theme="dark"]) .globe-loading-veil {
+  background:
+    radial-gradient(circle at center, rgba(114, 196, 226, 0.26), transparent 42%),
+    rgba(247, 248, 245, 0.78);
+}
+
+:root:not([data-theme="dark"]) .globe-loader__sphere {
+  border-color: rgba(64, 143, 174, 0.48);
+  background:
+    linear-gradient(90deg, transparent 49%, rgba(56, 134, 164, 0.14) 50%, transparent 51%),
+    linear-gradient(transparent 49%, rgba(56, 134, 164, 0.14) 50%, transparent 51%),
+    radial-gradient(circle at 34% 28%, #dff6ff, #7bc5df 62%, #4a9fc1);
+  box-shadow:
+    inset -0.65rem -0.45rem 1rem rgba(24, 84, 107, 0.14),
+    0 0 2.2rem rgba(80, 165, 199, 0.2);
 }
 
 @keyframes globe-loader-breathe {
@@ -921,6 +1122,19 @@ body {
     transform 0.2s ease,
     border-color 0.2s ease,
     box-shadow 0.2s ease;
+}
+
+:root:not([data-theme="dark"]) .tg-marker__ring {
+  background: rgba(255, 255, 255, 0.86);
+  box-shadow:
+    0 0 0 4px rgba(232, 112, 58, 0.1),
+    0 5px 16px rgba(33, 78, 94, 0.12);
+}
+
+:root:not([data-theme="dark"]) .tg-marker__label {
+  text-shadow:
+    0 1px 4px rgba(255, 255, 255, 0.95),
+    0 0 10px rgba(255, 255, 255, 0.95);
 }
 
 .tg-marker__label {

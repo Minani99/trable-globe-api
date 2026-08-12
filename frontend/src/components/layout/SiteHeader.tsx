@@ -1,5 +1,6 @@
 import Link from "next/link";
 
+import { ThemeToggle } from "@/components/theme/ThemeToggle";
 import { profilePath, siteConfig } from "@/lib/config";
 
 interface SiteHeaderProps {
@@ -24,7 +25,7 @@ export function SiteHeader({ username }: SiteHeaderProps) {
         </Link>
 
         <nav aria-label="주요 메뉴">
-          <ul className="text-content-muted flex items-center gap-6 text-[0.8rem]">
+          <ul className="text-content-muted flex items-center gap-4 text-[0.8rem] sm:gap-6">
             <li>
               <Link
                 href={profilePath(siteConfig.demoUsername)}
@@ -48,6 +49,9 @@ export function SiteHeader({ username }: SiteHeaderProps) {
                 </Link>
               </li>
             ) : null}
+            <li>
+              <ThemeToggle />
+            </li>
           </ul>
         </nav>
       </div>

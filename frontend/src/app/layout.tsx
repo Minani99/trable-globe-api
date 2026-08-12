@@ -5,6 +5,15 @@ import { siteConfig } from "@/lib/config";
 import { getSiteUrl } from "@/lib/site-url";
 import "./globals.css";
 
+const themeInitScript = `(() => {
+  try {
+    const saved = localStorage.getItem("travel-globe-theme");
+    document.documentElement.dataset.theme = saved === "dark" ? "dark" : "light";
+  } catch {
+    document.documentElement.dataset.theme = "light";
+  }
+})();`;
+
 const geistSans = Geist({
   variable: "--font-geist-sans",
   subsets: ["latin"],
@@ -48,9 +57,11 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html
       lang="ko"
+      suppressHydrationWarning
       className={`${geistSans.variable} ${geistMono.variable} ${gowunBatang.variable} h-full antialiased`}
     >
       <body className="bg-background text-content flex min-h-full flex-col">
+        <script dangerouslySetInnerHTML={{ __html: themeInitScript }} />
         <a className="skip-link" href="#main">
           본문으로 건너뛰기
         </a>

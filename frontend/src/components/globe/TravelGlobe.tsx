@@ -6,7 +6,8 @@ import * as THREE from "three";
 import type { GlobeMethods } from "react-globe.gl";
 
 import { GlobeLoadingIndicator } from "@/components/globe/GlobeLoadingIndicator";
-import { globeTheme, visitedColor } from "@/components/globe/globeTheme";
+import { globeThemes, visitedColor } from "@/components/globe/globeTheme";
+import { useColorTheme } from "@/lib/theme";
 import type { VisitedCountry } from "@/types";
 
 /**
@@ -42,6 +43,7 @@ const ALTITUDE_DEFAULT = 2.4;
 const ALTITUDE_FOCUSED = 1.5;
 const ALTITUDE_MIN = 0.6;
 const ALTITUDE_MAX = 4;
+const INITIAL_VIEW = { lat: 24, lng: 127, altitude: ALTITUDE_DEFAULT } as const;
 const LOADING_INDICATOR_MINIMUM_MS = 650;
 
 export function TravelGlobe({ countries, selectedCode, onSelect, onHover }: TravelGlobeProps) {
@@ -57,6 +59,8 @@ export function TravelGlobe({ countries, selectedCode, onSelect, onHover }: Trav
   const [ready, setReady] = useState(false);
   const [hoveredCode, setHoveredCode] = useState<string | null>(null);
   const reduceMotion = usePrefersReducedMotion();
+  const colorTheme = useColorTheme();
+  const globeTheme = globeThemes[colorTheme];
 
   // globe.gl callbacks (marker click handlers, control listeners) are registered once
   // against imperative DOM, so they read the latest values through refs rather than
@@ -166,6 +170,10 @@ export function TravelGlobe({ countries, selectedCode, onSelect, onHover }: Trav
     const remaining = Math.max(0, LOADING_INDICATOR_MINIMUM_MS - elapsed);
     readyTimer.current = setTimeout(() => setReady(true), remaining);
 
+    // A Korean archive should introduce the world from East Asia, not the library's
+    // default Greenwich-facing camera.
+    globeRef.current?.pointOfView(INITIAL_VIEW, 0);
+
     const controls = globeRef.current?.controls();
     if (!controls) {
       return;
@@ -213,7 +221,7 @@ export function TravelGlobe({ countries, selectedCode, onSelect, onHover }: Trav
     const transition = reduceMotion ? 0 : 900;
 
     if (selectedCode === null) {
-      globe.pointOfView({ altitude: ALTITUDE_DEFAULT }, transition);
+      globe.pointOfView(INITIAL_VIEW, transition);
       return;
     }
     const country = visitedByCode.get(selectedCode);
@@ -311,9 +319,9 @@ export function TravelGlobe({ countries, selectedCode, onSelect, onHover }: Trav
       if (code === hoveredCode) {
         return globeTheme.hovered;
       }
-      return visitedColor(visited.travelCount, maxTravelCount);
+      return visitedColor(visited.travelCount, maxTravelCount, globeTheme);
     },
-    [visitedByCode, selectedCode, hoveredCode, maxTravelCount],
+    [visitedByCode, selectedCode, hoveredCode, maxTravelCount, globeTheme],
   );
 
   const altitude = useCallback(
@@ -376,12 +384,14 @@ export function TravelGlobe({ countries, selectedCode, onSelect, onHover }: Trav
     () =>
       new THREE.MeshPhongMaterial({
         color: new THREE.Color(globeTheme.ocean),
-        emissive: new THREE.Color("#040a12"),
-        specular: new THREE.Color("#16283c"),
-        shininess: 8,
+        emissive: new THREE.Color(globeTheme.emissive),
+        specular: new THREE.Color(globeTheme.specular),
+        shininess: globeTheme.shininess,
       }),
-    [],
+    [globeTheme],
   );
+
+  useEffect(() => () => globeMaterial.dispose(), [globeMaterial]);
 
   // --- keyboard -----------------------------------------------------------
 
@@ -411,7 +421,7 @@ export function TravelGlobe({ countries, selectedCode, onSelect, onHover }: Trav
   }, []);
 
   const resetView = useCallback(() => {
-    globeRef.current?.pointOfView({ lat: 20, lng: 130, altitude: ALTITUDE_DEFAULT }, 600);
+    globeRef.current?.pointOfView(INITIAL_VIEW, 600);
   }, []);
 
   const handleKeyDown = useCallback(
@@ -462,7 +472,7 @@ export function TravelGlobe({ countries, selectedCode, onSelect, onHover }: Trav
             onGlobeReady={handleReady}
             polygonsData={features}
             polygonCapColor={capColor}
-            polygonSideColor={() => "rgba(10, 21, 34, 0.55)"}
+            polygonSideColor={() => globeTheme.side}
             polygonStrokeColor={() => globeTheme.landStroke}
             polygonAltitude={altitude}
             polygonLabel={polygonTooltip}

@@ -1,26 +1,27 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 900" width="1600" height="900" role="img" aria-label="여행 사진 자리표시자">
   <defs>
     <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0%" stop-color="#140f22"/>
-      <stop offset="100%" stop-color="#3a2145"/>
+      <stop offset="0%" stop-color="#e8dff3"/>
+      <stop offset="100%" stop-color="#f8e0df"/>
     </linearGradient>
-    <radialGradient id="glow" cx="50%" cy="50%" r="50%">
-      <stop offset="0%" stop-color="#e0567f" stop-opacity="0.85"/>
-      <stop offset="60%" stop-color="#e0567f" stop-opacity="0.18"/>
-      <stop offset="100%" stop-color="#e0567f" stop-opacity="0"/>
+    <radialGradient id="glow" cx="35%" cy="32%" r="68%">
+      <stop offset="0%" stop-color="#fff0d7" stop-opacity="0.82"/>
+      <stop offset="55%" stop-color="#fff0d7" stop-opacity="0.16"/>
+      <stop offset="100%" stop-color="#fff0d7" stop-opacity="0"/>
     </radialGradient>
     <linearGradient id="haze" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0%" stop-color="#e0567f" stop-opacity="0.14"/>
-      <stop offset="100%" stop-color="#e0567f" stop-opacity="0"/>
+      <stop offset="0%" stop-color="#ffffff" stop-opacity="0.3"/>
+      <stop offset="100%" stop-color="#ffffff" stop-opacity="0"/>
     </linearGradient>
   </defs>
 
   <rect width="1600" height="900" fill="url(#sky)"/>
-  <circle cx="560.0" cy="387.0" r="306.0" fill="url(#glow)"/>
-  <circle cx="560.0" cy="387.0" r="76.5" fill="#e0567f" opacity="0.92"/>
+  <rect width="1600" height="900" fill="url(#glow)"/>
   <rect y="396.0" width="1600" height="162.0" fill="url(#haze)"/>
 
-  <polygon points="0.0,584.1 133.3,595.7 266.7,598.2 400.0,590.7 533.3,575.3 666.7,555.6 800.0,536.5 933.3,522.7 1066.7,517.5 1200.0,522.2 1333.3,535.7 1466.7,554.6 1600.0,574.4 1600,900 0,900" fill="#241732" opacity="0.95"/>
-  <polygon points="0.0,652.0 133.3,637.7 266.7,628.1 400.0,625.6 533.3,630.8 666.7,642.4 800.0,657.5 933.3,672.6 1066.7,683.8 1200.0,688.5 1333.3,685.4 1466.7,675.4 1600.0,660.9 1600,900 0,900" fill="#180e22"/>
-  <polygon points="0.0,774.3 133.3,778.1 266.7,785.3 400.0,794.1 533.3,802.4 666.7,808.2 800.0,810.0 933.3,807.4 1066.7,801.0 1200.0,792.4 1333.3,783.8 1466.7,777.1 1600.0,774.1 1600,900 0,900" fill="#0d0714"/>
+  <path d="M0 486.0 C 352.0 441.0, 1024.0 567.0, 1600 450.0" fill="none" stroke="#ffffff" stroke-opacity="0.48" stroke-width="7.2"/>
+  <polygon points="0.0,584.1 133.3,595.7 266.7,598.2 400.0,590.7 533.3,575.3 666.7,555.6 800.0,536.5 933.3,522.7 1066.7,517.5 1200.0,522.2 1333.3,535.7 1466.7,554.6 1600.0,574.4 1600,900 0,900" fill="#9b8fa9" opacity="0.82"/>
+  <polygon points="0.0,652.0 133.3,637.7 266.7,628.1 400.0,625.6 533.3,630.8 666.7,642.4 800.0,657.5 933.3,672.6 1066.7,683.8 1200.0,688.5 1333.3,685.4 1466.7,675.4 1600.0,660.9 1600,900 0,900" fill="#6b637d"/>
+  <polygon points="0.0,774.3 133.3,778.1 266.7,785.3 400.0,794.1 533.3,802.4 666.7,808.2 800.0,810.0 933.3,807.4 1066.7,801.0 1200.0,792.4 1333.3,783.8 1466.7,777.1 1600.0,774.1 1600,900 0,900" fill="#37364f"/>
+  <path d="M0 774.0 Q 608.0 684.0 1600 810.0" fill="none" stroke="#ffffff" stroke-opacity="0.16" stroke-width="5.4"/>
 </svg>

@@ -4,11 +4,16 @@ import Image from "next/image";
 import Link from "next/link";
 import type { PointerEvent } from "react";
 
+import { useColorTheme } from "@/lib/theme";
+
 interface LandingGlobePreviewProps {
   href: string;
 }
 
 export function LandingGlobePreview({ href }: LandingGlobePreviewProps) {
+  const theme = useColorTheme();
+  const isLight = theme === "light";
+
   const handlePointerMove = (event: PointerEvent<HTMLElement>) => {
     const bounds = event.currentTarget.getBoundingClientRect();
     const x = (event.clientX - bounds.left) / bounds.width - 0.5;
@@ -36,8 +41,12 @@ export function LandingGlobePreview({ href }: LandingGlobePreviewProps) {
       >
         <div className="landing-globe-frame">
           <Image
-            src="/images/hero-globe-korea-v2.png"
-            alt="대한민국을 중심으로 일본과 대만 여행 경로가 빛나는 검푸른 지구본"
+            src={isLight ? "/images/hero-globe-korea-light-v1.png" : "/images/hero-globe-korea-v2.png"}
+            alt={
+              isLight
+                ? "대한민국을 중심으로 일본과 대만 여행 경로가 이어지는 밝은 지구본"
+                : "대한민국을 중심으로 일본과 대만 여행 경로가 빛나는 검푸른 지구본"
+            }
             fill
             priority
             sizes="(max-width: 1023px) 92vw, 52vw"
