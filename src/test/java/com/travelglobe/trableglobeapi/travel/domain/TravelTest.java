@@ -3,7 +3,10 @@ package com.travelglobe.trableglobeapi.travel.domain;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+import com.travelglobe.trableglobeapi.location.domain.City;
+import com.travelglobe.trableglobeapi.location.domain.Country;
 import com.travelglobe.trableglobeapi.member.domain.Member;
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -65,5 +68,45 @@ class TravelTest {
 
         assertThat(place.resolveLatitude()).isEqualByComparingTo("23.697810");
         assertThat(place.resolveLongitude()).isEqualByComparingTo("120.960515");
+    }
+
+    @Test
+    @DisplayName("방문 도시와 국가가 다르면 장소를 생성할 수 없다")
+    void rejectsCityFromAnotherCountry() {
+        Country korea = country("KR", "KOR", "South Korea", "대한민국", "35.907757", "127.766922");
+        Country japan = country("JP", "JPN", "Japan", "일본", "36.204824", "138.252924");
+        City seoul = City.create(korea, "Seoul", "서울", bd("37.566535"), bd("126.977969"));
+
+        assertThatThrownBy(() -> TravelPlace.create(
+                japan, seoul, "잘못된 장소", null, null, null, null, 0))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("도시와 국가");
+    }
+
+    @Test
+    @DisplayName("사진은 같은 여행의 방문 장소에만 연결할 수 있다")
+    void rejectsPhotoLinkedToAnotherTravel() {
+        Travel first = Travel.create(OWNER, "First", null,
+                LocalDate.of(2026, 1, 1), LocalDate.of(2026, 1, 2), null, Visibility.PUBLIC);
+        Travel second = Travel.create(OWNER, "Second", null,
+                LocalDate.of(2026, 2, 1), LocalDate.of(2026, 2, 2), null, Visibility.PUBLIC);
+        TravelPlace firstPlace = TravelPlace.create(
+                country("TW", "TWN", "Taiwan", "대만", "23.697810", "120.960515"),
+                null, "Taipei", null, null, null, null, 0);
+        first.addPlace(firstPlace);
+
+        assertThatThrownBy(() -> TravelPhoto.create(
+                second, firstPlace, "/photo.jpg", null, null, 0))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("같은 여행");
+    }
+
+    private static Country country(String iso2, String iso3, String nameEn, String nameKo,
+                                   String latitude, String longitude) {
+        return Country.create(iso2, iso3, nameEn, nameKo, bd(latitude), bd(longitude));
+    }
+
+    private static BigDecimal bd(String value) {
+        return new BigDecimal(value);
     }
 }

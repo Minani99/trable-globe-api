@@ -9,14 +9,14 @@
 │                         │                            │                          │
 │  Server Components      │  1) SSR 시 서버→서버 호출  │  Controller              │
 │    프로필/여행 최초 조회 │  2) 국가 필터는 브라우저   │  Service                 │
-│  Client Components      │     →서버 호출 (CORS)      │  Repository (JPA)        │
+│  Client Components      │     →동일 출처 /api 프록시 │  Repository (JPA)        │
 │    지구본, 국가 선택     │                            └────────────┬─────────────┘
 └─────────────────────────┘                                         │
          │                                                          │
          │ /geo/countries.geo.json                                  ▼
          │ /placeholders/*.svg           ┌────────────────────────────────────┐
          └── (자체 public 정적 자산)      │ H2 (local) / PostgreSQL (배포)     │
-                                         │ 스키마 정답 = Flyway V1            │
+                                         │ 스키마 정답 = Flyway migrations    │
                                          └────────────────────────────────────┘
 ```
 
@@ -50,12 +50,13 @@ base package는 `com.travelglobe.trableglobeapi`입니다
 | `local` (기본) | H2 in-memory | Hibernate `create-drop` | O |
 | `postgres` | 로컬 PostgreSQL | **Flyway** + `validate` | O |
 | `prod` | 환경변수 PostgreSQL | **Flyway** + `validate` | X |
+| `demo` | 환경변수 PostgreSQL | **Flyway** + `validate` | O |
 
 PostgreSQL이 배포 대상이라는 점은 바뀌지 않습니다. 다만 이 프로젝트의 1차 목표가
 "clone 후 바로 지구본이 보이는 것"이라, 새 개발자가 DB 설치부터 해야 하는 상태로
 두지 않았습니다.
 
-스키마의 **정답은 항상 `db/migration/V1__init_travel_globe_schema.sql`** 입니다.
+스키마의 **정답은 항상 `db/migration/` 아래 Flyway 마이그레이션**입니다.
 `local`에서만 엔티티로부터 스키마를 생성하고, 실제 PostgreSQL을 쓰는 두 프로필에서는
 `ddl-auto=validate`가 엔티티와 마이그레이션의 어긋남을 기동 시점에 잡아냅니다.
 따라서 엔티티를 고치면 마이그레이션도 함께 고쳐야 하며, 잊으면 `postgres` 프로필이
@@ -123,13 +124,15 @@ ProfileController ─► ProfileService ─┬─► MemberService            (m
    → selectedCode 상태 변경 (ProfileExperience)
    → 지구본: 폴리곤 색·고도 변경 + pointOfView() 카메라 이동
    → 카드 목록: 이미 받아둔 목록에서 즉시 필터 (지연 0)
-   → 동시에 GET /api/profiles/{u}/countries/{code}/travels 로 확인 (CORS)
+   → 동시에 동일 출처 /api 프록시로 국가별 여행 API 확인
         성공 → 서버 결과로 교체
         실패 → 즉시 필터 결과 유지
 ```
 
 즉시 필터와 서버 확인을 함께 쓰는 이유는, 클릭 반응은 즉각적이어야 하고
 목록이 페이지네이션되는 시점부터는 서버가 정답이어야 하기 때문입니다.
+브라우저 요청은 Next.js의 동일 출처 `/api` 프록시를 사용하므로, 일반 배포에서는 별도
+CORS 왕복 없이 프리뷰 URL과 커스텀 도메인에서도 같은 방식으로 동작합니다.
 
 ## 4. 프론트엔드 구성 원칙
 

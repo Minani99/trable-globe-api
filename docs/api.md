@@ -1,6 +1,8 @@
 # API Reference
 
-Base URL: `http://localhost:8080` (개발) — 프론트엔드는 `NEXT_PUBLIC_API_BASE_URL`로 지정합니다.
+Base URL: `http://localhost:8080` (개발). Next.js 서버와 동일 출처 `/api` 프록시는
+`API_BASE_URL`로 대상을 지정합니다. 브라우저 직접 호출이 꼭 필요한 경우에만
+`NEXT_PUBLIC_API_BASE_URL`을 사용합니다.
 
 아래 예시는 모두 시드 데이터가 들어간 실행 중인 서버에서 실제로 받은 응답입니다.
 

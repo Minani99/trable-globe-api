@@ -85,12 +85,24 @@ public class TravelPlace {
 
     public static TravelPlace create(Country country, City city, String placeName, BigDecimal latitude,
                                      BigDecimal longitude, LocalDate visitedAt, String memo, int sortOrder) {
+        if (city != null && !city.belongsTo(country)) {
+            throw new IllegalArgumentException("방문 도시와 국가는 서로 일치해야 합니다.");
+        }
         return new TravelPlace(country, city, placeName, latitude, longitude, visitedAt, memo, sortOrder);
     }
 
     /** Called by {@link Travel#addPlace} - the owning side stays package internal. */
     void assignTo(Travel travel) {
         this.travel = travel;
+    }
+
+    /** True when this stop is owned by the supplied trip. */
+    public boolean belongsTo(Travel candidate) {
+        if (travel == candidate) {
+            return true;
+        }
+        return travel != null && candidate != null
+                && travel.getId() != null && travel.getId().equals(candidate.getId());
     }
 
     /**

@@ -66,6 +66,9 @@ public class TravelPhoto {
 
     public static TravelPhoto create(Travel travel, TravelPlace travelPlace, String imageUrl,
                                      String caption, LocalDate takenAt, int sortOrder) {
+        if (travelPlace != null && !travelPlace.belongsTo(travel)) {
+            throw new IllegalArgumentException("사진의 방문 장소는 같은 여행에 속해야 합니다.");
+        }
         return new TravelPhoto(travel, travelPlace, imageUrl, caption, takenAt, sortOrder);
     }
 }

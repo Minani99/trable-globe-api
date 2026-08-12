@@ -22,7 +22,7 @@ const loadTravel = cache((travelId: number) => fetchTravelDetail(travelId));
 export async function generateMetadata(
   props: PageProps<"/[username]/travel/[travelId]">,
 ): Promise<Metadata> {
-  const { travelId } = await props.params;
+  const { username, travelId } = await props.params;
   const id = Number(travelId);
 
   if (!Number.isInteger(id)) {
@@ -31,6 +31,9 @@ export async function generateMetadata(
 
   try {
     const travel = await loadTravel(id);
+    if (travel.owner.username !== username.toLowerCase()) {
+      return { title: "여행" };
+    }
     return {
       title: travel.title,
       description: travel.description ?? `${travel.title} 여행 기록`,

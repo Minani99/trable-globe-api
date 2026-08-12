@@ -5,6 +5,10 @@ spring:
     # "local" boots on an in-memory H2 database so the API runs with zero setup.
     # Use "postgres" against a real PostgreSQL instance, "prod" for deployment.
     default: local
+    # The hosted showcase uses production infrastructure plus explicit demo data.
+    # A real user-facing deployment activates only "prod" and never seeds records.
+    group:
+      demo: prod
   jpa:
     # DTOs are assembled inside transactional services, so the view layer never
     # triggers lazy loading. Keeping this off makes N+1 problems fail loudly.

@@ -64,4 +64,13 @@ public class City {
                               BigDecimal latitude, BigDecimal longitude) {
         return new City(country, nameEn, nameKo, latitude, longitude);
     }
+
+    /** True when the city belongs to the supplied country, for aggregate validation. */
+    public boolean belongsTo(Country candidate) {
+        if (country == candidate) {
+            return true;
+        }
+        return country != null && candidate != null
+                && country.getId() != null && country.getId().equals(candidate.getId());
+    }
 }

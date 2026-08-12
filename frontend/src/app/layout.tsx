@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 
 import { siteConfig } from "@/lib/config";
+import { getSiteUrl } from "@/lib/site-url";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -15,11 +16,26 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
+  metadataBase: getSiteUrl(),
+  applicationName: siteConfig.name,
   title: {
     default: `${siteConfig.name} — ${siteConfig.tagline}`,
     template: `%s · ${siteConfig.name}`,
   },
   description: siteConfig.description,
+  keywords: ["여행 기록", "여행 지도", "여행 지구본", "개인 여행 아카이브"],
+  openGraph: {
+    type: "website",
+    locale: "ko_KR",
+    siteName: siteConfig.name,
+    title: `${siteConfig.name} — ${siteConfig.tagline}`,
+    description: siteConfig.description,
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: `${siteConfig.name} — ${siteConfig.tagline}`,
+    description: siteConfig.description,
+  },
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {

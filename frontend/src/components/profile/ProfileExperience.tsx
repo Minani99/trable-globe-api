@@ -158,7 +158,7 @@ export function ProfileExperience({ profile, countries, travels }: ProfileExperi
           <SectionHeading
             id="travels-heading"
             eyebrow="Archive"
-            title={selectedCountry ? `${selectedCountry.nameKo}의 여행` : "My Travels"}
+            title={selectedCountry ? `${selectedCountry.nameKo}에서의 여행` : "여행 기록"}
             aside={
               selectedCountry ? (
                 <button
@@ -203,7 +203,7 @@ export function ProfileExperience({ profile, countries, travels }: ProfileExperi
 
         {travels.length > 0 ? (
           <section aria-labelledby="timeline-heading" className="pt-20">
-            <SectionHeading id="timeline-heading" eyebrow="Chronology" title="Travel Timeline" />
+            <SectionHeading id="timeline-heading" eyebrow="Chronology" title="여행 연대기" />
             <TravelTimeline travels={travels} username={profile.username} />
           </section>
         ) : null}

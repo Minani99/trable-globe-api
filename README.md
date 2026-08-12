@@ -124,13 +124,14 @@ del "%USERPROFILE%\.m2\settings.xml"
 cd frontend && npm install && npm run dev
 ```
 
-<http://localhost:3000> 접속 후 `/traveler`로 이동하거나 랜딩에서 "지구본 살펴보기"를 누르세요.
+<http://localhost:3000> 접속 후 `/traveler`로 이동하거나 랜딩에서 "샘플 지구본 둘러보기"를 누르세요.
 
 ## Environment Variables
 
 | 변수 | 사용처 | 기본값 | 필수 |
 | --- | --- | --- | --- |
 | `API_BASE_URL` | Frontend 서버·`/api` 프록시 | `http://localhost:8080` | 백엔드가 다른 호스트일 때 필수 |
+| `SITE_URL` | Frontend 메타데이터·사이트맵 | Vercel URL 또는 `http://localhost:3000` | 커스텀 도메인 사용 시 권장 |
 | `NEXT_PUBLIC_API_BASE_URL` | Frontend 브라우저 직접 호출(선택) | 동일 출처 `/api` 프록시 | 선택 |
 | `NEXT_ALLOWED_DEV_ORIGINS` | Next.js 개발 서버 추가 Origin | 로컬 LAN IPv4 자동 감지 | 선택 |
 | `DB_URL` | Backend (`postgres`, `prod`) | postgres 프로필은 localhost 기본값 | `prod` 필수 |
@@ -144,6 +145,8 @@ cd frontend && npm install && npm run dev
   그 기기의 `localhost`를 잘못 호출하지 않습니다. 백엔드 주소가 다를 때만 `API_BASE_URL`을 설정하세요.
 - `frontend/.env.example`을 `frontend/.env.local`로 복사해서 쓰세요. `.env.local`은 git 제외 대상입니다.
 - `prod` 프로필은 위 변수가 없으면 기동 단계에서 실패합니다(의도된 fail-fast).
+- 공개 쇼케이스는 `demo` 프로필을 사용합니다. `prod` 설정을 모두 상속하면서 `traveler` 샘플만
+  추가합니다. 실제 사용자 데이터 환경에서는 반드시 `prod`만 활성화하세요.
 
 ## PostgreSQL Setup
 
@@ -186,6 +189,9 @@ curl http://localhost:8080/api/health
 백엔드 컨테이너와 Render Blueprint는 저장소 루트의 `Dockerfile`, `render.yaml`에 있으며,
 환경변수와 배포 순서는 [docs/deployment.md](docs/deployment.md)를 참고하세요.
 
+Pull Request와 `master` push에는 GitHub Actions가 자동으로 백엔드 테스트와 프런트엔드
+린트·타입 검사·프로덕션 빌드를 실행합니다.
+
 ## API
 
 전체 명세는 [docs/api.md](docs/api.md)에 있습니다. 요약:
@@ -207,12 +213,13 @@ curl http://localhost:8080/api/health
 **구현됨**
 
 - 공개 프로필 조회 API 7종 + 시드 데이터
-- Flyway 초기 스키마, 3개 실행 프로필
+- Flyway 초기 스키마, 4개 실행 프로필 (`local`, `postgres`, `prod`, `demo`)
 - 3D 지구본: 회전 / 확대·축소 / 방문 국가 강조 / 마커 / hover / click / 카메라 이동 / 국가 패널
 - 국가 선택에 따른 여행 카드 필터, 여행 타임라인, 여행 상세(경로 지도·장소·사진·이전/다음)
 - Loading / Error / Not Found / Empty 상태
 - 키보드 조작과 국가 목록 대체 UI, `prefers-reduced-motion` 대응
 - 반응형 (모바일 / 태블릿 / 데스크톱)
+- Open Graph 공유 이미지, robots, sitemap, GitHub Actions CI
 
 **의도적으로 만들지 않음**
 

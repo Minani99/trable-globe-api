@@ -49,11 +49,11 @@ export function CountryDetailPanel({
 
       <dl className="border-border-subtle mb-4 flex gap-6 border-y py-3">
         <div>
-          <dt className="eyebrow">Trips</dt>
+          <dt className="eyebrow">여행</dt>
           <dd className="text-content mt-1 font-mono text-[1.05rem]">{country.travelCount}</dd>
         </div>
         <div>
-          <dt className="eyebrow">Cities</dt>
+          <dt className="eyebrow">도시</dt>
           <dd className="text-content mt-1 font-mono text-[1.05rem]">{country.cityCount}</dd>
         </div>
       </dl>

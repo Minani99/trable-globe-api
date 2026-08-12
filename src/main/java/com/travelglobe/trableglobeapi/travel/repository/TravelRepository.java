@@ -87,7 +87,7 @@ public interface TravelRepository extends JpaRepository<Travel, Long> {
     @Query("""
             select new com.travelglobe.trableglobeapi.travel.repository.projection.CountryVisitProjection(
                 c.iso2Code, c.iso3Code, c.nameEn, c.nameKo, c.latitude, c.longitude,
-                count(distinct t.id), count(distinct ci.id), max(t.endDate))
+                count(distinct t.id), count(distinct ci.id), max(coalesce(p.visitedAt, t.endDate)))
             from TravelPlace p
               join p.travel t
               join p.country c

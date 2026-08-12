@@ -1,0 +1,7 @@
+# Public showcase profile.
+#
+# Inherits every production safety setting through the "demo -> prod" profile group,
+# then enables only the idempotent traveler sample data. Use plain "prod" for real data.
+travel-globe:
+  seed:
+    enabled: true

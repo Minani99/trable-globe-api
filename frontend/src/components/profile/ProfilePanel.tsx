@@ -39,9 +39,9 @@ export function ProfilePanel({ profile }: ProfilePanelProps) {
       ) : null}
 
       <dl className="border-border-subtle mt-5 grid grid-cols-3 gap-2 border-t pt-4">
-        <Stat label="Countries" value={statistics.countryCount} />
-        <Stat label="Cities" value={statistics.cityCount} />
-        <Stat label="Trips" value={statistics.travelCount} />
+        <Stat label="국가" value={statistics.countryCount} />
+        <Stat label="도시" value={statistics.cityCount} />
+        <Stat label="여행" value={statistics.travelCount} />
       </dl>
     </section>
   );

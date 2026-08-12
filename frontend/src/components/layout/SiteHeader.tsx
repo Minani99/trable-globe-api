@@ -29,12 +29,12 @@ export function SiteHeader({ username }: SiteHeaderProps) {
                 href={profilePath(siteConfig.demoUsername)}
                 className="transition-colors hover:text-[var(--text-primary)]"
               >
-                Explore
+                둘러보기
               </Link>
             </li>
             <li>
               <Link href="/about" className="transition-colors hover:text-[var(--text-primary)]">
-                About
+                소개
               </Link>
             </li>
             {username ? (

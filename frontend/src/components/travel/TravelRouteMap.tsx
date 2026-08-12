@@ -160,7 +160,9 @@ function createProjection(places: TravelPlace[]): Projection | null {
     return null;
   }
 
-  const lngs = places.map((place) => place.longitude);
+  // Longitudes live on a circle. Choosing the smallest arc prevents a Tokyo → San
+  // Francisco trip from looking 340° wide just because it crosses the date line.
+  const lngs = unwrapToSmallestArc(places.map((place) => place.longitude));
   const lats = places.map((place) => place.latitude);
 
   const centerLng = (Math.min(...lngs) + Math.max(...lngs)) / 2;
@@ -178,9 +180,45 @@ function createProjection(places: TravelPlace[]): Projection | null {
   const scale = Math.min(VIEW_WIDTH / spanLng, VIEW_HEIGHT / spanLat);
 
   return (lng, lat) => ({
-    x: VIEW_WIDTH / 2 + (lng - centerLng) * scale,
+    x: VIEW_WIDTH / 2 + (nearestEquivalentLongitude(lng, centerLng) - centerLng) * scale,
     y: VIEW_HEIGHT / 2 - (lat - centerLat) * scale,
   });
+}
+
+/** Places every longitude on the shortest continuous arc that contains them all. */
+function unwrapToSmallestArc(longitudes: number[]): number[] {
+  if (longitudes.length <= 1) {
+    return longitudes.map(normalizeLongitude);
+  }
+
+  const sorted = longitudes.map(normalizeLongitude).sort((a, b) => a - b);
+  let largestGap = -1;
+  let arcStart = sorted[0];
+
+  for (let index = 0; index < sorted.length; index += 1) {
+    const current = sorted[index];
+    const next = index === sorted.length - 1 ? sorted[0] + 360 : sorted[index + 1];
+    const gap = next - current;
+    if (gap > largestGap) {
+      largestGap = gap;
+      arcStart = normalizeLongitude(next);
+    }
+  }
+
+  return longitudes.map((longitude) => {
+    const normalized = normalizeLongitude(longitude);
+    return normalized < arcStart ? normalized + 360 : normalized;
+  });
+}
+
+function normalizeLongitude(longitude: number): number {
+  return ((longitude % 360) + 360) % 360;
+}
+
+/** Selects the ±360° representation nearest the projection centre. */
+function nearestEquivalentLongitude(longitude: number, center: number): number {
+  const normalized = normalizeLongitude(longitude);
+  return normalized + 360 * Math.round((center - normalized) / 360);
 }
 
 function toPathStrings(geometry: CountryFeature["geometry"], project: Projection): string[] {
