@@ -177,7 +177,7 @@ export default async function TravelDetailPage(
             </div>
 
             {travel.places.length > 0 ? (
-              <TravelRouteMap places={travel.places} countryCodes={countryCodes} />
+              <TravelRouteMap key={travel.id} places={travel.places} />
             ) : (
               <div className="travel-detail-empty">아직 기록된 방문 장소가 없습니다.</div>
             )}

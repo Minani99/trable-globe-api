@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Suspense } from "react";
 
+import { BrandMark } from "@/components/brand/BrandMark";
 import {
   HeaderNavigation,
   HeaderNavigationFallback,
@@ -24,7 +25,9 @@ export function SiteHeader({ username }: SiteHeaderProps) {
           href="/"
           className="site-wordmark text-content flex items-center gap-3 text-[0.76rem] font-medium tracking-[0.24em]"
         >
-          <span className="site-wordmark__mark" aria-hidden="true" />
+          <span className="site-wordmark__mark">
+            <BrandMark />
+          </span>
           {siteConfig.wordmark}
         </Link>
         <Suspense fallback={<HeaderNavigationFallback />}>

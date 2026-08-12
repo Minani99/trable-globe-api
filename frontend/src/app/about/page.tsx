@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 
+import { BrandMark } from "@/components/brand/BrandMark";
 import { SiteFooter } from "@/components/layout/SiteFooter";
 import { SiteHeader } from "@/components/layout/SiteHeader";
 import { profilePath, siteConfig } from "@/lib/config";
@@ -58,14 +59,12 @@ export default function AboutPage() {
               </div>
             </div>
 
-            <figure className="about-world" aria-label="여행 기록이 연결되는 지구본 개념도">
-              <div className="about-world__sphere" aria-hidden="true">
-                <span className="about-world__longitude" />
-                <span className="about-world__latitude" />
-                <span className="about-world__route" />
-                <i className="about-world__marker about-world__marker--one" />
-                <i className="about-world__marker about-world__marker--two" />
-                <i className="about-world__marker about-world__marker--three" />
+            <figure className="about-world" aria-label="Travel Globe 시그니처 심벌">
+              <div className="about-world__signature" aria-hidden="true">
+                <span className="about-world__orbit about-world__orbit--one" />
+                <span className="about-world__orbit about-world__orbit--two" />
+                <BrandMark className="about-world__mark" />
+                <span className="about-world__monogram">TG</span>
               </div>
               <figcaption>
                 <span>PERSONAL WORLD · 01</span>

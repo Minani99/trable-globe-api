@@ -1,146 +1,117 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
 import type { PointerEvent, WheelEvent } from "react";
+import { useMemo, useRef, useState } from "react";
 
 import { formatDate } from "@/lib/utils/format";
 import type { TravelPlace } from "@/types";
 
 interface TravelRouteMapProps {
   places: TravelPlace[];
-  countryCodes: string[];
-}
-
-interface CountryFeature {
-  properties: { iso2: string | null };
-  geometry:
-    | { type: "Polygon"; coordinates: number[][][] }
-    | { type: "MultiPolygon"; coordinates: number[][][][] };
 }
 
 interface PanState {
   pointerId: number;
   x: number;
   y: number;
+  centerX: number;
+  centerY: number;
+}
+
+interface MapTile {
+  key: string;
+  url: string;
+  left: number;
+  top: number;
+  size: number;
 }
 
 const VIEW_WIDTH = 960;
 const VIEW_HEIGHT = 620;
-const MAP_PADDING = 94;
-const MIN_LONGITUDE_SPAN = 0.12;
-const MIN_LATITUDE_SPAN = 0.08;
-const MAX_ZOOM = 5;
+const TILE_SIZE = 256;
+const MIN_ZOOM = 3;
+const MAX_ZOOM = 18;
 
-/**
- * A route explorer rather than a static diagram.
- *
- * The map owns the selected stop and viewport so the numbered route and itinerary stay
- * in sync. Names live in the itinerary instead of being drawn over each other on the map.
- */
-export function TravelRouteMap({ places, countryCodes }: TravelRouteMapProps) {
-  const [features, setFeatures] = useState<CountryFeature[]>([]);
+/** A raster city map whose route, selected stop and itinerary stay synchronized. */
+export function TravelRouteMap({ places }: TravelRouteMapProps) {
+  const initialView = useMemo(() => createInitialView(places), [places]);
   const [selectedId, setSelectedId] = useState(places[0]?.id ?? null);
-  const [zoom, setZoom] = useState(1);
-  const [offset, setOffset] = useState({ x: 0, y: 0 });
+  const [zoom, setZoom] = useState(initialView.zoom);
+  const [center, setCenter] = useState({ x: initialView.centerX, y: initialView.centerY });
   const [isDragging, setIsDragging] = useState(false);
+  const [loadedTileCount, setLoadedTileCount] = useState(0);
   const panState = useRef<PanState | null>(null);
-  const countryKey = countryCodes.join(",");
 
-  useEffect(() => {
-    if (places.length === 0) {
-      return;
-    }
-    const wanted = new Set(countryKey.split(",").filter(Boolean));
-    let cancelled = false;
+  const viewport = useMemo(
+    () => buildViewport(places, center.x, center.y, zoom),
+    [places, center.x, center.y, zoom],
+  );
+  const selectedIndex = Math.max(0, places.findIndex((place) => place.id === selectedId));
+  const selectedPlace = places[selectedIndex] ?? places[0];
 
-    fetch("/geo/countries.geo.json")
-      .then((response) => (response.ok ? response.json() : Promise.reject(response.status)))
-      .then((collection: { features: CountryFeature[] }) => {
-        if (!cancelled) {
-          setFeatures(
-            collection.features.filter(
-              (entry) => entry.properties.iso2 !== null && wanted.has(entry.properties.iso2),
-            ),
-          );
-        }
-      })
-      .catch(() => undefined);
-
-    return () => {
-      cancelled = true;
-    };
-  }, [places.length, countryKey]);
-
-  const projection = useMemo(() => createProjection(places), [places]);
-  const countryPaths = useMemo(() => {
-    if (!projection) {
-      return [];
-    }
-    return features.flatMap((entry) => toPathStrings(entry.geometry, projection));
-  }, [features, projection]);
-
-  if (!projection || places.length === 0) {
+  if (!selectedPlace || places.length === 0) {
     return <p className="text-body">지도에 표시할 방문 장소가 없습니다.</p>;
   }
 
-  const points = spreadClosePoints(
-    places.map((place) => ({
-      place,
-      ...projection(place.longitude, place.latitude),
-    })),
-  );
-  const routeLine = points.map((point) => `${point.x.toFixed(1)},${point.y.toFixed(1)}`).join(" ");
-  const selectedIndex = Math.max(0, places.findIndex((place) => place.id === selectedId));
-  const selectedPlace = places[selectedIndex] ?? places[0];
-  const mapTransform = `translate(${offset.x} ${offset.y}) translate(${VIEW_WIDTH / 2} ${VIEW_HEIGHT / 2}) scale(${zoom}) translate(${-VIEW_WIDTH / 2} ${-VIEW_HEIGHT / 2})`;
-
   const updateZoom = (nextZoom: number) => {
-    const clamped = clamp(nextZoom, 1, MAX_ZOOM);
-    setZoom(clamped);
-    if (clamped === 1) {
-      setOffset({ x: 0, y: 0 });
+    const clamped = clamp(Math.round(nextZoom), MIN_ZOOM, MAX_ZOOM);
+    if (clamped === zoom) {
+      return;
     }
+    const lngLat = worldToLngLat(center.x, center.y, zoom);
+    const nextWorld = lngLatToWorld(lngLat.lng, lngLat.lat, clamped);
+    setZoom(clamped);
+    setCenter({ x: nextWorld.x, y: nextWorld.y });
   };
 
   const resetViewport = () => {
-    setZoom(1);
-    setOffset({ x: 0, y: 0 });
+    setZoom(initialView.zoom);
+    setCenter({ x: initialView.centerX, y: initialView.centerY });
   };
 
-  const handleWheel = (event: WheelEvent<SVGSVGElement>) => {
+  const selectPlace = (place: TravelPlace) => {
+    const targetZoom = Math.max(zoom, 15);
+    const nextCenter = lngLatToWorld(place.longitude, place.latitude, targetZoom);
+    setSelectedId(place.id);
+    setZoom(targetZoom);
+    setCenter({ x: nextCenter.x, y: nextCenter.y });
+  };
+
+  const handleWheel = (event: WheelEvent<HTMLDivElement>) => {
     event.preventDefault();
-    updateZoom(event.deltaY > 0 ? zoom / 1.18 : zoom * 1.18);
+    updateZoom(zoom + (event.deltaY > 0 ? -1 : 1));
   };
 
-  const handlePointerDown = (event: PointerEvent<SVGSVGElement>) => {
+  const handlePointerDown = (event: PointerEvent<HTMLDivElement>) => {
     if (event.button !== 0) {
       return;
     }
     event.currentTarget.setPointerCapture(event.pointerId);
-    panState.current = { pointerId: event.pointerId, x: event.clientX, y: event.clientY };
+    panState.current = {
+      pointerId: event.pointerId,
+      x: event.clientX,
+      y: event.clientY,
+      centerX: center.x,
+      centerY: center.y,
+    };
     setIsDragging(true);
   };
 
-  const handlePointerMove = (event: PointerEvent<SVGSVGElement>) => {
+  const handlePointerMove = (event: PointerEvent<HTMLDivElement>) => {
     const previous = panState.current;
-    if (!previous || previous.pointerId !== event.pointerId || zoom === 1) {
+    if (!previous || previous.pointerId !== event.pointerId) {
       return;
     }
     const bounds = event.currentTarget.getBoundingClientRect();
-    const unitScale = VIEW_WIDTH / bounds.width;
-    const dx = (event.clientX - previous.x) * unitScale;
-    const dy = (event.clientY - previous.y) * unitScale;
-    const limitX = VIEW_WIDTH * 0.42;
-    const limitY = VIEW_HEIGHT * 0.42;
-
-    setOffset((current) => ({
-      x: clamp(current.x + dx, -limitX, limitX),
-      y: clamp(current.y + dy, -limitY, limitY),
-    }));
-    panState.current = { pointerId: event.pointerId, x: event.clientX, y: event.clientY };
+    const pixelScaleX = VIEW_WIDTH / bounds.width;
+    const pixelScaleY = VIEW_HEIGHT / bounds.height;
+    setCenter({
+      x: previous.centerX - (event.clientX - previous.x) * pixelScaleX,
+      y: previous.centerY - (event.clientY - previous.y) * pixelScaleY,
+    });
   };
 
-  const finishPointer = (event: PointerEvent<SVGSVGElement>) => {
+  const finishPointer = (event: PointerEvent<HTMLDivElement>) => {
     if (panState.current?.pointerId === event.pointerId) {
       panState.current = null;
       setIsDragging(false);
@@ -152,164 +123,131 @@ export function TravelRouteMap({ places, countryCodes }: TravelRouteMapProps) {
       <div className="travel-route-map-shell">
         <div className="travel-route-map-toolbar">
           <div>
-            <p className="eyebrow">Interactive route</p>
-            <p className="travel-route-map-toolbar__hint">드래그해서 이동 · 휠로 확대</p>
+            <p className="eyebrow">Interactive city map</p>
+            <p className="travel-route-map-toolbar__hint">드래그해서 이동 · 스크롤로 확대</p>
           </div>
           <div className="travel-route-map-controls" role="toolbar" aria-label="여행 경로 지도 확대·축소">
-            <button type="button" onClick={() => updateZoom(zoom * 1.35)} aria-label="지도 확대">
-              +
-            </button>
-            <button type="button" onClick={() => updateZoom(zoom / 1.35)} aria-label="지도 축소">
-              −
-            </button>
-            <button type="button" onClick={resetViewport} aria-label="지도 처음 위치로">
-              맞춤
-            </button>
+            <button type="button" onClick={() => updateZoom(zoom + 1)} aria-label="지도 확대">+</button>
+            <button type="button" onClick={() => updateZoom(zoom - 1)} aria-label="지도 축소">−</button>
+            <button type="button" onClick={resetViewport} aria-label="전체 여행 경로 맞춤">전체</button>
           </div>
         </div>
 
-        <div className="travel-route-map-canvas">
-          <svg
-            viewBox={`0 0 ${VIEW_WIDTH} ${VIEW_HEIGHT}`}
-            className={isDragging ? "is-dragging" : ""}
-            role="img"
-            aria-label={`${places.map((place) => place.placeName).join(", ")} 방문 순서를 보여주는 확대 가능한 여행 경로 지도`}
-            onWheel={handleWheel}
-            onPointerDown={handlePointerDown}
-            onPointerMove={handlePointerMove}
-            onPointerUp={finishPointer}
-            onPointerCancel={finishPointer}
-          >
-            <defs>
-              <pattern id="route-grid" width="48" height="48" patternUnits="userSpaceOnUse">
-                <path d="M 48 0 L 0 0 0 48" fill="none" stroke="var(--map-grid)" strokeWidth="1" />
-              </pattern>
-              <filter id="route-glow" x="-60%" y="-60%" width="220%" height="220%">
-                <feGaussianBlur stdDeviation="6" result="blur" />
-                <feMerge>
-                  <feMergeNode in="blur" />
-                  <feMergeNode in="SourceGraphic" />
-                </feMerge>
-              </filter>
-            </defs>
+        <div
+          className={`travel-route-map-canvas${isDragging ? " is-dragging" : ""}`}
+          role="application"
+          aria-label={`${places.map((place) => place.placeName).join(", ")} 방문 순서를 보여주는 실제 도시 지도`}
+          onWheel={handleWheel}
+          onPointerDown={handlePointerDown}
+          onPointerMove={handlePointerMove}
+          onPointerUp={finishPointer}
+          onPointerCancel={finishPointer}
+        >
+          <div className="travel-route-map-tiles" aria-hidden="true">
+            {viewport.tiles.map((tile) => (
+              // The OSM policy requires this canonical HTTPS tile URL and browser caching.
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                key={tile.key}
+                src={tile.url}
+                alt=""
+                draggable={false}
+                width={tile.size}
+                height={tile.size}
+                style={{ left: tile.left, top: tile.top, width: tile.size, height: tile.size }}
+                onLoad={() => setLoadedTileCount((count) => count + 1)}
+                onError={() => setLoadedTileCount((count) => count + 1)}
+              />
+            ))}
+          </div>
 
-            <rect width={VIEW_WIDTH} height={VIEW_HEIGHT} fill="var(--map-ocean)" />
-            <rect width={VIEW_WIDTH} height={VIEW_HEIGHT} fill="url(#route-grid)" />
-
-            <g transform={mapTransform}>
-              {countryPaths.map((path, index) => (
-                <path
-                  key={index}
-                  d={path}
-                  fill="var(--map-land)"
-                  fillOpacity="0.58"
-                  stroke="var(--map-land-stroke)"
-                  strokeWidth={1.1 / zoom}
+          <svg viewBox={`0 0 ${VIEW_WIDTH} ${VIEW_HEIGHT}`} aria-label="방문 순서 경로">
+            {viewport.points.length > 1 ? (
+              <>
+                <polyline
+                  points={viewport.routeLine}
+                  fill="none"
+                  stroke="#ffffff"
+                  strokeWidth="8"
+                  strokeOpacity="0.82"
+                  strokeLinecap="round"
                   strokeLinejoin="round"
                 />
-              ))}
+                <polyline
+                  points={viewport.routeLine}
+                  fill="none"
+                  stroke="var(--accent-strong)"
+                  strokeWidth="3"
+                  strokeDasharray="10 7"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              </>
+            ) : null}
 
-              {points.length > 1 ? (
-                <>
-                  <polyline
-                    points={routeLine}
-                    fill="none"
-                    stroke="var(--accent)"
-                    strokeWidth={8 / zoom}
-                    strokeOpacity={0.12}
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  />
-                  <polyline
-                    points={routeLine}
-                    fill="none"
+            {viewport.points.map((point, index) => {
+              const active = point.place.id === selectedPlace.id;
+              return (
+                <g
+                  key={point.place.id}
+                  className={`travel-route-marker${active ? " is-active" : ""}`}
+                  role="button"
+                  tabIndex={0}
+                  aria-label={`${index + 1}번째 장소 ${point.place.placeName}`}
+                  onPointerDown={(event) => event.stopPropagation()}
+                  onClick={() => selectPlace(point.place)}
+                  onKeyDown={(event) => {
+                    if (event.key === "Enter" || event.key === " ") {
+                      event.preventDefault();
+                      selectPlace(point.place);
+                    }
+                  }}
+                >
+                  {active ? (
+                    <circle cx={point.x} cy={point.y} r="29" fill="var(--accent)" fillOpacity="0.16" />
+                  ) : null}
+                  <circle
+                    cx={point.x}
+                    cy={point.y}
+                    r={active ? 18 : 14}
+                    fill={active ? "var(--accent-strong)" : "var(--surface)"}
                     stroke="var(--accent-strong)"
-                    strokeWidth={2.4 / zoom}
-                    strokeDasharray={`${10 / zoom} ${8 / zoom}`}
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
+                    strokeWidth="2.5"
                   />
-                </>
-              ) : null}
-
-              {points.map((point, index) => {
-                const active = point.place.id === selectedPlace.id;
-                const markerRadius = (active ? 19 : 15) / zoom;
-                return (
-                  <g
-                    key={point.place.id}
-                    className={`travel-route-marker${active ? " is-active" : ""}`}
-                    role="button"
-                    tabIndex={0}
-                    aria-label={`${index + 1}번째 장소 ${point.place.placeName}`}
-                    onClick={(event) => {
-                      event.stopPropagation();
-                      setSelectedId(point.place.id);
-                    }}
-                    onKeyDown={(event) => {
-                      if (event.key === "Enter" || event.key === " ") {
-                        event.preventDefault();
-                        setSelectedId(point.place.id);
-                      }
-                    }}
+                  <text
+                    x={point.x}
+                    y={point.y + 4}
+                    textAnchor="middle"
+                    fill={active ? "#ffffff" : "var(--text-primary)"}
+                    fontSize="12"
+                    fontWeight="650"
+                    fontFamily="var(--font-mono)"
                   >
-                    <circle
-                      cx={point.x}
-                      cy={point.y}
-                      r={28 / zoom}
-                      fill="transparent"
-                      pointerEvents="all"
-                    />
-                    {active ? (
-                      <circle
-                        cx={point.x}
-                        cy={point.y}
-                        r={32 / zoom}
-                        fill="var(--accent)"
-                        fillOpacity={0.13}
-                        filter="url(#route-glow)"
-                      />
-                    ) : null}
-                    <circle
-                      cx={point.x}
-                      cy={point.y}
-                      r={markerRadius}
-                      fill={active ? "var(--accent-strong)" : "var(--map-marker)"}
-                      stroke="var(--map-marker-border)"
-                      strokeWidth={2 / zoom}
-                    />
-                    <text
-                      x={point.x}
-                      y={point.y + 4.5 / zoom}
-                      textAnchor="middle"
-                      fill={active ? "#ffffff" : "var(--text-primary)"}
-                      fontSize={13 / zoom}
-                      fontWeight="650"
-                      fontFamily="var(--font-mono)"
-                      pointerEvents="none"
-                    >
-                      {index + 1}
-                    </text>
-                  </g>
-                );
-              })}
-            </g>
+                    {index + 1}
+                  </text>
+                </g>
+              );
+            })}
           </svg>
+
+          {loadedTileCount === 0 ? (
+            <div className="travel-route-map-loading" role="status">
+              <span aria-hidden="true" />
+              <p>도시 지도를 불러오는 중</p>
+            </div>
+          ) : null}
 
           <div className="travel-route-map-active" aria-live="polite">
             <span>{String(selectedIndex + 1).padStart(2, "0")}</span>
             <div>
               <strong>{selectedPlace.placeName}</strong>
-              <p>
-                {[selectedPlace.city?.nameKo, selectedPlace.country.nameKo]
-                  .filter(Boolean)
-                  .join(" · ")}
-              </p>
+              <p>{[selectedPlace.city?.nameKo, selectedPlace.country.nameKo].filter(Boolean).join(" · ")}</p>
             </div>
           </div>
 
-          <p className="travel-route-map-zoom" aria-live="polite">
-            {Math.round(zoom * 100)}%
+          <p className="travel-route-map-zoom" aria-live="polite">CITY MAP · Z{zoom}</p>
+          <p className="travel-route-map-attribution">
+            © <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noreferrer">OpenStreetMap contributors</a>
           </p>
         </div>
       </div>
@@ -332,11 +270,9 @@ export function TravelRouteMap({ places, countryCodes }: TravelRouteMapProps) {
                   type="button"
                   className={active ? "is-active" : ""}
                   aria-current={active ? "step" : undefined}
-                  onClick={() => setSelectedId(place.id)}
+                  onClick={() => selectPlace(place)}
                 >
-                  <span className="travel-itinerary__number">
-                    {String(index + 1).padStart(2, "0")}
-                  </span>
+                  <span className="travel-itinerary__number">{String(index + 1).padStart(2, "0")}</span>
                   <span className="travel-itinerary__content">
                     <span className="travel-itinerary__meta">
                       {place.visitedAt ? formatDate(place.visitedAt) : `STOP ${index + 1}`}
@@ -358,124 +294,95 @@ export function TravelRouteMap({ places, countryCodes }: TravelRouteMapProps) {
   );
 }
 
-type Projection = (lng: number, lat: number) => { x: number; y: number };
-
-interface ProjectedPlace {
-  place: TravelPlace;
-  x: number;
-  y: number;
-}
-
-/**
- * Nearby city stops can be only a few streets apart. A small screen-space relaxation
- * keeps their numbered markers selectable without pretending the geography is farther
- * apart than it is; the route shape and ordering are still preserved.
- */
-function spreadClosePoints(source: ProjectedPlace[]): ProjectedPlace[] {
-  const points = source.map((point) => ({ ...point }));
-  const minimumDistance = 58;
-
-  for (let pass = 0; pass < 6; pass += 1) {
-    for (let first = 0; first < points.length; first += 1) {
-      for (let second = first + 1; second < points.length; second += 1) {
-        const dx = points[second].x - points[first].x;
-        const dy = points[second].y - points[first].y;
-        const distance = Math.hypot(dx, dy);
-        if (distance >= minimumDistance) {
-          continue;
-        }
-
-        const angle = distance > 0.1 ? Math.atan2(dy, dx) : (second * Math.PI * 2) / points.length;
-        const adjustment = (minimumDistance - distance) / 2;
-        const pushX = Math.cos(angle) * adjustment;
-        const pushY = Math.sin(angle) * adjustment;
-
-        points[first].x = clamp(points[first].x - pushX, 48, VIEW_WIDTH - 48);
-        points[first].y = clamp(points[first].y - pushY, 48, VIEW_HEIGHT - 48);
-        points[second].x = clamp(points[second].x + pushX, 48, VIEW_WIDTH - 48);
-        points[second].y = clamp(points[second].y + pushY, 48, VIEW_HEIGHT - 48);
-      }
-    }
-  }
-
-  return points;
-}
-
-/** Fits a city-scale route tightly enough that nearby stops remain individually useful. */
-function createProjection(places: TravelPlace[]): Projection | null {
+function createInitialView(places: TravelPlace[]) {
   if (places.length === 0) {
-    return null;
+    const fallback = lngLatToWorld(0, 0, 3);
+    return { zoom: 3, centerX: fallback.x, centerY: fallback.y };
   }
-
-  const lngs = unwrapToSmallestArc(places.map((place) => place.longitude));
-  const lats = places.map((place) => place.latitude);
-  const centerLng = (Math.min(...lngs) + Math.max(...lngs)) / 2;
-  const centerLat = (Math.min(...lats) + Math.max(...lats)) / 2;
-  const rawSpanLng = Math.max(...lngs) - Math.min(...lngs);
-  const rawSpanLat = Math.max(...lats) - Math.min(...lats);
-  const spanLng = Math.max(rawSpanLng * 1.9, MIN_LONGITUDE_SPAN);
-  const spanLat = Math.max(rawSpanLat * 1.9, MIN_LATITUDE_SPAN);
-  const scale = Math.min(
-    (VIEW_WIDTH - MAP_PADDING * 2) / spanLng,
-    (VIEW_HEIGHT - MAP_PADDING * 2) / spanLat,
+  const projected = places.map((place) => lngLatToWorld(place.longitude, place.latitude, 0));
+  const minX = Math.min(...projected.map((point) => point.x));
+  const maxX = Math.max(...projected.map((point) => point.x));
+  const minY = Math.min(...projected.map((point) => point.y));
+  const maxY = Math.max(...projected.map((point) => point.y));
+  const spanX = Math.max(maxX - minX, 1 / 2 ** 16);
+  const spanY = Math.max(maxY - minY, 1 / 2 ** 16);
+  const fitZoom = Math.floor(
+    Math.min(
+      Math.log2((VIEW_WIDTH - 180) / spanX / TILE_SIZE),
+      Math.log2((VIEW_HEIGHT - 180) / spanY / TILE_SIZE),
+    ),
   );
-
-  return (lng, lat) => ({
-    x: VIEW_WIDTH / 2 + (nearestEquivalentLongitude(lng, centerLng) - centerLng) * scale,
-    y: VIEW_HEIGHT / 2 - (lat - centerLat) * scale,
-  });
+  const zoom = clamp(Number.isFinite(fitZoom) ? fitZoom : 14, 11, 16);
+  const centerWorld = lngLatToWorld(
+    places.reduce((sum, place) => sum + place.longitude, 0) / places.length,
+    places.reduce((sum, place) => sum + place.latitude, 0) / places.length,
+    zoom,
+  );
+  return { zoom, centerX: centerWorld.x, centerY: centerWorld.y };
 }
 
-function unwrapToSmallestArc(longitudes: number[]): number[] {
-  if (longitudes.length <= 1) {
-    return longitudes.map(normalizeLongitude);
-  }
+function buildViewport(
+  places: TravelPlace[],
+  centerX: number,
+  centerY: number,
+  zoom: number,
+) {
+  const worldSize = TILE_SIZE * 2 ** zoom;
+  const originX = centerX - VIEW_WIDTH / 2;
+  const originY = centerY - VIEW_HEIGHT / 2;
+  const startX = Math.floor(originX / TILE_SIZE) - 1;
+  const endX = Math.floor((originX + VIEW_WIDTH) / TILE_SIZE) + 1;
+  const startY = Math.max(0, Math.floor(originY / TILE_SIZE) - 1);
+  const endY = Math.min(2 ** zoom - 1, Math.floor((originY + VIEW_HEIGHT) / TILE_SIZE) + 1);
+  const tiles: MapTile[] = [];
 
-  const sorted = longitudes.map(normalizeLongitude).sort((a, b) => a - b);
-  let largestGap = -1;
-  let arcStart = sorted[0];
-
-  for (let index = 0; index < sorted.length; index += 1) {
-    const current = sorted[index];
-    const next = index === sorted.length - 1 ? sorted[0] + 360 : sorted[index + 1];
-    const gap = next - current;
-    if (gap > largestGap) {
-      largestGap = gap;
-      arcStart = normalizeLongitude(next);
+  for (let y = startY; y <= endY; y += 1) {
+    for (let x = startX; x <= endX; x += 1) {
+      const wrappedX = ((x % 2 ** zoom) + 2 ** zoom) % 2 ** zoom;
+      tiles.push({
+        key: `${zoom}/${x}/${y}`,
+        url: `https://tile.openstreetmap.org/${zoom}/${wrappedX}/${y}.png`,
+        left: x * TILE_SIZE - originX,
+        top: y * TILE_SIZE - originY,
+        size: TILE_SIZE,
+      });
     }
   }
 
-  return longitudes.map((longitude) => {
-    const normalized = normalizeLongitude(longitude);
-    return normalized < arcStart ? normalized + 360 : normalized;
+  const points = places.map((place) => {
+    const world = lngLatToWorld(place.longitude, place.latitude, zoom);
+    let x = world.x - originX;
+    if (x < -worldSize / 2) x += worldSize;
+    if (x > VIEW_WIDTH + worldSize / 2) x -= worldSize;
+    return { place, x, y: world.y - originY };
   });
+
+  return {
+    tiles,
+    points,
+    routeLine: points.map((point) => `${point.x.toFixed(1)},${point.y.toFixed(1)}`).join(" "),
+  };
 }
 
-function normalizeLongitude(longitude: number): number {
-  return ((longitude % 360) + 360) % 360;
+function lngLatToWorld(lng: number, lat: number, zoom: number) {
+  const worldSize = TILE_SIZE * 2 ** zoom;
+  const safeLat = clamp(lat, -85.05112878, 85.05112878);
+  const sin = Math.sin((safeLat * Math.PI) / 180);
+  return {
+    x: ((lng + 180) / 360) * worldSize,
+    y: (0.5 - Math.log((1 + sin) / (1 - sin)) / (4 * Math.PI)) * worldSize,
+  };
 }
 
-function nearestEquivalentLongitude(longitude: number, center: number): number {
-  const normalized = normalizeLongitude(longitude);
-  return normalized + 360 * Math.round((center - normalized) / 360);
+function worldToLngLat(x: number, y: number, zoom: number) {
+  const worldSize = TILE_SIZE * 2 ** zoom;
+  const normalizedY = 0.5 - y / worldSize;
+  return {
+    lng: (x / worldSize) * 360 - 180,
+    lat: (180 / Math.PI) * Math.atan(Math.sinh(2 * Math.PI * normalizedY)),
+  };
 }
 
-function toPathStrings(geometry: CountryFeature["geometry"], project: Projection): string[] {
-  const polygons = geometry.type === "Polygon" ? [geometry.coordinates] : geometry.coordinates;
-
-  return polygons.map((rings) =>
-    rings
-      .map((ring) => {
-        const commands = ring.map(([lng, lat], index) => {
-          const { x, y } = project(lng, lat);
-          return `${index === 0 ? "M" : "L"}${x.toFixed(1)} ${y.toFixed(1)}`;
-        });
-        return `${commands.join(" ")} Z`;
-      })
-      .join(" "),
-  );
-}
-
-function clamp(value: number, min: number, max: number): number {
+function clamp(value: number, min: number, max: number) {
   return Math.min(max, Math.max(min, value));
 }
