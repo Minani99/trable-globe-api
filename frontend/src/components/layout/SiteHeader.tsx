@@ -13,12 +13,13 @@ interface SiteHeaderProps {
  */
 export function SiteHeader({ username }: SiteHeaderProps) {
   return (
-    <header className="border-border-subtle/70 bg-background/80 sticky top-0 z-40 border-b backdrop-blur-md">
-      <div className="mx-auto flex h-14 w-full max-w-[1400px] items-center justify-between px-5 sm:px-8">
+    <header className="site-header border-border-subtle/70 bg-background/76 sticky top-0 z-40 border-b backdrop-blur-xl">
+      <div className="mx-auto flex h-16 w-full max-w-[1500px] items-center justify-between px-5 sm:px-8 lg:px-12 xl:px-14">
         <Link
           href="/"
-          className="text-content text-[0.78rem] font-medium tracking-[0.24em] transition-colors hover:text-[var(--accent-strong)]"
+          className="site-wordmark text-content flex items-center gap-3 text-[0.76rem] font-medium tracking-[0.24em]"
         >
+          <span className="site-wordmark__mark" aria-hidden="true" />
           {siteConfig.wordmark}
         </Link>
 
@@ -27,13 +28,13 @@ export function SiteHeader({ username }: SiteHeaderProps) {
             <li>
               <Link
                 href={profilePath(siteConfig.demoUsername)}
-                className="transition-colors hover:text-[var(--text-primary)]"
+                className="site-nav-link"
               >
                 둘러보기
               </Link>
             </li>
             <li>
-              <Link href="/about" className="transition-colors hover:text-[var(--text-primary)]">
+              <Link href="/about" className="site-nav-link">
                 소개
               </Link>
             </li>

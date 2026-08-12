@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Geist, Geist_Mono, Gowun_Batang } from "next/font/google";
 
 import { siteConfig } from "@/lib/config";
 import { getSiteUrl } from "@/lib/site-url";
@@ -13,6 +13,12 @@ const geistSans = Geist({
 const geistMono = Geist_Mono({
   variable: "--font-geist-mono",
   subsets: ["latin"],
+});
+
+const gowunBatang = Gowun_Batang({
+  variable: "--font-gowun-batang",
+  weight: "400",
+  display: "swap",
 });
 
 export const metadata: Metadata = {
@@ -42,7 +48,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html
       lang="ko"
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+      className={`${geistSans.variable} ${geistMono.variable} ${gowunBatang.variable} h-full antialiased`}
     >
       <body className="bg-background text-content flex min-h-full flex-col">
         <a className="skip-link" href="#main">

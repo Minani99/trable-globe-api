@@ -1,5 +1,6 @@
 import Link from "next/link";
 
+import { LandingGlobePreview } from "@/components/landing/LandingGlobePreview";
 import { SiteFooter } from "@/components/layout/SiteFooter";
 import { SiteHeader } from "@/components/layout/SiteHeader";
 import { profilePath, siteConfig } from "@/lib/config";
@@ -10,51 +11,63 @@ export default function LandingPage() {
       <SiteHeader />
 
       <main id="main" className="flex flex-1 flex-col overflow-hidden">
-        <section className="landing-hero relative mx-auto grid w-full max-w-[1400px] flex-1 items-center gap-14 px-5 py-16 sm:px-8 sm:py-24 lg:grid-cols-[minmax(0,0.88fr)_minmax(480px,1.12fr)] lg:gap-10 lg:py-20">
-          <div className="relative z-10">
-            <p className="eyebrow mb-6">Personal travel archive · 01</p>
-
-            <h1 className="text-display text-content max-w-[13ch]">
-              다녀온 세계를,
-              <br />
-              하나의 지구본에.
-            </h1>
-
-            <p className="text-body mt-7 max-w-[48ch] text-[1rem] sm:text-[1.05rem]">
-              나라는 점이 되고, 도시는 경로가 되고, 사진은 다시 꺼내볼 장면이 됩니다. 여행이
-              쌓일수록 지구본은 점점 더 나다운 모양으로 완성됩니다.
+        <section className="landing-hero relative mx-auto grid min-h-[calc(100svh-3.5rem)] w-full max-w-[1500px] flex-1 items-center gap-12 px-5 py-14 sm:px-8 sm:py-20 lg:grid-cols-[minmax(0,0.82fr)_minmax(520px,1.18fr)] lg:gap-4 lg:px-12 lg:py-14 xl:px-14">
+          <div className="landing-copy relative z-10">
+            <p className="eyebrow landing-reveal landing-reveal--eyebrow mb-6 flex items-center gap-3">
+              <span className="landing-signal" aria-hidden="true" />
+              Personal travel archive · 01
             </p>
 
-            <div className="mt-10 flex flex-wrap items-center gap-3">
+            <h1 className="landing-title text-content max-w-[12ch]">
+              <span className="landing-title-line landing-title-line--one">다녀온 세계를,</span>
+              <span className="landing-title-line landing-title-line--two">하나의 지구본에.</span>
+            </h1>
+
+            <p className="text-body landing-reveal landing-reveal--body mt-8 max-w-[44ch] text-[1rem] sm:text-[1.05rem]">
+              나라는 점이 되고, 도시는 경로가 되고, 사진은 다시 꺼내볼 장면이 됩니다.
+              당신의 여행이 쌓일수록 지구본은 더 선명한 이야기로 완성됩니다.
+            </p>
+
+            <div className="landing-reveal landing-reveal--actions mt-10 flex flex-wrap items-center gap-3">
               <Link
                 href={profilePath(siteConfig.demoUsername)}
-                className="rounded-full bg-[var(--accent)] px-5 py-2.5 text-[0.85rem] font-semibold text-[#130a06] transition-[background-color,transform] hover:-translate-y-0.5 hover:bg-[var(--accent-strong)]"
+                className="landing-primary-cta group"
               >
-                실제 지구본 돌려보기
+                <span>나의 세계 미리 보기</span>
+                <span className="landing-primary-cta__arrow" aria-hidden="true">↗</span>
               </Link>
               <Link
                 href="/about"
-                className="border-border-strong text-content-muted rounded-full border px-5 py-2.5 text-[0.85rem] transition-colors hover:border-[var(--accent-border)] hover:text-[var(--accent-strong)]"
+                className="landing-secondary-cta"
               >
                 서비스 이야기
               </Link>
             </div>
 
-            <p className="text-caption mt-5">회원가입 없이 공개 샘플을 바로 둘러볼 수 있습니다.</p>
+            <dl className="landing-stats landing-reveal landing-reveal--stats mt-11 grid max-w-[460px] grid-cols-3">
+              <Stat value="04" label="다녀온 나라" />
+              <Stat value="07" label="기억한 도시" />
+              <Stat value="05" label="여행 이야기" />
+            </dl>
           </div>
 
-          <GlobePreview />
+          <LandingGlobePreview href={profilePath(siteConfig.demoUsername)} />
+
+          <div className="landing-scroll-cue" aria-hidden="true">
+            <span>SCROLL TO REMEMBER</span>
+            <span className="landing-scroll-cue__line" />
+          </div>
         </section>
 
         <section
           aria-labelledby="experience-heading"
-          className="mx-auto w-full max-w-[1400px] px-5 pb-10 sm:px-8 sm:pb-16"
+          className="landing-experience mx-auto w-full max-w-[1400px] px-5 pb-10 sm:px-8 sm:pb-16"
         >
-          <div className="hairline grid gap-10 pt-10 md:grid-cols-[0.7fr_1.3fr] md:gap-16">
+          <div className="hairline grid gap-10 pt-10 md:grid-cols-[0.62fr_1.38fr] md:gap-16">
             <div>
               <p className="eyebrow mb-3">The experience</p>
               <h2 id="experience-heading" className="text-heading text-content max-w-[12ch]">
-                목록보다 먼저, 세계를 펼쳐봅니다.
+                기억은 목록보다 입체적이니까.
               </h2>
             </div>
 
@@ -84,50 +97,22 @@ export default function LandingPage() {
   );
 }
 
-function GlobePreview() {
+function Stat({ value, label }: { value: string; label: string }) {
   return (
-    <figure className="hero-visual relative mx-auto w-full max-w-[660px]" aria-labelledby="preview-caption">
-      <div
-        className="hero-orbit relative mx-auto aspect-square w-[min(88vw,590px)]"
-        role="img"
-        aria-label="여행 마커와 경로가 표시된 지구본 미리보기"
-      >
-        <div className="hero-orbit-ring hero-orbit-ring--outer" aria-hidden="true" />
-        <div className="hero-orbit-ring hero-orbit-ring--inner" aria-hidden="true" />
-        <div className="hero-globe" aria-hidden="true">
-          <span className="hero-continent hero-continent--one" />
-          <span className="hero-continent hero-continent--two" />
-          <span className="hero-continent hero-continent--three" />
-          <span className="hero-route" />
-          <span className="hero-marker hero-marker--taipei" />
-          <span className="hero-marker hero-marker--fukuoka" />
-          <span className="hero-marker hero-marker--miami" />
-        </div>
-        <div className="hero-coordinate hero-coordinate--top" aria-hidden="true">
-          25.0330° N · 121.5654° E
-        </div>
-        <div className="hero-coordinate hero-coordinate--bottom" aria-hidden="true">
-          ROTATE · SELECT · RELIVE
-        </div>
-      </div>
-
-      <figcaption id="preview-caption" className="hero-trip-card panel">
-        <div>
-          <p className="eyebrow">Latest memory</p>
-          <p className="text-content mt-1 text-[0.95rem] font-medium">Taipei, again.</p>
-        </div>
-        <p className="text-content-faint font-mono text-[0.68rem]">3 DAYS · 3 PLACES</p>
-      </figcaption>
-    </figure>
+    <div>
+      <dt className="landing-stat-value">{value}</dt>
+      <dd className="landing-stat-label">{label}</dd>
+    </div>
   );
 }
 
 function Feature({ number, term, description }: { number: string; term: string; description: string }) {
   return (
-    <div>
+    <div className="landing-feature group">
       <dt className="flex items-center gap-3">
         <span className="text-content-faint font-mono text-[0.65rem]">{number}</span>
         <span className="text-content text-[0.9rem] font-medium">{term}</span>
+        <span className="landing-feature__arrow" aria-hidden="true">↗</span>
       </dt>
       <dd className="text-body mt-3 text-[0.86rem]">{description}</dd>
     </div>
