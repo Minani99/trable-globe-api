@@ -28,14 +28,14 @@ export function HeaderNavigation({ username }: HeaderNavigationProps) {
           className="site-nav-link"
           aria-current={exploreActive ? "page" : undefined}
         >
-          둘러보기
+          지구본
         </Link>
         <Link
           href="/about"
           className="site-nav-link"
           aria-current={aboutActive ? "page" : undefined}
         >
-          소개
+          서비스 소개
         </Link>
         {username ? (
           <Link
@@ -72,7 +72,7 @@ export function HeaderNavigation({ username }: HeaderNavigationProps) {
           aria-current={exploreActive ? "page" : undefined}
           onClick={() => setMenuOpen(false)}
         >
-          <span>여행 지구본 둘러보기</span>
+          <span>여행 지구본 보기</span>
           <span aria-hidden="true">↗</span>
         </Link>
         <Link
@@ -80,7 +80,7 @@ export function HeaderNavigation({ username }: HeaderNavigationProps) {
           aria-current={aboutActive ? "page" : undefined}
           onClick={() => setMenuOpen(false)}
         >
-          <span>서비스 이야기</span>
+          <span>서비스 소개</span>
           <span aria-hidden="true">↗</span>
         </Link>
         {username ? (

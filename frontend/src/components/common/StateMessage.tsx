@@ -34,7 +34,7 @@ export function StateMessage({
         {title}
       </h2>
       {description ? (
-        <div className="text-body max-w-[46ch] whitespace-pre-line">{description}</div>
+        <div className="text-body max-w-[46ch]">{description}</div>
       ) : null}
       {action ? (
         <Link

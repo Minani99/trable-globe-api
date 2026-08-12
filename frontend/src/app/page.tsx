@@ -15,17 +15,17 @@ export default function LandingPage() {
           <div className="landing-copy relative z-10">
             <p className="eyebrow landing-reveal landing-reveal--eyebrow mb-6 flex items-center gap-3">
               <span className="landing-signal" aria-hidden="true" />
-              Public travel archive · 01
+              Personal travel archive
             </p>
 
-            <h1 className="landing-title text-content max-w-[12ch]">
-              <span className="landing-title-line landing-title-line--one">다녀온 세계를,</span>
+            <h1 className="landing-title text-content max-w-[13ch]">
+              <span className="landing-title-line landing-title-line--one">다녀온 세계를</span>{" "}
               <span className="landing-title-line landing-title-line--two">하나의 지구본에.</span>
             </h1>
 
             <p className="text-body landing-reveal landing-reveal--body mt-8 max-w-[44ch] text-[1rem] sm:text-[1.05rem]">
-              나라는 점이 되고, 도시는 경로가 되고, 사진은 다시 꺼내볼 장면이 됩니다.
-              당신의 여행이 쌓일수록 지구본은 더 선명한 이야기로 완성됩니다.
+              방문한 나라는 좌표로, 도시 사이의 이동은 경로로 남습니다. 사진과 메모를
+              더할수록 지구본은 나만의 여행 이야기가 됩니다.
             </p>
 
             <div className="landing-reveal landing-reveal--actions mt-10 flex flex-wrap items-center gap-3">
@@ -33,28 +33,28 @@ export default function LandingPage() {
                 href={profilePath(siteConfig.demoUsername)}
                 className="landing-primary-cta group"
               >
-                <span>공개 지구본 둘러보기</span>
+                <span>지구본 둘러보기</span>
                 <span className="landing-primary-cta__arrow" aria-hidden="true">↗</span>
               </Link>
               <Link
                 href="/about"
                 className="landing-secondary-cta"
               >
-                서비스 이야기
+                Travel Globe 알아보기
               </Link>
             </div>
 
             <dl className="landing-stats landing-reveal landing-reveal--stats mt-11 grid max-w-[460px] grid-cols-3">
-              <Stat value="04" label="다녀온 나라" />
-              <Stat value="07" label="기억한 도시" />
-              <Stat value="05" label="여행 이야기" />
+              <Stat value="04" label="방문한 나라" />
+              <Stat value="07" label="기록한 도시" />
+              <Stat value="05" label="여행 기록" />
             </dl>
           </div>
 
           <LandingGlobePreview href={profilePath(siteConfig.demoUsername)} />
 
           <div className="landing-scroll-cue" aria-hidden="true">
-            <span>SCROLL TO REMEMBER</span>
+            <span>아래로 이어보기</span>
             <span className="landing-scroll-cue__line" />
           </div>
         </section>
@@ -65,27 +65,27 @@ export default function LandingPage() {
         >
           <div className="hairline grid gap-10 pt-10 md:grid-cols-[0.62fr_1.38fr] md:gap-16">
             <div>
-              <p className="eyebrow mb-3">The experience</p>
+              <p className="eyebrow mb-3">How it works</p>
               <h2 id="experience-heading" className="text-heading text-content max-w-[12ch]">
-                기억은 목록보다 입체적이니까.
+                여행을 한눈에, 기억은 한 장면씩.
               </h2>
             </div>
 
             <dl className="grid gap-8 sm:grid-cols-3">
               <Feature
                 number="01"
-                term="한눈에"
-                description="방문한 나라와 여행 횟수를 지구본에서 바로 확인합니다."
+                term="세계를 한눈에"
+                description="방문한 나라와 여행 횟수를 지구본 위에서 확인합니다."
               />
               <Feature
                 number="02"
-                term="한 나라씩"
-                description="나라를 고르면 그곳에서 남긴 여행과 장소만 이어서 봅니다."
+                term="나라별로"
+                description="선택한 나라에서 남긴 여행과 도시만 모아봅니다."
               />
               <Feature
                 number="03"
-                term="다시, 시간순으로"
-                description="경로와 사진, 메모를 따라 지난 여행을 천천히 되짚습니다."
+                term="시간의 순서로"
+                description="지도와 메모, 사진을 따라 한 번의 여행을 다시 걷습니다."
               />
             </dl>
           </div>

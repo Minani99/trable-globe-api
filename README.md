@@ -231,12 +231,15 @@ Pull Request와 `master` push에는 GitHub Actions가 자동으로 백엔드 테
 
 ## Future Roadmap
 
-1. 인증(회원가입/로그인) + Spring Security, `Visibility.FOLLOWERS` 활성화
-2. 여행 기록 작성/수정 API와 화면
-3. 이미지 업로드(S3 + CDN), EXIF 기반 좌표 자동 추출
-4. 팔로우 / 피드 / 좋아요
-5. 여행 거리·이동 경로 통계, 연도 필터
-6. SEO / OpenGraph 이미지, 커스텀 프로필 URL
+1. 운영 백엔드 콜드 스타트와 모니터링 정리
+2. 인증·세션과 모든 쓰기 요청의 소유권 검사
+3. 여행 기록 작성·수정·임시 저장 화면과 API
+4. 이미지 업로드(S3 + CDN), EXIF 기반 날짜·좌표 제안
+5. 공개 범위와 공유 정책
+6. 여행 거리·이동 경로 통계, 연도 필터
+
+구현 순서와 완료 기준은 [docs/next-phase.md](docs/next-phase.md), 화면 문구와 서체 원칙은
+[docs/editorial-guide.md](docs/editorial-guide.md)에 정리했습니다.
 
 ## Architecture Decisions
 

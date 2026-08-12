@@ -13,7 +13,7 @@ interface TravelCardProps {
 }
 
 export function TravelCard({ travel, username, priority }: TravelCardProps) {
-  const place = [travel.primaryCountry?.nameEn, travel.primaryCity?.nameEn]
+  const place = [travel.primaryCountry?.nameKo, travel.primaryCity?.nameKo]
     .filter(Boolean)
     .join(" · ");
   const extraCountries = travel.countries.length - 1;

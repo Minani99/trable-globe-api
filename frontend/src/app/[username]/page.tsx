@@ -24,7 +24,7 @@ export async function generateMetadata(props: PageProps<"/[username]">): Promise
       title: `${profile.displayName} (@${profile.username})`,
       description:
         profile.bio ??
-        `${profile.displayName}님이 다녀온 ${profile.statistics.countryCount}개 나라를 지구본에서 확인해 보세요.`,
+        `${profile.displayName}님이 기록한 ${profile.statistics.countryCount}개 나라와 여행 이야기를 지구본에서 만나보세요.`,
     };
   } catch {
     return { title: `@${username}` };
@@ -47,14 +47,14 @@ export default async function ProfilePage(props: PageProps<"/[username]">) {
         <main id="main" className="flex-1">
           <StateMessage
             variant="page"
-            eyebrow="Connection error"
-            title="여행 기록을 불러오지 못했습니다"
+            eyebrow="연결 오류"
+            title="여행 기록을 불러올 수 없습니다"
             description={
               error instanceof ApiError && error.isUnreachable
-                ? "여행 기록을 잠시 불러오지 못했습니다.\n잠시 후 다시 열어 주세요."
-                : "잠시 후 다시 열어 주세요."
+                ? "서버가 여행 기록을 준비하고 있습니다. 잠시 후 다시 열어 주세요."
+                : "잠시 후 페이지를 다시 열어 주세요."
             }
-            action={{ href: "/", label: "홈으로" }}
+            action={{ href: "/", label: "홈으로 돌아가기" }}
           />
         </main>
         <SiteFooter />

@@ -86,15 +86,15 @@ export function LandingGlobePreview({ href }: LandingGlobePreviewProps) {
 
           <div className="landing-memory-card" aria-live="polite">
             <div>
-              <p className="eyebrow">{selectedCountry ? "Selected country" : "Latest memory"}</p>
+              <p className="eyebrow">{selectedCountry ? "Selected country" : "Latest journey"}</p>
               <p className="text-content mt-1 text-[0.96rem] font-medium">
-                {selectedCountry ? selectedCountry.nameKo : "Taipei, again."}
+                {selectedCountry ? selectedCountry.nameKo : "타이베이, 다시."}
               </p>
             </div>
             <div className="text-right">
               <p className="text-content-faint font-mono text-[0.64rem]">
                 {selectedCountry
-                  ? `JOURNEY ${String(selectedCountry.travelCount).padStart(2, "0")}`
+                  ? `TRAVELS · ${String(selectedCountry.travelCount).padStart(2, "0")}`
                   : "MAY · 2026"}
               </p>
               <p className="text-content-muted mt-1 text-[0.7rem]">
@@ -103,8 +103,8 @@ export function LandingGlobePreview({ href }: LandingGlobePreviewProps) {
             </div>
           </div>
 
-          <Link href={href} className="landing-globe-cta" aria-label="공개 여행 지구본 전체 화면 열기">
-            <span>전체 지구본 열기</span>
+          <Link href={href} className="landing-globe-cta" aria-label="공개 여행 지구본 보기">
+            <span>전체 지구본 보기</span>
             <span className="landing-globe-cta__arrow" aria-hidden="true">↗</span>
           </Link>
         </div>

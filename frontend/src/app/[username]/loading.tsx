@@ -11,7 +11,7 @@ export default function ProfileLoading() {
         <div className="h-[52vh] max-h-[560px] min-h-[340px] lg:absolute lg:inset-0 lg:h-full lg:max-h-none">
           <GlobeLoadingIndicator
             className="h-full w-full"
-            description="여행 기록을 함께 준비하고 있어요"
+            description="방문한 나라와 여행 기록을 함께 준비하고 있습니다"
           />
         </div>
 

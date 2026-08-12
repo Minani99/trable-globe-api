@@ -40,7 +40,7 @@
   --radius-sm: 6px;
   --radius-md: 10px;
   --radius-lg: 16px;
-  --font-editorial: var(--font-gowun-batang), "Batang", serif;
+  --font-editorial: var(--font-noto-serif-kr), "Noto Serif KR", "Batang", serif;
 }
 
 :root[data-theme="dark"] {
@@ -93,9 +93,9 @@
   --color-accent-strong: var(--accent-strong);
   --color-accent-soft: var(--accent-soft);
 
-  --font-sans: var(--font-geist-sans), "Pretendard", "Apple SD Gothic Neo", "Malgun Gothic",
-    system-ui, -apple-system, sans-serif;
-  --font-mono: var(--font-geist-mono), ui-monospace, monospace;
+  --font-sans: var(--font-geist-sans), var(--font-noto-sans-kr), "Pretendard",
+    "Apple SD Gothic Neo", "Malgun Gothic", system-ui, -apple-system, sans-serif;
+  --font-mono: var(--font-geist-mono), var(--font-noto-sans-kr), ui-monospace, monospace;
 }
 
 html {
@@ -111,6 +111,7 @@ body {
   color: var(--text-primary);
   font-family: var(--font-sans);
   -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
   transition:
     background-color 0.35s ease,
     color 0.35s ease;
@@ -458,10 +459,11 @@ body {
   letter-spacing: -0.055em;
   font-weight: 400;
   text-wrap: balance;
+  word-break: keep-all;
 }
 
 .landing-title-line {
-  display: block;
+  display: inline-block;
   opacity: 0;
   transform: translateY(1.2em);
   animation: landing-title-in 0.95s cubic-bezier(0.2, 0.75, 0.24, 1) forwards;
@@ -472,7 +474,7 @@ body {
 }
 
 .landing-title-line--two {
-  margin-top: 0.08em;
+  margin-left: 0.08em;
   color: #f2dfd6;
   font-family: var(--font-editorial);
   font-size: 0.91em;
@@ -1171,6 +1173,9 @@ body {
     line-height: 1.15;
     letter-spacing: -0.025em;
     font-weight: 400;
+    text-wrap: balance;
+    word-break: keep-all;
+    overflow-wrap: anywhere;
   }
 
   .text-title {
@@ -1178,12 +1183,18 @@ body {
     line-height: 1.35;
     letter-spacing: -0.015em;
     font-weight: 500;
+    text-wrap: pretty;
+    word-break: keep-all;
+    overflow-wrap: anywhere;
   }
 
   .text-body {
     font-size: 0.95rem;
     line-height: 1.7;
     color: var(--text-secondary);
+    text-wrap: pretty;
+    word-break: keep-all;
+    overflow-wrap: anywhere;
   }
 
   .text-caption {
@@ -1577,6 +1588,8 @@ body {
   font-size: 1.18rem;
   font-weight: 400;
   line-height: 1.55;
+  text-wrap: balance;
+  word-break: keep-all;
 }
 
 .about-capabilities {
@@ -1599,6 +1612,8 @@ body {
   font-weight: 400;
   line-height: 1.13;
   letter-spacing: -0.05em;
+  text-wrap: balance;
+  word-break: keep-all;
 }
 
 .about-section-heading > p,
@@ -1606,6 +1621,8 @@ body {
   color: var(--text-secondary);
   font-size: 0.92rem;
   line-height: 1.8;
+  text-wrap: pretty;
+  word-break: keep-all;
 }
 
 .about-capability-grid {
@@ -1643,6 +1660,8 @@ body {
   font-family: var(--font-editorial);
   font-size: 1.35rem;
   font-weight: 400;
+  text-wrap: balance;
+  word-break: keep-all;
 }
 
 .about-capability-grid p {
@@ -1650,6 +1669,8 @@ body {
   color: var(--text-secondary);
   font-size: 0.8rem;
   line-height: 1.75;
+  text-wrap: pretty;
+  word-break: keep-all;
 }
 
 .about-next {
@@ -1750,6 +1771,7 @@ body {
   line-height: 1.08;
   letter-spacing: -0.055em;
   text-wrap: balance;
+  word-break: keep-all;
 }
 
 .profile-world__intro > p {
@@ -1757,6 +1779,8 @@ body {
   color: var(--text-secondary);
   font-size: 0.92rem;
   line-height: 1.8;
+  text-wrap: pretty;
+  word-break: keep-all;
 }
 
 .profile-globe-card {
@@ -2093,6 +2117,7 @@ body {
   line-height: 1.04;
   letter-spacing: -0.055em;
   text-wrap: balance;
+  word-break: keep-all;
 }
 
 .travel-detail-hero__date {
@@ -2109,7 +2134,9 @@ body {
   font-family: var(--font-editorial);
   font-size: clamp(1.02rem, 1.6vw, 1.22rem);
   line-height: 1.85;
-  white-space: pre-line;
+  text-wrap: pretty;
+  word-break: keep-all;
+  overflow-wrap: anywhere;
 }
 
 .travel-detail-stats {
@@ -2198,6 +2225,8 @@ body {
   font-weight: 400;
   line-height: 1.14;
   letter-spacing: -0.045em;
+  text-wrap: balance;
+  word-break: keep-all;
 }
 
 .travel-detail-section__heading > p {
@@ -2205,6 +2234,8 @@ body {
   color: var(--text-secondary);
   font-size: 0.92rem;
   line-height: 1.75;
+  text-wrap: pretty;
+  word-break: keep-all;
 }
 
 .travel-detail-empty {
@@ -2560,8 +2591,8 @@ body {
   color: var(--text-primary);
   font-size: 0.92rem;
   font-weight: 600;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  text-wrap: pretty;
+  word-break: keep-all;
 }
 
 .travel-itinerary__location,
@@ -2569,6 +2600,7 @@ body {
   color: var(--text-tertiary);
   font-size: 0.7rem;
   line-height: 1.55;
+  word-break: keep-all;
 }
 
 .travel-itinerary__memo {
@@ -2673,6 +2705,8 @@ body {
   padding: 0.8rem 0.2rem 0;
   color: var(--text-secondary);
   font-size: 0.78rem;
+  text-wrap: pretty;
+  word-break: keep-all;
 }
 
 .travel-gallery figcaption time {
@@ -2735,6 +2769,8 @@ body {
   font-size: 1.35rem;
   font-weight: 400;
   line-height: 1.35;
+  text-wrap: balance;
+  word-break: keep-all;
 }
 
 .travel-detail-nav-card__arrow {

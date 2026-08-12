@@ -93,18 +93,18 @@ export function ProfileExperience({ profile, countries, travels }: ProfileExperi
         <div className="site-shell profile-world__intro">
           <div>
             <p className="eyebrow">Personal world · @{profile.username}</p>
-            <h1 id="globe-heading">{profile.displayName}의 여행 지구본</h1>
+            <h1 id="globe-heading">{profile.displayName}의 여행 세계</h1>
           </div>
           <p>
-            다녀온 {countries.length}개 나라와 {travels.length}번의 여행을 한 세계에 모았습니다.
-            지구본을 직접 돌리거나 숫자 마커를 선택해 보세요.
+            {countries.length}개 나라, {travels.length}번의 여행이 하나의 지구본 위에
+            이어집니다. 지구본을 돌리거나 마커를 선택해 기록을 살펴보세요.
           </p>
         </div>
 
         <div className="site-shell">
           <div className="profile-globe-card">
             <div className="profile-globe-card__meta" aria-hidden="true">
-              <span>LIVE TRAVEL ARCHIVE</span>
+              <span>TRAVEL GLOBE · LIVE ARCHIVE</span>
               <span>{String(countries.length).padStart(2, "0")} COUNTRIES · {String(profile.statistics.cityCount).padStart(2, "0")} CITIES</span>
             </div>
 
@@ -119,9 +119,9 @@ export function ProfileExperience({ profile, countries, travels }: ProfileExperi
               ) : (
                 <div className="flex h-full items-center justify-center px-6">
                   <StateMessage
-                    eyebrow="Empty globe"
-                    title="아직 기록된 여행이 없습니다"
-                    description={"첫 번째 여행이 기록되면\n이곳에 새로운 나라가 표시됩니다."}
+                    eyebrow="기록 전"
+                    title="아직 여행 기록이 없습니다"
+                    description="첫 여행을 기록하면 이곳에 새로운 나라가 표시됩니다."
                   />
                 </div>
               )}
@@ -144,7 +144,7 @@ export function ProfileExperience({ profile, countries, travels }: ProfileExperi
               <p className="profile-globe-card__hint" aria-live="polite">
                 {hoveredCountry
                   ? `${hoveredCountry.nameKo} · 여행 ${hoveredCountry.travelCount}회`
-                  : "ROTATE · SELECT · REMEMBER"}
+                  : "돌려보고 · 선택하고 · 다시 보기"}
               </p>
             )}
           </div>
@@ -154,7 +154,7 @@ export function ProfileExperience({ profile, countries, travels }: ProfileExperi
       <div className="site-shell profile-archive">
         <section aria-labelledby="visited-heading" className="profile-country-filter">
           <div>
-            <p className="eyebrow">Visited</p>
+            <p className="eyebrow">Country index</p>
             <h2 id="visited-heading">방문한 나라</h2>
           </div>
           <CountryKeyboardList
@@ -168,7 +168,7 @@ export function ProfileExperience({ profile, countries, travels }: ProfileExperi
         <section aria-labelledby="travels-heading" className="pt-20">
           <SectionHeading
             id="travels-heading"
-            eyebrow="Archive"
+            eyebrow="Travel archive"
             title={selectedCountry ? `${selectedCountry.nameKo}에서의 여행` : "여행 기록"}
             aside={
               selectedCountry ? (
@@ -181,7 +181,7 @@ export function ProfileExperience({ profile, countries, travels }: ProfileExperi
                 </button>
               ) : (
                 <span className="text-content-faint font-mono text-[0.7rem] tracking-[0.08em]">
-                  {String(travels.length).padStart(2, "0")} JOURNEYS
+                  여행 {String(travels.length).padStart(2, "0")}개
                 </span>
               )
             }
@@ -206,15 +206,19 @@ export function ProfileExperience({ profile, countries, travels }: ProfileExperi
             </div>
           ) : (
             <StateMessage
-              title="아직 기록된 여행이 없습니다"
-              description={"첫 번째 여행이 기록되면\n이곳에 카드가 표시됩니다."}
+              title={selectedCountry ? `${selectedCountry.nameKo} 여행 기록이 없습니다` : "아직 여행 기록이 없습니다"}
+              description={
+                selectedCountry
+                  ? "필터를 해제하면 다른 나라의 여행도 확인할 수 있습니다."
+                  : "첫 여행을 기록하면 이곳에 여행 카드가 표시됩니다."
+              }
             />
           )}
         </section>
 
         {travels.length > 0 ? (
           <section aria-labelledby="timeline-heading" className="pt-28">
-            <SectionHeading id="timeline-heading" eyebrow="Chronology" title="여행 연대기" />
+            <SectionHeading id="timeline-heading" eyebrow="By year" title="시간순 여행 기록" />
             <TravelTimeline travels={travels} username={profile.username} />
           </section>
         ) : null}

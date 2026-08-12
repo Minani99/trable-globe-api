@@ -100,6 +100,10 @@ export function TravelRouteMap({ places }: TravelRouteMapProps) {
     return <p className="text-body">지도에 표시할 방문 장소가 없습니다.</p>;
   }
 
+  const mapLocationLabel = (
+    selectedPlace.city?.nameEn ?? selectedPlace.country.iso2Code
+  ).toUpperCase();
+
   const updateZoom = (nextZoom: number) => {
     const clamped = clamp(Math.round(nextZoom), MIN_ZOOM, MAX_ZOOM);
     if (clamped === zoom) {
@@ -171,13 +175,13 @@ export function TravelRouteMap({ places }: TravelRouteMapProps) {
       <div className="travel-route-map-shell">
         <div className="travel-route-map-toolbar">
           <div>
-            <p className="eyebrow">Interactive city map</p>
-            <p className="travel-route-map-toolbar__hint">드래그해서 이동 · 스크롤로 확대</p>
+            <p className="eyebrow">City route</p>
+            <p className="travel-route-map-toolbar__hint">지도를 움직이고 확대해 경로를 살펴보세요</p>
           </div>
           <div className="travel-route-map-controls" role="toolbar" aria-label="여행 경로 지도 확대·축소">
             <button type="button" onClick={() => updateZoom(zoom + 1)} aria-label="지도 확대">+</button>
             <button type="button" onClick={() => updateZoom(zoom - 1)} aria-label="지도 축소">−</button>
-            <button type="button" onClick={resetViewport} aria-label="전체 여행 경로 맞춤">전체</button>
+            <button type="button" onClick={resetViewport} aria-label="전체 여행 경로 맞춤">경로 맞춤</button>
           </div>
         </div>
 
@@ -299,7 +303,7 @@ export function TravelRouteMap({ places }: TravelRouteMapProps) {
           {loadedTileCount === 0 ? (
             <div className="travel-route-map-loading" role="status">
               <span aria-hidden="true" />
-              <p>도시 지도를 불러오는 중</p>
+              <p>도시 지도를 불러오는 중…</p>
             </div>
           ) : null}
 
@@ -311,7 +315,7 @@ export function TravelRouteMap({ places }: TravelRouteMapProps) {
             </div>
           </div>
 
-          <p className="travel-route-map-zoom" aria-live="polite">CITY MAP · Z{zoom}</p>
+          <p className="travel-route-map-zoom" aria-live="polite">{mapLocationLabel} · Z{zoom}</p>
           <p className="travel-route-map-attribution">
             © <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noreferrer">OpenStreetMap contributors</a>
           </p>
@@ -322,9 +326,9 @@ export function TravelRouteMap({ places }: TravelRouteMapProps) {
         <div className="travel-itinerary__header">
           <div>
             <p className="eyebrow">Itinerary</p>
-            <h3>방문 순서</h3>
+            <h3>방문 기록</h3>
           </div>
-          <span>{String(places.length).padStart(2, "0")} STOPS</span>
+          <span>{String(places.length).padStart(2, "0")}곳</span>
         </div>
 
         <ol className="travel-itinerary__list">
@@ -341,7 +345,7 @@ export function TravelRouteMap({ places }: TravelRouteMapProps) {
                   <span className="travel-itinerary__number">{String(index + 1).padStart(2, "0")}</span>
                   <span className="travel-itinerary__content">
                     <span className="travel-itinerary__meta">
-                      {place.visitedAt ? formatDate(place.visitedAt) : `STOP ${index + 1}`}
+                      {place.visitedAt ? formatDate(place.visitedAt) : `장소 ${index + 1}`}
                     </span>
                     <strong>{place.placeName}</strong>
                     <span className="travel-itinerary__location">

@@ -6,11 +6,6 @@
  * machine's locale.
  */
 
-const MONTHS_SHORT = [
-  "JAN", "FEB", "MAR", "APR", "MAY", "JUN",
-  "JUL", "AUG", "SEP", "OCT", "NOV", "DEC",
-] as const;
-
 interface DateParts {
   year: number;
   month: number;
@@ -42,10 +37,10 @@ export function formatDateRange(start: string, end: string): string {
   return from === to ? from : `${from} — ${to}`;
 }
 
-/** `MAY` - the month label used down the timeline rail. */
-export function formatMonthShort(value: string): string {
+/** `05월` - the compact Korean month label used down the timeline rail. */
+export function formatMonthLabel(value: string): string {
   const parts = parseIsoDate(value);
-  return parts ? MONTHS_SHORT[parts.month - 1] : "";
+  return parts ? `${pad(parts.month)}월` : "";
 }
 
 export function getYear(value: string): number {

@@ -11,11 +11,11 @@ export default function NotFound() {
         <StateMessage
           variant="page"
           eyebrow="404"
-          title="찾을 수 없는 페이지입니다"
-          description={"요청한 여행이나 프로필을 찾을 수 없습니다. 주소를 한 번 더 확인해 주세요."}
+          title="페이지를 찾을 수 없습니다"
+          description="주소가 달라졌거나 공개되지 않은 여행일 수 있습니다."
           action={{
             href: profilePath(siteConfig.demoUsername),
-            label: "공개 지구본으로 돌아가기",
+            label: "여행 지구본 보기",
           }}
         />
       </main>

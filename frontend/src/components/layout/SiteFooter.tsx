@@ -14,12 +14,12 @@ export function SiteFooter() {
           <ul className="flex items-center gap-5">
             <li>
               <Link className="transition-colors hover:text-[var(--text-primary)]" href={profilePath(siteConfig.demoUsername)}>
-                샘플 지구본
+                여행 지구본
               </Link>
             </li>
             <li>
               <Link className="transition-colors hover:text-[var(--text-primary)]" href="/about">
-                서비스 소개
+                Travel Globe 소개
               </Link>
             </li>
           </ul>

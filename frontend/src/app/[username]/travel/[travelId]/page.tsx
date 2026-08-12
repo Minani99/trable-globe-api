@@ -64,12 +64,12 @@ export default async function TravelDetailPage(
         <main id="main" className="flex-1">
           <StateMessage
             variant="page"
-            eyebrow="Connection error"
-            title="여행 기록을 불러오지 못했습니다"
+            eyebrow="연결 오류"
+            title="여행 기록을 불러올 수 없습니다"
             description={
               error instanceof ApiError && error.isUnreachable
-                ? "여행 기록을 잠시 불러오지 못했습니다.\n잠시 후 다시 열어 주세요."
-                : "잠시 후 다시 열어 주세요."
+                ? "서버가 여행 기록을 준비하고 있습니다. 잠시 후 다시 열어 주세요."
+                : "잠시 후 페이지를 다시 열어 주세요."
             }
             action={{ href: profilePath(username), label: "프로필로 돌아가기" }}
           />
@@ -138,27 +138,27 @@ export default async function TravelDetailPage(
                 <p className="travel-detail-hero__description">{travel.description}</p>
               ) : (
                 <p className="travel-detail-hero__description">
-                  지도 위의 경로와 사진으로 다시 꺼내 보는 여행입니다.
+                  지도 위의 경로와 사진을 따라 다시 걸어 보는 여행입니다.
                 </p>
               )}
 
               <dl className="travel-detail-stats">
                 <div>
-                  <dt>Duration</dt>
+                  <dt>여행 기간</dt>
                   <dd>{formatDuration(travel.durationDays)}</dd>
                 </div>
                 <div>
-                  <dt>Stops</dt>
+                  <dt>방문 장소</dt>
                   <dd>{String(travel.places.length).padStart(2, "0")}</dd>
                 </div>
                 <div>
-                  <dt>Scenes</dt>
+                  <dt>사진</dt>
                   <dd>{String(travel.photos.length).padStart(2, "0")}</dd>
                 </div>
               </dl>
 
               <a href="#route" className="travel-detail-hero__jump">
-                여정 살펴보기
+                경로와 일정 보기
                 <span aria-hidden="true">↓</span>
               </a>
             </div>
@@ -168,11 +168,11 @@ export default async function TravelDetailPage(
             <div className="travel-detail-section__heading">
               <div>
                 <p className="eyebrow">Route &amp; itinerary</p>
-                <h2 id="route-heading">여정을 따라가 보세요</h2>
+                <h2 id="route-heading">지도로 다시 걷는 여정</h2>
               </div>
               <p>
-                지도에서 방문 지점을 선택하거나 휠과 버튼으로 확대해 보세요. 장소 이름과 메모는
-                오른쪽 일정에서 겹치지 않게 확인할 수 있습니다.
+                지도에서 방문 지점을 선택하고, 확대하거나 이동해 보세요. 장소별 날짜와 메모는
+                방문 순서에 맞춰 이어집니다.
               </p>
             </div>
 
@@ -187,19 +187,17 @@ export default async function TravelDetailPage(
             <div className="travel-detail-section__heading">
               <div>
                 <p className="eyebrow">Scenes</p>
-                <h2 id="photos-heading">여행의 장면들</h2>
+                <h2 id="photos-heading">기억해 둔 장면</h2>
               </div>
-              <p>
-                이동 순서와는 다른 리듬으로, 오래 기억하고 싶은 순간들을 모았습니다.
-              </p>
+              <p>경로의 순서에서 잠시 벗어나, 오래 남기고 싶은 순간만 모았습니다.</p>
             </div>
             <PhotoGallery photos={travel.photos} travelTitle={travel.title} />
           </section>
 
           <section className="travel-detail-more" aria-labelledby="more-travel-heading">
             <div>
-              <p className="eyebrow">Keep exploring</p>
-              <h2 id="more-travel-heading">다른 여행으로 이어보기</h2>
+              <p className="eyebrow">More journeys</p>
+              <h2 id="more-travel-heading">다음 여행을 이어서 보세요</h2>
             </div>
             <nav aria-label="이전·다음 여행" className="travel-detail-navigation">
               <TravelNavCard
@@ -232,14 +230,14 @@ function TravelNavCard({
   direction: "previous" | "next";
 }) {
   const isPrevious = direction === "previous";
-  const label = isPrevious ? "Previous journey" : "Next journey";
+  const label = isPrevious ? "이전 여행" : "다음 여행";
   const arrow = isPrevious ? "←" : "→";
 
   if (!travel) {
     return (
       <div className="travel-detail-nav-card is-empty" aria-disabled="true">
         <span className="travel-detail-nav-card__meta">{label}</span>
-        <strong>{isPrevious ? "첫 번째 기록입니다" : "마지막 기록입니다"}</strong>
+        <strong>{isPrevious ? "첫 여행입니다" : "가장 최근 여행입니다"}</strong>
         <span className="travel-detail-nav-card__arrow" aria-hidden="true">
           {arrow}
         </span>

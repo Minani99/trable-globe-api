@@ -29,7 +29,7 @@ export function PhotoGallery({ photos, travelTitle }: PhotoGalleryProps) {
               </span>
             </div>
             <figcaption>
-              <span>{photo.caption ?? "기억하고 싶은 장면"}</span>
+              <span>{photo.caption ?? "기록해 둔 장면"}</span>
               {photo.takenAt ? <time dateTime={photo.takenAt}>{formatDate(photo.takenAt)}</time> : null}
             </figcaption>
           </figure>

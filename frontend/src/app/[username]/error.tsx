@@ -25,9 +25,9 @@ export default function ProfileError({
     <div className="flex-1">
       <StateMessage
         variant="page"
-        eyebrow="Something went wrong"
-        title="화면을 표시하지 못했습니다"
-        description="잠시 후 다시 시도해 주세요."
+        eyebrow="화면 오류"
+        title="페이지를 표시할 수 없습니다"
+        description="일시적인 오류입니다. 잠시 후 다시 시도해 주세요."
       />
       <div className="flex justify-center pb-16">
         <button
@@ -35,7 +35,7 @@ export default function ProfileError({
           onClick={reset}
           className="border-border-strong text-content-muted rounded-full border px-4 py-2 text-[0.8rem] transition-colors hover:border-[var(--accent-border)] hover:text-[var(--accent-strong)]"
         >
-          다시 시도
+          페이지 다시 불러오기
         </button>
       </div>
     </div>

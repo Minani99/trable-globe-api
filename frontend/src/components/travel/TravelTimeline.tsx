@@ -1,7 +1,7 @@
 import Link from "next/link";
 
 import { travelPath } from "@/lib/config";
-import { formatMonthShort, getYear } from "@/lib/utils/format";
+import { formatMonthLabel, getYear } from "@/lib/utils/format";
 import type { TravelSummary } from "@/types";
 
 interface TravelTimelineProps {
@@ -50,7 +50,7 @@ export function TravelTimeline({ travels, username }: TravelTimelineProps) {
                   className="hover:bg-surface/60 group flex flex-wrap items-baseline gap-x-4 gap-y-1 rounded-r-md py-3 pr-3 pl-6 transition-colors"
                 >
                   <span className="text-content-faint w-10 shrink-0 font-mono text-[0.7rem] tracking-widest">
-                    {formatMonthShort(travel.startDate)}
+                    {formatMonthLabel(travel.startDate)}
                   </span>
                   <span className="text-content text-[0.92rem] transition-colors group-hover:text-[var(--accent-strong)]">
                     {travel.title}
@@ -58,7 +58,7 @@ export function TravelTimeline({ travels, username }: TravelTimelineProps) {
                   <span className="text-content-faint text-[0.76rem]">
                     {[travel.primaryCity?.nameKo, travel.primaryCountry?.nameKo]
                       .filter(Boolean)
-                      .join(", ")}
+                      .join(" · ")}
                   </span>
                 </Link>
               </li>

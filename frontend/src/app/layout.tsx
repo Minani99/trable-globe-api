@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono, Gowun_Batang } from "next/font/google";
+import { Geist, Geist_Mono, Noto_Sans_KR, Noto_Serif_KR } from "next/font/google";
 
 import { siteConfig } from "@/lib/config";
 import { getSiteUrl } from "@/lib/site-url";
@@ -24,10 +24,18 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
-const gowunBatang = Gowun_Batang({
-  variable: "--font-gowun-batang",
-  weight: "400",
+const notoSansKr = Noto_Sans_KR({
+  variable: "--font-noto-sans-kr",
+  weight: ["400", "500", "600"],
   display: "swap",
+  preload: false,
+});
+
+const notoSerifKr = Noto_Serif_KR({
+  variable: "--font-noto-serif-kr",
+  weight: ["400", "500"],
+  display: "swap",
+  preload: false,
 });
 
 export const metadata: Metadata = {
@@ -58,7 +66,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
     <html
       lang="ko"
       suppressHydrationWarning
-      className={`${geistSans.variable} ${geistMono.variable} ${gowunBatang.variable} h-full antialiased`}
+      className={`${geistSans.variable} ${geistMono.variable} ${notoSansKr.variable} ${notoSerifKr.variable} h-full antialiased`}
     >
       <body className="bg-background text-content flex min-h-full flex-col">
         <script dangerouslySetInnerHTML={{ __html: themeInitScript }} />
