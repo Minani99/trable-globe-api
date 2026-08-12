@@ -4,6 +4,9 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import com.travelglobe.trableglobeapi.global.exception.ResourceNotFoundException;
+import com.travelglobe.trableglobeapi.global.seed.SeedDataLoader;
+import com.travelglobe.trableglobeapi.member.domain.Member;
+import com.travelglobe.trableglobeapi.member.repository.MemberRepository;
 import com.travelglobe.trableglobeapi.profile.dto.ProfileResponse;
 import com.travelglobe.trableglobeapi.profile.dto.VisitedCountryResponse;
 import com.travelglobe.trableglobeapi.statistics.dto.TravelStatisticsResponse;
@@ -27,6 +30,12 @@ class ProfileServiceTest {
     @Autowired
     private ProfileService profileService;
 
+    @Autowired
+    private SeedDataLoader seedDataLoader;
+
+    @Autowired
+    private MemberRepository memberRepository;
+
     @Test
     @DisplayName("프로필은 기본 정보와 통계를 함께 반환한다")
     void returnsProfileWithStatistics() {
@@ -37,6 +46,22 @@ class ProfileServiceTest {
         assertThat(profile.statistics().countryCount()).isEqualTo(4);
         assertThat(profile.statistics().cityCount()).isEqualTo(7);
         assertThat(profile.statistics().travelCount()).isEqualTo(5);
+    }
+
+    @Test
+    @DisplayName("기존 데모 여행은 보존하면서 프로필 문구를 최신 상태로 맞춘다")
+    void refreshesExistingDemoProfileWithoutDuplicatingTravels() {
+        Member traveler = memberRepository.findByUsername(DEMO_USERNAME).orElseThrow();
+        traveler.updateProfile("Old demo name", "Old demo bio", null);
+        memberRepository.saveAndFlush(traveler);
+        int travelCountBeforeRefresh = profileService.getTravels(DEMO_USERNAME).size();
+
+        seedDataLoader.run(null);
+
+        ProfileResponse refreshedProfile = profileService.getProfile(DEMO_USERNAME);
+        assertThat(refreshedProfile.displayName()).isEqualTo("민아");
+        assertThat(refreshedProfile.bio()).isEqualTo("다녀온 세계를 천천히 모으는 여행 기록");
+        assertThat(profileService.getTravels(DEMO_USERNAME)).hasSize(travelCountBeforeRefresh);
     }
 
     @Test

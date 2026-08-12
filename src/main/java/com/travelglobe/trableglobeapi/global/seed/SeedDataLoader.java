@@ -29,8 +29,9 @@ import org.springframework.transaction.annotation.Transactional;
  *
  * <p>Enabled by {@code travel-globe.seed.enabled}, which is true for the {@code local} and
  * {@code postgres} profiles and false for {@code prod} - production must never invent
- * travel records. The loader is idempotent: it does nothing if the demo handle already
- * exists, so restarting against a persistent PostgreSQL database will not duplicate data.
+ * travel records. The loader is idempotent: when the demo handle already exists it only
+ * refreshes the showcase profile copy, so restarting against a persistent PostgreSQL database
+ * will not duplicate travel data.
  *
  * <p>Everything here is invented. Image URLs point at generated SVG placeholders shipped
  * in the frontend's {@code public/placeholders} folder, so the UI has real files to load
@@ -43,6 +44,9 @@ public class SeedDataLoader implements ApplicationRunner {
     private static final Logger log = LoggerFactory.getLogger(SeedDataLoader.class);
 
     private static final String DEMO_USERNAME = "traveler";
+    private static final String DEMO_DISPLAY_NAME = "민아";
+    private static final String DEMO_BIO = "다녀온 세계를 천천히 모으는 여행 기록";
+    private static final String DEMO_PROFILE_IMAGE_URL = "/placeholders/avatar.svg";
 
     private final MemberRepository memberRepository;
     private final CountryRepository countryRepository;
@@ -65,16 +69,19 @@ public class SeedDataLoader implements ApplicationRunner {
     @Override
     @Transactional
     public void run(ApplicationArguments args) {
-        if (memberRepository.existsByUsername(DEMO_USERNAME)) {
-            log.info("Seed data already present, skipping");
+        Member existingTraveler = memberRepository.findByUsername(DEMO_USERNAME).orElse(null);
+        if (existingTraveler != null) {
+            existingTraveler.updateProfile(DEMO_DISPLAY_NAME, DEMO_BIO, DEMO_PROFILE_IMAGE_URL);
+            memberRepository.save(existingTraveler);
+            log.info("Refreshed demo profile while preserving existing travel data");
             return;
         }
 
         Member traveler = memberRepository.save(Member.create(
                 DEMO_USERNAME,
-                "민아",
-                "다녀온 세계를 천천히 모으는 여행 기록",
-                "/placeholders/avatar.svg"));
+                DEMO_DISPLAY_NAME,
+                DEMO_BIO,
+                DEMO_PROFILE_IMAGE_URL));
 
         Country korea = country("KR", "KOR", "South Korea", "대한민국", "35.907757", "127.766922");
         Country japan = country("JP", "JPN", "Japan", "일본", "36.204824", "138.252924");
