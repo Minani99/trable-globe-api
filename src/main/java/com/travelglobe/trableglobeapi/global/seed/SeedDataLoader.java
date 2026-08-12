@@ -72,8 +72,8 @@ public class SeedDataLoader implements ApplicationRunner {
 
         Member traveler = memberRepository.save(Member.create(
                 DEMO_USERNAME,
-                "Travel Globe",
-                "기록으로 남기는 나의 여행 지도",
+                "민아",
+                "다녀온 세계를 천천히 모으는 여행 기록",
                 "/placeholders/avatar.svg"));
 
         Country korea = country("KR", "KOR", "South Korea", "대한민국", "35.907757", "127.766922");
@@ -210,9 +210,9 @@ public class SeedDataLoader implements ApplicationRunner {
                 "마지막 밤은 바다 앞에서.", 2));
 
         persist(travel, List.of(
-                photo(0, "/placeholders/photo-01.svg", "을지로의 골목", LocalDate.of(2025, 4, 4)),
-                photo(1, "/placeholders/photo-04.svg", "감천문화마을", LocalDate.of(2025, 4, 6)),
-                photo(2, "/placeholders/photo-07.svg", "광안리의 밤", LocalDate.of(2025, 4, 7))));
+                photo(0, "/placeholders/photo-11.svg", "을지로의 골목", LocalDate.of(2025, 4, 4)),
+                photo(1, "/placeholders/photo-12.svg", "감천문화마을", LocalDate.of(2025, 4, 6)),
+                photo(2, "/placeholders/photo-13.svg", "광안리의 밤", LocalDate.of(2025, 4, 7))));
     }
 
     /**

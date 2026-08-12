@@ -486,7 +486,7 @@ export function TravelGlobe({ countries, selectedCode, onSelect, onHover }: Trav
             htmlElement={createMarker}
             htmlElementVisibilityModifier={(element, isVisible) => {
               // Hide markers that sit on the far side of the sphere.
-              element.style.opacity = isVisible ? "1" : "0";
+              element.classList.toggle("is-behind", !isVisible);
               element.style.pointerEvents = isVisible ? "auto" : "none";
             }}
             ringsData={ringData}
@@ -538,7 +538,7 @@ function GlobeViewControls({
     <div
       role="toolbar"
       aria-label="지구본 확대·축소"
-      className="absolute top-4 right-4 z-10 flex flex-col gap-1.5"
+      className="globe-view-controls absolute top-4 right-4 z-10 flex flex-col gap-1.5"
     >
       <button type="button" className={buttonClass} onClick={onZoomIn} aria-label="지구본 확대">
         +

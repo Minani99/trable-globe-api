@@ -1,27 +1,38 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 900" width="1600" height="900" role="img" aria-label="여행 사진 자리표시자">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 900" width="1600" height="900" role="img" aria-label="여행 기록 일러스트레이션">
   <defs>
-    <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0%" stop-color="#ccebee"/>
-      <stop offset="100%" stop-color="#e9f4e9"/>
+    <linearGradient id="sky" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#caecea"/>
+      <stop offset="100%" stop-color="#fae3b9"/>
     </linearGradient>
-    <radialGradient id="glow" cx="48%" cy="39%" r="68%">
-      <stop offset="0%" stop-color="#fff8cf" stop-opacity="0.82"/>
-      <stop offset="55%" stop-color="#fff8cf" stop-opacity="0.16"/>
-      <stop offset="100%" stop-color="#fff8cf" stop-opacity="0"/>
+    <radialGradient id="light" cx="62%" cy="46%" r="58%">
+      <stop offset="0%" stop-color="#fff8dd" stop-opacity="0.86"/>
+      <stop offset="100%" stop-color="#fff8dd" stop-opacity="0"/>
     </radialGradient>
-    <linearGradient id="haze" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0%" stop-color="#ffffff" stop-opacity="0.3"/>
-      <stop offset="100%" stop-color="#ffffff" stop-opacity="0"/>
-    </linearGradient>
+    <pattern id="grid" width="133" height="133" patternUnits="userSpaceOnUse">
+      <path d="M 133 0 L 0 0 0 133" fill="none" stroke="#176c78" stroke-opacity="0.08" stroke-width="1"/>
+    </pattern>
+    <filter id="soft"><feGaussianBlur stdDeviation="12"/></filter>
   </defs>
-
   <rect width="1600" height="900" fill="url(#sky)"/>
-  <rect width="1600" height="900" fill="url(#glow)"/>
-  <rect y="396.0" width="1600" height="162.0" fill="url(#haze)"/>
-
-  <path d="M0 486.0 C 352.0 441.0, 1024.0 567.0, 1600 450.0" fill="none" stroke="#ffffff" stroke-opacity="0.48" stroke-width="7.2"/>
-  <polygon points="0.0,597.9 133.3,596.3 266.7,585.4 400.0,567.7 533.3,547.7 666.7,530.1 800.0,519.5 933.3,518.2 1066.7,526.7 1200.0,542.9 1333.3,562.7 1466.7,581.4 1600.0,594.4 1600,900 0,900" fill="#71a8a7" opacity="0.82"/>
-  <polygon points="0.0,625.7 133.3,627.8 266.7,637.1 400.0,651.3 533.3,666.8 666.7,680.0 800.0,687.5 933.3,687.6 1066.7,680.1 1200.0,667.1 1333.3,651.5 1466.7,637.3 1600.0,627.9 1600,900 0,900" fill="#437b7c"/>
-  <polygon points="0.0,783.6 133.3,792.3 266.7,800.9 400.0,807.3 533.3,810.0 666.7,808.2 800.0,802.5 933.3,794.2 1066.7,785.4 1200.0,778.2 1333.3,774.3 1466.7,774.8 1600.0,779.5 1600,900 0,900" fill="#24515b"/>
-  <path d="M0 774.0 Q 608.0 684.0 1600 810.0" fill="none" stroke="#ffffff" stroke-opacity="0.16" stroke-width="5.4"/>
+  <rect width="1600" height="900" fill="url(#light)"/>
+  <rect width="1600" height="900" fill="url(#grid)"/>
+  <path d="M -80 549 C 320 387, 672 666, 992 513 S 1440 657, 1680 477" fill="none" stroke="#ffffff" stroke-opacity="0.72" stroke-width="9"/>
+  <path d="M -80 549 C 320 387, 672 666, 992 513 S 1440 657, 1680 477" fill="none" stroke="#ef7450" stroke-opacity="0.84" stroke-width="3.15" stroke-dasharray="12.6 10.8"/>
+  <g transform="translate(1088 225)" fill="none" stroke="#176c78" stroke-width="16.2" stroke-linecap="round" opacity="0.78">
+      <path d="M0 468C-32 288 24 162 64 0"/>
+      <path d="M64 0C-48 18 -112.00000000000001 81 -144 135M64 0C176 9 240 63.00000000000001 272 117M64 0C128 -63.00000000000001 128 -108 112.00000000000001 -144"/>
+      <path d="M-336 504.00000000000006Q32 405 400 504.00000000000006" stroke="#ef7450" stroke-width="7.2"/>
+    </g>
+  <g transform="translate(320 432)">
+      <circle r="15.3" fill="#ef7450" fill-opacity="0.16"/>
+      <circle r="7.2" fill="#ef7450" stroke="#fff8ec" stroke-width="3.6"/>
+    </g><g transform="translate(880.0000000000001 450)">
+      <circle r="20.7" fill="#ef7450" fill-opacity="0.16"/>
+      <circle r="7.2" fill="#ef7450" stroke="#fff8ec" stroke-width="3.6"/>
+    </g><g transform="translate(1296 468)">
+      <circle r="15.3" fill="#ef7450" fill-opacity="0.16"/>
+      <circle r="7.2" fill="#ef7450" stroke="#fff8ec" stroke-width="3.6"/>
+    </g>
+  <path d="M0 792 Q 560 702 1600 810 V900 H0Z" fill="#176c78" opacity="0.92"/>
+  <path d="M0 819 Q 832 729 1600 846" fill="none" stroke="#fff" stroke-opacity="0.16" stroke-width="4.5"/>
 </svg>

@@ -51,8 +51,8 @@ export default async function ProfilePage(props: PageProps<"/[username]">) {
             title="여행 기록을 불러오지 못했습니다"
             description={
               error instanceof ApiError && error.isUnreachable
-                ? "API 서버에 연결할 수 없습니다.\n백엔드가 실행 중인지 확인해 주세요."
-                : "잠시 후 다시 시도해 주세요."
+                ? "여행 기록을 잠시 불러오지 못했습니다.\n잠시 후 다시 열어 주세요."
+                : "잠시 후 다시 열어 주세요."
             }
             action={{ href: "/", label: "홈으로" }}
           />

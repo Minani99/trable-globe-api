@@ -173,7 +173,7 @@ export function TravelRouteMap({ places, countryCodes }: TravelRouteMapProps) {
             viewBox={`0 0 ${VIEW_WIDTH} ${VIEW_HEIGHT}`}
             className={isDragging ? "is-dragging" : ""}
             role="img"
-            aria-label={`${places.map((place) => place.placeName).join(", ")}을(를) 잇는 확대 가능한 여행 경로 지도`}
+            aria-label={`${places.map((place) => place.placeName).join(", ")} 방문 순서를 보여주는 확대 가능한 여행 경로 지도`}
             onWheel={handleWheel}
             onPointerDown={handlePointerDown}
             onPointerMove={handlePointerMove}
@@ -320,7 +320,7 @@ export function TravelRouteMap({ places, countryCodes }: TravelRouteMapProps) {
             <p className="eyebrow">Itinerary</p>
             <h3>방문 순서</h3>
           </div>
-          <span>{String(places.length).padStart(2, "0")} stops</span>
+          <span>{String(places.length).padStart(2, "0")} STOPS</span>
         </div>
 
         <ol className="travel-itinerary__list">

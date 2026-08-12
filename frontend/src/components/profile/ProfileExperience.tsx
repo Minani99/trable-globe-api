@@ -89,72 +89,83 @@ export function ProfileExperience({ profile, countries, travels }: ProfileExperi
 
   return (
     <>
-      {/* Globe stage: the first thing on the page, tall enough to be the subject. */}
-      <section
-        aria-labelledby="globe-heading"
-        className="relative w-full lg:h-[calc(100vh-3.5rem)] lg:max-h-[820px] lg:min-h-[580px]"
-      >
-        <h2 id="globe-heading" className="sr-only">
-          {profile.displayName}님의 여행 지구본
-        </h2>
-
-        {/* On a phone the globe keeps its own block so nothing can cover it; from lg up
-            it fills the stage and the panels float over it. */}
-        <div className="h-[52vh] max-h-[560px] min-h-[340px] w-full lg:absolute lg:inset-0 lg:h-full lg:max-h-none">
-          {countries.length > 0 ? (
-            <TravelGlobe
-              countries={countries}
-              selectedCode={selectedCode}
-              onSelect={handleSelect}
-              onHover={handleHover}
-            />
-          ) : (
-            <div className="flex h-full items-center justify-center px-6">
-              <StateMessage
-                eyebrow="Empty globe"
-                title="아직 기록된 여행이 없습니다"
-                description={"첫 번째 여행이 기록되면\n이곳에 새로운 나라가 표시됩니다."}
-              />
-            </div>
-          )}
+      <section aria-labelledby="globe-heading" className="profile-world">
+        <div className="site-shell profile-world__intro">
+          <div>
+            <p className="eyebrow">Personal world · @{profile.username}</p>
+            <h1 id="globe-heading">{profile.displayName}의 여행 지구본</h1>
+          </div>
+          <p>
+            다녀온 {countries.length}개 나라와 {travels.length}번의 여행을 한 세계에 모았습니다.
+            지구본을 직접 돌리거나 숫자 마커를 선택해 보세요.
+          </p>
         </div>
 
-        <div className="flex flex-col gap-4 px-5 py-5 sm:px-8 lg:pointer-events-none lg:absolute lg:inset-0 lg:justify-between lg:p-6">
-          <div className="lg:pointer-events-auto lg:self-end">
-            <ProfilePanel profile={profile} />
-          </div>
-
-          {selectedCountry ? (
-            <div className="lg:pointer-events-auto lg:self-start">
-              <CountryDetailPanel
-                country={selectedCountry}
-                travels={visibleTravels}
-                username={profile.username}
-                onClear={() => handleSelect(null)}
-              />
+        <div className="site-shell">
+          <div className="profile-globe-card">
+            <div className="profile-globe-card__meta" aria-hidden="true">
+              <span>LIVE TRAVEL ARCHIVE</span>
+              <span>{String(countries.length).padStart(2, "0")} COUNTRIES · {String(profile.statistics.cityCount).padStart(2, "0")} CITIES</span>
             </div>
-          ) : (
-            <p className="text-content-faint hidden text-[0.75rem] lg:block" aria-hidden="true">
-              {hoveredCountry
-                ? `${hoveredCountry.nameKo} · 여행 ${hoveredCountry.travelCount}회`
-                : "지구본을 돌려보거나 마커를 선택해 보세요"}
-            </p>
-          )}
+
+            <div className="profile-globe-card__canvas">
+              {countries.length > 0 ? (
+                <TravelGlobe
+                  countries={countries}
+                  selectedCode={selectedCode}
+                  onSelect={handleSelect}
+                  onHover={handleHover}
+                />
+              ) : (
+                <div className="flex h-full items-center justify-center px-6">
+                  <StateMessage
+                    eyebrow="Empty globe"
+                    title="아직 기록된 여행이 없습니다"
+                    description={"첫 번째 여행이 기록되면\n이곳에 새로운 나라가 표시됩니다."}
+                  />
+                </div>
+              )}
+            </div>
+
+            <div className="profile-globe-card__profile">
+              <ProfilePanel profile={profile} />
+            </div>
+
+            {selectedCountry ? (
+              <div className="profile-globe-card__country">
+                <CountryDetailPanel
+                  country={selectedCountry}
+                  travels={visibleTravels}
+                  username={profile.username}
+                  onClear={() => handleSelect(null)}
+                />
+              </div>
+            ) : (
+              <p className="profile-globe-card__hint" aria-live="polite">
+                {hoveredCountry
+                  ? `${hoveredCountry.nameKo} · 여행 ${hoveredCountry.travelCount}회`
+                  : "ROTATE · SELECT · REMEMBER"}
+              </p>
+            )}
+          </div>
         </div>
       </section>
 
-      <div className="mx-auto w-full max-w-[1400px] px-5 sm:px-8">
-        <div className="hairline py-6">
-          <p className="eyebrow mb-3">Visited</p>
+      <div className="site-shell profile-archive">
+        <section aria-labelledby="visited-heading" className="profile-country-filter">
+          <div>
+            <p className="eyebrow">Visited</p>
+            <h2 id="visited-heading">방문한 나라</h2>
+          </div>
           <CountryKeyboardList
             countries={countries}
             selectedCode={selectedCode}
             onSelect={handleSelect}
             onHover={handleHover}
           />
-        </div>
+        </section>
 
-        <section aria-labelledby="travels-heading" className="pt-12">
+        <section aria-labelledby="travels-heading" className="pt-20">
           <SectionHeading
             id="travels-heading"
             eyebrow="Archive"
@@ -169,8 +180,8 @@ export function ProfileExperience({ profile, countries, travels }: ProfileExperi
                   필터 해제
                 </button>
               ) : (
-                <span className="text-content-faint font-mono text-[0.78rem]">
-                  {travels.length} trips
+                <span className="text-content-faint font-mono text-[0.7rem] tracking-[0.08em]">
+                  {String(travels.length).padStart(2, "0")} JOURNEYS
                 </span>
               )
             }
@@ -202,7 +213,7 @@ export function ProfileExperience({ profile, countries, travels }: ProfileExperi
         </section>
 
         {travels.length > 0 ? (
-          <section aria-labelledby="timeline-heading" className="pt-20">
+          <section aria-labelledby="timeline-heading" className="pt-28">
             <SectionHeading id="timeline-heading" eyebrow="Chronology" title="여행 연대기" />
             <TravelTimeline travels={travels} username={profile.username} />
           </section>

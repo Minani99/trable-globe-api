@@ -11,11 +11,11 @@ export default function LandingPage() {
       <SiteHeader />
 
       <main id="main" className="flex flex-1 flex-col overflow-hidden">
-        <section className="landing-hero relative mx-auto grid min-h-[calc(100svh-3.5rem)] w-full max-w-[1500px] flex-1 items-center gap-12 px-5 py-14 sm:px-8 sm:py-20 lg:grid-cols-[minmax(0,0.82fr)_minmax(520px,1.18fr)] lg:gap-4 lg:px-12 lg:py-14 xl:px-14">
+        <section className="landing-hero site-shell relative grid min-h-[calc(100svh-3.5rem)] flex-1 items-center gap-12 py-14 sm:py-20 lg:grid-cols-[minmax(0,0.82fr)_minmax(520px,1.18fr)] lg:gap-4 lg:py-14">
           <div className="landing-copy relative z-10">
             <p className="eyebrow landing-reveal landing-reveal--eyebrow mb-6 flex items-center gap-3">
               <span className="landing-signal" aria-hidden="true" />
-              Personal travel archive · 01
+              Public travel archive · 01
             </p>
 
             <h1 className="landing-title text-content max-w-[12ch]">
@@ -33,7 +33,7 @@ export default function LandingPage() {
                 href={profilePath(siteConfig.demoUsername)}
                 className="landing-primary-cta group"
               >
-                <span>나의 세계 미리 보기</span>
+                <span>공개 지구본 둘러보기</span>
                 <span className="landing-primary-cta__arrow" aria-hidden="true">↗</span>
               </Link>
               <Link
@@ -61,7 +61,7 @@ export default function LandingPage() {
 
         <section
           aria-labelledby="experience-heading"
-          className="landing-experience mx-auto w-full max-w-[1400px] px-5 pb-10 sm:px-8 sm:pb-16"
+          className="landing-experience site-shell pb-10 sm:pb-16"
         >
           <div className="hairline grid gap-10 pt-10 md:grid-cols-[0.62fr_1.38fr] md:gap-16">
             <div>

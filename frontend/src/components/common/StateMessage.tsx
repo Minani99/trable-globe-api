@@ -30,14 +30,16 @@ export function StateMessage({
       }`}
     >
       {eyebrow ? <p className="eyebrow">{eyebrow}</p> : null}
-      <h2 className="text-title text-content">{title}</h2>
+      <h2 className={variant === "page" ? "text-heading text-content" : "text-title text-content"}>
+        {title}
+      </h2>
       {description ? (
         <div className="text-body max-w-[46ch] whitespace-pre-line">{description}</div>
       ) : null}
       {action ? (
         <Link
           href={action.href}
-          className="border-border-strong text-content mt-2 rounded-full border px-4 py-2 text-[0.8rem] transition-colors hover:border-[var(--accent-border)] hover:text-[var(--accent-strong)]"
+          className="landing-secondary-cta mt-2"
         >
           {action.label}
         </Link>

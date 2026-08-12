@@ -19,12 +19,12 @@ export function TravelCard({ travel, username, priority }: TravelCardProps) {
   const extraCountries = travel.countries.length - 1;
 
   return (
-    <article className="group">
+    <article className="travel-card group">
       <Link
         href={travelPath(username, travel.id)}
         className="focus-visible:outline-accent-strong block h-full"
       >
-        <div className="border-border-subtle relative aspect-[4/3] w-full overflow-hidden rounded-[14px] border">
+        <div className="travel-card__media relative aspect-[4/3] w-full overflow-hidden">
           <TravelImage
             src={travel.coverImageUrl}
             alt={`${travel.title} 대표 이미지`}
@@ -42,13 +42,13 @@ export function TravelCard({ travel, username, priority }: TravelCardProps) {
           </p>
         </div>
 
-        <div className="px-0.5 pt-4">
+        <div className="travel-card__body">
           <h3 className="text-title text-content transition-colors group-hover:text-[var(--accent-strong)]">
             {travel.title}
           </h3>
           <p className="text-content-faint mt-1.5 font-mono text-[0.72rem]">
             {formatDateRange(travel.startDate, travel.endDate)}
-            <span className="mx-1.5" aria-hidden="true">
+            <span className="mx-1.5">
               ·
             </span>
             {formatDuration(travel.durationDays)}

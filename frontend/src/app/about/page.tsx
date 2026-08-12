@@ -6,70 +6,108 @@ import { SiteHeader } from "@/components/layout/SiteHeader";
 import { profilePath, siteConfig } from "@/lib/config";
 
 export const metadata: Metadata = {
-  title: "About",
+  title: "서비스 이야기",
   description: siteConfig.description,
 };
+
+const CAPABILITIES = [
+  {
+    number: "01",
+    title: "한눈에 펼치는 세계",
+    description: "방문한 나라와 여행 횟수를 지구본 위에서 보고, 내가 건너온 세계의 모양을 확인합니다.",
+  },
+  {
+    number: "02",
+    title: "한 나라씩 모아보기",
+    description: "나라를 선택하면 그곳에서 남긴 여행과 도시, 장면만 이어서 살펴볼 수 있습니다.",
+  },
+  {
+    number: "03",
+    title: "경로를 따라 되짚기",
+    description: "확대 가능한 지도와 방문 순서, 메모를 따라 여행의 흐름을 다시 만납니다.",
+  },
+  {
+    number: "04",
+    title: "나의 세계 공유하기",
+    description: "하나의 공개 주소로 지구본과 여행 기록을 차분하게 보여주는 개인 아카이브입니다.",
+  },
+] as const;
 
 export default function AboutPage() {
   return (
     <>
       <SiteHeader />
 
-      <main id="main" className="mx-auto w-full max-w-[920px] flex-1 px-5 py-20 sm:px-8 sm:py-28">
-        <header className="max-w-[760px]">
-          <p className="eyebrow mb-5">Why a globe</p>
-          <h1 className="text-heading text-content max-w-[18ch] text-[clamp(2rem,5vw,3.4rem)]">
-            여행을 소비한 장소가 아니라, 살아온 세계로 남깁니다.
-          </h1>
-          <p className="text-body mt-8 max-w-[62ch] text-[1rem]">
-            {siteConfig.name}은 다녀온 곳과 그날의 이야기를 3D 지구본에 모으는 개인 여행
-            아카이브입니다. 여행이 끝난 뒤에도 내가 건너온 나라와 도시를 한눈에 펼쳐보고, 한
-            장면씩 다시 들어갈 수 있도록 만들고 있습니다.
-          </p>
-        </header>
+      <main id="main" className="about-page flex-1">
+        <div className="site-shell">
+          <header className="about-hero">
+            <div className="about-hero__copy">
+              <p className="eyebrow">Why a globe</p>
+              <h1>여행을 소비한 장소가 아니라, 살아온 세계로 남깁니다.</h1>
+              <p>
+                {siteConfig.name}은 다녀온 곳과 그날의 이야기를 3D 지구본에 모으는 개인 여행
+                아카이브입니다. 여행이 끝난 뒤에도 내가 건너온 나라와 도시를 한눈에 펼쳐보고,
+                한 장면씩 다시 들어갈 수 있도록 만들고 있습니다.
+              </p>
+              <div className="about-hero__actions">
+                <Link href={profilePath(siteConfig.demoUsername)} className="landing-primary-cta">
+                  <span>공개 지구본 둘러보기</span>
+                  <span className="landing-primary-cta__arrow" aria-hidden="true">↗</span>
+                </Link>
+                <Link href="/" className="landing-secondary-cta">처음으로</Link>
+              </div>
+            </div>
 
-        <section aria-labelledby="now-heading" className="hairline mt-16 grid gap-8 pt-10 md:grid-cols-2">
-          <div>
-            <p className="eyebrow mb-3">Available now</p>
-            <h2 id="now-heading" className="text-title text-content">
-              지금 할 수 있는 것
-            </h2>
-          </div>
-          <ul className="text-body grid gap-4 text-[0.9rem]">
-            <li>방문한 나라와 여행 횟수를 3D 지구본에서 둘러보기</li>
-            <li>나라를 선택해 그곳의 여행 기록만 모아보기</li>
-            <li>여행별 경로, 방문 장소, 사진과 메모 되짚기</li>
-            <li>공개 프로필 주소로 나의 여행 세계 공유하기</li>
-          </ul>
-        </section>
+            <figure className="about-world" aria-label="여행 기록이 연결되는 지구본 개념도">
+              <div className="about-world__sphere" aria-hidden="true">
+                <span className="about-world__longitude" />
+                <span className="about-world__latitude" />
+                <span className="about-world__route" />
+                <i className="about-world__marker about-world__marker--one" />
+                <i className="about-world__marker about-world__marker--two" />
+                <i className="about-world__marker about-world__marker--three" />
+              </div>
+              <figcaption>
+                <span>PERSONAL WORLD · 01</span>
+                <strong>기억은 좌표가 되고,<br />좌표는 다시 이야기가 됩니다.</strong>
+              </figcaption>
+            </figure>
+          </header>
 
-        <section aria-labelledby="next-heading" className="hairline mt-14 grid gap-8 pt-10 md:grid-cols-2">
-          <div>
-            <p className="eyebrow mb-3">Next chapters</p>
-            <h2 id="next-heading" className="text-title text-content">
-              다음에 더할 것
-            </h2>
-          </div>
-          <p className="text-body text-[0.9rem]">
-            현재는 공개 아카이브를 읽는 경험에 집중한 첫 버전입니다. 다음 단계에서는 로그인과
-            여행 작성, 사진 업로드, 공개 범위 설정을 더해 누구나 자신의 지구본을 만들 수 있도록
-            확장할 예정입니다.
-          </p>
-        </section>
+          <section className="about-capabilities" aria-labelledby="available-heading">
+            <div className="about-section-heading">
+              <div>
+                <p className="eyebrow">Available now</p>
+                <h2 id="available-heading">지금 할 수 있는 것</h2>
+              </div>
+              <p>여행을 단순한 목록보다 오래 꺼내볼 수 있는 형태로 정리합니다.</p>
+            </div>
 
-        <div className="mt-14 flex flex-wrap items-center gap-3">
-          <Link
-            href={profilePath(siteConfig.demoUsername)}
-            className="rounded-full bg-[var(--accent)] px-5 py-2.5 text-[0.85rem] font-semibold text-[#130a06] transition-colors hover:bg-[var(--accent-strong)]"
-          >
-            샘플 지구본 둘러보기
-          </Link>
-          <Link href="/" className="text-content-muted px-3 py-2 text-[0.84rem] hover:text-[var(--text-primary)]">
-            처음으로 돌아가기
-          </Link>
+            <ol className="about-capability-grid">
+              {CAPABILITIES.map((item) => (
+                <li key={item.number}>
+                  <span>{item.number}</span>
+                  <h3>{item.title}</h3>
+                  <p>{item.description}</p>
+                </li>
+              ))}
+            </ol>
+          </section>
+
+          <section className="about-next" aria-labelledby="next-heading">
+            <div>
+              <p className="eyebrow">Next chapters</p>
+              <h2 id="next-heading">누구나 자신의 지구본을 만들 수 있도록.</h2>
+            </div>
+            <div>
+              <p>
+                현재는 공개 아카이브를 읽는 경험에 집중한 첫 버전입니다. 다음 단계에서는 로그인,
+                여행 작성, 사진 업로드와 공개 범위 설정을 더해 직접 기록할 수 있도록 확장합니다.
+              </p>
+              <span>{siteConfig.name}은 지금도 천천히 완성되고 있습니다.</span>
+            </div>
+          </section>
         </div>
-
-        <p className="text-caption hairline mt-16 pt-6">{siteConfig.name}은 현재 개발 중인 서비스입니다.</p>
       </main>
 
       <SiteFooter />

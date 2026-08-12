@@ -1,0 +1,40 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 900" width="1200" height="900" role="img" aria-label="여행 기록 일러스트레이션">
+  <defs>
+    <linearGradient id="sky" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#ddecda"/>
+      <stop offset="100%" stop-color="#f0e5c7"/>
+    </linearGradient>
+    <radialGradient id="light" cx="33%" cy="27%" r="58%">
+      <stop offset="0%" stop-color="#fff8dd" stop-opacity="0.86"/>
+      <stop offset="100%" stop-color="#fff8dd" stop-opacity="0"/>
+    </radialGradient>
+    <pattern id="grid" width="100" height="100" patternUnits="userSpaceOnUse">
+      <path d="M 100 0 L 0 0 0 100" fill="none" stroke="#315b47" stroke-opacity="0.08" stroke-width="1"/>
+    </pattern>
+    <filter id="soft"><feGaussianBlur stdDeviation="12"/></filter>
+  </defs>
+  <rect width="1200" height="900" fill="url(#sky)"/>
+  <rect width="1200" height="900" fill="url(#light)"/>
+  <rect width="1200" height="900" fill="url(#grid)"/>
+  <path d="M -60 500 C 240 338, 504 617, 744 464 S 1080 608, 1260 428" fill="none" stroke="#ffffff" stroke-opacity="0.72" stroke-width="9"/>
+  <path d="M -60 500 C 240 338, 504 617, 744 464 S 1080 608, 1260 428" fill="none" stroke="#d96539" stroke-opacity="0.84" stroke-width="3.15" stroke-dasharray="12.6 10.8"/>
+  <g transform="translate(600 279)" fill="none" stroke="#315b47" opacity="0.78">
+    <path d="M-324 414L0 90L324 414" stroke-width="12.6"/>
+    <path d="M-264 414L0 162L264 414" stroke="#d96539" stroke-width="8.1" stroke-dasharray="22.5 18"/>
+    <path d="M-360 450H360" stroke-width="27"/>
+    <rect x="-264" y="288" width="84.00000000000001" height="162" fill="#315b47" stroke="none"/>
+    <rect x="156" y="234" width="108" height="216" fill="#315b47" stroke="none"/>
+  </g>
+  <g transform="translate(312 432)">
+      <circle r="15.3" fill="#d96539" fill-opacity="0.16"/>
+      <circle r="7.2" fill="#d96539" stroke="#fff8ec" stroke-width="3.6"/>
+    </g><g transform="translate(660 477)">
+      <circle r="20.7" fill="#d96539" fill-opacity="0.16"/>
+      <circle r="7.2" fill="#d96539" stroke="#fff8ec" stroke-width="3.6"/>
+    </g><g transform="translate(912 468)">
+      <circle r="15.3" fill="#d96539" fill-opacity="0.16"/>
+      <circle r="7.2" fill="#d96539" stroke="#fff8ec" stroke-width="3.6"/>
+    </g>
+  <path d="M0 792 Q 420 702 1200 810 V900 H0Z" fill="#315b47" opacity="0.92"/>
+  <path d="M0 819 Q 624 729 1200 846" fill="none" stroke="#fff" stroke-opacity="0.16" stroke-width="4.5"/>
+</svg>

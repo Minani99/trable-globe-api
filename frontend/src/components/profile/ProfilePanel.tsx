@@ -25,9 +25,9 @@ export function ProfilePanel({ profile }: ProfilePanelProps) {
           className="border-border-subtle h-12 w-12 shrink-0 rounded-full border object-cover"
         />
         <div className="min-w-0">
-          <h1 className="text-content truncate text-[1.05rem] font-medium tracking-tight">
+          <h2 className="text-content truncate text-[1.05rem] font-medium tracking-tight">
             {profile.displayName}
-          </h1>
+          </h2>
           <p className="text-content-faint truncate font-mono text-[0.76rem]">
             @{profile.username}
           </p>

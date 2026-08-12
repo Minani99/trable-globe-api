@@ -68,8 +68,8 @@ export default async function TravelDetailPage(
             title="여행 기록을 불러오지 못했습니다"
             description={
               error instanceof ApiError && error.isUnreachable
-                ? "API 서버에 연결할 수 없습니다.\n백엔드가 실행 중인지 확인해 주세요."
-                : "잠시 후 다시 시도해 주세요."
+                ? "여행 기록을 잠시 불러오지 못했습니다.\n잠시 후 다시 열어 주세요."
+                : "잠시 후 다시 열어 주세요."
             }
             action={{ href: profilePath(username), label: "프로필로 돌아가기" }}
           />
@@ -99,7 +99,7 @@ export default async function TravelDetailPage(
       <SiteHeader username={travel.owner.username} />
 
       <main id="main" className="travel-detail-page flex-1">
-        <article className="mx-auto w-full max-w-[1360px] px-5 sm:px-8 lg:px-10">
+        <article className="site-shell">
           <nav aria-label="현재 위치" className="travel-detail-breadcrumb">
             <Link href={profilePath(travel.owner.username)}>
               <span aria-hidden="true">←</span>

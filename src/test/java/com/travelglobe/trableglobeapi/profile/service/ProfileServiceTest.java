@@ -33,7 +33,7 @@ class ProfileServiceTest {
         ProfileResponse profile = profileService.getProfile(DEMO_USERNAME);
 
         assertThat(profile.username()).isEqualTo(DEMO_USERNAME);
-        assertThat(profile.displayName()).isEqualTo("Travel Globe");
+        assertThat(profile.displayName()).isEqualTo("민아");
         assertThat(profile.statistics().countryCount()).isEqualTo(4);
         assertThat(profile.statistics().cityCount()).isEqualTo(7);
         assertThat(profile.statistics().travelCount()).isEqualTo(5);
