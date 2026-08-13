@@ -23,6 +23,9 @@ spring:
     enabled: false
 
 travel-globe:
+  auth:
+    # Local tests can complete verification/reset without an email provider account.
+    expose-action-tokens: true
   seed:
     enabled: true
 

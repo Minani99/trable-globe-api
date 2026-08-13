@@ -135,6 +135,13 @@ export interface AuthMember {
   bio: string | null;
   profileImageUrl: string | null;
   email: string;
+  emailVerified: boolean;
+}
+
+export interface AccountActionResult {
+  message: string;
+  developmentToken: string | null;
+  expiresAt: string | null;
 }
 
 export interface OwnedTravelSummary {

@@ -80,6 +80,7 @@ export function AuthForm({ mode }: { mode: "login" | "register" }) {
       </label>
 
       {error ? <p className="auth-form__error" role="alert">{error}</p> : null}
+      {!isRegister ? <Link className="auth-form__forgot" href="/forgot-password">비밀번호를 잊으셨나요?</Link> : null}
       <button type="submit" disabled={pending}>
         {pending ? "처리 중…" : isRegister ? "내 지구본 시작하기" : "로그인"}
       </button>

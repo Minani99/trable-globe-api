@@ -65,6 +65,16 @@ public class AuthSessionService {
                 .ifPresent(session -> session.revoke(Instant.now()));
     }
 
+    @Transactional
+    public void revokeAll(Long memberId) {
+        authSessionRepository.revokeAllForMember(memberId, Instant.now());
+    }
+
+    @Transactional
+    public void deleteAll(Long memberId) {
+        authSessionRepository.deleteAllForMember(memberId);
+    }
+
     static String hash(String rawToken) {
         try {
             byte[] digest = MessageDigest.getInstance("SHA-256")

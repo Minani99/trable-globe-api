@@ -13,6 +13,7 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
+import java.time.Instant;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -44,6 +45,9 @@ public class MemberCredential extends BaseTimeEntity {
     @Column(name = "password_hash", nullable = false, length = 100)
     private String passwordHash;
 
+    @Column(name = "email_verified_at")
+    private Instant emailVerifiedAt;
+
     private MemberCredential(Member member, String email, String passwordHash) {
         this.member = member;
         this.email = email;
@@ -52,5 +56,19 @@ public class MemberCredential extends BaseTimeEntity {
 
     public static MemberCredential create(Member member, String email, String passwordHash) {
         return new MemberCredential(member, email, passwordHash);
+    }
+
+    public void verifyEmail(Instant verifiedAt) {
+        if (emailVerifiedAt == null) {
+            emailVerifiedAt = verifiedAt;
+        }
+    }
+
+    public boolean isEmailVerified() {
+        return emailVerifiedAt != null;
+    }
+
+    public void updatePassword(String passwordHash) {
+        this.passwordHash = passwordHash;
     }
 }

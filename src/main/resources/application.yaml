@@ -31,6 +31,10 @@ travel-globe:
     # Opaque sessions are persisted so a user can log out from one device immediately.
     # The browser keeps only the raw token in an HttpOnly cookie owned by Next.js.
     session-days: ${AUTH_SESSION_DAYS:30}
+    expose-action-tokens: false
+  mail:
+    public-base-url: ${PUBLIC_SITE_URL:http://localhost:3000}
+    from: ${MAIL_FROM:Travel Globe <no-reply@travel-globe.local>}
   seed:
     enabled: false
 

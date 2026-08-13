@@ -14,9 +14,9 @@ secret in the provider dashboard.
 > the `traveler` sample. Before storing real user data, change the profile to `prod`. The
 > production profile never creates sample records.
 
-The current account/CRUD screens make the showcase suitable for a closed beta, not an open
-public launch. Before public registration, use a separate production database and add email
-verification, password reset and edge rate limiting.
+The current account/CRUD screens include email verification, password reset and account deletion.
+Before public registration, use a separate production database, configure the mail provider and
+add edge rate limiting.
 
 ## 1. Create the PostgreSQL database
 
@@ -42,6 +42,9 @@ Keep the username and password separate; do not embed them in the URL.
 | `DB_USERNAME` | Neon database role |
 | `DB_PASSWORD` | Neon password |
 | `CORS_ALLOWED_ORIGINS` | Final Vercel/custom-domain origin; use the exact HTTPS origin |
+| `PUBLIC_SITE_URL` | Final Vercel/custom-domain origin used in account emails |
+| `RESEND_API_KEY` | Resend API key used only by the backend |
+| `MAIL_FROM` | Verified sender, for example `Travel Globe <hello@example.com>` |
 
 The Blueprint activates `demo`, which creates the idempotent `traveler` showcase profile. For a
 real service, set `SPRING_PROFILES_ACTIVE=prod`; do not rely on a seed override.
@@ -104,6 +107,7 @@ Then test the authenticated flow:
 - a private trip can be created, edited and deleted without appearing on the public profile;
 - switching it to public adds it to the profile and makes its detail URL available;
 - logout removes access to `/studio` and private APIs.
+- a new account can verify its email, request a password reset and close the account.
 
 ## Required production variables
 
@@ -116,6 +120,9 @@ DB_URL=jdbc:postgresql://<host>/<database>?sslmode=require
 DB_USERNAME=<role>
 DB_PASSWORD=<secret>
 CORS_ALLOWED_ORIGINS=https://<vercel-project>.vercel.app
+PUBLIC_SITE_URL=https://<vercel-project>.vercel.app
+RESEND_API_KEY=<secret>
+MAIL_FROM=Travel Globe <hello@your-domain.example>
 ```
 
 ### Vercel frontend
@@ -135,7 +142,8 @@ Before accepting real user records:
 4. Set the same frontend origin in Vercel's `SITE_URL`.
 5. Redeploy both services and repeat the smoke test.
 6. Enable Neon point-in-time recovery or scheduled backups and perform one restore rehearsal.
-7. Add rate limits for registration and login at the edge, then add email verification and reset.
+7. Verify the Resend sending domain and run the email verification/reset smoke tests.
+8. Add rate limits for registration, login and account-link requests at the edge.
 
 ## Data and media policy
 

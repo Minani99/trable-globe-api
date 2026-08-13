@@ -83,6 +83,29 @@ export async function handleAuthStart(request: Request, action: "login" | "regis
   return response;
 }
 
+export async function forwardPublicAuth(request: Request, path: string) {
+  if (!isSameOriginRequest(request)) {
+    return NextResponse.json(
+      { success: false, data: null, message: "허용되지 않은 요청입니다.", error: { code: "ACCESS_DENIED" } },
+      { status: 403 },
+    );
+  }
+  try {
+    return passThrough(await fetch(`${getApiBaseUrl()}${path}`, {
+      method: "POST",
+      headers: { Accept: "application/json", "Content-Type": "application/json" },
+      body: await request.text(),
+      cache: "no-store",
+      signal: AbortSignal.timeout(20_000),
+    }));
+  } catch {
+    return NextResponse.json(
+      { success: false, data: null, message: "서버가 응답하지 않습니다. 잠시 후 다시 시도해 주세요.", error: { code: "BACKEND_UNREACHABLE" } },
+      { status: 503 },
+    );
+  }
+}
+
 export async function forwardWithSession(path: string, init: RequestInit = {}, sessionToken?: string) {
   const { cookies } = await import("next/headers");
   const token = (sessionToken || (await cookies()).get(SESSION_COOKIE)?.value)?.trim();

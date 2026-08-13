@@ -6,7 +6,8 @@ import { SiteHeader } from "@/components/layout/SiteHeader";
 
 export const metadata: Metadata = { title: "로그인" };
 
-export default function LoginPage() {
+export default async function LoginPage({ searchParams }: { searchParams: Promise<{ reset?: string }> }) {
+  const { reset } = await searchParams;
   return (
     <>
       <SiteHeader />
@@ -15,6 +16,7 @@ export default function LoginPage() {
           <p className="eyebrow">Welcome back</p>
           <h1>여행 기록으로 돌아가기</h1>
           <p className="auth-card__intro">내 지구본과 아직 정리하지 못한 여행을 이어서 기록해 보세요.</p>
+          {reset === "1" ? <p className="auth-form__notice">새 비밀번호를 저장했습니다. 다시 로그인해 주세요.</p> : null}
           <AuthForm mode="login" />
         </section>
       </main>

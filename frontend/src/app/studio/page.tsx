@@ -5,6 +5,7 @@ import { redirect } from "next/navigation";
 import { SiteFooter } from "@/components/layout/SiteFooter";
 import { SiteHeader } from "@/components/layout/SiteHeader";
 import { ProfileEditor } from "@/components/studio/ProfileEditor";
+import { AccountSettings } from "@/components/studio/AccountSettings";
 import { authenticatedBackendGet, getCurrentMember } from "@/lib/api/server-session";
 import { formatDateRange } from "@/lib/utils/format";
 import type { OwnedTravelSummary } from "@/types";
@@ -58,7 +59,7 @@ export default async function StudioPage() {
                 </div>
               )}
             </section>
-            <aside><ProfileEditor member={member} /></aside>
+            <aside className="studio-account-stack"><ProfileEditor member={member} /><AccountSettings member={member} /></aside>
           </div>
         </div>
       </main>

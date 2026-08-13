@@ -5,6 +5,7 @@ import java.time.Instant;
 import java.util.Optional;
 import java.util.UUID;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
@@ -22,4 +23,12 @@ public interface AuthSessionRepository extends JpaRepository<AuthSession, UUID> 
 
     @Query("select s from AuthSession s where s.id = :id and s.member.id = :memberId")
     Optional<AuthSession> findOwned(@Param("id") UUID id, @Param("memberId") Long memberId);
+
+    @Modifying
+    @Query("update AuthSession s set s.revokedAt = :now where s.member.id = :memberId and s.revokedAt is null")
+    void revokeAllForMember(@Param("memberId") Long memberId, @Param("now") Instant now);
+
+    @Modifying
+    @Query("delete from AuthSession s where s.member.id = :memberId")
+    void deleteAllForMember(@Param("memberId") Long memberId);
 }

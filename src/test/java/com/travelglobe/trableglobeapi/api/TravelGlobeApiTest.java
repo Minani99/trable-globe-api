@@ -223,6 +223,81 @@ class TravelGlobeApiTest {
     }
 
     @Test
+    @DisplayName("이메일 인증·비밀번호 재설정·계정 삭제가 일회용 토큰으로 동작한다")
+    void accountSecurityLifecycle() throws Exception {
+        String email = "secure@example.com";
+        String registerResponse = mockMvc.perform(post("/api/auth/register")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {
+                                  "username":"secure_traveler",
+                                  "displayName":"안전한 여행자",
+                                  "email":"secure@example.com",
+                                  "password":"original-password-42"
+                                }
+                                """))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.member.emailVerified").value(false))
+                .andReturn().getResponse().getContentAsString();
+        String firstSession = stringValue(registerResponse, "token");
+
+        String verificationResponse = mockMvc.perform(post("/api/auth/email-verification")
+                        .header("Authorization", "Bearer " + firstSession))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.developmentToken").isNotEmpty())
+                .andReturn().getResponse().getContentAsString();
+        String verificationToken = stringValue(verificationResponse, "developmentToken");
+
+        mockMvc.perform(post("/api/auth/email-verification/confirm")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"token\":\"" + verificationToken + "\"}"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.emailVerified").value(true));
+        mockMvc.perform(post("/api/auth/email-verification/confirm")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"token\":\"" + verificationToken + "\"}"))
+                .andExpect(status().isBadRequest());
+
+        String forgotResponse = mockMvc.perform(post("/api/auth/password/forgot")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"email\":\"" + email + "\"}"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.message").value("가입된 이메일이라면 비밀번호 재설정 링크를 보냈습니다."))
+                .andReturn().getResponse().getContentAsString();
+        String resetToken = stringValue(forgotResponse, "developmentToken");
+
+        mockMvc.perform(post("/api/auth/password/reset")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"token\":\"" + resetToken + "\",\"password\":\"renewed-password-42\"}"))
+                .andExpect(status().isOk());
+        mockMvc.perform(get("/api/auth/me").header("Authorization", "Bearer " + firstSession))
+                .andExpect(status().isUnauthorized());
+
+        String loginResponse = mockMvc.perform(post("/api/auth/login")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"email\":\"" + email + "\",\"password\":\"renewed-password-42\"}"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.member.emailVerified").value(true))
+                .andReturn().getResponse().getContentAsString();
+        String currentSession = stringValue(loginResponse, "token");
+
+        mockMvc.perform(post("/api/private/travels")
+                        .header("Authorization", "Bearer " + currentSession)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(travelPayload("삭제될 여행", "PUBLIC")))
+                .andExpect(status().isCreated());
+        mockMvc.perform(delete("/api/auth/account")
+                        .header("Authorization", "Bearer " + currentSession)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"password\":\"renewed-password-42\"}"))
+                .andExpect(status().isOk());
+        mockMvc.perform(get("/api/auth/me").header("Authorization", "Bearer " + currentSession))
+                .andExpect(status().isUnauthorized());
+        mockMvc.perform(get("/api/profiles/secure_traveler"))
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
     @DisplayName("인증 토큰이 없으면 개인 쓰기 API를 사용할 수 없다")
     void privateWritesRequireAuthentication() throws Exception {
         mockMvc.perform(post("/api/private/travels")

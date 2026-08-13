@@ -38,4 +38,8 @@ public interface TravelPhotoRepository extends JpaRepository<TravelPhoto, Long> 
     @Modifying
     @Query("delete from TravelPhoto ph where ph.travel.id = :travelId")
     void deleteAllForTravel(@Param("travelId") Long travelId);
+
+    @Modifying
+    @Query("delete from TravelPhoto ph where ph.travel.member.id = :memberId")
+    void deleteAllForMember(@Param("memberId") Long memberId);
 }

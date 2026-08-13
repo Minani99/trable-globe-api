@@ -1960,6 +1960,45 @@ body {
   line-height: 1.55;
 }
 
+.auth-form__notice {
+  padding: 0.75rem 0.85rem;
+  border: 1px solid color-mix(in srgb, var(--globe-ocean) 36%, var(--border));
+  border-radius: 0.7rem;
+  background: color-mix(in srgb, var(--globe-ocean) 12%, var(--surface));
+  color: var(--text-secondary);
+  font-size: 0.75rem;
+  line-height: 1.55;
+}
+
+.auth-form__forgot {
+  justify-self: end;
+  margin-top: -0.35rem;
+  color: var(--text-tertiary);
+  font-size: 0.68rem;
+}
+
+.auth-form__forgot:hover,
+.auth-form__dev-link:hover {
+  color: var(--accent-strong);
+}
+
+.auth-form__dev-link {
+  color: var(--accent-strong);
+  font-size: 0.7rem;
+  font-weight: 650;
+}
+
+.auth-form--action .auth-form__primary-link {
+  display: grid;
+  min-height: 3.15rem;
+  place-items: center;
+  border-radius: 999px;
+  background: var(--accent);
+  color: #1c0d07;
+  font-size: 0.8rem;
+  font-weight: 650;
+}
+
 .auth-form__switch {
   margin-top: 0.35rem;
   color: var(--text-tertiary);
@@ -2167,6 +2206,158 @@ body {
   border-radius: 1.4rem;
   background: var(--surface);
   box-shadow: 0 1.5rem 4rem rgba(31, 62, 69, 0.08);
+}
+
+.studio-account-stack {
+  position: sticky;
+  top: 6rem;
+  display: grid;
+  gap: 1rem;
+}
+
+.studio-account-stack .studio-profile {
+  position: static;
+}
+
+.studio-account {
+  display: grid;
+  gap: 1rem;
+  padding: 1.4rem;
+  border: 1px solid var(--border);
+  border-radius: 1.4rem;
+  background: var(--surface);
+  box-shadow: 0 1.5rem 4rem rgba(31, 62, 69, 0.06);
+}
+
+.studio-account__heading {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 1rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.studio-account__heading h2 {
+  margin-top: 0.35rem;
+  font-family: var(--font-editorial);
+  font-size: 1.65rem;
+  font-weight: 400;
+}
+
+.studio-account__heading > span {
+  padding: 0.3rem 0.5rem;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  color: var(--text-tertiary);
+  font-size: 0.58rem;
+}
+
+.studio-account__heading > span.is-verified {
+  border-color: color-mix(in srgb, var(--globe-ocean) 40%, var(--border));
+  color: var(--text-secondary);
+}
+
+.studio-account__heading > span.is-pending {
+  border-color: var(--accent-border);
+  background: var(--accent-soft);
+  color: var(--accent-strong);
+}
+
+.studio-account__email {
+  display: grid;
+  gap: 0.25rem;
+}
+
+.studio-account__email span,
+.studio-account__delete label > span {
+  color: var(--text-tertiary);
+  font-size: 0.62rem;
+}
+
+.studio-account__email strong {
+  overflow: hidden;
+  color: var(--text-secondary);
+  font-size: 0.75rem;
+  text-overflow: ellipsis;
+}
+
+.studio-account__verification,
+.studio-account__delete {
+  display: grid;
+  gap: 0.7rem;
+  padding: 0.9rem;
+  border-radius: 0.9rem;
+  background: var(--surface-muted);
+}
+
+.studio-account__verification p,
+.studio-account__safe,
+.studio-account__verification small,
+.studio-account__delete small {
+  color: var(--text-tertiary);
+  font-size: 0.65rem;
+  line-height: 1.55;
+  word-break: keep-all;
+}
+
+.studio-account__verification button,
+.studio-account__verification a {
+  width: fit-content;
+  color: var(--accent-strong);
+  font-size: 0.66rem;
+  font-weight: 650;
+}
+
+.studio-account__links {
+  display: flex;
+  justify-content: space-between;
+  padding-top: 0.2rem;
+  color: var(--text-tertiary);
+  font-size: 0.67rem;
+}
+
+.studio-account__links a:hover {
+  color: var(--accent-strong);
+}
+
+.studio-account__links button:hover {
+  color: #b03b2b;
+}
+
+.studio-account__delete {
+  border: 1px solid rgb(195 61 43 / 18%);
+  background: rgb(195 61 43 / 5%);
+}
+
+.studio-account__delete > strong {
+  color: #a63b2c;
+  font-size: 0.68rem;
+}
+
+.studio-account__delete label {
+  display: grid;
+  gap: 0.4rem;
+}
+
+.studio-account__delete input {
+  width: 100%;
+  min-height: 2.75rem;
+  padding-inline: 0.75rem;
+  border: 1px solid var(--border-strong);
+  border-radius: 0.65rem;
+  background: var(--surface);
+  color: var(--text-primary);
+  font-size: 0.76rem;
+}
+
+.studio-account__delete > button {
+  min-height: 2.7rem;
+  border-radius: 999px;
+  background: #a63b2c;
+  color: #fff;
+  font-size: 0.7rem;
+  font-weight: 650;
 }
 
 .studio-form-actions {
@@ -2890,6 +3081,10 @@ body {
   }
 
   .studio-profile {
+    position: static;
+  }
+
+  .studio-account-stack {
     position: static;
   }
 

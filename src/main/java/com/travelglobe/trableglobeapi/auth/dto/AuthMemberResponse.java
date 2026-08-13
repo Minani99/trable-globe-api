@@ -10,12 +10,13 @@ public record AuthMemberResponse(
         String displayName,
         String bio,
         String profileImageUrl,
-        String email) {
+        String email,
+        boolean emailVerified) {
 
     public static AuthMemberResponse from(MemberCredential credential) {
         Member member = credential.getMember();
         return new AuthMemberResponse(
                 member.getId(), member.getUsername(), member.getDisplayName(), member.getBio(),
-                member.getProfileImageUrl(), credential.getEmail());
+                member.getProfileImageUrl(), credential.getEmail(), credential.isEmailVerified());
     }
 }
