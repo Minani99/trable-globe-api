@@ -6,6 +6,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import org.junit.jupiter.api.DisplayName;
@@ -33,7 +34,19 @@ class TravelGlobeApiTest {
         mockMvc.perform(get("/api/health"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success").value(true))
-                .andExpect(jsonPath("$.data.status").value("UP"));
+                .andExpect(jsonPath("$.data.status").value("UP"))
+                .andExpect(jsonPath("$.data.database").value("UP"))
+                .andExpect(header().exists("X-Request-ID"));
+    }
+
+    @Test
+    @DisplayName("GET /api/health/live returns liveness without querying dependencies")
+    void livenessReportsUpAndKeepsTrustedRequestId() throws Exception {
+        mockMvc.perform(get("/api/health/live").header("X-Request-ID", "smoke-check-01"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.status").value("UP"))
+                .andExpect(jsonPath("$.data.database").value("NOT_CHECKED"))
+                .andExpect(header().string("X-Request-ID", "smoke-check-01"));
     }
 
     @Test

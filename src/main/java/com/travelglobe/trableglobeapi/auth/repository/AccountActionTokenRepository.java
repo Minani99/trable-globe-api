@@ -39,4 +39,12 @@ public interface AccountActionTokenRepository extends JpaRepository<AccountActio
     @Modifying
     @Query("delete from AccountActionToken t where t.credential.id = :credentialId")
     void deleteAllForCredential(@Param("credentialId") Long credentialId);
+
+    @Modifying
+    @Query("""
+            delete from AccountActionToken t
+            where t.expiresAt <= :cutoff
+               or (t.consumedAt is not null and t.consumedAt <= :cutoff)
+            """)
+    int deleteStale(@Param("cutoff") Instant cutoff);
 }

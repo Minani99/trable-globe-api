@@ -10,9 +10,8 @@ This keeps the interactive Next.js frontend close to Vercel, runs the Java conta
 Render, and stores durable data in Neon. No credentials belong in this repository. Add every
 secret in the provider dashboard.
 
-> The committed `render.yaml` uses the `demo` profile so a new showcase immediately contains
-> the `traveler` sample. Before storing real user data, change the profile to `prod`. The
-> production profile never creates sample records.
+> The committed `render.yaml` uses the `prod` profile. It never creates sample accounts in a
+> database that may hold user records. Use `demo` only with a disposable showcase database.
 
 The current account/CRUD screens include email verification, password reset and account deletion.
 Before public registration, use a separate production database, configure the mail provider and
@@ -46,8 +45,8 @@ Keep the username and password separate; do not embed them in the URL.
 | `RESEND_API_KEY` | Resend API key used only by the backend |
 | `MAIL_FROM` | Verified sender, for example `Travel Globe <hello@example.com>` |
 
-The Blueprint activates `demo`, which creates the idempotent `traveler` showcase profile. For a
-real service, set `SPRING_PROFILES_ACTIVE=prod`; do not rely on a seed override.
+The Blueprint activates `prod`, performs Flyway migrations and validates the resulting schema.
+It will not create the `traveler` showcase profile.
 
 After deployment, verify:
 
@@ -82,6 +81,19 @@ The browser uses the Next.js same-origin `/api` proxy by default, while Server C
 GitHub Actions now runs backend tests and frontend lint, type checks and production builds for
 every pull request and every push to `master`. Wait for the green `CI` check before deploying.
 
+The `Production smoke` workflow checks the site, the same-origin API proxy, backend liveness and
+database readiness every 30 minutes. Add these GitHub repository variables before enabling
+notifications:
+
+| Repository variable | Example |
+| --- | --- |
+| `PRODUCTION_SITE_URL` | `https://travel-globe.example.com` |
+| `PRODUCTION_API_URL` | `https://travel-globe-api.onrender.com` |
+
+If either variable is absent the scheduled job is intentionally skipped. Configure GitHub Actions
+failure notifications for the maintainer account; this probe complements, rather than replaces,
+Render's own health check.
+
 ## 5. Smoke test
 
 Verify all public routes:
@@ -114,7 +126,7 @@ Then test the authenticated flow:
 ### Render backend
 
 ```dotenv
-SPRING_PROFILES_ACTIVE=demo # showcase only; use prod for real data
+SPRING_PROFILES_ACTIVE=prod
 SERVER_PORT=10000
 DB_URL=jdbc:postgresql://<host>/<database>?sslmode=require
 DB_USERNAME=<role>
@@ -123,6 +135,8 @@ CORS_ALLOWED_ORIGINS=https://<vercel-project>.vercel.app
 PUBLIC_SITE_URL=https://<vercel-project>.vercel.app
 RESEND_API_KEY=<secret>
 MAIL_FROM=Travel Globe <hello@your-domain.example>
+DB_POOL_MAX_SIZE=5
+DB_POOL_MIN_IDLE=0
 ```
 
 ### Vercel frontend
@@ -136,14 +150,15 @@ SITE_URL=https://<vercel-project>.vercel.app
 
 Before accepting real user records:
 
-1. Change Render's `SPRING_PROFILES_ACTIVE` from `demo` to `prod`.
+1. Confirm Render's `SPRING_PROFILES_ACTIVE` is `prod`.
 2. Use a fresh production database rather than reusing the showcase database.
 3. Set the final HTTPS frontend origin in `CORS_ALLOWED_ORIGINS`.
 4. Set the same frontend origin in Vercel's `SITE_URL`.
 5. Redeploy both services and repeat the smoke test.
-6. Enable Neon point-in-time recovery or scheduled backups and perform one restore rehearsal.
+6. Confirm Neon history retention and complete the restore rehearsal in [`operations.md`](./operations.md).
 7. Verify the Resend sending domain and run the email verification/reset smoke tests.
 8. Add rate limits for registration, login and account-link requests at the edge.
+9. Add the two production URLs as GitHub repository variables and verify one manual smoke run.
 
 ## Data and media policy
 

@@ -3,7 +3,8 @@
 ## 스키마의 정답
 
 `src/main/resources/db/migration/` 아래의 순차 Flyway 마이그레이션이 정답입니다.
-`V1`은 여행 스키마, `V2`는 계정 자격 증명과 로그인 세션을 추가합니다.
+`V1`은 여행 스키마, `V2`는 계정 자격 증명과 로그인 세션, `V3`는 이메일 인증과
+비밀번호 재설정용 일회성 토큰을 추가합니다.
 
 | 프로필 | DB | 스키마를 만드는 주체 | Hibernate |
 | --- | --- | --- | --- |
@@ -18,7 +19,7 @@ H2 호환 버전을 따로 유지하면 두 스키마가 서서히 어긋나므�
 
 > **엔티티를 수정하면 마이그레이션도 같이 수정해야 합니다.**
 > 잊으면 `postgres` 프로필이 `validate` 단계에서 기동에 실패하므로 즉시 드러납니다.
-> 스키마 변경은 `V1`을 고치지 말고 `V2__...sql`을 추가하세요.
+> 스키마 변경은 이미 배포된 파일을 고치지 말고 다음 번호의 `V4__...sql`을 추가하세요.
 
 ## ERD
 
@@ -101,6 +102,7 @@ H2 호환 버전을 따로 유지하면 두 스키마가 서서히 어긋나므�
 | members → travels | 1 : N | 필수 | 제한 (기본) |
 | members → member_credentials | 1 : 0..1 | 선택(데모 계정) | `ON DELETE CASCADE` |
 | members → auth_sessions | 1 : N | 필수 | `ON DELETE CASCADE` |
+| member_credentials → account_action_tokens | 1 : N | 필수 | `ON DELETE CASCADE` |
 | travels → travel_places | 1 : N | 필수 | `ON DELETE CASCADE` |
 | travels → travel_photos | 1 : N | 필수 | `ON DELETE CASCADE` |
 | travel_places → countries | N : 1 | **필수** | 제한 |
@@ -128,6 +130,8 @@ H2 호환 버전을 따로 유지하면 두 스키마가 서서히 어긋나므�
 | `uk_member_credentials_email` | `member_credentials(email)` | 로그인 식별자 및 중복 가입 방지 |
 | `uk_auth_sessions_token_hash` | `auth_sessions(token_hash)` | 원문 토큰을 저장하지 않는 세션 조회 |
 | `idx_auth_sessions_expiry` | `auth_sessions(revoked_at, expires_at)` | 만료·폐기 세션 정리 |
+| `uk_account_action_tokens_hash` | `account_action_tokens(token_hash)` | 원문 토큰을 저장하지 않는 일회성 조회 |
+| `idx_account_action_tokens_expiry` | `account_action_tokens(consumed_at, expires_at)` | 사용·만료 토큰 정리 |
 
 ## 타입 선택
 
@@ -163,13 +167,17 @@ H2 호환 버전을 따로 유지하면 두 스키마가 서서히 어긋나므�
 
 ## 운영 시 확인 사항
 
-- **백업**: 이번 범위에 백업 자동화는 없습니다. 배포 전 `pg_dump` 스케줄이 필요합니다.
-- **커넥션 풀**: HikariCP 기본값을 그대로 씁니다. 트래픽 측정 후 조정하세요.
+- **백업과 복구**: Neon 보존 기간을 확인하고 월 1회 시점 복구 리허설을 합니다.
+  구체적인 절차와 기록 양식은 [`operations.md`](./operations.md)에 있습니다.
+- **커넥션 풀**: 운영 기본값은 인스턴스당 최대 5개, 최소 유휴 0개입니다. 서버
+  인스턴스를 늘릴 때는 `인스턴스 수 × DB_POOL_MAX_SIZE`가 DB 연결 예산을 넘지 않게 합니다.
 - **페이지네이션 부재**: 여행 목록 조회가 fetch join으로 컬렉션을 함께 가져오므로
   현재 페이징을 붙일 수 없습니다. 한 사용자의 여행이 수백 건을 넘기 시작하면
   목록 쿼리를 요약 전용 projection으로 분리해야 합니다.
 - **비밀번호**: PBKDF2-HMAC-SHA256(개별 salt, 310,000회) 결과만 저장합니다.
 - **세션**: 브라우저가 받은 원문 토큰은 Next.js의 HttpOnly 쿠키에만 있고 DB에는
   SHA-256 해시만 저장합니다. 로그아웃 시 해당 세션을 즉시 폐기합니다.
+- **자동 정리**: 매일 UTC 03:17에 보존 기간(기본 7일)이 지난 만료·폐기 세션과
+  사용·만료된 계정 토큰을 삭제합니다. `AUTH_CLEANUP_RETENTION_DAYS`로 조정할 수 있습니다.
 - **출시 전 분리**: 공개 샘플용 DB와 실제 회원 DB를 공유하지 않습니다. Neon의
   별도 프로젝트/브랜치와 최소 권한 애플리케이션 role을 사용합니다.

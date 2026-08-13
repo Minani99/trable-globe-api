@@ -31,4 +31,12 @@ public interface AuthSessionRepository extends JpaRepository<AuthSession, UUID> 
     @Modifying
     @Query("delete from AuthSession s where s.member.id = :memberId")
     void deleteAllForMember(@Param("memberId") Long memberId);
+
+    @Modifying
+    @Query("""
+            delete from AuthSession s
+            where s.expiresAt <= :cutoff
+               or (s.revokedAt is not null and s.revokedAt <= :cutoff)
+            """)
+    int deleteStale(@Param("cutoff") Instant cutoff);
 }
