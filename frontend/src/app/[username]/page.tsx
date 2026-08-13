@@ -8,6 +8,7 @@ import { SiteHeader } from "@/components/layout/SiteHeader";
 import { ProfileExperience } from "@/components/profile/ProfileExperience";
 import { ApiError } from "@/lib/api/client";
 import { fetchProfile, fetchTravels, fetchVisitedCountries } from "@/lib/api/profile";
+import { profilePath } from "@/lib/config";
 
 /**
  * `generateMetadata` and the page body both need the profile. `cache` collapses that into
@@ -54,7 +55,7 @@ export default async function ProfilePage(props: PageProps<"/[username]">) {
                 ? "서버가 여행 기록을 준비하고 있습니다. 잠시 후 다시 열어 주세요."
                 : "잠시 후 페이지를 다시 열어 주세요."
             }
-            action={{ href: "/", label: "홈으로 돌아가기" }}
+            action={{ href: profilePath(username), label: "다시 불러오기" }}
           />
         </main>
         <SiteFooter />

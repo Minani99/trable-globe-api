@@ -17,7 +17,7 @@ export async function authenticatedBackendGet<T>(path: string): Promise<T | null
   const response = await fetch(`${getApiBaseUrl()}${path}`, {
     headers: { Accept: "application/json", Authorization: `Bearer ${token}` },
     cache: "no-store",
-    signal: AbortSignal.timeout(15_000),
+    signal: AbortSignal.timeout(45_000),
   });
   if (response.status === 401 || response.status === 404) {
     return null;

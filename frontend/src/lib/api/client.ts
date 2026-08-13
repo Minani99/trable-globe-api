@@ -49,10 +49,13 @@ export class ApiError extends Error {
  *
  * A misconfigured or sleeping backend does not refuse the connection - it accepts and
  * never answers. Without a deadline the page hangs until the hosting platform kills the
- * request, so the visitor sees a spinner forever instead of the "API에 연결할 수 없습니다"
- * state. Kept under a typical 10s serverless limit so our error wins the race.
+ * request. Render's free cold start can exceed the old eight-second limit, so profile
+ * routes keep their loading UI visible long enough for a healthy instance to wake.
  */
-const REQUEST_TIMEOUT_MS = 8000;
+// A free Render instance can take tens of seconds to wake. Keep the route-level
+// loading UI visible during that first request instead of turning a healthy cold
+// start into an error that only succeeds after a manual refresh.
+const REQUEST_TIMEOUT_MS = 45_000;
 
 /**
  * GETs a path from the API and unwraps the response envelope.
