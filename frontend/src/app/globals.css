@@ -2307,6 +2307,86 @@ body {
   line-height: 1.5;
 }
 
+.travel-editor__cover {
+  display: grid;
+  gap: 0.85rem;
+  padding: 1rem;
+  border: 1px solid var(--border);
+  border-radius: 1rem;
+  background: var(--surface-muted);
+}
+
+.travel-editor__cover > div:first-child > span {
+  color: var(--text-primary);
+  font-size: 0.72rem;
+  font-weight: 650;
+}
+
+.travel-editor__cover > div:first-child > p {
+  margin-top: 0.3rem;
+  color: var(--text-tertiary);
+  font-size: 0.66rem;
+  line-height: 1.55;
+}
+
+.travel-editor__cover-preview {
+  position: relative;
+  height: 13rem;
+  overflow: hidden;
+  border-radius: 0.8rem;
+  background: var(--surface);
+}
+
+.travel-editor__cover-preview img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.travel-editor__cover-preview button {
+  position: absolute;
+  right: 0.65rem;
+  bottom: 0.65rem;
+  padding: 0.5rem 0.7rem;
+  border: 1px solid rgb(255 255 255 / 55%);
+  border-radius: 999px;
+  background: rgb(20 32 38 / 78%);
+  color: #fff;
+  font-size: 0.63rem;
+  backdrop-filter: blur(8px);
+}
+
+.travel-editor__cover-empty {
+  display: grid;
+  min-height: 5rem;
+  place-items: center;
+  border: 1px dashed var(--border-strong);
+  border-radius: 0.8rem;
+  color: var(--text-tertiary);
+  font-size: 0.68rem;
+}
+
+.travel-editor__url-option {
+  color: var(--text-tertiary);
+  font-size: 0.67rem;
+}
+
+.travel-editor__url-option summary {
+  width: fit-content;
+  cursor: pointer;
+  transition: color 0.2s ease;
+}
+
+.travel-editor__url-option summary:hover,
+.travel-editor__url-option[open] summary {
+  color: var(--accent-strong);
+}
+
+.travel-editor__url-option input {
+  width: 100%;
+  margin-top: 0.7rem;
+}
+
 .place-picker {
   overflow: hidden;
   border: 1px solid var(--border);
@@ -2534,12 +2614,141 @@ body {
   gap: 1rem;
 }
 
+.travel-editor__photos,
+.travel-editor__photo-empty {
+  grid-column: 2;
+}
+
+.travel-editor__dropzone {
+  position: relative;
+  display: grid !important;
+  grid-column: 2;
+  min-height: 10rem;
+  margin-bottom: 1rem;
+  padding: 1.5rem;
+  place-items: center;
+  align-content: center;
+  gap: 0.38rem;
+  overflow: hidden;
+  border: 1px dashed var(--border-strong);
+  border-radius: 1.2rem;
+  background: linear-gradient(145deg, var(--surface-muted), var(--surface));
+  color: var(--text-tertiary);
+  text-align: center;
+  transition: border-color 0.2s ease, background-color 0.2s ease, transform 0.2s ease;
+}
+
+.travel-editor__dropzone.is-ready {
+  cursor: pointer;
+}
+
+.travel-editor__dropzone.is-ready:hover {
+  border-color: var(--accent-border);
+  background: var(--accent-soft);
+  transform: translateY(-2px);
+}
+
+.travel-editor__dropzone input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+}
+
+.travel-editor__dropzone-icon {
+  display: grid;
+  width: 2.6rem;
+  height: 2.6rem;
+  margin-bottom: 0.3rem;
+  place-items: center;
+  border: 1px solid var(--border-strong);
+  border-radius: 50%;
+  background: var(--surface);
+  color: var(--accent-strong);
+  font-size: 1.2rem;
+  font-weight: 400;
+}
+
+.travel-editor__dropzone strong {
+  color: var(--text-primary);
+  font-size: 0.78rem;
+}
+
+.travel-editor__dropzone small {
+  max-width: 28rem;
+  font-size: 0.64rem;
+  line-height: 1.55;
+}
+
 .travel-editor__places > li,
 .travel-editor__photos > li {
   padding: 1.35rem;
   border: 1px solid var(--border);
   border-radius: 1.2rem;
   background: var(--surface);
+}
+
+.travel-editor__photos > li {
+  overflow: hidden;
+  padding: 0;
+}
+
+.travel-editor__photos .travel-editor__item-head,
+.travel-editor__photos .travel-editor__fields,
+.travel-editor__upload-error {
+  margin-inline: 1.35rem;
+}
+
+.travel-editor__photos .travel-editor__fields {
+  padding-bottom: 1.35rem;
+}
+
+.travel-editor__photo-preview {
+  position: relative;
+  display: grid;
+  height: clamp(12rem, 34vw, 22rem);
+  margin-bottom: 1.2rem;
+  place-items: center;
+  overflow: hidden;
+  background: var(--surface-muted);
+  color: var(--text-tertiary);
+  font-size: 0.68rem;
+}
+
+.travel-editor__photo-preview img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.travel-editor__upload-progress {
+  position: absolute;
+  inset: auto 1rem 1rem;
+  height: 0.35rem;
+  overflow: visible;
+  border-radius: 999px;
+  background: rgb(255 255 255 / 36%);
+  box-shadow: 0 0 0 1px rgb(0 0 0 / 8%);
+}
+
+.travel-editor__upload-progress > span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: var(--accent);
+  transition: width 0.15s ease;
+}
+
+.travel-editor__upload-progress > strong {
+  position: absolute;
+  right: 0;
+  bottom: 0.75rem;
+  padding: 0.25rem 0.42rem;
+  border-radius: 999px;
+  background: rgb(20 32 38 / 72%);
+  color: #fff;
+  font-family: var(--font-mono);
+  font-size: 0.55rem;
 }
 
 .travel-editor__item-head {
@@ -2565,6 +2774,40 @@ body {
 .travel-editor__item-head button:hover,
 .travel-editor__delete:hover {
   color: #c33d2b;
+}
+
+.travel-editor__photo-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+}
+
+.travel-editor__photo-actions button.is-cover {
+  color: var(--accent-strong);
+  font-weight: 650;
+}
+
+.travel-editor__photo-actions button:disabled {
+  opacity: 0.28;
+}
+
+.travel-editor__upload-error {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1rem;
+  padding: 0.7rem 0.8rem;
+  border-radius: 0.7rem;
+  background: rgb(195 61 43 / 9%);
+  color: #b03b2b;
+  font-size: 0.66rem;
+}
+
+.travel-editor__upload-error button {
+  flex: 0 0 auto;
+  font-weight: 700;
+  text-decoration: underline;
 }
 
 .travel-editor__add-row {
@@ -2653,6 +2896,12 @@ body {
   .travel-editor__add-row {
     grid-column: 1;
   }
+
+  .travel-editor__dropzone,
+  .travel-editor__photos,
+  .travel-editor__photo-empty {
+    grid-column: 1;
+  }
 }
 
 @media (max-width: 700px) {
@@ -2728,9 +2977,20 @@ body {
     order: 2;
   }
 
-  .travel-editor__places > li,
-  .travel-editor__photos > li {
+  .travel-editor__places > li {
     padding: 1rem;
+  }
+
+  .travel-editor__photos .travel-editor__item-head,
+  .travel-editor__photos .travel-editor__fields,
+  .travel-editor__upload-error {
+    margin-inline: 1rem;
+  }
+
+  .travel-editor__photo-actions {
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: 0.5rem;
   }
 
   .travel-editor__footer div:last-child > button {
