@@ -212,33 +212,34 @@ Pull Request와 `master` push에는 GitHub Actions가 자동으로 백엔드 테
 
 **구현됨**
 
-- 공개 프로필 조회 API 7종 + 시드 데이터
-- Flyway 초기 스키마, 4개 실행 프로필 (`local`, `postgres`, `prod`, `demo`)
+- 공개 프로필 조회와 소유자 전용 여행 CRUD API
+- 회원가입·로그인·이메일 인증·비밀번호 재설정·회원 탈퇴, DB 기반 불투명 세션
+- Flyway 마이그레이션 3개, 4개 실행 프로필 (`local`, `postgres`, `prod`, `demo`)
 - 3D 지구본: 회전 / 확대·축소 / 방문 국가 강조 / 마커 / hover / click / 카메라 이동 / 국가 패널
 - 국가 선택에 따른 여행 카드 필터, 여행 타임라인, 여행 상세(경로 지도·장소·사진·이전/다음)
 - Loading / Error / Not Found / Empty 상태
 - 키보드 조작과 국가 목록 대체 UI, `prefers-reduced-motion` 대응
 - 반응형 (모바일 / 태블릿 / 데스크톱)
+- 지도 검색·지도 클릭 기반 장소 선택, 작성 자동 저장·복구와 장소 순서 편집
+- Cloudflare R2 직접 사진 업로드, 대표 사진·순서·장소 연결·삭제
+- DB readiness/liveness, 요청 추적 번호, 느린 요청 로그, 인증 데이터 자동 정리
 - Open Graph 공유 이미지, robots, sitemap, GitHub Actions CI
 
 **의도적으로 만들지 않음**
 
-로그인, 회원가입, JWT/OAuth, 팔로우, 좋아요, 댓글, DM, 알림, 결제, 관리자,
-검색, 파일 업로드(S3), Redis, Kafka, MSA.
-
-쓰기 API(POST/PUT/DELETE)도 이번 단계에는 없습니다. 인증과 함께 들어와야
-소유권 검사를 제대로 붙일 수 있기 때문입니다.
+OAuth, 팔로우, 좋아요, 댓글, DM, 알림, 결제, 관리자, 전체 사용자 검색,
+Redis, Kafka, MSA. 개인 기록 흐름이 안정될 때까지 소셜 기능은 추가하지 않습니다.
 
 ## Future Roadmap
 
-1. 운영 백엔드 콜드 스타트와 모니터링 정리
-2. 인증·세션과 모든 쓰기 요청의 소유권 검사
-3. 여행 기록 작성·수정·임시 저장 화면과 API
-4. 이미지 업로드(S3 + CDN), EXIF 기반 날짜·좌표 제안
-5. 공개 범위와 공유 정책
-6. 여행 거리·이동 경로 통계, 연도 필터
+1. 전용 운영 DB·메일·R2·Vercel Firewall 연결과 복구 리허설
+2. 5~10명 비공개 베타에서 모바일 작성·사진 업로드·공개 전환 검증
+3. 사진 리사이즈와 EXIF 기반 날짜·장소 제안
+4. 여행 거리·이동 경로 통계와 연도 필터
+5. 베타 결과에 따라 앱(PWA/네이티브)과 소셜 기능 범위 결정
 
-구현 순서와 완료 기준은 [docs/next-phase.md](docs/next-phase.md), 화면 문구와 서체 원칙은
+구현 순서와 완료 기준은 [docs/next-phase.md](docs/next-phase.md), 베타 진행은
+[docs/beta-checklist.md](docs/beta-checklist.md), 화면 문구와 서체 원칙은
 [docs/editorial-guide.md](docs/editorial-guide.md)에 정리했습니다.
 
 ## Architecture Decisions

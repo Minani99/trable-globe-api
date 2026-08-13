@@ -160,6 +160,8 @@ Before accepting real user records:
 8. Add rate limits for registration, login and account-link requests at the edge.
 9. Add the two production URLs as GitHub repository variables and verify one manual smoke run.
 
+Use [`beta-checklist.md`](./beta-checklist.md) for the first 5–10 user invitation and feedback gate.
+
 ## Data and media policy
 
 - PostgreSQL stores accounts, sessions and travel metadata. Neon remains a suitable first

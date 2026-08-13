@@ -1,0 +1,55 @@
+name: 비공개 베타 피드백
+description: Travel Globe를 사용하며 겪은 문제나 불편을 남깁니다.
+title: "[Beta] "
+labels:
+  - beta-feedback
+body:
+  - type: markdown
+    attributes:
+      value: |
+        개인 이메일, 비밀번호, 인증 링크, 정확한 집 주소는 적지 마세요.
+        화면에 문제가 보이면 가능하면 스크린샷을 함께 첨부해 주세요.
+  - type: dropdown
+    id: area
+    attributes:
+      label: 어느 부분인가요?
+      options:
+        - 회원가입·로그인
+        - 여행 작성·수정
+        - 사진 업로드
+        - 지구본·지도
+        - 공개 프로필·공유
+        - 모바일 화면
+        - 기타
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: 하려던 일
+      description: 어떤 결과를 기대했는지 한두 문장으로 적어 주세요.
+    validations:
+      required: true
+  - type: textarea
+    id: actual
+    attributes:
+      label: 실제로 일어난 일
+      description: 문제가 다시 생기는 순서가 있다면 함께 적어 주세요.
+    validations:
+      required: true
+  - type: input
+    id: device
+    attributes:
+      label: 기기와 브라우저
+      placeholder: 예) 갤럭시 S24 / 삼성 인터넷, iPhone 15 / Safari
+    validations:
+      required: true
+  - type: input
+    id: request_id
+    attributes:
+      label: 요청 번호 (보이는 경우)
+      description: 오류 화면에 요청 번호가 표시될 때만 적어 주세요.
+  - type: textarea
+    id: attachment
+    attributes:
+      label: 스크린샷 또는 추가 설명
