@@ -2394,6 +2394,11 @@ body {
   padding-bottom: 7rem;
 }
 
+.travel-editor.is-restoring {
+  pointer-events: none;
+  opacity: 0.7;
+}
+
 .travel-editor-hero {
   padding-block: clamp(2rem, 5vw, 4.5rem) clamp(3rem, 7vw, 6rem);
   border-bottom: 1px solid var(--border);
@@ -2973,6 +2978,24 @@ body {
   gap: 0.65rem;
 }
 
+.travel-editor__order-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+}
+
+.travel-editor__order-actions button:hover {
+  color: var(--accent-strong);
+}
+
+.travel-editor__order-actions button.is-danger:hover {
+  color: #c33d2b;
+}
+
+.travel-editor__order-actions button:disabled {
+  opacity: 0.28;
+}
+
 .travel-editor__photo-actions button.is-cover {
   color: var(--accent-strong);
   font-weight: 650;
@@ -3053,6 +3076,21 @@ body {
   display: flex;
   align-items: center;
   gap: 0.8rem;
+}
+
+.travel-editor__draft-state {
+  display: grid;
+  justify-items: start;
+  gap: 0.35rem;
+  max-width: 28rem;
+  color: var(--text-tertiary);
+  font-size: 0.62rem;
+  line-height: 1.45;
+}
+
+.travel-editor__draft-state > button:last-child:not(:first-child) {
+  color: var(--accent-strong);
+  text-decoration: underline;
 }
 
 .travel-editor__footer div:last-child > a {
@@ -3186,6 +3224,10 @@ body {
     flex-wrap: wrap;
     justify-content: flex-end;
     gap: 0.5rem;
+  }
+
+  .travel-editor__order-actions {
+    gap: 0.55rem;
   }
 
   .travel-editor__footer div:last-child > button {

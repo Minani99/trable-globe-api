@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { ChangeEvent, DragEvent, FormEvent, useEffect, useMemo, useState } from "react";
+import { ChangeEvent, DragEvent, FormEvent, useEffect, useMemo, useRef, useState } from "react";
 
 import { ApiError, apiMutation } from "@/lib/api/client";
 import { travelPath } from "@/lib/config";
@@ -48,11 +48,30 @@ interface TravelEditorProps {
   initialTravel?: TravelDetail;
 }
 
+interface StoredTravelDraft {
+  version: 1;
+  savedAt: string;
+  title: string;
+  description: string;
+  startDate: string;
+  endDate: string;
+  coverImageUrl: string;
+  visibility: Visibility;
+  places: PlaceDraft[];
+  photos: Array<Omit<PhotoDraft, "previewUrl" | "file" | "progress" | "uploadState" | "uploadError">>;
+}
+
 const draftKey = () => `${Date.now()}-${Math.random().toString(36).slice(2)}`;
 
 export function TravelEditor({ username, countries, initialTravel }: TravelEditorProps) {
   const router = useRouter();
   const editing = Boolean(initialTravel);
+  const draftStorageKey = `travel-globe:draft:${username}:${initialTravel?.id ?? "new"}`;
+  const draftReady = useRef(false);
+  const [title, setTitle] = useState(initialTravel?.title ?? "");
+  const [description, setDescription] = useState(initialTravel?.description ?? "");
+  const [startDate, setStartDate] = useState(initialTravel?.startDate ?? "");
+  const [endDate, setEndDate] = useState(initialTravel?.endDate ?? "");
   const [visibility, setVisibility] = useState<Visibility>(initialTravel?.visibility ?? "PRIVATE");
   const [coverImageUrl, setCoverImageUrl] = useState(initialTravel?.coverImageUrl ?? "");
   const [places, setPlaces] = useState<PlaceDraft[]>(() =>
@@ -91,6 +110,10 @@ export function TravelEditor({ username, countries, initialTravel }: TravelEdito
   const [removedPhotoUrls, setRemovedPhotoUrls] = useState<string[]>([]);
   const [pending, setPending] = useState(false);
   const [status, setStatus] = useState<string | null>(null);
+  const [dirty, setDirty] = useState(false);
+  const [draftHydrated, setDraftHydrated] = useState(false);
+  const [draftStatus, setDraftStatus] = useState("변경 내용은 이 브라우저에 자동 저장됩니다.");
+  const [draftRestored, setDraftRestored] = useState(false);
   const countryMap = useMemo(() => new Map(countries.map((country) => [country.iso2Code, country])), [countries]);
 
   useEffect(() => {
@@ -104,6 +127,91 @@ export function TravelEditor({ username, countries, initialTravel }: TravelEdito
       });
     return () => { active = false; };
   }, []);
+
+  useEffect(() => {
+    const timer = window.setTimeout(() => {
+      try {
+        const raw = window.localStorage.getItem(draftStorageKey);
+        if (raw) {
+          const draft = JSON.parse(raw) as StoredTravelDraft;
+          if (draft.version === 1 && Array.isArray(draft.places) && Array.isArray(draft.photos)) {
+            setTitle(draft.title);
+            setDescription(draft.description);
+            setStartDate(draft.startDate);
+            setEndDate(draft.endDate);
+            setCoverImageUrl(draft.coverImageUrl);
+            setVisibility(draft.visibility);
+            setPlaces(draft.places);
+            setPhotos(draft.photos.map((photo) => ({
+              ...photo,
+              previewUrl: null,
+              file: null,
+              progress: 100,
+              uploadState: "ready",
+              uploadError: null,
+            })));
+            setDraftStatus(`이 브라우저에 남아 있던 임시 저장본을 복구했습니다. · ${formatDraftTime(draft.savedAt)}`);
+            setDraftRestored(true);
+            setDirty(true);
+          }
+        }
+      } catch {
+        window.localStorage.removeItem(draftStorageKey);
+      } finally {
+        draftReady.current = true;
+        setDraftHydrated(true);
+      }
+    }, 0);
+    return () => window.clearTimeout(timer);
+  }, [draftStorageKey]);
+
+  useEffect(() => {
+    if (!draftReady.current || !dirty || pending) return;
+    const timer = window.setTimeout(() => {
+      const savedAt = new Date().toISOString();
+      const draft: StoredTravelDraft = {
+        version: 1,
+        savedAt,
+        title,
+        description,
+        startDate,
+        endDate,
+        coverImageUrl,
+        visibility,
+        places,
+        photos: photos
+          .filter((photo) => photo.uploadState !== "uploading")
+          .map(toStoredPhoto),
+      };
+      window.localStorage.setItem(draftStorageKey, JSON.stringify(draft));
+      setDraftStatus(`임시 저장됨 · ${formatDraftTime(savedAt)}`);
+    }, 800);
+    return () => window.clearTimeout(timer);
+  }, [coverImageUrl, description, dirty, draftStorageKey, endDate, pending, photos, places, startDate, title, visibility]);
+
+  useEffect(() => {
+    if (!dirty || pending) return;
+    const warnBeforeUnload = (event: BeforeUnloadEvent) => event.preventDefault();
+    const warnBeforeLink = (event: MouseEvent) => {
+      const target = event.target as Element | null;
+      const link = target?.closest("a");
+      if (!link || link.target === "_blank" || link.hasAttribute("download")) return;
+      const href = link.getAttribute("href");
+      if (!href || href.startsWith("#")) return;
+      if (!window.confirm("아직 서버에 저장하지 않은 변경 내용이 있습니다. 페이지를 떠날까요? 임시 저장본은 이 브라우저에 남습니다.")) {
+        event.preventDefault();
+        event.stopPropagation();
+        return;
+      }
+      setDirty(false);
+    };
+    window.addEventListener("beforeunload", warnBeforeUnload);
+    document.addEventListener("click", warnBeforeLink, true);
+    return () => {
+      window.removeEventListener("beforeunload", warnBeforeUnload);
+      document.removeEventListener("click", warnBeforeLink, true);
+    };
+  }, [dirty, pending]);
 
   function updatePlace(index: number, field: keyof PlaceDraft, value: string) {
     setPlaces((current) => current.map((place, placeIndex) =>
@@ -142,6 +250,34 @@ export function TravelEditor({ username, countries, initialTravel }: TravelEdito
         longitude: location.longitude.toFixed(6),
       };
     }));
+    setDirty(true);
+  }
+
+  function movePlace(index: number, direction: -1 | 1) {
+    const nextIndex = index + direction;
+    if (nextIndex < 0 || nextIndex >= places.length) return;
+    setPlaces((current) => {
+      const next = [...current];
+      [next[index], next[nextIndex]] = [next[nextIndex], next[index]];
+      return next;
+    });
+    setPhotos((current) => current.map((photo) => {
+      if (photo.placeIndex === String(index)) return { ...photo, placeIndex: String(nextIndex) };
+      if (photo.placeIndex === String(nextIndex)) return { ...photo, placeIndex: String(index) };
+      return photo;
+    }));
+    setDirty(true);
+  }
+
+  function removePlace(index: number) {
+    setPlaces((current) => current.filter((_, placeIndex) => placeIndex !== index));
+    setPhotos((current) => current.map((photo) => {
+      if (photo.placeIndex === "") return photo;
+      const placeIndex = Number(photo.placeIndex);
+      if (placeIndex === index) return { ...photo, placeIndex: "" };
+      return placeIndex > index ? { ...photo, placeIndex: String(placeIndex - 1) } : photo;
+    }));
+    setDirty(true);
   }
 
   function updatePhoto(index: number, changes: Partial<PhotoDraft>) {
@@ -158,6 +294,7 @@ export function TravelEditor({ username, countries, initialTravel }: TravelEdito
       [next[index], next[nextIndex]] = [next[nextIndex], next[index]];
       return next;
     });
+    setDirty(true);
   }
 
   function removePhoto(index: number) {
@@ -168,6 +305,7 @@ export function TravelEditor({ username, countries, initialTravel }: TravelEdito
     else if (photo.imageUrl) setRemovedPhotoUrls((current) => [...current, photo.imageUrl]);
     if (coverImageUrl === photo.imageUrl) setCoverImageUrl("");
     setPhotos((current) => current.filter((_, photoIndex) => photoIndex !== index));
+    setDirty(true);
   }
 
   async function uploadDraft(key: string, file: File, previewUrl: string) {
@@ -228,6 +366,7 @@ export function TravelEditor({ username, countries, initialTravel }: TravelEdito
       };
     });
     setPhotos((current) => [...current, ...drafts]);
+    setDirty(true);
     drafts.forEach((draft) => void uploadDraft(draft.key, draft.file!, draft.previewUrl!));
   }
 
@@ -249,6 +388,15 @@ export function TravelEditor({ username, countries, initialTravel }: TravelEdito
       ? { ...item, progress: 0, uploadState: "uploading", uploadError: null }
       : item));
     void uploadDraft(photo.key, photo.file, photo.previewUrl);
+  }
+
+  async function discardDraft() {
+    await Promise.allSettled(photos
+      .filter((photo) => photo.objectKey)
+      .map((photo) => deleteUploadedPhoto({ objectKey: photo.objectKey })));
+    window.localStorage.removeItem(draftStorageKey);
+    setDirty(false);
+    window.location.reload();
   }
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
@@ -278,6 +426,8 @@ export function TravelEditor({ username, countries, initialTravel }: TravelEdito
       const result = await apiMutation<TravelDetail>(endpoint, editing ? "PUT" : "POST", payload);
       if (!result) throw new ApiError(500, "저장된 여행을 확인할 수 없습니다.");
       await Promise.allSettled(removedPhotoUrls.map((publicUrl) => deleteUploadedPhoto({ publicUrl })));
+      window.localStorage.removeItem(draftStorageKey);
+      setDirty(false);
       if (result.visibility === "PUBLIC") {
         router.push(travelPath(username, result.id));
       } else {
@@ -298,6 +448,8 @@ export function TravelEditor({ username, countries, initialTravel }: TravelEdito
       const storedUrls = [initialTravel.coverImageUrl, ...initialTravel.photos.map((photo) => photo.imageUrl)]
         .filter((url): url is string => Boolean(url));
       await Promise.allSettled([...new Set(storedUrls)].map((publicUrl) => deleteUploadedPhoto({ publicUrl })));
+      window.localStorage.removeItem(draftStorageKey);
+      setDirty(false);
       router.push("/studio");
       router.refresh();
     } catch (error) {
@@ -307,14 +459,14 @@ export function TravelEditor({ username, countries, initialTravel }: TravelEdito
   }
 
   return (
-    <form className="travel-editor" onSubmit={handleSubmit}>
+    <form className={`travel-editor${draftHydrated ? "" : " is-restoring"}`} onSubmit={handleSubmit} onChange={() => setDirty(true)} aria-busy={!draftHydrated}>
       <section className="travel-editor__section">
         <div className="travel-editor__section-heading"><span>01</span><div><p className="eyebrow">Journey</p><h2>여행 기본 정보</h2></div></div>
         <div className="travel-editor__fields">
-          <label className="is-wide"><span>여행 제목</span><input name="title" defaultValue={initialTravel?.title ?? ""} maxLength={120} placeholder="기억하고 싶은 이름을 붙여 주세요" required /></label>
-          <label><span>시작일</span><input name="startDate" type="date" defaultValue={initialTravel?.startDate ?? ""} required /></label>
-          <label><span>종료일</span><input name="endDate" type="date" defaultValue={initialTravel?.endDate ?? ""} required /></label>
-          <label className="is-wide"><span>여행 소개</span><textarea name="description" defaultValue={initialTravel?.description ?? ""} maxLength={2000} rows={5} placeholder="이 여행을 한 문단으로 남겨 보세요." /></label>
+          <label className="is-wide"><span>여행 제목</span><input name="title" value={title} onChange={(event) => setTitle(event.target.value)} maxLength={120} placeholder="기억하고 싶은 이름을 붙여 주세요" required /></label>
+          <label><span>시작일</span><input name="startDate" type="date" value={startDate} onChange={(event) => setStartDate(event.target.value)} required /></label>
+          <label><span>종료일</span><input name="endDate" type="date" value={endDate} onChange={(event) => setEndDate(event.target.value)} required /></label>
+          <label className="is-wide"><span>여행 소개</span><textarea name="description" value={description} onChange={(event) => setDescription(event.target.value)} maxLength={2000} rows={5} placeholder="이 여행을 한 문단으로 남겨 보세요." /></label>
           <div className="travel-editor__cover is-wide">
             <div>
               <span>대표 사진</span>
@@ -324,7 +476,7 @@ export function TravelEditor({ username, countries, initialTravel }: TravelEdito
               <div className="travel-editor__cover-preview">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img src={coverImageUrl} alt="현재 대표 사진" />
-                <button type="button" onClick={() => setCoverImageUrl("")}>대표 사진 해제</button>
+                <button type="button" onClick={() => { setCoverImageUrl(""); setDirty(true); }}>대표 사진 해제</button>
               </div>
             ) : <div className="travel-editor__cover-empty">아직 대표 사진을 정하지 않았어요.</div>}
             <details className="travel-editor__url-option">
@@ -334,8 +486,8 @@ export function TravelEditor({ username, countries, initialTravel }: TravelEdito
           </div>
           <fieldset className="travel-editor__visibility is-wide">
             <legend>공개 범위</legend>
-            <button type="button" className={visibility === "PRIVATE" ? "is-active" : ""} onClick={() => setVisibility("PRIVATE")}><strong>비공개</strong><span>작성 중인 기록은 나만 볼 수 있어요.</span></button>
-            <button type="button" className={visibility === "PUBLIC" ? "is-active" : ""} onClick={() => setVisibility("PUBLIC")}><strong>공개</strong><span>내 지구본과 공개 프로필에 바로 반영됩니다.</span></button>
+            <button type="button" className={visibility === "PRIVATE" ? "is-active" : ""} onClick={() => { setVisibility("PRIVATE"); setDirty(true); }}><strong>비공개</strong><span>작성 중인 기록은 나만 볼 수 있어요.</span></button>
+            <button type="button" className={visibility === "PUBLIC" ? "is-active" : ""} onClick={() => { setVisibility("PUBLIC"); setDirty(true); }}><strong>공개</strong><span>내 지구본과 공개 프로필에 바로 반영됩니다.</span></button>
           </fieldset>
         </div>
       </section>
@@ -345,7 +497,14 @@ export function TravelEditor({ username, countries, initialTravel }: TravelEdito
         <ol className="travel-editor__places">
           {places.map((place, index) => (
             <li key={place.key}>
-              <div className="travel-editor__item-head"><strong>{String(index + 1).padStart(2, "0")}번째 장소</strong>{places.length > 1 ? <button type="button" onClick={() => setPlaces((current) => current.filter((_, i) => i !== index))}>삭제</button> : null}</div>
+              <div className="travel-editor__item-head">
+                <strong>{String(index + 1).padStart(2, "0")}번째 장소</strong>
+                <div className="travel-editor__order-actions">
+                  <button type="button" onClick={() => movePlace(index, -1)} disabled={index === 0 || pending} aria-label="장소를 앞으로 이동">↑</button>
+                  <button type="button" onClick={() => movePlace(index, 1)} disabled={index === places.length - 1 || pending} aria-label="장소를 뒤로 이동">↓</button>
+                  {places.length > 1 ? <button type="button" className="is-danger" onClick={() => removePlace(index)}>삭제</button> : null}
+                </div>
+              </div>
               <div className="travel-editor__fields">
                 <label><span>나라</span><select value={place.countryCode} onChange={(event) => updateCountry(index, event.target.value)} required>{countries.map((country) => <option key={country.iso2Code} value={country.iso2Code}>{country.label}</option>)}</select></label>
                 <PlaceLocationPicker
@@ -366,7 +525,7 @@ export function TravelEditor({ username, countries, initialTravel }: TravelEdito
             </li>
           ))}
         </ol>
-        <div className="travel-editor__add-row"><p>추가한 순서대로 상세 지도의 여행 경로가 이어집니다.</p><button type="button" onClick={() => setPlaces((current) => [...current, emptyPlace(current.at(-1)?.countryCode ?? "KR")])}>＋ 장소 추가</button></div>
+        <div className="travel-editor__add-row"><p>추가한 순서대로 상세 지도의 여행 경로가 이어집니다.</p><button type="button" onClick={() => { setPlaces((current) => [...current, emptyPlace(current.at(-1)?.countryCode ?? "KR")]); setDirty(true); }}>＋ 장소 추가</button></div>
       </section>
 
       <section className="travel-editor__section">
@@ -408,7 +567,7 @@ export function TravelEditor({ username, countries, initialTravel }: TravelEdito
                   <div className="travel-editor__photo-actions">
                     <button type="button" onClick={() => movePhoto(index, -1)} disabled={index === 0 || pending} aria-label="사진을 앞으로 이동">↑</button>
                     <button type="button" onClick={() => movePhoto(index, 1)} disabled={index === photos.length - 1 || pending} aria-label="사진을 뒤로 이동">↓</button>
-                    {photo.imageUrl ? <button type="button" className={coverImageUrl === photo.imageUrl ? "is-cover" : ""} onClick={() => setCoverImageUrl(photo.imageUrl)}>{coverImageUrl === photo.imageUrl ? "대표 사진" : "대표로 지정"}</button> : null}
+                    {photo.imageUrl ? <button type="button" className={coverImageUrl === photo.imageUrl ? "is-cover" : ""} onClick={() => { setCoverImageUrl(photo.imageUrl); setDirty(true); }}>{coverImageUrl === photo.imageUrl ? "대표 사진" : "대표로 지정"}</button> : null}
                     <button type="button" onClick={() => removePhoto(index)} disabled={pending}>삭제</button>
                   </div>
                 </div>
@@ -428,12 +587,16 @@ export function TravelEditor({ username, countries, initialTravel }: TravelEdito
             ))}
           </ol>
         ) : <div className="travel-editor__photo-empty">첫 사진을 올리면 여행의 장면이 이곳에 차곡차곡 쌓입니다.</div>}
-        <div className="travel-editor__add-row"><p>다른 사이트에 이미 올린 사진이라면 주소로도 추가할 수 있어요.</p><button type="button" onClick={() => setPhotos((current) => [...current, emptyPhoto()])}>＋ 이미지 주소로 추가</button></div>
+        <div className="travel-editor__add-row"><p>다른 사이트에 이미 올린 사진이라면 주소로도 추가할 수 있어요.</p><button type="button" onClick={() => { setPhotos((current) => [...current, emptyPhoto()]); setDirty(true); }}>＋ 이미지 주소로 추가</button></div>
       </section>
 
       {status ? <p className="travel-editor__error" role="alert">{status}</p> : null}
       <footer className="travel-editor__footer">
-        <div>{editing ? <button type="button" className="travel-editor__delete" onClick={handleDelete} disabled={pending}>여행 삭제</button> : null}</div>
+        <div className="travel-editor__draft-state">
+          {editing ? <button type="button" className="travel-editor__delete" onClick={handleDelete} disabled={pending}>여행 삭제</button> : null}
+          <span aria-live="polite">{draftStatus}</span>
+          {draftRestored ? <button type="button" onClick={discardDraft} disabled={pending}>임시 저장본 버리기</button> : null}
+        </div>
         <div><Link href={editing && initialTravel?.visibility === "PUBLIC" ? travelPath(username, initialTravel.id) : "/studio"}>취소</Link><button type="submit" disabled={pending}>{pending ? "저장 중…" : editing ? "변경 내용 저장" : "여행 기록 저장"}</button></div>
       </footer>
     </form>
@@ -449,6 +612,23 @@ function emptyPhoto(): PhotoDraft {
     key: draftKey(), imageUrl: "", caption: "", takenAt: "", placeIndex: "",
     objectKey: null, previewUrl: null, file: null, progress: 0, uploadState: "ready", uploadError: null,
   };
+}
+
+function toStoredPhoto(photo: PhotoDraft): StoredTravelDraft["photos"][number] {
+  return {
+    key: photo.key,
+    imageUrl: photo.imageUrl,
+    caption: photo.caption,
+    takenAt: photo.takenAt,
+    placeIndex: photo.placeIndex,
+    objectKey: photo.objectKey,
+  };
+}
+
+function formatDraftTime(value: string) {
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return "방금";
+  return new Intl.DateTimeFormat("ko-KR", { hour: "2-digit", minute: "2-digit" }).format(date);
 }
 
 function nullable(value: string): string | null {
