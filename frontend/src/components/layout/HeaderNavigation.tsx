@@ -52,6 +52,10 @@ export function HeaderNavigation({ username }: HeaderNavigationProps) {
 
       <ThemeToggle />
 
+      <div className="site-mobile-account">
+        <AccountNavigation compact />
+      </div>
+
       <button
         type="button"
         className={`site-menu-toggle${menuOpen ? " is-open" : ""}`}
@@ -104,7 +108,15 @@ export function HeaderNavigation({ username }: HeaderNavigationProps) {
 export function HeaderNavigationFallback() {
   return (
     <div className="site-header-actions">
+      <nav aria-label="주요 메뉴" className="site-desktop-nav">
+        <Link href={globePath} className="site-nav-link">지구본</Link>
+        <Link href="/about" className="site-nav-link">서비스 소개</Link>
+        <Link href="/login" className="site-profile-link">로그인</Link>
+      </nav>
       <ThemeToggle />
+      <div className="site-mobile-account">
+        <Link href="/login" className="site-mobile-auth-link">로그인</Link>
+      </div>
     </div>
   );
 }

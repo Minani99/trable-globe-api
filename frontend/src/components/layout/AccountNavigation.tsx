@@ -7,7 +7,15 @@ import { useRouter } from "next/navigation";
 import { apiMutation } from "@/lib/api/client";
 import type { AuthMember } from "@/types";
 
-export function AccountNavigation({ mobile = false, onNavigate }: { mobile?: boolean; onNavigate?: () => void }) {
+export function AccountNavigation({
+  mobile = false,
+  compact = false,
+  onNavigate,
+}: {
+  mobile?: boolean;
+  compact?: boolean;
+  onNavigate?: () => void;
+}) {
   const router = useRouter();
   const [member, setMember] = useState<AuthMember | null | undefined>(undefined);
 
@@ -37,8 +45,26 @@ export function AccountNavigation({ mobile = false, onNavigate }: { mobile?: boo
     router.refresh();
   }
 
+  if (compact) {
+    return (
+      <Link
+        href={member ? "/studio" : "/login"}
+        className="site-mobile-auth-link"
+        onClick={onNavigate}
+        aria-busy={member === undefined ? true : undefined}
+      >
+        {member ? "내 기록" : "로그인"}
+      </Link>
+    );
+  }
   if (member === undefined) {
-    return <span className={mobile ? "site-account-loading is-mobile" : "site-account-loading"} aria-hidden="true" />;
+    return mobile ? (
+      <Link href="/login" onClick={onNavigate} aria-busy="true">
+        <span>로그인 · 시작하기</span><span aria-hidden="true">→</span>
+      </Link>
+    ) : (
+      <Link href="/login" className="site-profile-link" aria-busy="true">로그인</Link>
+    );
   }
   if (!member) {
     return mobile ? (

@@ -266,6 +266,30 @@ body {
   gap: 1.15rem;
 }
 
+.site-mobile-account {
+  display: none;
+}
+
+.site-mobile-auth-link {
+  display: inline-flex;
+  min-height: 2.25rem;
+  align-items: center;
+  padding: 0 0.8rem;
+  border: 1px solid var(--border-strong);
+  border-radius: 999px;
+  color: var(--text-primary);
+  font-size: 0.75rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.site-mobile-auth-link:hover,
+.site-mobile-auth-link:focus-visible {
+  border-color: var(--accent-border);
+  background: var(--accent-soft);
+  color: var(--accent-strong);
+}
+
 .site-desktop-nav {
   gap: 1.5rem;
   color: var(--text-secondary);
@@ -4442,6 +4466,10 @@ body {
 
   .site-header-actions {
     gap: 0.55rem;
+  }
+
+  .site-mobile-account {
+    display: block;
   }
 
   .site-menu-toggle {
