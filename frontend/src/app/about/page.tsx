@@ -4,7 +4,7 @@ import Link from "next/link";
 import { BrandMark } from "@/components/brand/BrandMark";
 import { SiteFooter } from "@/components/layout/SiteFooter";
 import { SiteHeader } from "@/components/layout/SiteHeader";
-import { profilePath, siteConfig } from "@/lib/config";
+import { globePath, siteConfig } from "@/lib/config";
 
 export const metadata: Metadata = {
   title: "서비스 이야기",
@@ -51,7 +51,7 @@ export default function AboutPage() {
                 다시 꺼내 볼 수 있는 개인 아카이브를 만들고 있습니다.
               </p>
               <div className="about-hero__actions">
-                <Link href={profilePath(siteConfig.demoUsername)} className="landing-primary-cta">
+                <Link href={globePath} className="landing-primary-cta">
                   <span>지구본 둘러보기</span>
                   <span className="landing-primary-cta__arrow" aria-hidden="true">↗</span>
                 </Link>

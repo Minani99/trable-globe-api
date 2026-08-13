@@ -3,7 +3,7 @@ import Link from "next/link";
 import { LandingGlobePreview } from "@/components/landing/LandingGlobePreview";
 import { SiteFooter } from "@/components/layout/SiteFooter";
 import { SiteHeader } from "@/components/layout/SiteHeader";
-import { profilePath, siteConfig } from "@/lib/config";
+import { globePath } from "@/lib/config";
 
 export default function LandingPage() {
   return (
@@ -30,7 +30,7 @@ export default function LandingPage() {
 
             <div className="landing-reveal landing-reveal--actions mt-10 flex flex-wrap items-center gap-3">
               <Link
-                href={profilePath(siteConfig.demoUsername)}
+                href={globePath}
                 className="landing-primary-cta group"
               >
                 <span>지구본 둘러보기</span>
@@ -51,7 +51,7 @@ export default function LandingPage() {
             </dl>
           </div>
 
-          <LandingGlobePreview href={profilePath(siteConfig.demoUsername)} />
+          <LandingGlobePreview href={globePath} />
 
           <div className="landing-scroll-cue" aria-hidden="true">
             <span>아래로 이어보기</span>

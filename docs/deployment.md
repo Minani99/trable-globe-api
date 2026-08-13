@@ -145,3 +145,6 @@ Before accepting real user records:
   such as Cloudflare R2 or S3, generate responsive derivatives, and save only URLs in this DB.
 - The `world-countries` catalog used by the writer is ODbL data. Keep its attribution and license
   obligations visible when the product moves beyond a private beta.
+- The beta location picker uses submitted (not autocomplete) searches through public Nominatim
+  and OpenStreetMap tiles with visible attribution. Before a broad or paid launch, configure a
+  contracted geocoding and tile provider with an SLA; the public community services are best-effort.

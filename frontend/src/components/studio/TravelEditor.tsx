@@ -8,6 +8,7 @@ import { ApiError, apiMutation } from "@/lib/api/client";
 import { travelPath } from "@/lib/config";
 import type { CountryOption } from "@/lib/countries";
 import type { TravelDetail, TravelPhotoWriteInput, TravelPlaceWriteInput, TravelWriteInput, Visibility } from "@/types";
+import { PlaceLocationPicker } from "@/components/studio/PlaceLocationPicker";
 
 interface PlaceDraft {
   key: string;
@@ -81,6 +82,33 @@ export function TravelEditor({ username, countries, initialTravel }: TravelEdito
     setPlaces((current) => current.map((place, placeIndex) =>
       placeIndex === index ? { ...place, cityName: value, cityNameEn: value } : place,
     ));
+  }
+
+  function updateCountry(index: number, countryCode: string) {
+    setPlaces((current) => current.map((place, placeIndex) =>
+      placeIndex === index
+        ? { ...place, countryCode, cityName: "", cityNameEn: "", placeName: "", latitude: "", longitude: "" }
+        : place,
+    ));
+  }
+
+  function updateLocation(
+    index: number,
+    location: { name: string; city: string; latitude: number; longitude: number },
+  ) {
+    setPlaces((current) => current.map((place, placeIndex) => {
+      if (placeIndex !== index) return place;
+      const cityName = location.city.trim();
+      const placeName = location.name.trim();
+      return {
+        ...place,
+        cityName: cityName || place.cityName,
+        cityNameEn: cityName || place.cityNameEn,
+        placeName: placeName || place.placeName,
+        latitude: location.latitude.toFixed(6),
+        longitude: location.longitude.toFixed(6),
+      };
+    }));
   }
 
   function updatePhoto(index: number, field: keyof PhotoDraft, value: string) {
@@ -159,18 +187,26 @@ export function TravelEditor({ username, countries, initialTravel }: TravelEdito
             <li key={place.key}>
               <div className="travel-editor__item-head"><strong>{String(index + 1).padStart(2, "0")}번째 장소</strong>{places.length > 1 ? <button type="button" onClick={() => setPlaces((current) => current.filter((_, i) => i !== index))}>삭제</button> : null}</div>
               <div className="travel-editor__fields">
-                <label><span>나라</span><select value={place.countryCode} onChange={(event) => updatePlace(index, "countryCode", event.target.value)} required>{countries.map((country) => <option key={country.iso2Code} value={country.iso2Code}>{country.label}</option>)}</select></label>
+                <label><span>나라</span><select value={place.countryCode} onChange={(event) => updateCountry(index, event.target.value)} required>{countries.map((country) => <option key={country.iso2Code} value={country.iso2Code}>{country.label}</option>)}</select></label>
+                <PlaceLocationPicker
+                  key={place.countryCode}
+                  countryCode={place.countryCode}
+                  countryName={countryMap.get(place.countryCode)?.nameKo ?? "선택한 나라"}
+                  fallbackLatitude={countryMap.get(place.countryCode)?.latitude ?? 36.5}
+                  fallbackLongitude={countryMap.get(place.countryCode)?.longitude ?? 127.8}
+                  latitude={coordinate(place.latitude)}
+                  longitude={coordinate(place.longitude)}
+                  onSelect={(location) => updateLocation(index, location)}
+                />
                 <label><span>도시</span><input value={place.cityName} onChange={(event) => updateCityName(index, event.target.value)} maxLength={100} placeholder="예: 서울" /></label>
                 <label className="is-wide"><span>장소 이름</span><input value={place.placeName} onChange={(event) => updatePlace(index, "placeName", event.target.value)} maxLength={150} placeholder="예: 서울숲" required /></label>
-                <label><span>위도</span><input value={place.latitude} onChange={(event) => updatePlace(index, "latitude", event.target.value)} type="number" min="-90" max="90" step="any" placeholder="37.544387" required /></label>
-                <label><span>경도</span><input value={place.longitude} onChange={(event) => updatePlace(index, "longitude", event.target.value)} type="number" min="-180" max="180" step="any" placeholder="127.037442" required /></label>
                 <label><span>방문일</span><input value={place.visitedAt} onChange={(event) => updatePlace(index, "visitedAt", event.target.value)} type="date" /></label>
                 <label className="is-wide"><span>메모</span><textarea value={place.memo} onChange={(event) => updatePlace(index, "memo", event.target.value)} maxLength={1000} rows={3} placeholder="그 장소에서 기억하고 싶은 장면" /></label>
               </div>
             </li>
           ))}
         </ol>
-        <div className="travel-editor__add-row"><p>지도 앱에서 장소를 길게 눌러 위도·경도를 확인할 수 있습니다.</p><button type="button" onClick={() => setPlaces((current) => [...current, emptyPlace(current.at(-1)?.countryCode ?? "KR")])}>＋ 장소 추가</button></div>
+        <div className="travel-editor__add-row"><p>추가한 순서대로 상세 지도의 여행 경로가 이어집니다.</p><button type="button" onClick={() => setPlaces((current) => [...current, emptyPlace(current.at(-1)?.countryCode ?? "KR")])}>＋ 장소 추가</button></div>
       </section>
 
       <section className="travel-editor__section">
@@ -215,9 +251,17 @@ function nullable(value: string): string | null {
   return trimmed ? trimmed : null;
 }
 
+function coordinate(value: string): number | null {
+  const parsed = Number(value);
+  return value.trim() && Number.isFinite(parsed) ? parsed : null;
+}
+
 function toPlaceInput(place: PlaceDraft, countries: Map<string, CountryOption>): TravelPlaceWriteInput {
   const country = countries.get(place.countryCode);
   if (!country) throw new ApiError(400, "나라를 선택해 주세요.");
+  if (!place.latitude.trim() || !place.longitude.trim()) {
+    throw new ApiError(400, "장소를 검색하거나 지도에서 방문 위치를 선택해 주세요.");
+  }
   const latitude = Number(place.latitude);
   const longitude = Number(place.longitude);
   if (!Number.isFinite(latitude) || !Number.isFinite(longitude)) throw new ApiError(400, "장소 좌표를 확인해 주세요.");

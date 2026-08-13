@@ -6,7 +6,7 @@ import { useState } from "react";
 
 import { ThemeToggle } from "@/components/theme/ThemeToggle";
 import { AccountNavigation } from "@/components/layout/AccountNavigation";
-import { profilePath, siteConfig } from "@/lib/config";
+import { globePath, profilePath, siteConfig } from "@/lib/config";
 
 interface HeaderNavigationProps {
   username?: string;
@@ -25,7 +25,7 @@ export function HeaderNavigation({ username }: HeaderNavigationProps) {
     <div className="site-header-actions">
       <nav aria-label="주요 메뉴" className="site-desktop-nav">
         <Link
-          href={samplePath}
+          href={globePath}
           className="site-nav-link"
           aria-current={exploreActive ? "page" : undefined}
         >
@@ -70,7 +70,7 @@ export function HeaderNavigation({ username }: HeaderNavigationProps) {
         className={`site-mobile-menu${menuOpen ? " is-open" : ""}`}
       >
         <Link
-          href={samplePath}
+          href={globePath}
           aria-current={exploreActive ? "page" : undefined}
           onClick={() => setMenuOpen(false)}
         >

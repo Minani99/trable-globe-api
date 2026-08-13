@@ -375,5 +375,15 @@ Base URL: `http://localhost:8080` (개발). Next.js 서버와 동일 출처 `/ap
 | PUT | `/api/private/travels/{id}` | 여행 aggregate 전체 수정 |
 | DELETE | `/api/private/travels/{id}` | 여행과 장소·사진 삭제 |
 
+### Location search BFF
+
+| Method | Path | Description |
+| --- | --- | --- |
+| GET | `/api/locations/search?q={query}&country={iso2}` | Search up to five place candidates for the travel editor |
+
+Location search is submitted explicitly rather than called on every keystroke. The Next.js route
+identifies the application, serializes public Nominatim requests to at most one per second per
+instance, caches repeated searches, and keeps latitude/longitude out of the ordinary form UI.
+
 모든 `/api/private/**` 조회와 변경은 `travel_id`만 보지 않고 인증된 `member_id`까지
 같이 조회합니다. 다른 사용자의 ID를 알아도 404만 반환합니다.

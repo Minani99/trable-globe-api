@@ -15,6 +15,9 @@ export const siteConfig = {
   demoUsername: "traveler",
 } as const;
 
+/** Session-aware entry point: signed-in members go to their globe, guests to the sample. */
+export const globePath = "/globe";
+
 const DEFAULT_API_BASE_URL = "http://localhost:8080";
 
 /**

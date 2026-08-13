@@ -1,6 +1,6 @@
 import Link from "next/link";
 
-import { profilePath, siteConfig } from "@/lib/config";
+import { globePath, siteConfig } from "@/lib/config";
 
 export function SiteFooter() {
   return (
@@ -13,7 +13,7 @@ export function SiteFooter() {
         <nav aria-label="하단 메뉴">
           <ul className="flex items-center gap-5">
             <li>
-              <Link className="transition-colors hover:text-[var(--text-primary)]" href={profilePath(siteConfig.demoUsername)}>
+              <Link className="transition-colors hover:text-[var(--text-primary)]" href={globePath}>
                 여행 지구본
               </Link>
             </li>
