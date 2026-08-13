@@ -20,12 +20,19 @@ export interface ApiEnvelope<T> {
 export class ApiError extends Error {
   readonly status: number;
   readonly code: string | null;
+  readonly requestId: string | null;
 
-  constructor(status: number, message: string, code: string | null = null) {
-    super(message);
+  constructor(
+    status: number,
+    message: string,
+    code: string | null = null,
+    requestId: string | null = null,
+  ) {
+    super(requestId ? `${message} (요청 번호: ${requestId})` : message);
     this.name = "ApiError";
     this.status = status;
     this.code = code;
+    this.requestId = requestId;
   }
 
   get isNotFound(): boolean {
@@ -79,17 +86,19 @@ export async function apiGet<T>(path: string): Promise<T> {
   }
 
   const envelope = await readEnvelope<T>(response);
+  const requestId = response.headers.get("x-request-id");
 
   if (!response.ok || !envelope?.success) {
     throw new ApiError(
       response.status,
       envelope?.message ?? `요청이 실패했습니다 (HTTP ${response.status})`,
       envelope?.error?.code ?? null,
+      requestId,
     );
   }
 
   if (envelope.data === null) {
-    throw new ApiError(response.status, "응답 본문이 비어 있습니다.");
+    throw new ApiError(response.status, "응답 본문이 비어 있습니다.", null, requestId);
   }
 
   return envelope.data;
@@ -118,11 +127,13 @@ export async function apiMutation<T>(
   }
 
   const envelope = await readEnvelope<T>(response);
+  const requestId = response.headers.get("x-request-id");
   if (!response.ok || !envelope?.success) {
     const error = new ApiError(
       response.status,
       envelope?.message ?? `요청이 실패했습니다 (HTTP ${response.status})`,
       envelope?.error?.code ?? null,
+      requestId,
     );
     Object.assign(error, { fieldErrors: envelope?.error?.fieldErrors ?? [] });
     throw error;

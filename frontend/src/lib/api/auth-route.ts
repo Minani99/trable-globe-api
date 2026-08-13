@@ -65,12 +65,15 @@ export async function handleAuthStart(request: Request, action: "login" | "regis
 
   const envelope = (await backendResponse.json()) as ApiEnvelope<BackendSession>;
   if (!backendResponse.ok || !envelope.success || !envelope.data) {
-    return NextResponse.json(envelope, { status: backendResponse.status });
+    return NextResponse.json(envelope, {
+      status: backendResponse.status,
+      headers: forwardedResponseHeaders(backendResponse),
+    });
   }
 
   const response = NextResponse.json(
     { ...envelope, data: envelope.data.member },
-    { status: backendResponse.status },
+    { status: backendResponse.status, headers: forwardedResponseHeaders(backendResponse) },
   );
   response.cookies.set(SESSION_COOKIE, envelope.data.token, {
     httpOnly: true,
@@ -139,6 +142,17 @@ export async function forwardWithSession(path: string, init: RequestInit = {}, s
 export async function passThrough(response: Response) {
   return new NextResponse(await response.arrayBuffer(), {
     status: response.status,
-    headers: { "Content-Type": response.headers.get("content-type") ?? "application/json" },
+    headers: forwardedResponseHeaders(response),
   });
+}
+
+function forwardedResponseHeaders(response: Response) {
+  const headers = new Headers({
+    "Content-Type": response.headers.get("content-type") ?? "application/json",
+  });
+  const requestId = response.headers.get("x-request-id");
+  if (requestId) {
+    headers.set("X-Request-ID", requestId);
+  }
+  return headers;
 }
