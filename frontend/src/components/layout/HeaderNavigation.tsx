@@ -2,11 +2,12 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import { ThemeToggle } from "@/components/theme/ThemeToggle";
 import { AccountNavigation } from "@/components/layout/AccountNavigation";
 import { globePath, profilePath, siteConfig } from "@/lib/config";
+import type { AuthMember } from "@/types";
 
 interface HeaderNavigationProps {
   username?: string;
@@ -15,6 +16,35 @@ interface HeaderNavigationProps {
 export function HeaderNavigation({ username }: HeaderNavigationProps) {
   const pathname = usePathname();
   const [menuOpen, setMenuOpen] = useState(false);
+  const [member, setMember] = useState<AuthMember | null | undefined>(undefined);
+
+  useEffect(() => {
+    let active = true;
+    fetch("/api/auth/me", { headers: { Accept: "application/json" }, cache: "no-store" })
+      .then(async (response) => {
+        if (!active) return;
+        if (!response.ok) {
+          setMember(null);
+          return;
+        }
+        const body = (await response.json()) as { data?: AuthMember };
+        setMember(body.data ?? null);
+      })
+      .catch(() => active && setMember(null));
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!menuOpen) return;
+    function closeOnEscape(event: KeyboardEvent) {
+      if (event.key === "Escape") setMenuOpen(false);
+    }
+    window.addEventListener("keydown", closeOnEscape);
+    return () => window.removeEventListener("keydown", closeOnEscape);
+  }, [menuOpen]);
+
   const samplePath = profilePath(siteConfig.demoUsername);
   const profileExact = Boolean(username && pathname === profilePath(username));
   const exploreActive =
@@ -47,13 +77,13 @@ export function HeaderNavigation({ username }: HeaderNavigationProps) {
             @{username}
           </Link>
         ) : null}
-        <AccountNavigation />
+        <AccountNavigation member={member} onLoggedOut={() => setMember(null)} />
       </nav>
 
       <ThemeToggle />
 
       <div className="site-mobile-account">
-        <AccountNavigation compact />
+        <AccountNavigation member={member} compact onLoggedOut={() => setMember(null)} />
       </div>
 
       <button
@@ -99,7 +129,12 @@ export function HeaderNavigation({ username }: HeaderNavigationProps) {
             <span aria-hidden="true">→</span>
           </Link>
         ) : null}
-        <AccountNavigation mobile onNavigate={() => setMenuOpen(false)} />
+        <AccountNavigation
+          member={member}
+          mobile
+          onNavigate={() => setMenuOpen(false)}
+          onLoggedOut={() => setMember(null)}
+        />
       </nav>
     </div>
   );
@@ -111,11 +146,12 @@ export function HeaderNavigationFallback() {
       <nav aria-label="주요 메뉴" className="site-desktop-nav">
         <Link href={globePath} className="site-nav-link">지구본</Link>
         <Link href="/about" className="site-nav-link">서비스 소개</Link>
-        <Link href="/login" className="site-profile-link">로그인</Link>
+        <Link href="/login" className="site-account-login">로그인</Link>
+        <Link href="/register" className="site-profile-link site-profile-link--accent">시작하기</Link>
       </nav>
       <ThemeToggle />
       <div className="site-mobile-account">
-        <Link href="/login" className="site-mobile-auth-link">로그인</Link>
+        <Link href="/register" className="site-mobile-auth-link">시작하기</Link>
       </div>
     </div>
   );

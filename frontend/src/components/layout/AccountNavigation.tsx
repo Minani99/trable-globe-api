@@ -1,45 +1,29 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 
 import { apiMutation } from "@/lib/api/client";
 import type { AuthMember } from "@/types";
 
 export function AccountNavigation({
+  member,
   mobile = false,
   compact = false,
   onNavigate,
+  onLoggedOut,
 }: {
+  member: AuthMember | null | undefined;
   mobile?: boolean;
   compact?: boolean;
   onNavigate?: () => void;
+  onLoggedOut: () => void;
 }) {
   const router = useRouter();
-  const [member, setMember] = useState<AuthMember | null | undefined>(undefined);
-
-  useEffect(() => {
-    let active = true;
-    fetch("/api/auth/me", { headers: { Accept: "application/json" }, cache: "no-store" })
-      .then(async (response) => {
-        if (!active) return;
-        if (!response.ok) {
-          setMember(null);
-          return;
-        }
-        const body = (await response.json()) as { data?: AuthMember };
-        setMember(body.data ?? null);
-      })
-      .catch(() => active && setMember(null));
-    return () => {
-      active = false;
-    };
-  }, []);
 
   async function logout() {
     await apiMutation<null>("/api/auth/logout", "POST");
-    setMember(null);
+    onLoggedOut();
     onNavigate?.();
     router.push("/");
     router.refresh();
@@ -48,12 +32,12 @@ export function AccountNavigation({
   if (compact) {
     return (
       <Link
-        href={member ? "/studio" : "/login"}
+        href={member ? "/studio" : "/register"}
         className="site-mobile-auth-link"
         onClick={onNavigate}
         aria-busy={member === undefined ? true : undefined}
       >
-        {member ? "내 기록" : "로그인"}
+        {member ? "내 기록" : "시작하기"}
       </Link>
     );
   }
@@ -63,14 +47,23 @@ export function AccountNavigation({
         <span>로그인 · 시작하기</span><span aria-hidden="true">→</span>
       </Link>
     ) : (
-      <Link href="/login" className="site-profile-link" aria-busy="true">로그인</Link>
+      <div className="site-account-entry" aria-busy="true">
+        <Link href="/login" className="site-account-login">로그인</Link>
+        <Link href="/register" className="site-profile-link site-profile-link--accent">시작하기</Link>
+      </div>
     );
   }
   if (!member) {
     return mobile ? (
-      <Link href="/login" onClick={onNavigate}><span>로그인 · 시작하기</span><span aria-hidden="true">→</span></Link>
+      <>
+        <Link href="/register" onClick={onNavigate}><span>내 지구본 시작하기</span><span aria-hidden="true">→</span></Link>
+        <Link href="/login" onClick={onNavigate}><span>로그인</span><span aria-hidden="true">→</span></Link>
+      </>
     ) : (
-      <Link href="/login" className="site-profile-link">로그인</Link>
+      <div className="site-account-entry">
+        <Link href="/login" className="site-account-login">로그인</Link>
+        <Link href="/register" className="site-profile-link site-profile-link--accent">시작하기</Link>
+      </div>
     );
   }
   return mobile ? (

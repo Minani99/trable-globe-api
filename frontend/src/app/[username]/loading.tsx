@@ -1,4 +1,5 @@
 import { GlobeLoadingIndicator } from "@/components/globe/GlobeLoadingIndicator";
+import { SiteHeader } from "@/components/layout/SiteHeader";
 
 /**
  * Shown while the profile bundle is in flight. Mirrors the real layout - a tall globe
@@ -6,8 +7,10 @@ import { GlobeLoadingIndicator } from "@/components/globe/GlobeLoadingIndicator"
  */
 export default function ProfileLoading() {
   return (
-    <div className="flex-1" aria-busy="true">
-      <section className="relative w-full lg:h-[calc(100vh-3.5rem)] lg:max-h-[820px] lg:min-h-[580px]">
+    <>
+      <SiteHeader />
+      <main id="main" className="flex-1" aria-busy="true">
+      <section className="relative w-full lg:h-[calc(100vh-4rem)] lg:max-h-[820px] lg:min-h-[580px]">
         <div className="h-[52vh] max-h-[560px] min-h-[340px] lg:absolute lg:inset-0 lg:h-full lg:max-h-none">
           <GlobeLoadingIndicator
             className="h-full w-full"
@@ -31,6 +34,7 @@ export default function ProfileLoading() {
           ))}
         </div>
       </div>
-    </div>
+      </main>
+    </>
   );
 }

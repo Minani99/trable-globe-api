@@ -51,11 +51,11 @@ export default function AboutPage() {
                 다시 꺼내 볼 수 있는 개인 아카이브를 만들고 있습니다.
               </p>
               <div className="about-hero__actions">
-                <Link href={globePath} className="landing-primary-cta">
-                  <span>지구본 둘러보기</span>
+                <Link href="/register" className="landing-primary-cta">
+                  <span>내 지구본 시작하기</span>
                   <span className="landing-primary-cta__arrow" aria-hidden="true">↗</span>
                 </Link>
-                <Link href="/" className="landing-secondary-cta">홈으로</Link>
+                <Link href={globePath} className="landing-secondary-cta">샘플 둘러보기</Link>
               </div>
             </div>
 
@@ -95,16 +95,16 @@ export default function AboutPage() {
 
           <section className="about-next" aria-labelledby="next-heading">
             <div>
-              <p className="eyebrow">Next chapter</p>
-              <h2 id="next-heading">다음 장은 직접 기록하는 경험입니다.</h2>
+              <p className="eyebrow">Ready for your story</p>
+              <h2 id="next-heading">이제 나만의 여행 세계를 만들 차례입니다.</h2>
             </div>
             <div>
               <p>
-                지금은 공개 아카이브를 읽고 탐색하는 경험에 집중하고 있습니다. 다음 단계에서는
-                로그인, 여행 작성, 사진 업로드와 공개 범위 설정을 더해 누구나 자신의 지구본을
-                완성할 수 있도록 확장합니다.
+                계정을 만들고 여행의 기간과 장소를 입력한 뒤 사진과 메모를 더해 보세요.
+                작성 중인 내용은 브라우저에 임시 저장되며, 완성한 여행은 공개 또는 비공개로
+                보관할 수 있습니다.
               </p>
-              <span>NEXT · CREATE YOUR OWN WORLD</span>
+              <Link href="/register" className="landing-text-link">CREATE YOUR OWN WORLD <span aria-hidden="true">↗</span></Link>
             </div>
           </section>
         </div>

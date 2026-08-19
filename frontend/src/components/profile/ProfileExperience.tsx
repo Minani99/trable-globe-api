@@ -8,6 +8,7 @@ import { CountryDetailPanel } from "@/components/globe/CountryDetailPanel";
 import { CountryKeyboardList } from "@/components/globe/CountryKeyboardList";
 import { TravelGlobe } from "@/components/globe/TravelGlobe";
 import { ProfilePanel } from "@/components/profile/ProfilePanel";
+import { ShareProfileButton } from "@/components/profile/ShareProfileButton";
 import { TravelCard } from "@/components/travel/TravelCard";
 import { TravelTimeline } from "@/components/travel/TravelTimeline";
 import { fetchTravelsByCountry } from "@/lib/api/profile";
@@ -95,10 +96,13 @@ export function ProfileExperience({ profile, countries, travels }: ProfileExperi
             <p className="eyebrow">Personal world · @{profile.username}</p>
             <h1 id="globe-heading">{profile.displayName}의 여행 세계</h1>
           </div>
-          <p>
-            {countries.length}개 나라, {travels.length}번의 여행이 하나의 지구본 위에
-            이어집니다. 지구본을 돌리거나 마커를 선택해 기록을 살펴보세요.
-          </p>
+          <div className="profile-world__summary">
+            <p>
+              {countries.length}개 나라, {travels.length}번의 여행이 하나의 지구본 위에
+              이어집니다. 지구본을 돌리거나 마커를 선택해 기록을 살펴보세요.
+            </p>
+            <ShareProfileButton displayName={profile.displayName} />
+          </div>
         </div>
 
         <div className="site-shell">

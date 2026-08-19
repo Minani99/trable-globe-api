@@ -13,8 +13,7 @@ interface StateMessageProps {
 /**
  * Shared empty / error / not-found block.
  *
- * One component for all three so the wording stays calm and consistent - the product has
- * no authoring flow yet, so these states must not push a call to action that goes nowhere.
+ * One component for all three so wording, spacing and recovery actions stay consistent.
  */
 export function StateMessage({
   eyebrow,

@@ -7,7 +7,7 @@ import { FormEvent, useState } from "react";
 import { apiMutation, ApiError } from "@/lib/api/client";
 import type { AuthMember } from "@/types";
 
-export function AuthForm({ mode }: { mode: "login" | "register" }) {
+export function AuthForm({ mode, nextPath }: { mode: "login" | "register"; nextPath?: string }) {
   const router = useRouter();
   const [error, setError] = useState<string | null>(null);
   const [pending, setPending] = useState(false);
@@ -32,7 +32,7 @@ export function AuthForm({ mode }: { mode: "login" | "register" }) {
       if (!member) {
         throw new ApiError(500, "계정 정보를 확인할 수 없습니다.");
       }
-      router.push("/studio");
+      router.push(nextPath ?? "/studio");
       router.refresh();
     } catch (caught) {
       setError(caught instanceof ApiError ? caught.message : "요청을 처리하지 못했습니다.");
