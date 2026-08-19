@@ -22,7 +22,9 @@ const localNetworkOrigins = Object.values(networkInterfaces())
 
 const nextConfig: NextConfig = {
   // Next.js 16 blocks dev assets requested from a LAN origin unless it is explicitly allowed.
-  allowedDevOrigins: [...new Set([...configuredDevOrigins, ...localNetworkOrigins])],
+  allowedDevOrigins: [
+    ...new Set(["localhost", "127.0.0.1", ...configuredDevOrigins, ...localNetworkOrigins]),
+  ],
   async rewrites() {
     return [
       {

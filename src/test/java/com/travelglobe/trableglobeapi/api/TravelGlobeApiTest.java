@@ -390,6 +390,103 @@ class TravelGlobeApiTest {
     }
 
     @Test
+    @DisplayName("사용자 신고와 차단은 교류를 끊고 검색·추천에서 서로를 제외한다")
+    void memberSafetyRestrictsInteractionsAndAcceptsReports() throws Exception {
+        String reporterResponse = mockMvc.perform(post("/api/auth/register")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {"username":"safety_reporter","displayName":"안전한 여행자",
+                                 "email":"safety-reporter@example.com","password":"safety-password-42"}
+                                """))
+                .andExpect(status().isOk())
+                .andReturn().getResponse().getContentAsString();
+        String reporterToken = stringValue(reporterResponse, "token");
+
+        String targetResponse = mockMvc.perform(post("/api/auth/register")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {"username":"safety_target","displayName":"차단 대상",
+                                 "email":"safety-target@example.com","password":"safety-password-42"}
+                                """))
+                .andExpect(status().isOk())
+                .andReturn().getResponse().getContentAsString();
+        String targetToken = stringValue(targetResponse, "token");
+
+        String travelResponse = mockMvc.perform(post("/api/private/travels")
+                        .header("Authorization", "Bearer " + reporterToken)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(travelPayload("차단으로 보호할 여행", "PUBLIC")))
+                .andExpect(status().isCreated())
+                .andReturn().getResponse().getContentAsString();
+        long protectedTravelId = Long.parseLong(numberValue(travelResponse, "id"));
+
+        mockMvc.perform(post("/api/private/discovery/profiles/safety_target/follow")
+                        .header("Authorization", "Bearer " + reporterToken))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.following").value(true));
+
+        mockMvc.perform(post("/api/private/discovery/profiles/safety_target/block")
+                        .header("Authorization", "Bearer " + reporterToken))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.blockedByCurrentMember").value(true))
+                .andExpect(jsonPath("$.data.interactionRestricted").value(true));
+
+        mockMvc.perform(get("/api/private/discovery/profiles/safety_target")
+                        .header("Authorization", "Bearer " + reporterToken))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.following").value(false))
+                .andExpect(jsonPath("$.data.followerCount").value(0));
+
+        mockMvc.perform(get("/api/private/discovery/search")
+                        .header("Authorization", "Bearer " + reporterToken)
+                        .param("query", "safety_target"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.length()").value(0));
+
+        mockMvc.perform(post("/api/private/discovery/profiles/safety_reporter/follow")
+                        .header("Authorization", "Bearer " + targetToken))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.error.code").value("INVALID_REQUEST"));
+
+        mockMvc.perform(post("/api/private/travels/" + protectedTravelId + "/comments")
+                        .header("Authorization", "Bearer " + targetToken)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"content\":\"차단 후에는 남길 수 없는 댓글\"}"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.error.code").value("INVALID_REQUEST"));
+
+        mockMvc.perform(post("/api/private/discovery/profiles/safety_target/report")
+                        .header("Authorization", "Bearer " + reporterToken)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {"reason":"SPAM","details":"반복적인 홍보 메시지"}
+                                """))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.reportId").isNumber())
+                .andExpect(jsonPath("$.data.status").value("OPEN"));
+
+        mockMvc.perform(post("/api/private/discovery/profiles/safety_target/report")
+                        .header("Authorization", "Bearer " + reporterToken)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {"reason":"OTHER","details":"중복 신고"}
+                                """))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.error.code").value("INVALID_REQUEST"));
+
+        mockMvc.perform(delete("/api/private/discovery/profiles/safety_target/block")
+                        .header("Authorization", "Bearer " + reporterToken))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.blockedByCurrentMember").value(false))
+                .andExpect(jsonPath("$.data.interactionRestricted").value(false));
+
+        mockMvc.perform(post("/api/private/discovery/profiles/safety_target/follow")
+                        .header("Authorization", "Bearer " + reporterToken))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.following").value(true));
+    }
+
+    @Test
     @DisplayName("공개 여행에서 회원끼리 좋아요와 댓글을 주고받을 수 있다")
     void travelLikesAndCommentsCreateConversation() throws Exception {
         String ownerResponse = mockMvc.perform(post("/api/auth/register")

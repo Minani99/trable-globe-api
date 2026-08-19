@@ -1,5 +1,11 @@
 import { apiGet, apiMutation, apiSessionGet } from "@/lib/api/client";
-import type { FollowStatus, MemberDiscovery } from "@/types";
+import type {
+  FollowStatus,
+  MemberDiscovery,
+  MemberReportReason,
+  MemberReportReceipt,
+  MemberSafetyStatus,
+} from "@/types";
 
 export function searchMembers(query: string, authenticated: boolean): Promise<MemberDiscovery[]> {
   const suffix = `?query=${encodeURIComponent(query)}&limit=16`;
@@ -27,5 +33,31 @@ export function unfollowMember(username: string): Promise<FollowStatus | null> {
   return apiMutation<FollowStatus>(
     `/api/private/discovery/profiles/${encodeURIComponent(username)}/follow`,
     "DELETE",
+  );
+}
+
+export function blockMember(username: string): Promise<MemberSafetyStatus | null> {
+  return apiMutation<MemberSafetyStatus>(
+    `/api/private/discovery/profiles/${encodeURIComponent(username)}/block`,
+    "POST",
+  );
+}
+
+export function unblockMember(username: string): Promise<MemberSafetyStatus | null> {
+  return apiMutation<MemberSafetyStatus>(
+    `/api/private/discovery/profiles/${encodeURIComponent(username)}/block`,
+    "DELETE",
+  );
+}
+
+export function reportMember(
+  username: string,
+  reason: MemberReportReason,
+  details: string,
+): Promise<MemberReportReceipt | null> {
+  return apiMutation<MemberReportReceipt>(
+    `/api/private/discovery/profiles/${encodeURIComponent(username)}/report`,
+    "POST",
+    { reason, details: details.trim() || null },
   );
 }

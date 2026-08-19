@@ -5,14 +5,16 @@ import { useState } from "react";
 
 import { TravelImage } from "@/components/common/TravelImage";
 import { FollowButton } from "@/components/discovery/FollowButton";
+import { ProfileSafetyActions } from "@/components/profile/ProfileSafetyActions";
 import { formatStat } from "@/lib/utils/format";
-import type { FollowStatus, UserProfile } from "@/types";
+import type { FollowStatus, MemberSafetyStatus, UserProfile } from "@/types";
 
 interface ProfilePanelProps {
   profile: UserProfile;
   isOwnProfile: boolean;
   viewerAuthenticated: boolean;
   initialFollowing: boolean;
+  initialSafetyStatus: MemberSafetyStatus | null;
 }
 
 export function ProfilePanel({
@@ -20,9 +22,25 @@ export function ProfilePanel({
   isOwnProfile,
   viewerAuthenticated,
   initialFollowing,
+  initialSafetyStatus,
 }: ProfilePanelProps) {
   const { statistics } = profile;
   const [followerCount, setFollowerCount] = useState(profile.followerCount);
+  const [following, setFollowing] = useState(initialFollowing);
+  const [safetyStatus, setSafetyStatus] = useState(initialSafetyStatus);
+
+  function updateFollowing(status: FollowStatus) {
+    setFollowing(status.following);
+    setFollowerCount(status.followerCount);
+  }
+
+  function updateSafety(status: MemberSafetyStatus) {
+    if (status.interactionRestricted && following) {
+      setFollowing(false);
+      setFollowerCount((count) => Math.max(0, count - 1));
+    }
+    setSafetyStatus(status);
+  }
 
   const identity = (
     <>
@@ -72,11 +90,27 @@ export function ProfilePanel({
       {isOwnProfile ? (
         <Link href="/settings#profile" className="profile-panel__primary-action">프로필 편집</Link>
       ) : viewerAuthenticated ? (
-        <FollowButton
-          username={profile.username}
-          initialFollowing={initialFollowing}
-          onChange={(status: FollowStatus) => setFollowerCount(status.followerCount)}
-        />
+        <>
+          {safetyStatus?.interactionRestricted ? (
+            <p className="profile-panel__restricted" role="status">
+              {safetyStatus.blockedByCurrentMember ? "차단한 사용자입니다." : "현재 이 계정과 교류할 수 없습니다."}
+            </p>
+          ) : (
+            <FollowButton
+              key={`${profile.username}-${following}`}
+              username={profile.username}
+              initialFollowing={following}
+              onChange={updateFollowing}
+            />
+          )}
+          {safetyStatus ? (
+            <ProfileSafetyActions
+              username={profile.username}
+              status={safetyStatus}
+              onStatusChange={updateSafety}
+            />
+          ) : null}
+        </>
       ) : (
         <Link href={`/login?next=/${profile.username}`} className="profile-panel__primary-action">로그인하고 팔로우</Link>
       )}

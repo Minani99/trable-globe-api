@@ -2,6 +2,7 @@ package com.travelglobe.trableglobeapi.social.service;
 
 import com.travelglobe.trableglobeapi.auth.security.MemberPrincipal;
 import com.travelglobe.trableglobeapi.global.exception.AccessDeniedException;
+import com.travelglobe.trableglobeapi.global.exception.InvalidRequestException;
 import com.travelglobe.trableglobeapi.global.exception.ResourceNotFoundException;
 import com.travelglobe.trableglobeapi.member.domain.Member;
 import com.travelglobe.trableglobeapi.member.repository.MemberRepository;
@@ -11,6 +12,7 @@ import com.travelglobe.trableglobeapi.social.dto.TravelCommentResponse;
 import com.travelglobe.trableglobeapi.social.dto.TravelSocialResponse;
 import com.travelglobe.trableglobeapi.social.repository.TravelCommentRepository;
 import com.travelglobe.trableglobeapi.social.repository.TravelLikeRepository;
+import com.travelglobe.trableglobeapi.social.repository.MemberBlockRepository;
 import com.travelglobe.trableglobeapi.travel.domain.Travel;
 import com.travelglobe.trableglobeapi.travel.domain.Visibility;
 import com.travelglobe.trableglobeapi.travel.repository.TravelRepository;
@@ -30,15 +32,18 @@ public class TravelSocialService {
     private final MemberRepository memberRepository;
     private final TravelLikeRepository likeRepository;
     private final TravelCommentRepository commentRepository;
+    private final MemberBlockRepository blockRepository;
 
     public TravelSocialService(TravelRepository travelRepository,
                                MemberRepository memberRepository,
                                TravelLikeRepository likeRepository,
-                               TravelCommentRepository commentRepository) {
+                               TravelCommentRepository commentRepository,
+                               MemberBlockRepository blockRepository) {
         this.travelRepository = travelRepository;
         this.memberRepository = memberRepository;
         this.likeRepository = likeRepository;
         this.commentRepository = commentRepository;
+        this.blockRepository = blockRepository;
     }
 
     @Transactional(readOnly = true)
@@ -56,6 +61,7 @@ public class TravelSocialService {
     @Transactional
     public TravelSocialResponse toggleLike(MemberPrincipal principal, Long travelId) {
         Travel travel = requirePublicTravel(travelId);
+        requireInteractionAllowed(principal.memberId(), travel.getMember().getId());
         likeRepository.findByTravelIdAndMemberId(travelId, principal.memberId())
                 .ifPresentOrElse(
                         likeRepository::delete,
@@ -68,6 +74,7 @@ public class TravelSocialService {
     @Transactional
     public TravelSocialResponse addComment(MemberPrincipal principal, Long travelId, String content) {
         Travel travel = requirePublicTravel(travelId);
+        requireInteractionAllowed(principal.memberId(), travel.getMember().getId());
         Member member = requireMember(principal.memberId(), principal.username());
         commentRepository.saveAndFlush(TravelComment.create(travel, member, content.trim()));
         return response(travelId, principal.memberId(), travel.getMember().getId());
@@ -114,5 +121,11 @@ public class TravelSocialService {
     private Member requireMember(Long memberId, String username) {
         return memberRepository.findById(memberId)
                 .orElseThrow(() -> ResourceNotFoundException.profile(username));
+    }
+
+    private void requireInteractionAllowed(Long currentMemberId, Long ownerId) {
+        if (!currentMemberId.equals(ownerId) && blockRepository.existsBetween(currentMemberId, ownerId)) {
+            throw new InvalidRequestException("차단된 사용자와는 교류할 수 없습니다.");
+        }
     }
 }

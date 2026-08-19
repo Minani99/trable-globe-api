@@ -15,6 +15,20 @@ A readiness failure returns HTTP 503. Responses include `X-Request-ID`; use it t
 report with backend logs. If Cloudflare is in front, the slow/error log also includes a sanitized
 `CF-Ray` value. The API logs requests taking at least `SLOW_REQUEST_MS` (default 1000 ms).
 
+## User report queue
+
+The `member_reports` table is the moderation source of truth. During the private beta, an operator
+must review `OPEN` reports at least once per day, oldest first, and move each row through
+`REVIEWING` to either `RESOLVED` or `DISMISSED`. Never paste the free-text `details` field into logs
+or public issues; it can contain personal information. Record only the report id, final status, and
+the policy reason in the private incident record.
+
+Blocking is immediate and user-controlled. A block removes follow relationships in both directions,
+excludes both accounts from authenticated search and recommendations, and prevents new likes or
+comments between them. Unblocking does not restore previous follows. A report does not automatically
+block the reported account, so support should explain the separate block control when safety requires
+immediate separation.
+
 ## Database backup policy
 
 Before accepting beta users:

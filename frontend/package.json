@@ -8,6 +8,7 @@
     "start": "next start",
     "lint": "eslint",
     "typecheck": "next typegen && tsc --noEmit",
+    "test:e2e": "playwright test",
     "geo:build": "node scripts/build-geo-data.mjs",
     "placeholders:build": "node scripts/build-placeholders.mjs"
   },
@@ -22,6 +23,7 @@
     "world-countries": "^5.1.0"
   },
   "devDependencies": {
+    "@playwright/test": "^1.62.1",
     "@tailwindcss/postcss": "^4",
     "@types/node": "^20",
     "@types/react": "^19",

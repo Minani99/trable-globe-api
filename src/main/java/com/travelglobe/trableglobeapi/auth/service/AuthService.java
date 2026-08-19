@@ -26,6 +26,8 @@ import com.travelglobe.trableglobeapi.member.repository.MemberRepository;
 import com.travelglobe.trableglobeapi.social.repository.TravelCommentRepository;
 import com.travelglobe.trableglobeapi.social.repository.TravelLikeRepository;
 import com.travelglobe.trableglobeapi.social.repository.MemberFollowRepository;
+import com.travelglobe.trableglobeapi.social.repository.MemberBlockRepository;
+import com.travelglobe.trableglobeapi.social.repository.MemberReportRepository;
 import com.travelglobe.trableglobeapi.travel.domain.Travel;
 import com.travelglobe.trableglobeapi.travel.repository.TravelPhotoRepository;
 import com.travelglobe.trableglobeapi.travel.repository.TravelRepository;
@@ -55,6 +57,8 @@ public class AuthService {
     private final TravelLikeRepository travelLikeRepository;
     private final TravelCommentRepository travelCommentRepository;
     private final MemberFollowRepository memberFollowRepository;
+    private final MemberBlockRepository memberBlockRepository;
+    private final MemberReportRepository memberReportRepository;
     private final AuthSessionService authSessionService;
     private final AccountActionTokenService actionTokenService;
     private final AccountMailService accountMailService;
@@ -70,6 +74,8 @@ public class AuthService {
                        TravelLikeRepository travelLikeRepository,
                        TravelCommentRepository travelCommentRepository,
                        MemberFollowRepository memberFollowRepository,
+                       MemberBlockRepository memberBlockRepository,
+                       MemberReportRepository memberReportRepository,
                        AuthSessionService authSessionService,
                        AccountActionTokenService actionTokenService,
                        AccountMailService accountMailService,
@@ -83,6 +89,8 @@ public class AuthService {
         this.travelLikeRepository = travelLikeRepository;
         this.travelCommentRepository = travelCommentRepository;
         this.memberFollowRepository = memberFollowRepository;
+        this.memberBlockRepository = memberBlockRepository;
+        this.memberReportRepository = memberReportRepository;
         this.authSessionService = authSessionService;
         this.actionTokenService = actionTokenService;
         this.accountMailService = accountMailService;
@@ -174,6 +182,8 @@ public class AuthService {
         }
         Long memberId = credential.getMember().getId();
         memberFollowRepository.deleteAllByFollowerIdOrFollowingId(memberId, memberId);
+        memberBlockRepository.deleteAllForMember(memberId);
+        memberReportRepository.deleteAllForMember(memberId);
         travelLikeRepository.deleteAllByMemberId(memberId);
         travelCommentRepository.deleteAllByMemberId(memberId);
         travelLikeRepository.deleteAllByTravelMemberId(memberId);

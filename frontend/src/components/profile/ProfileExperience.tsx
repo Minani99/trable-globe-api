@@ -12,7 +12,7 @@ import { ShareProfileButton } from "@/components/profile/ShareProfileButton";
 import { TravelCard } from "@/components/travel/TravelCard";
 import { TravelTimeline } from "@/components/travel/TravelTimeline";
 import { fetchTravelsByCountry } from "@/lib/api/profile";
-import type { AuthMember, FollowStatus, TravelSummary, UserProfile, VisitedCountry } from "@/types";
+import type { AuthMember, FollowStatus, MemberSafetyStatus, TravelSummary, UserProfile, VisitedCountry } from "@/types";
 
 interface ProfileExperienceProps {
   profile: UserProfile;
@@ -20,6 +20,7 @@ interface ProfileExperienceProps {
   travels: TravelSummary[];
   viewer: AuthMember | null;
   relationship: FollowStatus | null;
+  safetyStatus: MemberSafetyStatus | null;
 }
 
 /**
@@ -29,7 +30,7 @@ interface ProfileExperienceProps {
  * so it lives here rather than in a store - there is exactly one consumer tree and no
  * cross-page persistence to justify a state library.
  */
-export function ProfileExperience({ profile, countries, travels, viewer, relationship }: ProfileExperienceProps) {
+export function ProfileExperience({ profile, countries, travels, viewer, relationship, safetyStatus }: ProfileExperienceProps) {
   const [selectedCode, setSelectedCode] = useState<string | null>(null);
   const [hoveredCode, setHoveredCode] = useState<string | null>(null);
   // Keyed by the country it was fetched for, so a result arriving after the visitor moved
@@ -143,6 +144,7 @@ export function ProfileExperience({ profile, countries, travels, viewer, relatio
                 isOwnProfile={isOwnProfile}
                 viewerAuthenticated={Boolean(viewer)}
                 initialFollowing={relationship?.following ?? false}
+                initialSafetyStatus={safetyStatus}
               />
             </div>
 

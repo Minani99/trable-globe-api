@@ -10,7 +10,7 @@ import { ApiError } from "@/lib/api/client";
 import { authenticatedBackendGet, getCurrentMember } from "@/lib/api/server-session";
 import { fetchProfile, fetchTravels, fetchVisitedCountries } from "@/lib/api/profile";
 import { profilePath } from "@/lib/config";
-import type { FollowStatus } from "@/types";
+import type { FollowStatus, MemberSafetyStatus } from "@/types";
 
 /**
  * `generateMetadata` and the page body both need the profile. `cache` collapses that into
@@ -67,11 +67,16 @@ export default async function ProfilePage(props: PageProps<"/[username]">) {
   }
 
   const { profile, countries, travels } = data;
-  const relationship = viewer && viewer.username !== profile.username
-    ? await authenticatedBackendGet<FollowStatus>(
-        `/api/private/discovery/profiles/${encodeURIComponent(profile.username)}`,
-      )
-    : null;
+  const [relationship, safetyStatus] = viewer && viewer.username !== profile.username
+    ? await Promise.all([
+        authenticatedBackendGet<FollowStatus>(
+          `/api/private/discovery/profiles/${encodeURIComponent(profile.username)}`,
+        ),
+        authenticatedBackendGet<MemberSafetyStatus>(
+          `/api/private/discovery/profiles/${encodeURIComponent(profile.username)}/safety`,
+        ),
+      ])
+    : [null, null];
 
   return (
     <>
@@ -83,6 +88,7 @@ export default async function ProfilePage(props: PageProps<"/[username]">) {
           travels={travels}
           viewer={viewer}
           relationship={relationship}
+          safetyStatus={safetyStatus}
         />
       </main>
       <SiteFooter />

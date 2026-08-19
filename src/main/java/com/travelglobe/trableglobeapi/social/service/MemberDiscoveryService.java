@@ -5,15 +5,24 @@ import com.travelglobe.trableglobeapi.global.exception.InvalidRequestException;
 import com.travelglobe.trableglobeapi.global.exception.ResourceNotFoundException;
 import com.travelglobe.trableglobeapi.member.domain.Member;
 import com.travelglobe.trableglobeapi.member.repository.MemberRepository;
+import com.travelglobe.trableglobeapi.social.domain.MemberBlock;
 import com.travelglobe.trableglobeapi.social.domain.MemberFollow;
+import com.travelglobe.trableglobeapi.social.domain.MemberReport;
+import com.travelglobe.trableglobeapi.social.dto.CreateMemberReportRequest;
 import com.travelglobe.trableglobeapi.social.dto.FollowStatusResponse;
 import com.travelglobe.trableglobeapi.social.dto.MemberDiscoveryResponse;
+import com.travelglobe.trableglobeapi.social.dto.MemberReportResponse;
+import com.travelglobe.trableglobeapi.social.dto.MemberSafetyStatusResponse;
+import com.travelglobe.trableglobeapi.social.repository.MemberBlockRepository;
 import com.travelglobe.trableglobeapi.social.repository.MemberFollowRepository;
+import com.travelglobe.trableglobeapi.social.repository.MemberReportRepository;
 import com.travelglobe.trableglobeapi.statistics.dto.TravelStatisticsResponse;
 import com.travelglobe.trableglobeapi.statistics.service.TravelStatisticsService;
 import com.travelglobe.trableglobeapi.travel.domain.Visibility;
 import com.travelglobe.trableglobeapi.travel.repository.TravelRepository;
 import java.util.Comparator;
+import java.time.Duration;
+import java.time.Instant;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -27,18 +36,25 @@ public class MemberDiscoveryService {
 
     private static final int MAX_RESULTS = 24;
     private static final int RECOMMENDATION_CANDIDATES = 48;
+    private static final Duration REPORT_COOLDOWN = Duration.ofHours(24);
 
     private final MemberRepository memberRepository;
     private final MemberFollowRepository followRepository;
+    private final MemberBlockRepository blockRepository;
+    private final MemberReportRepository reportRepository;
     private final TravelRepository travelRepository;
     private final TravelStatisticsService statisticsService;
 
     public MemberDiscoveryService(MemberRepository memberRepository,
                                   MemberFollowRepository followRepository,
+                                  MemberBlockRepository blockRepository,
+                                  MemberReportRepository reportRepository,
                                   TravelRepository travelRepository,
                                   TravelStatisticsService statisticsService) {
         this.memberRepository = memberRepository;
         this.followRepository = followRepository;
+        this.blockRepository = blockRepository;
+        this.reportRepository = reportRepository;
         this.travelRepository = travelRepository;
         this.statisticsService = statisticsService;
     }
@@ -52,8 +68,11 @@ public class MemberDiscoveryService {
         int limit = normalizeLimit(requestedLimit);
         Set<String> currentCountries = visitedCountryCodes(principal.username());
         return memberRepository.searchDiscoverableMembers(
-                        principal.memberId(), normalizedQuery, PageRequest.of(0, limit)).stream()
+                        principal.memberId(), normalizedQuery,
+                        PageRequest.of(0, RECOMMENDATION_CANDIDATES)).stream()
+                .filter(member -> !blockRepository.existsBetween(principal.memberId(), member.getId()))
                 .map(member -> toResponse(principal.memberId(), currentCountries, member))
+                .limit(limit)
                 .toList();
     }
 
@@ -77,6 +96,7 @@ public class MemberDiscoveryService {
                         principal.memberId(), PageRequest.of(0, RECOMMENDATION_CANDIDATES)).stream()
                 .filter(member -> !followRepository.existsByFollowerIdAndFollowingId(
                         principal.memberId(), member.getId()))
+                .filter(member -> !blockRepository.existsBetween(principal.memberId(), member.getId()))
                 .map(member -> toResponse(principal.memberId(), currentCountries, member))
                 .sorted(Comparator
                         .comparingLong(MemberDiscoveryResponse::sharedCountryCount).reversed()
@@ -113,6 +133,9 @@ public class MemberDiscoveryService {
         if (current.getId().equals(target.getId())) {
             throw new InvalidRequestException("내 프로필은 팔로우할 수 없습니다.");
         }
+        if (blockRepository.existsBetween(current.getId(), target.getId())) {
+            throw new InvalidRequestException("차단된 사용자와는 팔로우할 수 없습니다.");
+        }
         if (!followRepository.existsByFollowerIdAndFollowingId(current.getId(), target.getId())) {
             followRepository.saveAndFlush(MemberFollow.create(current, target));
         }
@@ -126,6 +149,53 @@ public class MemberDiscoveryService {
                 .ifPresent(followRepository::delete);
         followRepository.flush();
         return followStatus(principal.memberId(), target);
+    }
+
+    @Transactional(readOnly = true)
+    public MemberSafetyStatusResponse safetyStatus(MemberPrincipal principal, String username) {
+        Member target = requireTarget(username);
+        ensureNotSelf(principal.memberId(), target);
+        return safetyStatus(principal.memberId(), target.getId());
+    }
+
+    @Transactional
+    public MemberSafetyStatusResponse block(MemberPrincipal principal, String username) {
+        Member current = requireMember(principal.memberId(), principal.username());
+        Member target = requireTarget(username);
+        ensureNotSelf(current.getId(), target);
+        if (!blockRepository.existsByBlockerIdAndBlockedId(current.getId(), target.getId())) {
+            blockRepository.saveAndFlush(MemberBlock.create(current, target));
+        }
+        followRepository.deleteByFollowerIdAndFollowingId(current.getId(), target.getId());
+        followRepository.deleteByFollowerIdAndFollowingId(target.getId(), current.getId());
+        followRepository.flush();
+        return safetyStatus(current.getId(), target.getId());
+    }
+
+    @Transactional
+    public MemberSafetyStatusResponse unblock(MemberPrincipal principal, String username) {
+        Member target = requireTarget(username);
+        ensureNotSelf(principal.memberId(), target);
+        blockRepository.findByBlockerIdAndBlockedId(principal.memberId(), target.getId())
+                .ifPresent(blockRepository::delete);
+        blockRepository.flush();
+        return safetyStatus(principal.memberId(), target.getId());
+    }
+
+    @Transactional
+    public MemberReportResponse report(MemberPrincipal principal, String username,
+                                       CreateMemberReportRequest request) {
+        Member current = requireMember(principal.memberId(), principal.username());
+        Member target = requireTarget(username);
+        ensureNotSelf(current.getId(), target);
+        if (reportRepository.existsByReporterIdAndReportedMemberIdAndCreatedAtAfter(
+                current.getId(), target.getId(), Instant.now().minus(REPORT_COOLDOWN))) {
+            throw new InvalidRequestException("같은 사용자는 하루에 한 번만 신고할 수 있습니다.");
+        }
+        String details = StringUtils.hasText(request.details()) ? request.details().trim() : null;
+        MemberReport saved = reportRepository.saveAndFlush(
+                MemberReport.create(current, target, request.reason(), details));
+        return MemberReportResponse.from(saved);
     }
 
     private MemberDiscoveryResponse toResponse(Long currentMemberId, Set<String> currentCountries, Member member) {
@@ -156,6 +226,21 @@ public class MemberDiscoveryService {
                         && followRepository.existsByFollowerIdAndFollowingId(currentMemberId, target.getId()),
                 followRepository.countByFollowingId(target.getId()),
                 followRepository.countByFollowerId(target.getId()));
+    }
+
+    private MemberSafetyStatusResponse safetyStatus(Long currentMemberId, Long targetMemberId) {
+        boolean blockedByCurrentMember = blockRepository.existsByBlockerIdAndBlockedId(
+                currentMemberId, targetMemberId);
+        return new MemberSafetyStatusResponse(
+                blockedByCurrentMember,
+                blockedByCurrentMember || blockRepository.existsByBlockerIdAndBlockedId(
+                        targetMemberId, currentMemberId));
+    }
+
+    private static void ensureNotSelf(Long currentMemberId, Member target) {
+        if (currentMemberId.equals(target.getId())) {
+            throw new InvalidRequestException("내 프로필에는 사용할 수 없는 기능입니다.");
+        }
     }
 
     private Set<String> visitedCountryCodes(String username) {

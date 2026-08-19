@@ -61,7 +61,7 @@ export function AuthForm({ mode, nextPath }: { mode: "login" | "register"; nextP
   }
 
   return (
-    <form className="auth-form" onSubmit={handleSubmit}>
+    <form className="auth-form" method="post" onSubmit={handleSubmit}>
       {isRegister ? (
         <div className="auth-form__row">
           <label>
@@ -73,7 +73,7 @@ export function AuthForm({ mode, nextPath }: { mode: "login" | "register"; nextP
             <input
               name="username"
               autoComplete="username"
-              pattern="[A-Za-z0-9][A-Za-z0-9._-]{2,29}"
+              pattern={"[A-Za-z0-9][A-Za-z0-9._\\-]{2,29}"}
               placeholder="travel_note"
               required
             />

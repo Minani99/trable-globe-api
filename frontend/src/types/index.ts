@@ -146,6 +146,24 @@ export interface FollowStatus {
   followingCount: number;
 }
 
+export interface MemberSafetyStatus {
+  blockedByCurrentMember: boolean;
+  interactionRestricted: boolean;
+}
+
+export type MemberReportReason =
+  | "SPAM"
+  | "HARASSMENT"
+  | "HATE_SPEECH"
+  | "IMPERSONATION"
+  | "INAPPROPRIATE_CONTENT"
+  | "OTHER";
+
+export interface MemberReportReceipt {
+  reportId: number;
+  status: "OPEN" | "REVIEWING" | "RESOLVED" | "DISMISSED";
+}
+
 export interface MemberDiscovery {
   username: string;
   displayName: string;

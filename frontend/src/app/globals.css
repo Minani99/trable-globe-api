@@ -5764,6 +5764,119 @@ a.profile-panel__identity:focus-visible {
   line-height: 1.4;
 }
 
+.profile-panel__restricted {
+  margin-top: 1rem;
+  padding: 0.75rem 0.85rem;
+  border: 1px solid var(--border-subtle);
+  border-radius: 0.75rem;
+  background: var(--surface-hover);
+  color: var(--text-tertiary);
+  font-size: 0.7rem;
+  line-height: 1.5;
+  text-align: center;
+}
+
+.profile-safety {
+  margin-top: 0.75rem;
+}
+
+.profile-safety__links {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.45rem;
+  color: var(--text-faint);
+  font-size: 0.64rem;
+}
+
+.profile-safety__links button {
+  color: inherit;
+  transition: color 0.2s ease;
+}
+
+.profile-safety__links button:hover:not(:disabled),
+.profile-safety__links button:focus-visible:not(:disabled) {
+  color: var(--text-primary);
+}
+
+.profile-safety__links button:disabled {
+  cursor: wait;
+  opacity: 0.55;
+}
+
+.profile-safety__report {
+  display: grid;
+  gap: 0.75rem;
+  margin-top: 0.75rem;
+  padding: 0.85rem;
+  border: 1px solid var(--border-subtle);
+  border-radius: 0.85rem;
+  background: var(--surface-raised);
+}
+
+.profile-safety__report label,
+.profile-safety__report label > span {
+  display: grid;
+  gap: 0.35rem;
+}
+
+.profile-safety__report label > span {
+  grid-auto-flow: column;
+  justify-content: start;
+  color: var(--text-tertiary);
+  font-size: 0.64rem;
+}
+
+.profile-safety__report select,
+.profile-safety__report textarea {
+  width: 100%;
+  border: 1px solid var(--border-strong);
+  border-radius: 0.6rem;
+  background: var(--surface);
+  color: var(--text-primary);
+  font-size: 0.7rem;
+}
+
+.profile-safety__report select {
+  min-height: 2.2rem;
+  padding-inline: 0.65rem;
+}
+
+.profile-safety__report textarea {
+  resize: vertical;
+  padding: 0.6rem;
+  line-height: 1.5;
+}
+
+.profile-safety__report > div {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.45rem;
+}
+
+.profile-safety__report > div button {
+  min-height: 2rem;
+  padding-inline: 0.7rem;
+  border-radius: 999px;
+  color: var(--text-tertiary);
+  font-size: 0.65rem;
+  font-weight: 600;
+}
+
+.profile-safety__report > div button[type="submit"] {
+  background: var(--accent);
+  color: #fff;
+}
+
+.profile-safety__error {
+  display: block;
+  margin-top: 0.55rem;
+  color: #b9492c;
+  font-size: 0.62rem;
+  line-height: 1.4;
+  text-align: center;
+}
+
 .discover-page {
   background:
     radial-gradient(circle at 85% 7%, color-mix(in srgb, var(--globe-ocean) 18%, transparent), transparent 28rem),
