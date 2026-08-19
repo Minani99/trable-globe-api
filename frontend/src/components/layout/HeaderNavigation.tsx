@@ -50,6 +50,7 @@ export function HeaderNavigation({ username }: HeaderNavigationProps) {
   const exploreActive =
     (pathname === samplePath || pathname.startsWith(`${samplePath}/`)) && !profileExact;
   const aboutActive = pathname === "/about";
+  const discoverActive = pathname === "/discover";
 
   return (
     <div className="site-header-actions">
@@ -60,6 +61,13 @@ export function HeaderNavigation({ username }: HeaderNavigationProps) {
           aria-current={exploreActive ? "page" : undefined}
         >
           지구본
+        </Link>
+        <Link
+          href="/discover"
+          className="site-nav-link"
+          aria-current={discoverActive ? "page" : undefined}
+        >
+          사람 찾기
         </Link>
         <Link
           href="/about"
@@ -112,6 +120,14 @@ export function HeaderNavigation({ username }: HeaderNavigationProps) {
           <span aria-hidden="true">↗</span>
         </Link>
         <Link
+          href="/discover"
+          aria-current={discoverActive ? "page" : undefined}
+          onClick={() => setMenuOpen(false)}
+        >
+          <span>사람 찾기</span>
+          <span aria-hidden="true">→</span>
+        </Link>
+        <Link
           href="/about"
           aria-current={aboutActive ? "page" : undefined}
           onClick={() => setMenuOpen(false)}
@@ -145,6 +161,7 @@ export function HeaderNavigationFallback() {
     <div className="site-header-actions">
       <nav aria-label="주요 메뉴" className="site-desktop-nav">
         <Link href={globePath} className="site-nav-link">지구본</Link>
+        <Link href="/discover" className="site-nav-link">사람 찾기</Link>
         <Link href="/about" className="site-nav-link">서비스 소개</Link>
         <Link href="/login" className="site-account-login">로그인</Link>
         <Link href="/register" className="site-profile-link site-profile-link--accent">시작하기</Link>

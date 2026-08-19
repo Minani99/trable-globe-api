@@ -13,15 +13,23 @@ public record ProfileResponse(
         String bio,
         String profileImageUrl,
         Instant joinedAt,
-        TravelStatisticsResponse statistics) {
+        TravelStatisticsResponse statistics,
+        long followerCount,
+        long followingCount) {
 
-    public static ProfileResponse of(Member member, TravelStatisticsResponse statistics) {
+    public static ProfileResponse of(
+            Member member,
+            TravelStatisticsResponse statistics,
+            long followerCount,
+            long followingCount) {
         return new ProfileResponse(
                 member.getUsername(),
                 member.getDisplayName(),
                 member.getBio(),
                 member.getProfileImageUrl(),
                 member.getCreatedAt(),
-                statistics);
+                statistics,
+                followerCount,
+                followingCount);
     }
 }

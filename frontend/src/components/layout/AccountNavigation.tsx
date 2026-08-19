@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 
+import { TravelImage } from "@/components/common/TravelImage";
 import { apiMutation } from "@/lib/api/client";
 import type { AuthMember } from "@/types";
 
@@ -32,12 +33,22 @@ export function AccountNavigation({
   if (compact) {
     return (
       <Link
-        href={member ? "/studio" : "/register"}
-        className="site-mobile-auth-link"
+        href={member ? "/settings#profile" : "/register"}
+        className={`site-mobile-auth-link${member ? " site-mobile-profile" : ""}`}
         onClick={onNavigate}
         aria-busy={member === undefined ? true : undefined}
       >
-        {member ? "내 기록" : "시작하기"}
+        {member ? (
+          <>
+            <TravelImage
+              src={member.profileImageUrl}
+              alt="내 프로필 편집"
+              fallbackLabel={member.username.slice(0, 2)}
+              className="site-member-avatar"
+            />
+            <span>프로필</span>
+          </>
+        ) : "시작하기"}
       </Link>
     );
   }
@@ -68,15 +79,28 @@ export function AccountNavigation({
   }
   return mobile ? (
     <>
+      <Link href={`/${member.username}`} onClick={onNavigate}><span>내 공개 프로필</span><span aria-hidden="true">→</span></Link>
       <Link href="/studio" onClick={onNavigate}><span>내 여행 관리</span><span aria-hidden="true">→</span></Link>
-      <Link href="/settings" onClick={onNavigate}><span>프로필 · 계정 설정</span><span aria-hidden="true">→</span></Link>
+      <Link href="/settings#profile" onClick={onNavigate}><span>프로필 편집</span><span aria-hidden="true">→</span></Link>
+      <Link href="/settings#account" onClick={onNavigate}><span>계정 설정</span><span aria-hidden="true">→</span></Link>
       <button type="button" className="site-mobile-menu__button" onClick={logout}><span>로그아웃</span><span aria-hidden="true">↗</span></button>
     </>
   ) : (
     <div className="site-account-nav">
-      <Link href="/studio" className="site-profile-link">내 기록</Link>
-      <Link href="/settings">설정</Link>
-      <button type="button" onClick={logout}>로그아웃</button>
+      <Link href="/studio">기록 관리</Link>
+      <Link href="/settings#profile" className="site-member-profile" aria-label="내 프로필 편집">
+        <TravelImage
+          src={member.profileImageUrl}
+          alt=""
+          fallbackLabel={member.username.slice(0, 2)}
+          className="site-member-avatar"
+        />
+        <span>
+          <strong>{member.displayName}</strong>
+          <small>프로필 편집</small>
+        </span>
+      </Link>
+      <button type="button" onClick={logout} aria-label="로그아웃" title="로그아웃">↗</button>
     </div>
   );
 }

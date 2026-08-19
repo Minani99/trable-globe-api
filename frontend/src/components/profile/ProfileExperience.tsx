@@ -12,12 +12,14 @@ import { ShareProfileButton } from "@/components/profile/ShareProfileButton";
 import { TravelCard } from "@/components/travel/TravelCard";
 import { TravelTimeline } from "@/components/travel/TravelTimeline";
 import { fetchTravelsByCountry } from "@/lib/api/profile";
-import type { TravelSummary, UserProfile, VisitedCountry } from "@/types";
+import type { AuthMember, FollowStatus, TravelSummary, UserProfile, VisitedCountry } from "@/types";
 
 interface ProfileExperienceProps {
   profile: UserProfile;
   countries: VisitedCountry[];
   travels: TravelSummary[];
+  viewer: AuthMember | null;
+  relationship: FollowStatus | null;
 }
 
 /**
@@ -27,7 +29,7 @@ interface ProfileExperienceProps {
  * so it lives here rather than in a store - there is exactly one consumer tree and no
  * cross-page persistence to justify a state library.
  */
-export function ProfileExperience({ profile, countries, travels }: ProfileExperienceProps) {
+export function ProfileExperience({ profile, countries, travels, viewer, relationship }: ProfileExperienceProps) {
   const [selectedCode, setSelectedCode] = useState<string | null>(null);
   const [hoveredCode, setHoveredCode] = useState<string | null>(null);
   // Keyed by the country it was fetched for, so a result arriving after the visitor moved
@@ -132,7 +134,12 @@ export function ProfileExperience({ profile, countries, travels }: ProfileExperi
             </div>
 
             <div className="profile-globe-card__profile">
-              <ProfilePanel profile={profile} />
+              <ProfilePanel
+                profile={profile}
+                isOwnProfile={viewer?.username === profile.username}
+                viewerAuthenticated={Boolean(viewer)}
+                initialFollowing={relationship?.following ?? false}
+              />
             </div>
 
             {selectedCountry ? (

@@ -33,7 +33,7 @@ public class ServiceInfoController {
     public ApiResponse<ServiceInfo> root() {
         return ApiResponse.ok(new ServiceInfo(
                 "Travel Globe API",
-                "Public travel profiles with authenticated journals and conversations.",
+                "Public travel profiles with journals, conversations and traveller discovery.",
                 "https://github.com/Minani99/trable-globe-api/blob/master/docs/api.md",
                 List.of(
                         "GET /api/health",
@@ -42,6 +42,8 @@ public class ServiceInfoController {
                         "GET /api/profiles/{username}/countries",
                         "GET /api/profiles/{username}/travels",
                         "GET /api/profiles/{username}/countries/{countryCode}/travels",
+                        "GET /api/discovery/search",
+                        "GET /api/discovery/recommendations",
                         "GET /api/travels/{travelId}",
                         "GET /api/travels/{travelId}/social"),
                 Map.of("ui", "This host serves JSON only. The web interface is deployed separately.")));

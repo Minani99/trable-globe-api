@@ -23,6 +23,8 @@ export interface UserProfile {
   profileImageUrl: string | null;
   joinedAt: string;
   statistics: TravelStatistics;
+  followerCount: number;
+  followingCount: number;
 }
 
 /** A country the member has been to - the globe's marker source. */
@@ -136,6 +138,25 @@ export interface AuthMember {
   profileImageUrl: string | null;
   email: string;
   emailVerified: boolean;
+}
+
+export interface FollowStatus {
+  following: boolean;
+  followerCount: number;
+  followingCount: number;
+}
+
+export interface MemberDiscovery {
+  username: string;
+  displayName: string;
+  bio: string | null;
+  profileImageUrl: string | null;
+  countryCount: number;
+  travelCount: number;
+  followerCount: number;
+  following: boolean;
+  sharedCountryCount: number;
+  recommendationReason: string;
 }
 
 export interface SocialAuthor {

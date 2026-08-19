@@ -50,7 +50,7 @@ export function AccountSettings({ member }: { member: AuthMember }) {
   }
 
   return (
-    <section className="studio-account" aria-labelledby="studio-account-heading">
+    <section id="account" className="studio-account" aria-labelledby="studio-account-heading">
       <div className="studio-account__heading">
         <div><p className="eyebrow">Account</p><h2 id="studio-account-heading">계정</h2></div>
         <span className={member.emailVerified ? "is-verified" : "is-pending"}>{member.emailVerified ? "인증됨" : "인증 필요"}</span>

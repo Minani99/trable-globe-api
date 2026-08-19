@@ -7,8 +7,10 @@ import { SiteFooter } from "@/components/layout/SiteFooter";
 import { SiteHeader } from "@/components/layout/SiteHeader";
 import { ProfileExperience } from "@/components/profile/ProfileExperience";
 import { ApiError } from "@/lib/api/client";
+import { authenticatedBackendGet, getCurrentMember } from "@/lib/api/server-session";
 import { fetchProfile, fetchTravels, fetchVisitedCountries } from "@/lib/api/profile";
 import { profilePath } from "@/lib/config";
+import type { FollowStatus } from "@/types";
 
 /**
  * `generateMetadata` and the page body both need the profile. `cache` collapses that into
@@ -36,8 +38,9 @@ export default async function ProfilePage(props: PageProps<"/[username]">) {
   const { username } = await props.params;
 
   let data: Awaited<ReturnType<typeof loadProfileBundle>>;
+  let viewer: Awaited<ReturnType<typeof getCurrentMember>> = null;
   try {
-    data = await loadProfileBundle(username);
+    [data, viewer] = await Promise.all([loadProfileBundle(username), getCurrentMember()]);
   } catch (error) {
     if (error instanceof ApiError && error.isNotFound) {
       notFound();
@@ -64,12 +67,23 @@ export default async function ProfilePage(props: PageProps<"/[username]">) {
   }
 
   const { profile, countries, travels } = data;
+  const relationship = viewer && viewer.username !== profile.username
+    ? await authenticatedBackendGet<FollowStatus>(
+        `/api/private/discovery/profiles/${encodeURIComponent(profile.username)}`,
+      )
+    : null;
 
   return (
     <>
       <SiteHeader username={profile.username} />
       <main id="main" className="flex-1">
-        <ProfileExperience profile={profile} countries={countries} travels={travels} />
+        <ProfileExperience
+          profile={profile}
+          countries={countries}
+          travels={travels}
+          viewer={viewer}
+          relationship={relationship}
+        />
       </main>
       <SiteFooter />
     </>

@@ -7,6 +7,7 @@ import com.travelglobe.trableglobeapi.member.domain.Member;
 import com.travelglobe.trableglobeapi.member.service.MemberService;
 import com.travelglobe.trableglobeapi.profile.dto.ProfileResponse;
 import com.travelglobe.trableglobeapi.profile.dto.VisitedCountryResponse;
+import com.travelglobe.trableglobeapi.social.repository.MemberFollowRepository;
 import com.travelglobe.trableglobeapi.statistics.dto.TravelStatisticsResponse;
 import com.travelglobe.trableglobeapi.statistics.service.TravelStatisticsService;
 import com.travelglobe.trableglobeapi.travel.domain.Visibility;
@@ -41,22 +42,29 @@ public class ProfileService {
     private final TravelStatisticsService travelStatisticsService;
     private final TravelRepository travelRepository;
     private final CountryRepository countryRepository;
+    private final MemberFollowRepository followRepository;
 
     public ProfileService(MemberService memberService,
                           TravelQueryService travelQueryService,
                           TravelStatisticsService travelStatisticsService,
                           TravelRepository travelRepository,
-                          CountryRepository countryRepository) {
+                          CountryRepository countryRepository,
+                          MemberFollowRepository followRepository) {
         this.memberService = memberService;
         this.travelQueryService = travelQueryService;
         this.travelStatisticsService = travelStatisticsService;
         this.travelRepository = travelRepository;
         this.countryRepository = countryRepository;
+        this.followRepository = followRepository;
     }
 
     public ProfileResponse getProfile(String username) {
         Member member = memberService.getByUsername(username);
-        return ProfileResponse.of(member, travelStatisticsService.getPublicStatistics(member.getUsername()));
+        return ProfileResponse.of(
+                member,
+                travelStatisticsService.getPublicStatistics(member.getUsername()),
+                followRepository.countByFollowingId(member.getId()),
+                followRepository.countByFollowerId(member.getId()));
     }
 
     public TravelStatisticsResponse getStatistics(String username) {

@@ -107,6 +107,32 @@ export async function apiGet<T>(path: string): Promise<T> {
   return envelope.data;
 }
 
+/** Authenticated same-origin GET through the cookie-backed Next.js proxy. */
+export async function apiSessionGet<T>(path: string): Promise<T> {
+  let response: Response;
+  try {
+    response = await fetch(path, {
+      credentials: "same-origin",
+      headers: { Accept: "application/json" },
+      cache: "no-store",
+      signal: AbortSignal.timeout(20_000),
+    });
+  } catch {
+    throw new ApiError(0, "서버에 연결할 수 없습니다. 잠시 후 다시 시도해 주세요.");
+  }
+  const envelope = await readEnvelope<T>(response);
+  const requestId = response.headers.get("x-request-id");
+  if (!response.ok || !envelope?.success || envelope.data === null) {
+    throw new ApiError(
+      response.status,
+      envelope?.message ?? `요청이 실패했습니다 (HTTP ${response.status})`,
+      envelope?.error?.code ?? null,
+      requestId,
+    );
+  }
+  return envelope.data;
+}
+
 /** Same-origin mutation helper used by the HttpOnly-cookie BFF routes. */
 export async function apiMutation<T>(
   path: string,

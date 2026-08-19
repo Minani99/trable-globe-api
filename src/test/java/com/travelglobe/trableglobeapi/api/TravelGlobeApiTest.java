@@ -321,6 +321,75 @@ class TravelGlobeApiTest {
     }
 
     @Test
+    @DisplayName("회원 검색과 추천에서 다른 여행자를 팔로우할 수 있다")
+    void memberDiscoveryCreatesFollowConnections() throws Exception {
+        String seekerResponse = mockMvc.perform(post("/api/auth/register")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {"username":"discover_seeker","displayName":"검색하는 여행자",
+                                 "email":"discover-seeker@example.com","password":"discover-password-42"}
+                                """))
+                .andExpect(status().isOk())
+                .andReturn().getResponse().getContentAsString();
+        String seekerToken = stringValue(seekerResponse, "token");
+
+        String targetResponse = mockMvc.perform(post("/api/auth/register")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {"username":"discover_target","displayName":"서울 산책가",
+                                 "email":"discover-target@example.com","password":"discover-password-42"}
+                                """))
+                .andExpect(status().isOk())
+                .andReturn().getResponse().getContentAsString();
+        String targetToken = stringValue(targetResponse, "token");
+
+        mockMvc.perform(post("/api/private/travels")
+                        .header("Authorization", "Bearer " + seekerToken)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(travelPayload("나의 서울", "PUBLIC")))
+                .andExpect(status().isCreated());
+        mockMvc.perform(post("/api/private/travels")
+                        .header("Authorization", "Bearer " + targetToken)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(travelPayload("산책가의 서울", "PUBLIC")))
+                .andExpect(status().isCreated());
+
+        mockMvc.perform(get("/api/private/discovery/search")
+                        .header("Authorization", "Bearer " + seekerToken)
+                        .param("query", "산책가"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data[0].username").value("discover_target"))
+                .andExpect(jsonPath("$.data[0].sharedCountryCount").value(1))
+                .andExpect(jsonPath("$.data[0].following").value(false));
+
+        mockMvc.perform(get("/api/discovery/search").param("query", "discover_target"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data[0].username").value("discover_target"))
+                .andExpect(jsonPath("$.data[0].following").value(false));
+
+        mockMvc.perform(get("/api/private/discovery/recommendations")
+                        .header("Authorization", "Bearer " + seekerToken))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data[?(@.username == 'discover_target')]").exists());
+
+        mockMvc.perform(post("/api/private/discovery/profiles/discover_target/follow")
+                        .header("Authorization", "Bearer " + seekerToken))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.following").value(true))
+                .andExpect(jsonPath("$.data.followerCount").value(1));
+
+        mockMvc.perform(get("/api/profiles/discover_target"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.followerCount").value(1));
+
+        mockMvc.perform(delete("/api/private/discovery/profiles/discover_target/follow")
+                        .header("Authorization", "Bearer " + seekerToken))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.following").value(false))
+                .andExpect(jsonPath("$.data.followerCount").value(0));
+    }
+
+    @Test
     @DisplayName("공개 여행에서 회원끼리 좋아요와 댓글을 주고받을 수 있다")
     void travelLikesAndCommentsCreateConversation() throws Exception {
         String ownerResponse = mockMvc.perform(post("/api/auth/register")

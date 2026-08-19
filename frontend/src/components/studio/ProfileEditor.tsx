@@ -94,7 +94,7 @@ export function ProfileEditor({ member }: { member: AuthMember }) {
   }
 
   return (
-    <form className="studio-profile settings-profile" onSubmit={handleSubmit}>
+    <form id="profile" className="studio-profile settings-profile" onSubmit={handleSubmit}>
       <div className="studio-profile__heading">
         <div>
           <p className="eyebrow">Public profile</p>

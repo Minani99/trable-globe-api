@@ -368,6 +368,23 @@ Base URL: `http://localhost:8080` (개발). Next.js 서버와 동일 출처 `/ap
 교류 API는 `PUBLIC` 여행에만 접근할 수 있습니다. 댓글 전체 개수는 `commentCount`로
 반환하고, 본문 목록은 화면 성능과 남용 방지를 위해 최신 100개까지만 제공합니다.
 
+## 회원 탐색과 팔로우 API
+
+| Method | Path | 인증 | 설명 |
+| --- | --- | --- | --- |
+| GET | `/api/discovery/search?query={query}&limit={n}` | 없음 | 이름·사용자명으로 공개 프로필 검색 |
+| GET | `/api/discovery/recommendations?limit={n}` | 없음 | 공개 여행 활동 기준 추천 |
+| GET | `/api/private/discovery/search?query={query}&limit={n}` | 필요 | 팔로우 상태·공통 여행지를 포함한 검색 |
+| GET | `/api/private/discovery/recommendations?limit={n}` | 필요 | 공통 방문 국가와 활동성을 반영한 개인화 추천 |
+| GET | `/api/private/discovery/profiles/{username}` | 필요 | 현재 팔로우 관계와 팔로워·팔로잉 수 |
+| POST | `/api/private/discovery/profiles/{username}/follow` | 필요 | 회원 팔로우 |
+| DELETE | `/api/private/discovery/profiles/{username}/follow` | 필요 | 팔로우 취소 |
+
+추천은 정밀 위치나 연락처를 수집하지 않습니다. 로그인 사용자는 공통 방문 국가 수,
+공개 여행 수, 팔로워 수 순으로 추천받고 이미 팔로우한 회원과 본인은 제외됩니다.
+비로그인 사용자는 공개 여행 활동을 기준으로 여행자를 둘러볼 수 있습니다. 검색·추천
+응답은 최대 24명이며, 팔로우는 중복 생성되지 않고 자기 자신을 팔로우할 수 없습니다.
+
 ## 인증과 쓰기 API
 
 브라우저는 Next.js의 `/api/auth/*`, `/api/private/*` BFF를 사용합니다. BFF가 원문

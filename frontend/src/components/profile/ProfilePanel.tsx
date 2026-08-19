@@ -1,38 +1,58 @@
+"use client";
+
+import Link from "next/link";
+import { useState } from "react";
+
 import { TravelImage } from "@/components/common/TravelImage";
+import { FollowButton } from "@/components/discovery/FollowButton";
 import { formatStat } from "@/lib/utils/format";
-import type { UserProfile } from "@/types";
+import type { FollowStatus, UserProfile } from "@/types";
 
 interface ProfilePanelProps {
   profile: UserProfile;
+  isOwnProfile: boolean;
+  viewerAuthenticated: boolean;
+  initialFollowing: boolean;
 }
 
-/**
- * Identity card that floats over the globe.
- *
- * Three numbers only. Follower counts and other social signals are deliberately absent -
- * this profile is about where someone has been, not how many people watched.
- */
-export function ProfilePanel({ profile }: ProfilePanelProps) {
+export function ProfilePanel({
+  profile,
+  isOwnProfile,
+  viewerAuthenticated,
+  initialFollowing,
+}: ProfilePanelProps) {
   const { statistics } = profile;
+  const [followerCount, setFollowerCount] = useState(profile.followerCount);
+
+  const identity = (
+    <>
+      <TravelImage
+        src={profile.profileImageUrl}
+        alt={`${profile.displayName} 프로필 이미지`}
+        fallbackLabel={profile.username.slice(0, 2)}
+        className="border-border-subtle h-12 w-12 shrink-0 rounded-full border object-cover"
+      />
+      <span className="min-w-0 flex-1">
+        <strong className="text-content block truncate text-[1.05rem] font-medium tracking-tight">
+          {profile.displayName}
+        </strong>
+        <small className="text-content-faint block truncate font-mono text-[0.76rem]">
+          @{profile.username}
+        </small>
+      </span>
+      <span className="profile-panel__identity-action">{isOwnProfile ? "편집" : "보기"}</span>
+    </>
+  );
 
   return (
     <section aria-label="프로필" className="panel w-full p-5 lg:w-[280px]">
-      <div className="flex items-center gap-3">
-        <TravelImage
-          src={profile.profileImageUrl}
-          alt={`${profile.displayName} 프로필 이미지`}
-          fallbackLabel={profile.username.slice(0, 2)}
-          className="border-border-subtle h-12 w-12 shrink-0 rounded-full border object-cover"
-        />
-        <div className="min-w-0">
-          <h2 className="text-content truncate text-[1.05rem] font-medium tracking-tight">
-            {profile.displayName}
-          </h2>
-          <p className="text-content-faint truncate font-mono text-[0.76rem]">
-            @{profile.username}
-          </p>
-        </div>
-      </div>
+      {isOwnProfile ? (
+        <Link href="/settings#profile" className="profile-panel__identity" aria-label="내 프로필 편집">
+          {identity}
+        </Link>
+      ) : (
+        <div className="profile-panel__identity">{identity}</div>
+      )}
 
       {profile.bio ? (
         <p className="text-body mt-4 text-[0.85rem] leading-relaxed">{profile.bio}</p>
@@ -43,6 +63,23 @@ export function ProfilePanel({ profile }: ProfilePanelProps) {
         <Stat label="도시" value={statistics.cityCount} />
         <Stat label="여행" value={statistics.travelCount} />
       </dl>
+
+      <div className="profile-panel__social">
+        <p><strong>{formatStat(followerCount)}</strong> 팔로워</p>
+        <p><strong>{formatStat(profile.followingCount)}</strong> 팔로잉</p>
+      </div>
+
+      {isOwnProfile ? (
+        <Link href="/settings#profile" className="profile-panel__primary-action">프로필 편집</Link>
+      ) : viewerAuthenticated ? (
+        <FollowButton
+          username={profile.username}
+          initialFollowing={initialFollowing}
+          onChange={(status: FollowStatus) => setFollowerCount(status.followerCount)}
+        />
+      ) : (
+        <Link href={`/login?next=/${profile.username}`} className="profile-panel__primary-action">로그인하고 팔로우</Link>
+      )}
     </section>
   );
 }
