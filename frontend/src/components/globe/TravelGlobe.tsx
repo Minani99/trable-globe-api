@@ -29,11 +29,19 @@ interface CountryFeature {
   geometry: unknown;
 }
 
+export interface GlobeCountryHover {
+  code: string;
+  nameKo: string;
+  nameEn: string;
+}
+
 interface TravelGlobeProps {
   countries: VisitedCountry[];
   selectedCode: string | null;
   onSelect: (iso2Code: string | null) => void;
   onHover: (iso2Code: string | null) => void;
+  onCountryHover?: (country: GlobeCountryHover | null) => void;
+  mode?: "travel" | "world";
 }
 
 const GEO_URL = "/geo/countries.geo.json";
@@ -47,7 +55,14 @@ const INITIAL_VIEW = { lat: 24, lng: 127, altitude: ALTITUDE_DEFAULT } as const;
 const LOADING_INDICATOR_MINIMUM_MS = 650;
 const AUTO_ROTATE_RESUME_DELAY_MS = 6_000;
 
-export function TravelGlobe({ countries, selectedCode, onSelect, onHover }: TravelGlobeProps) {
+export function TravelGlobe({
+  countries,
+  selectedCode,
+  onSelect,
+  onHover,
+  onCountryHover,
+  mode = "travel",
+}: TravelGlobeProps) {
   const globeRef = useRef<GlobeMethods | undefined>(undefined);
   const containerRef = useRef<HTMLDivElement>(null);
   const markerElements = useRef(new Map<string, HTMLElement>());
@@ -66,6 +81,7 @@ export function TravelGlobe({ countries, selectedCode, onSelect, onHover }: Trav
   const reduceMotion = usePrefersReducedMotion();
   const colorTheme = useColorTheme();
   const globeTheme = globeThemes[colorTheme];
+  const isWorldExplorer = mode === "world";
 
   // globe.gl callbacks (marker click handlers, control listeners) are registered once
   // against imperative DOM, so they read the latest values through refs rather than
@@ -396,16 +412,16 @@ export function TravelGlobe({ countries, selectedCode, onSelect, onHover }: Trav
 
   const capColor = useCallback(
     (polygon: object) => {
-      const code = (polygon as CountryFeature).properties.iso2;
+      const code = getFeatureCode(polygon as CountryFeature);
       const visited = code ? visitedByCode.get(code) : undefined;
-      if (!visited) {
-        return globeTheme.land;
-      }
       if (code === selectedCode) {
         return globeTheme.selected;
       }
       if (code === hoveredCode) {
         return globeTheme.hovered;
+      }
+      if (!visited) {
+        return globeTheme.land;
       }
       return visitedColor(visited.travelCount, maxTravelCount, globeTheme);
     },
@@ -414,8 +430,8 @@ export function TravelGlobe({ countries, selectedCode, onSelect, onHover }: Trav
 
   const altitude = useCallback(
     (polygon: object) => {
-      const code = (polygon as CountryFeature).properties.iso2;
-      if (!code || !visitedByCode.has(code)) {
+      const code = getFeatureCode(polygon as CountryFeature);
+      if (!code || (!isWorldExplorer && !visitedByCode.has(code))) {
         return 0.006;
       }
       if (code === selectedCode) {
@@ -426,13 +442,21 @@ export function TravelGlobe({ countries, selectedCode, onSelect, onHover }: Trav
       }
       return 0.018;
     },
-    [visitedByCode, selectedCode, hoveredCode],
+    [visitedByCode, selectedCode, hoveredCode, isWorldExplorer],
   );
 
   const polygonTooltip = useCallback(
     (polygon: object) => {
       const properties = (polygon as CountryFeature).properties;
-      const visited = properties.iso2 ? visitedByCode.get(properties.iso2) : undefined;
+      const code = getFeatureCode(polygon as CountryFeature);
+      const visited = code ? visitedByCode.get(code) : undefined;
+      if (isWorldExplorer) {
+        return `<div class="tg-tip">
+          <strong>${escapeHtml(properties.nameKo ?? properties.nameEn)}</strong>
+          <span>${escapeHtml(properties.nameEn)}</span>
+          <em>클릭해 위치 고정</em>
+        </div>`;
+      }
       if (!visited) {
         return `<div class="tg-tip tg-tip--muted">${escapeHtml(properties.nameKo)}</div>`;
       }
@@ -442,23 +466,48 @@ export function TravelGlobe({ countries, selectedCode, onSelect, onHover }: Trav
         <em>여행 ${visited.travelCount}회 · 도시 ${visited.cityCount}곳</em>
       </div>`;
     },
-    [visitedByCode],
+    [visitedByCode, isWorldExplorer],
   );
 
   const handlePolygonClick = useCallback((polygon: object) => {
-    const code = (polygon as CountryFeature).properties.iso2;
-    if (!code || !visitedByCode.has(code)) {
+    const code = getFeatureCode(polygon as CountryFeature);
+    if (!code || (!isWorldExplorer && !visitedByCode.has(code))) {
       return;
     }
     onSelectRef.current(selectedRef.current === code ? null : code);
-  }, [visitedByCode]);
+  }, [visitedByCode, isWorldExplorer]);
 
   const handlePolygonHover = useCallback(
     (polygon: object | null) => {
-      const code = polygon ? (polygon as CountryFeature).properties.iso2 : null;
-      setHoveredCode(code && visitedByCode.has(code) ? code : null);
+      const code = polygon ? getFeatureCode(polygon as CountryFeature) : null;
+      const nextCode = code && (isWorldExplorer || visitedByCode.has(code)) ? code : null;
+      setHoveredCode(nextCode);
+      onCountryHover?.(
+        polygon && nextCode
+          ? {
+              code: nextCode,
+              nameKo: (polygon as CountryFeature).properties.nameKo,
+              nameEn: (polygon as CountryFeature).properties.nameEn,
+            }
+          : null,
+      );
+      if (isWorldExplorer) {
+        if (nextCode) {
+          clearRotationResume();
+          stopAmbientRotation();
+        } else {
+          scheduleAmbientRotation();
+        }
+      }
     },
-    [visitedByCode],
+    [
+      clearRotationResume,
+      isWorldExplorer,
+      onCountryHover,
+      scheduleAmbientRotation,
+      stopAmbientRotation,
+      visitedByCode,
+    ],
   );
 
   // Ambient pulse on visited countries. Purely decorative, so it is dropped entirely
@@ -544,9 +593,11 @@ export function TravelGlobe({ countries, selectedCode, onSelect, onHover }: Trav
         role="application"
         aria-busy={!ready}
         data-auto-rotating={autoRotating && !reduceMotion && selectedCode === null}
-        aria-label="여행 지구본. 방향키로 회전, 플러스·마이너스 키로 확대·축소, 0 키로 초기화합니다. 국가 선택은 아래 목록에서도 할 수 있습니다."
+        aria-label={isWorldExplorer
+          ? "세계 랜드마크 지구본. 모든 국가에 마우스를 올려 대표 장소를 확인할 수 있습니다. 방향키로 회전하고 플러스·마이너스 키로 확대·축소합니다."
+          : "여행 지구본. 방향키로 회전, 플러스·마이너스 키로 확대·축소, 0 키로 초기화합니다. 국가 선택은 아래 목록에서도 할 수 있습니다."}
         onKeyDown={handleKeyDown}
-        className="h-full w-full cursor-grab active:cursor-grabbing"
+        className={`h-full w-full ${isWorldExplorer && hoveredCode ? "cursor-pointer" : "cursor-grab active:cursor-grabbing"}`}
       >
         {size.width > 0 && size.height > 0 ? (
           <Globe
@@ -681,4 +732,8 @@ function escapeHtml(value: string): string {
     .replace(/</g, "&lt;")
     .replace(/>/g, "&gt;")
     .replace(/"/g, "&quot;");
+}
+
+function getFeatureCode(feature: CountryFeature): string | null {
+  return feature.properties.iso2 ?? feature.properties.nameEn ?? null;
 }

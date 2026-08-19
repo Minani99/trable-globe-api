@@ -1,104 +1,75 @@
 "use client";
 
-import Link from "next/link";
-import { useMemo, useState } from "react";
+import { useState } from "react";
 
-import { TravelGlobe } from "@/components/globe/TravelGlobe";
-import type { VisitedCountry } from "@/types";
+import { TravelGlobe, type GlobeCountryHover } from "@/components/globe/TravelGlobe";
+import { countryFlag, getWorldLandmarkPlace } from "@/lib/worldLandmarks";
 
-interface LandingGlobePreviewProps {
-  href: string;
-}
-
-const SAMPLE_COUNTRIES: VisitedCountry[] = [
-  {
-    iso2Code: "KR",
-    iso3Code: "KOR",
-    nameEn: "South Korea",
-    nameKo: "대한민국",
-    latitude: 36.5,
-    longitude: 127.8,
-    travelCount: 1,
-    cityCount: 2,
-    lastVisitedAt: "2025-04-07",
-  },
-  {
-    iso2Code: "JP",
-    iso3Code: "JPN",
-    nameEn: "Japan",
-    nameKo: "일본",
-    latitude: 36.2,
-    longitude: 138.2,
-    travelCount: 2,
-    cityCount: 2,
-    lastVisitedAt: "2026-03-08",
-  },
-  {
-    iso2Code: "TW",
-    iso3Code: "TWN",
-    nameEn: "Taiwan",
-    nameKo: "대만",
-    latitude: 23.7,
-    longitude: 121,
-    travelCount: 1,
-    cityCount: 1,
-    lastVisitedAt: "2026-05-18",
-  },
-  {
-    iso2Code: "US",
-    iso3Code: "USA",
-    nameEn: "United States",
-    nameKo: "미국",
-    latitude: 38,
-    longitude: -97,
-    travelCount: 1,
-    cityCount: 2,
-    lastVisitedAt: "2025-10-18",
-  },
-];
-
-export function LandingGlobePreview({ href }: LandingGlobePreviewProps) {
+export function LandingGlobePreview() {
   const [selectedCode, setSelectedCode] = useState<string | null>(null);
-  const selectedCountry = useMemo(
-    () => SAMPLE_COUNTRIES.find((country) => country.iso2Code === selectedCode) ?? null,
-    [selectedCode],
-  );
+  const [hoveredCountry, setHoveredCountry] = useState<GlobeCountryHover | null>(null);
+  const [selectedCountry, setSelectedCountry] = useState<GlobeCountryHover | null>(null);
+  const activeCountry = hoveredCountry ?? selectedCountry;
+  const activePlace = activeCountry ? getWorldLandmarkPlace(activeCountry.code) : null;
+
+  const handleSelect = (code: string | null) => {
+    setSelectedCode(code);
+    setSelectedCountry(code ? hoveredCountry : null);
+  };
 
   return (
-    <div className="landing-globe-link landing-reveal landing-reveal--visual">
+    <div id="world-explorer" className="landing-globe-link landing-reveal landing-reveal--visual">
       <figure className="landing-globe-scene">
         <div className="landing-globe-frame">
           <div className="landing-globe-live">
             <TravelGlobe
-              countries={SAMPLE_COUNTRIES}
+              countries={[]}
               selectedCode={selectedCode}
-              onSelect={setSelectedCode}
+              onSelect={handleSelect}
               onHover={() => undefined}
+              onCountryHover={setHoveredCountry}
+              mode="world"
             />
           </div>
           <span className="landing-globe-vignette" aria-hidden="true" />
 
-          {selectedCountry ? <div className="landing-memory-card" aria-live="polite">
-            <div>
-              <p className="text-content mt-1 text-[0.96rem] font-medium">
-                {selectedCountry.nameKo}
-              </p>
-            </div>
-            <div className="text-right">
-              <p className="text-content-faint font-mono text-[0.64rem]">
-                여행 {selectedCountry.travelCount}
-              </p>
-              <p className="text-content-muted mt-1 text-[0.7rem]">
-                도시 {selectedCountry.cityCount}곳
-              </p>
-            </div>
-          </div> : null}
+          <div className="landing-landmark-card" aria-live="polite">
+            {activeCountry && activePlace ? (
+              <>
+                <span className="landing-landmark-card__flag" aria-hidden="true">
+                  {countryFlag(activeCountry.code)}
+                </span>
+                <div className="min-w-0 flex-1">
+                  <p className="text-content truncate text-[0.96rem] font-medium">
+                    {activeCountry.nameKo}
+                  </p>
+                  <p className="text-content-faint mt-0.5 truncate text-[0.66rem]">
+                    {activeCountry.nameEn}
+                  </p>
+                </div>
+                <div className="min-w-0 max-w-[52%] text-right">
+                  <p className="text-content-faint text-[0.58rem] font-semibold tracking-[0.13em] uppercase">
+                    Landmark
+                  </p>
+                  <p className="text-content-muted mt-1 truncate text-[0.72rem] font-medium">
+                    {activePlace.place}
+                  </p>
+                </div>
+              </>
+            ) : (
+              <div>
+                <p className="text-content text-[0.88rem] font-medium">세계를 탐색해 보세요</p>
+                <p className="text-content-faint mt-1 text-[0.68rem]">
+                  국가에 마우스를 올리면 대표 장소가 나타납니다.
+                </p>
+              </div>
+            )}
+          </div>
         </div>
 
         <figcaption className="sr-only">
-          직접 돌리고 국가를 선택할 수 있는 Travel Globe 공개 샘플 미리보기
+          모든 국가에 마우스를 올려 대표 랜드마크나 도시를 확인할 수 있는 세계 지구본
         </figcaption>
-        <Link href={href} className="landing-globe-simple-link">전체 지구본 보기 →</Link>
       </figure>
     </div>
   );

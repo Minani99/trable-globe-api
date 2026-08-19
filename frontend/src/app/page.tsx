@@ -3,7 +3,6 @@ import Link from "next/link";
 import { LandingGlobePreview } from "@/components/landing/LandingGlobePreview";
 import { SiteFooter } from "@/components/layout/SiteFooter";
 import { SiteHeader } from "@/components/layout/SiteHeader";
-import { globePath } from "@/lib/config";
 
 export default function LandingPage() {
   return (
@@ -31,17 +30,11 @@ export default function LandingPage() {
                 <span>내 지구본 시작하기</span>
                 <span className="landing-primary-cta__arrow" aria-hidden="true">↗</span>
               </Link>
-              <Link
-                href={globePath}
-                className="landing-secondary-cta"
-              >
-                샘플 먼저 둘러보기
-              </Link>
             </div>
 
           </div>
 
-          <LandingGlobePreview href={globePath} />
+          <LandingGlobePreview />
         </section>
 
         <section aria-labelledby="experience-heading" className="landing-experience site-shell">
