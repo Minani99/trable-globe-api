@@ -10,7 +10,7 @@ export function LandingGlobePreview() {
   const [hoveredCountry, setHoveredCountry] = useState<GlobeCountryHover | null>(null);
   const [selectedCountry, setSelectedCountry] = useState<GlobeCountryHover | null>(null);
   const [centeredCountry, setCenteredCountry] = useState<GlobeCountryHover | null>(null);
-  const activeCountry = hoveredCountry ?? selectedCountry ?? centeredCountry;
+  const activeCountry = selectedCountry ?? hoveredCountry ?? centeredCountry;
   const activePlace = activeCountry ? getWorldLandmarkPlace(activeCountry.code) : null;
 
   const handleSelect = (code: string | null) => {

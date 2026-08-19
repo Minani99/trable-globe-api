@@ -493,10 +493,10 @@ export function TravelGlobe({
       if (code === selectedCode) {
         return globeTheme.selected;
       }
-      if (code === hoveredCode) {
+      if (selectedCode === null && code === hoveredCode) {
         return globeTheme.hovered;
       }
-      if (isWorldExplorer && autoRotating && code === centeredCode) {
+      if (isWorldExplorer && selectedCode === null && autoRotating && code === centeredCode) {
         return globeTheme.hovered;
       }
       if (!visited) {
@@ -525,10 +525,10 @@ export function TravelGlobe({
       if (code === selectedCode) {
         return 0.055;
       }
-      if (code === hoveredCode) {
+      if (selectedCode === null && code === hoveredCode) {
         return 0.036;
       }
-      if (isWorldExplorer && autoRotating && code === centeredCode) {
+      if (isWorldExplorer && selectedCode === null && autoRotating && code === centeredCode) {
         return 0.03;
       }
       return 0.018;
@@ -542,10 +542,11 @@ export function TravelGlobe({
       const code = getFeatureCode(polygon as CountryFeature);
       const visited = code ? visitedByCode.get(code) : undefined;
       if (isWorldExplorer) {
+        if (selectedCode !== null && code !== selectedCode) return "";
         return `<div class="tg-tip">
           <strong>${escapeHtml(properties.nameKo ?? properties.nameEn)}</strong>
           <span>${escapeHtml(properties.nameEn)}</span>
-          <em>클릭해 위치 고정</em>
+          <em>${code === selectedCode ? "다시 클릭해 선택 해제" : "클릭해 위치 고정"}</em>
         </div>`;
       }
       if (!visited) {
@@ -557,7 +558,7 @@ export function TravelGlobe({
         <em>여행 ${visited.travelCount}회 · 도시 ${visited.cityCount}곳</em>
       </div>`;
     },
-    [visitedByCode, isWorldExplorer],
+    [visitedByCode, isWorldExplorer, selectedCode],
   );
 
   const handlePolygonClick = useCallback((polygon: object) => {
@@ -570,6 +571,8 @@ export function TravelGlobe({
     selectedRef.current = nextCode;
     clearRotationResume();
     stopAmbientRotation();
+    setHoveredCode(null);
+    onCountryHover?.(null);
     onSelectRef.current(nextCode);
     onCountrySelect?.(
       nextCode
@@ -582,6 +585,7 @@ export function TravelGlobe({
   }, [
     clearRotationResume,
     isWorldExplorer,
+    onCountryHover,
     onCountrySelect,
     startAmbientRotation,
     stopAmbientRotation,
@@ -590,6 +594,11 @@ export function TravelGlobe({
 
   const handlePolygonHover = useCallback(
     (polygon: object | null) => {
+      if (isWorldExplorer && selectedRef.current !== null) {
+        setHoveredCode(null);
+        onCountryHover?.(null);
+        return;
+      }
       const code = polygon ? getFeatureCode(polygon as CountryFeature) : null;
       const nextCode = code && (isWorldExplorer || visitedByCode.has(code)) ? code : null;
       setHoveredCode(nextCode);
@@ -708,7 +717,7 @@ export function TravelGlobe({
           ? "세계 랜드마크 지구본. 모든 국가에 마우스를 올려 대표 장소를 확인할 수 있습니다. 방향키로 회전하고 플러스·마이너스 키로 확대·축소합니다."
           : "여행 지구본. 방향키로 회전, 플러스·마이너스 키로 확대·축소, 0 키로 초기화합니다. 국가 선택은 아래 목록에서도 할 수 있습니다."}
         onKeyDown={handleKeyDown}
-        className={`h-full w-full ${isWorldExplorer && hoveredCode ? "cursor-pointer" : "cursor-grab active:cursor-grabbing"}`}
+        className={`h-full w-full ${isWorldExplorer ? "cursor-pointer active:cursor-grabbing" : "cursor-grab active:cursor-grabbing"}`}
       >
         {size.width > 0 && size.height > 0 ? (
           <Globe
