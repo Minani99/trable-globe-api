@@ -1,15 +1,12 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
 
 import { TravelImage } from "@/components/common/TravelImage";
 import { FollowButton } from "@/components/discovery/FollowButton";
 import type { MemberDiscovery } from "@/types";
 
 export function MemberCard({ member, viewerAuthenticated }: { member: MemberDiscovery; viewerAuthenticated: boolean }) {
-  const [followerCount, setFollowerCount] = useState(member.followerCount);
-
   return (
     <article className="member-card">
       <Link href={`/${member.username}`} className="member-card__identity" aria-label={`${member.displayName} 프로필 보기`}>
@@ -32,12 +29,6 @@ export function MemberCard({ member, viewerAuthenticated }: { member: MemberDisc
         {member.recommendationReason}
       </div>
 
-      <dl className="member-card__stats">
-        <div><dt>방문 국가</dt><dd>{member.countryCount}</dd></div>
-        <div><dt>여행</dt><dd>{member.travelCount}</dd></div>
-        <div><dt>팔로워</dt><dd>{followerCount}</dd></div>
-      </dl>
-
       <div className="member-card__actions">
         <Link href={`/${member.username}`}>지구본 보기 <span aria-hidden="true">→</span></Link>
         {viewerAuthenticated ? (
@@ -45,7 +36,6 @@ export function MemberCard({ member, viewerAuthenticated }: { member: MemberDisc
             username={member.username}
             initialFollowing={member.following}
             compact
-            onChange={(status) => setFollowerCount(status.followerCount)}
           />
         ) : (
           <Link href="/login?next=/discover" className="follow-button is-compact">팔로우</Link>

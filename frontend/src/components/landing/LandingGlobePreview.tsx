@@ -77,41 +77,28 @@ export function LandingGlobePreview({ href }: LandingGlobePreviewProps) {
             />
           </div>
           <span className="landing-globe-vignette" aria-hidden="true" />
-          <span className="landing-globe-grid" aria-hidden="true" />
 
-          <div className="landing-globe-meta" aria-hidden="true">
-            <span>LIVE GLOBE · SEOUL ORIGIN</span>
-            <span>04 COUNTRIES · 07 CITIES</span>
-          </div>
-
-          <div className="landing-memory-card" aria-live="polite">
+          {selectedCountry ? <div className="landing-memory-card" aria-live="polite">
             <div>
-              <p className="eyebrow">{selectedCountry ? "Selected country" : "Latest journey"}</p>
               <p className="text-content mt-1 text-[0.96rem] font-medium">
-                {selectedCountry ? selectedCountry.nameKo : "타이베이, 다시."}
+                {selectedCountry.nameKo}
               </p>
             </div>
             <div className="text-right">
               <p className="text-content-faint font-mono text-[0.64rem]">
-                {selectedCountry
-                  ? `TRAVELS · ${String(selectedCountry.travelCount).padStart(2, "0")}`
-                  : "MAY · 2026"}
+                여행 {selectedCountry.travelCount}
               </p>
               <p className="text-content-muted mt-1 text-[0.7rem]">
-                {selectedCountry ? `도시 ${selectedCountry.cityCount}곳` : "2박 3일"}
+                도시 {selectedCountry.cityCount}곳
               </p>
             </div>
-          </div>
-
-          <Link href={href} className="landing-globe-cta" aria-label="공개 여행 지구본 보기">
-            <span>전체 지구본 보기</span>
-            <span className="landing-globe-cta__arrow" aria-hidden="true">↗</span>
-          </Link>
+          </div> : null}
         </div>
 
         <figcaption className="sr-only">
           직접 돌리고 국가를 선택할 수 있는 Travel Globe 공개 샘플 미리보기
         </figcaption>
+        <Link href={href} className="landing-globe-simple-link">전체 지구본 보기 →</Link>
       </figure>
     </div>
   );

@@ -21,7 +21,6 @@ export function ThemeToggle() {
           {isDark ? <MoonIcon /> : <SunIcon />}
         </span>
       </span>
-      <span className="theme-toggle__label">{isDark ? "밝게" : "어둡게"}</span>
     </button>
   );
 }

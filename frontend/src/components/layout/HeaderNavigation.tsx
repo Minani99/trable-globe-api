@@ -49,11 +49,7 @@ export function HeaderNavigation({ username, initialMember }: HeaderNavigationPr
   const profileExact = Boolean(username && pathname === profilePath(username));
   const exploreActive =
     (pathname === samplePath || pathname.startsWith(`${samplePath}/`)) && !profileExact;
-  const aboutActive = pathname === "/about";
   const discoverActive = pathname === "/discover";
-  const showContextProfile = Boolean(
-    username && (member === undefined || member === null || member.username !== username),
-  );
 
   return (
     <div className="site-header-actions">
@@ -72,22 +68,6 @@ export function HeaderNavigation({ username, initialMember }: HeaderNavigationPr
         >
           사람 찾기
         </Link>
-        <Link
-          href="/about"
-          className="site-nav-link"
-          aria-current={aboutActive ? "page" : undefined}
-        >
-          서비스 소개
-        </Link>
-        {showContextProfile && username ? (
-          <Link
-            href={profilePath(username)}
-            className="site-profile-link"
-            aria-current={profileExact ? "page" : undefined}
-          >
-            @{username}
-          </Link>
-        ) : null}
         <AccountNavigation member={member} onLoggedOut={() => setCachedAuthMember(null)} />
       </nav>
 
@@ -130,24 +110,6 @@ export function HeaderNavigation({ username, initialMember }: HeaderNavigationPr
           <span>사람 찾기</span>
           <span aria-hidden="true">→</span>
         </Link>
-        <Link
-          href="/about"
-          aria-current={aboutActive ? "page" : undefined}
-          onClick={() => setMenuOpen(false)}
-        >
-          <span>서비스 소개</span>
-          <span aria-hidden="true">↗</span>
-        </Link>
-        {showContextProfile && username ? (
-          <Link
-            href={profilePath(username)}
-            aria-current={profileExact ? "page" : undefined}
-            onClick={() => setMenuOpen(false)}
-          >
-            <span>@{username}의 지구본</span>
-            <span aria-hidden="true">→</span>
-          </Link>
-        ) : null}
         <AccountNavigation
           member={member}
           mobile
@@ -165,7 +127,6 @@ export function HeaderNavigationFallback() {
       <nav aria-label="주요 메뉴" className="site-desktop-nav">
         <Link href={globePath} className="site-nav-link">지구본</Link>
         <Link href="/discover" className="site-nav-link">사람 찾기</Link>
-        <Link href="/about" className="site-nav-link">서비스 소개</Link>
         <span className="site-account-loading" aria-label="계정 정보 불러오는 중" />
       </nav>
       <ThemeToggle />

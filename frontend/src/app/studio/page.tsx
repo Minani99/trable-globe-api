@@ -29,8 +29,7 @@ export default async function StudioPage() {
               <h1>내 여행을<br />기록하고 다듬는 곳</h1>
             </div>
             <div className="studio-hero__actions">
-              <Link href={`/${member.username}`} className="studio-secondary-action">공개 지구본 보기 ↗</Link>
-              <Link href="/settings" className="studio-secondary-action">프로필 설정</Link>
+              <Link href={`/${member.username}`} className="studio-secondary-action">공개 프로필</Link>
               <Link href="/studio/travels/new" className="studio-primary-action">새 여행 기록 <span>＋</span></Link>
             </div>
           </header>
@@ -38,8 +37,8 @@ export default async function StudioPage() {
           <div className="studio-layout studio-layout--records">
             <section aria-labelledby="studio-travels-heading" className="studio-travels">
               <div className="studio-section-heading">
-                <div><p className="eyebrow">Your archive</p><h2 id="studio-travels-heading">여행 기록</h2></div>
-                <span>{String(travels.length).padStart(2, "0")} journeys</span>
+                <h2 id="studio-travels-heading">여행 기록</h2>
+                <span>{travels.length}개</span>
               </div>
               {travels.length ? (
                 <ol className="studio-travel-list">

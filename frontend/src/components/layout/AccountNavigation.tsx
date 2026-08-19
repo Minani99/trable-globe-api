@@ -106,17 +106,15 @@ export function AccountNavigation({
   }
   return mobile ? (
     <>
-      <Link href={`/${member.username}`} onClick={onNavigate}><span>내 공개 프로필</span><span aria-hidden="true">→</span></Link>
-      <Link href="/studio" onClick={onNavigate}><span>내 여행 관리</span><span aria-hidden="true">→</span></Link>
-      <Link href="/settings#profile" onClick={onNavigate}><span>프로필 편집</span><span aria-hidden="true">→</span></Link>
-      <Link href="/settings#account" onClick={onNavigate}><span>계정 설정</span><span aria-hidden="true">→</span></Link>
+      <Link href={`/${member.username}`} onClick={onNavigate}><span>내 프로필</span><span aria-hidden="true">→</span></Link>
+      <Link href="/studio" onClick={onNavigate}><span>여행 기록</span><span aria-hidden="true">→</span></Link>
+      <Link href="/settings#profile" onClick={onNavigate}><span>설정</span><span aria-hidden="true">→</span></Link>
       <button type="button" className="site-mobile-menu__button is-logout" onClick={logout} disabled={logoutPending}>
         <span>{logoutPending ? "로그아웃 중…" : "로그아웃"}</span><span aria-hidden="true">→</span>
       </button>
     </>
   ) : (
     <div className="site-account-nav" ref={menuRef}>
-      <Link href="/studio">기록 관리</Link>
       <div className={`site-account-menu${menuOpen ? " is-open" : ""}`}>
         <Link href="/settings#profile" className="site-member-profile" aria-label="내 프로필 편집">
           <TravelImage
@@ -142,14 +140,9 @@ export function AccountNavigation({
         </button>
         {menuOpen ? (
           <div className="site-account-popover" role="menu">
-            <div className="site-account-popover__identity">
-              <strong>{member.displayName}</strong>
-              <span>@{member.username}</span>
-            </div>
-            <Link href={`/${member.username}`} role="menuitem" onClick={() => setMenuOpen(false)}><span>내 공개 프로필</span><span aria-hidden="true">↗</span></Link>
-            <Link href="/studio" role="menuitem" onClick={() => setMenuOpen(false)}><span>여행 기록 관리</span><span aria-hidden="true">→</span></Link>
-            <Link href="/settings#profile" role="menuitem" onClick={() => setMenuOpen(false)}><span>프로필 편집</span><span aria-hidden="true">→</span></Link>
-            <Link href="/settings#account" role="menuitem" onClick={() => setMenuOpen(false)}><span>계정 설정</span><span aria-hidden="true">→</span></Link>
+            <Link href={`/${member.username}`} role="menuitem" onClick={() => setMenuOpen(false)}><span>내 프로필</span><span aria-hidden="true">↗</span></Link>
+            <Link href="/studio" role="menuitem" onClick={() => setMenuOpen(false)}><span>여행 기록</span><span aria-hidden="true">→</span></Link>
+            <Link href="/settings#profile" role="menuitem" onClick={() => setMenuOpen(false)}><span>설정</span><span aria-hidden="true">→</span></Link>
             <button type="button" className="site-account-popover__logout" role="menuitem" onClick={logout} disabled={logoutPending}>
               <span>{logoutPending ? "로그아웃 중…" : "로그아웃"}</span>
               <span aria-hidden="true">→</span>

@@ -73,7 +73,7 @@ export function DiscoverExperience({
   return (
     <>
       <form className="discover-search" role="search" onSubmit={submit}>
-        <label htmlFor="member-search">다른 여행자 검색</label>
+        <label htmlFor="member-search" className="sr-only">다른 여행자 검색</label>
         <div className="discover-search__field">
           <span aria-hidden="true">
             <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="6.5" /><path d="m16 16 4 4" /></svg>
@@ -89,13 +89,11 @@ export function DiscoverExperience({
           />
           {query ? <button type="button" onClick={() => changeQuery("")} aria-label="검색어 지우기">×</button> : null}
         </div>
-        <p>한 글자부터 바로 검색되며, 본인을 제외한 공개 프로필만 보여드려요.</p>
       </form>
 
       <section className="discover-results" aria-labelledby="discover-results-heading" aria-busy={loading}>
         <header>
           <div>
-            <p className="eyebrow">{searching ? "Search results" : "For you"}</p>
             <h2 id="discover-results-heading">
               {searching ? `“${submittedQuery || query.trim()}” 검색 결과` : "여행 취향이 가까운 사람"}
             </h2>

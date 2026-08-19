@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 
-import { BrandMark } from "@/components/brand/BrandMark";
 import { SiteFooter } from "@/components/layout/SiteFooter";
 import { SiteHeader } from "@/components/layout/SiteHeader";
 import { globePath, siteConfig } from "@/lib/config";
@@ -43,7 +42,6 @@ export default function AboutPage() {
         <div className="site-shell">
           <header className="about-hero">
             <div className="about-hero__copy">
-              <p className="eyebrow">Why Travel Globe</p>
               <h1>여행을 목록이 아니라, 살아온 세계로 남깁니다.</h1>
               <p>
                 {siteConfig.name}는 다녀온 나라와 도시, 그날의 경로와 장면을 하나의 3D
@@ -58,25 +56,11 @@ export default function AboutPage() {
                 <Link href={globePath} className="landing-secondary-cta">샘플 둘러보기</Link>
               </div>
             </div>
-
-            <figure className="about-world" aria-label="Travel Globe 시그니처 심벌">
-              <div className="about-world__signature" aria-hidden="true">
-                <span className="about-world__orbit about-world__orbit--one" />
-                <span className="about-world__orbit about-world__orbit--two" />
-                <BrandMark className="about-world__mark" />
-                <span className="about-world__monogram">TG</span>
-              </div>
-              <figcaption>
-                <span>PERSONAL TRAVEL ARCHIVE</span>
-                <strong>기억은 좌표가 되고, 좌표는 다시 이야기가 됩니다.</strong>
-              </figcaption>
-            </figure>
           </header>
 
           <section className="about-capabilities" aria-labelledby="available-heading">
             <div className="about-section-heading">
               <div>
-                <p className="eyebrow">Available now</p>
                 <h2 id="available-heading">지금 경험할 수 있는 것</h2>
               </div>
               <p>지구본에서 여행 기록까지, 기억을 탐색하는 흐름을 하나로 이었습니다.</p>
@@ -93,20 +77,6 @@ export default function AboutPage() {
             </ol>
           </section>
 
-          <section className="about-next" aria-labelledby="next-heading">
-            <div>
-              <p className="eyebrow">Ready for your story</p>
-              <h2 id="next-heading">이제 나만의 여행 세계를 만들 차례입니다.</h2>
-            </div>
-            <div>
-              <p>
-                계정을 만들고 여행의 기간과 장소를 입력한 뒤 사진과 메모를 더해 보세요.
-                작성 중인 내용은 브라우저에 임시 저장되며, 완성한 여행은 공개 또는 비공개로
-                보관할 수 있습니다.
-              </p>
-              <Link href="/register" className="landing-text-link">CREATE YOUR OWN WORLD <span aria-hidden="true">↗</span></Link>
-            </div>
-          </section>
         </div>
       </main>
 

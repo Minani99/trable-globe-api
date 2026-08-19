@@ -25,7 +25,6 @@ export default async function DiscoverPage() {
       <main id="main" className="discover-page flex-1">
         <div className="site-shell discover-shell">
           <header className="discover-hero">
-            <p className="eyebrow">Discover travellers</p>
             <h1>새로운 여행 세계를<br />만나보세요</h1>
             <p>이름으로 사람을 찾거나, 내가 다녀온 나라와 겹치는 여행자를 발견해 보세요.</p>
           </header>
