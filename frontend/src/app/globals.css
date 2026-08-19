@@ -2208,6 +2208,401 @@ body {
   }
 }
 
+/* Settings */
+.studio-layout--records {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.settings-hero {
+  align-items: center;
+}
+
+.settings-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1.35fr) minmax(19rem, 0.65fr);
+  align-items: start;
+  gap: clamp(1.25rem, 4vw, 4rem);
+  padding-top: clamp(3rem, 6vw, 5rem);
+}
+
+.settings-layout .studio-profile,
+.settings-layout .studio-account {
+  position: static;
+  padding: clamp(1.3rem, 3vw, 2rem);
+}
+
+.settings-avatar {
+  display: grid;
+  grid-template-columns: 7rem minmax(0, 1fr);
+  align-items: center;
+  gap: 1.4rem;
+  padding: 1rem;
+  border: 1px solid var(--border);
+  border-radius: 1rem;
+  background: var(--surface-muted);
+}
+
+.settings-avatar__preview {
+  width: 7rem;
+  height: 7rem;
+  border: 1px solid var(--border-strong);
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.settings-avatar__actions {
+  display: grid;
+  gap: 0.45rem;
+}
+
+.settings-avatar__actions strong {
+  color: var(--text-primary);
+  font-family: var(--font-editorial);
+  font-size: 1.2rem;
+  font-weight: 400;
+}
+
+.settings-avatar__actions p,
+.settings-avatar__actions small {
+  color: var(--text-tertiary);
+  font-size: 0.67rem;
+  line-height: 1.55;
+}
+
+.settings-avatar__actions > div {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  margin-top: 0.25rem;
+}
+
+.settings-avatar__upload {
+  display: inline-flex !important;
+  min-height: 2.5rem;
+  align-items: center;
+  justify-content: center;
+  padding-inline: 1rem;
+  border-radius: 999px;
+  background: var(--accent);
+  color: #1c0d07;
+  font-size: 0.68rem;
+  font-weight: 650;
+  cursor: pointer;
+}
+
+.settings-avatar__upload.is-disabled {
+  cursor: not-allowed;
+  opacity: 0.45;
+}
+
+.settings-avatar__upload input {
+  position: absolute;
+  width: 1px !important;
+  height: 1px;
+  min-height: 1px;
+  padding: 0;
+  border: 0;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.settings-avatar__actions button {
+  color: var(--text-tertiary);
+  font-size: 0.67rem;
+}
+
+.settings-avatar__actions button:hover {
+  color: #a63b2c;
+}
+
+.settings-image-url {
+  padding: 0.8rem 0;
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+}
+
+.settings-image-url summary {
+  color: var(--text-tertiary);
+  font-size: 0.68rem;
+  cursor: pointer;
+}
+
+.settings-image-url[open] summary {
+  margin-bottom: 0.9rem;
+}
+
+/* Travel conversations */
+.travel-social {
+  margin-top: clamp(5rem, 10vw, 9rem);
+  padding: clamp(1.4rem, 4vw, 3rem);
+  border: 1px solid var(--border);
+  border-radius: 1.6rem;
+  background: color-mix(in srgb, var(--surface) 92%, var(--accent-soft));
+}
+
+.travel-social__heading {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 1.5rem;
+  padding-bottom: 1.5rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.travel-social__heading h2 {
+  margin-top: 0.5rem;
+  font-family: var(--font-editorial);
+  font-size: clamp(2rem, 4vw, 3.3rem);
+  font-weight: 400;
+  letter-spacing: -0.05em;
+}
+
+.travel-social__like {
+  display: inline-flex;
+  min-height: 2.8rem;
+  align-items: center;
+  gap: 0.55rem;
+  padding-inline: 1rem;
+  border: 1px solid var(--border-strong);
+  border-radius: 999px;
+  color: var(--text-secondary);
+  font-size: 0.72rem;
+  transition: border-color 0.2s ease, color 0.2s ease, background-color 0.2s ease, transform 0.2s ease;
+}
+
+.travel-social__like span {
+  color: var(--accent-strong);
+  font-size: 1rem;
+}
+
+.travel-social__like:hover,
+.travel-social__like.is-liked {
+  border-color: var(--accent-border);
+  background: var(--accent-soft);
+  color: var(--accent-strong);
+  transform: translateY(-1px);
+}
+
+.travel-social__like:disabled {
+  cursor: wait;
+  opacity: 0.6;
+}
+
+.travel-social__composer {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: start;
+  gap: 0.9rem;
+  padding: 1.5rem 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.travel-social__avatar {
+  width: 2.65rem;
+  height: 2.65rem;
+  border: 1px solid var(--border);
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.travel-social__composer textarea {
+  width: 100%;
+  min-height: 4.5rem;
+  padding: 0.8rem 0.9rem;
+  border: 1px solid var(--border-strong);
+  border-radius: 0.85rem;
+  background: var(--surface);
+  color: var(--text-primary);
+  font-size: 0.8rem;
+  line-height: 1.55;
+  resize: vertical;
+  outline: none;
+}
+
+.travel-social__composer textarea:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-soft);
+}
+
+.travel-social__composer > button {
+  min-height: 2.75rem;
+  padding-inline: 1rem;
+  border-radius: 999px;
+  background: var(--accent);
+  color: #1c0d07;
+  font-size: 0.7rem;
+  font-weight: 650;
+}
+
+.travel-social__composer > button:disabled {
+  cursor: wait;
+  opacity: 0.55;
+}
+
+.travel-social__guest {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1.25rem 0;
+  border-bottom: 1px solid var(--border);
+  color: var(--text-tertiary);
+  font-size: 0.74rem;
+}
+
+.travel-social__guest a {
+  color: var(--accent-strong);
+  font-weight: 650;
+  white-space: nowrap;
+}
+
+.travel-social__status {
+  margin-top: 1rem;
+  padding: 0.7rem 0.8rem;
+  border-radius: 0.7rem;
+  background: var(--accent-soft);
+  color: var(--accent-strong);
+  font-size: 0.7rem;
+}
+
+.travel-social__comments {
+  padding-top: 1.5rem;
+}
+
+.travel-social__count {
+  display: flex;
+  align-items: baseline;
+  gap: 0.45rem;
+  color: var(--text-tertiary);
+  font-size: 0.7rem;
+}
+
+.travel-social__count strong {
+  color: var(--text-primary);
+  font-family: var(--font-editorial);
+  font-size: 1.35rem;
+  font-weight: 400;
+}
+
+.travel-social__count small {
+  margin-left: auto;
+  font-size: 0.62rem;
+}
+
+.travel-social__comments ol {
+  margin-top: 0.7rem;
+}
+
+.travel-social__comments li {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  gap: 0.9rem;
+  padding: 1.1rem 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.travel-social__comment-meta {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.travel-social__comment-meta > a {
+  display: flex;
+  align-items: baseline;
+  gap: 0.45rem;
+  min-width: 0;
+}
+
+.travel-social__comment-meta strong {
+  color: var(--text-primary);
+  font-size: 0.78rem;
+}
+
+.travel-social__comment-meta span,
+.travel-social__comment-meta time {
+  color: var(--text-tertiary);
+  font-size: 0.62rem;
+}
+
+.travel-social__comments li > div > p {
+  margin-top: 0.45rem;
+  color: var(--text-secondary);
+  font-size: 0.78rem;
+  line-height: 1.65;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.travel-social__comments li > button {
+  align-self: start;
+  color: var(--text-tertiary);
+  font-size: 0.62rem;
+}
+
+.travel-social__comments li > button:hover {
+  color: #a63b2c;
+}
+
+.travel-social__empty {
+  padding: 3rem 1rem;
+  color: var(--text-tertiary);
+  font-size: 0.75rem;
+  text-align: center;
+}
+
+@media (max-width: 900px) {
+  .settings-layout {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 700px) {
+  .settings-hero {
+    align-items: flex-start;
+  }
+
+  .settings-avatar {
+    grid-template-columns: 5.5rem minmax(0, 1fr);
+    gap: 1rem;
+  }
+
+  .settings-avatar__preview {
+    width: 5.5rem;
+    height: 5.5rem;
+  }
+
+  .travel-social {
+    margin-inline: -0.25rem;
+    padding: 1.25rem;
+    border-radius: 1.2rem;
+  }
+
+  .travel-social__heading,
+  .travel-social__guest {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .travel-social__composer {
+    grid-template-columns: auto minmax(0, 1fr);
+  }
+
+  .travel-social__composer > button {
+    grid-column: 2;
+    justify-self: end;
+  }
+
+  .travel-social__comment-meta {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 0.2rem;
+  }
+}
+
 /* Account and studio ----------------------------------------------------- */
 .site-account-nav {
   display: flex;

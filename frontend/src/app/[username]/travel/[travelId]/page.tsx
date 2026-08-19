@@ -9,11 +9,13 @@ import { SiteFooter } from "@/components/layout/SiteFooter";
 import { SiteHeader } from "@/components/layout/SiteHeader";
 import { PhotoGallery } from "@/components/travel/PhotoGallery";
 import { TravelRouteMap } from "@/components/travel/TravelRouteMap";
+import { TravelSocialPanel } from "@/components/travel/TravelSocialPanel";
 import { ApiError } from "@/lib/api/client";
-import { fetchTravelDetail } from "@/lib/api/travel";
+import { authenticatedBackendGet, getCurrentMember } from "@/lib/api/server-session";
+import { fetchTravelDetail, fetchTravelSocial } from "@/lib/api/travel";
 import { profilePath, travelPath } from "@/lib/config";
 import { formatDate, formatDateRange, formatDuration } from "@/lib/utils/format";
-import type { TravelDetail, TravelNavigationLink } from "@/types";
+import type { TravelDetail, TravelNavigationLink, TravelSocial } from "@/types";
 
 const loadTravel = cache((travelId: number) => fetchTravelDetail(travelId));
 
@@ -93,6 +95,17 @@ export default async function TravelDetailPage(
     ),
   );
   const locationLabel = cityNames.length > 0 ? cityNames.join(" → ") : countryNames.join(" · ");
+  const currentMember = await getCurrentMember();
+  const emptySocial: TravelSocial = {
+    likeCount: 0,
+    likedByCurrentMember: false,
+    commentCount: 0,
+    comments: [],
+  };
+  const social = await (currentMember
+    ? authenticatedBackendGet<TravelSocial>(`/api/private/travels/${id}/social`)
+    : fetchTravelSocial(id)
+  ).catch(() => null) ?? emptySocial;
 
   return (
     <>
@@ -193,6 +206,13 @@ export default async function TravelDetailPage(
             </div>
             <PhotoGallery photos={travel.photos} travelTitle={travel.title} />
           </section>
+
+          <TravelSocialPanel
+            travelId={travel.id}
+            ownerUsername={travel.owner.username}
+            currentMember={currentMember}
+            initialSocial={social}
+          />
 
           <section className="travel-detail-more" aria-labelledby="more-travel-heading">
             <div>

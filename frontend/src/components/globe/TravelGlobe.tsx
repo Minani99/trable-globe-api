@@ -45,6 +45,7 @@ const ALTITUDE_MIN = 0.6;
 const ALTITUDE_MAX = 4;
 const INITIAL_VIEW = { lat: 24, lng: 127, altitude: ALTITUDE_DEFAULT } as const;
 const LOADING_INDICATOR_MINIMUM_MS = 650;
+const AUTO_ROTATE_RESUME_DELAY_MS = 6_000;
 
 export function TravelGlobe({ countries, selectedCode, onSelect, onHover }: TravelGlobeProps) {
   const globeRef = useRef<GlobeMethods | undefined>(undefined);
@@ -52,11 +53,15 @@ export function TravelGlobe({ countries, selectedCode, onSelect, onHover }: Trav
   const markerElements = useRef(new Map<string, HTMLElement>());
   const loadingStartedAt = useRef<number | null>(null);
   const readyTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const autoRotateTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const autoRotateFrame = useRef<number | null>(null);
+  const lastRotationAt = useRef<number | null>(null);
 
   const [size, setSize] = useState({ width: 0, height: 0 });
   const [features, setFeatures] = useState<CountryFeature[]>([]);
   const [geoFailed, setGeoFailed] = useState(false);
   const [ready, setReady] = useState(false);
+  const [autoRotating, setAutoRotating] = useState(false);
   const [hoveredCode, setHoveredCode] = useState<string | null>(null);
   const reduceMotion = usePrefersReducedMotion();
   const colorTheme = useColorTheme();
@@ -67,11 +72,66 @@ export function TravelGlobe({ countries, selectedCode, onSelect, onHover }: Trav
   // closing over a stale render.
   const selectedRef = useRef(selectedCode);
   const onSelectRef = useRef(onSelect);
+  const reduceMotionRef = useRef(reduceMotion);
 
   useEffect(() => {
     selectedRef.current = selectedCode;
     onSelectRef.current = onSelect;
   }, [selectedCode, onSelect]);
+
+  useEffect(() => {
+    reduceMotionRef.current = reduceMotion;
+  }, [reduceMotion]);
+
+  const cancelAmbientRotation = useCallback(() => {
+    if (autoRotateFrame.current !== null) {
+      cancelAnimationFrame(autoRotateFrame.current);
+      autoRotateFrame.current = null;
+    }
+    lastRotationAt.current = null;
+  }, []);
+
+  const stopAmbientRotation = useCallback(() => {
+    cancelAmbientRotation();
+    setAutoRotating(false);
+  }, [cancelAmbientRotation]);
+
+  const startAmbientRotation = useCallback(() => {
+    if (autoRotateFrame.current !== null || reduceMotionRef.current || selectedRef.current !== null) return;
+    setAutoRotating(true);
+
+    const rotate = (time: number) => {
+      const globe = globeRef.current;
+      if (!globe || reduceMotionRef.current || selectedRef.current !== null) {
+        autoRotateFrame.current = null;
+        lastRotationAt.current = null;
+        setAutoRotating(false);
+        return;
+      }
+      if (lastRotationAt.current !== null) {
+        const elapsed = Math.min(50, time - lastRotationAt.current);
+        const view = globe.pointOfView();
+        globe.pointOfView({ ...view, lng: view.lng - elapsed * 0.002 }, 0);
+      }
+      lastRotationAt.current = time;
+      autoRotateFrame.current = requestAnimationFrame(rotate);
+    };
+
+    autoRotateFrame.current = requestAnimationFrame(rotate);
+  }, []);
+
+  const clearRotationResume = useCallback(() => {
+    if (autoRotateTimer.current) {
+      clearTimeout(autoRotateTimer.current);
+      autoRotateTimer.current = null;
+    }
+  }, []);
+
+  const scheduleAmbientRotation = useCallback(() => {
+    clearRotationResume();
+    if (reduceMotionRef.current || selectedRef.current !== null) return;
+    autoRotateTimer.current = setTimeout(startAmbientRotation, AUTO_ROTATE_RESUME_DELAY_MS);
+  }, [clearRotationResume, startAmbientRotation]);
 
   const visitedByCode = useMemo(() => {
     const map = new Map<string, VisitedCountry>();
@@ -173,6 +233,8 @@ export function TravelGlobe({ countries, selectedCode, onSelect, onHover }: Trav
     // A Korean archive should introduce the world from East Asia, not the library's
     // default Greenwich-facing camera.
     globeRef.current?.pointOfView(INITIAL_VIEW, 0);
+    const shouldRotate = !reduceMotion && selectedRef.current === null;
+    if (shouldRotate) startAmbientRotation();
 
     const controls = globeRef.current?.controls();
     if (!controls) {
@@ -183,14 +245,33 @@ export function TravelGlobe({ countries, selectedCode, onSelect, onHover }: Trav
     controls.enablePan = false;
     controls.minDistance = 100 * (1 + ALTITUDE_MIN);
     controls.maxDistance = 100 * (1 + ALTITUDE_MAX);
-    controls.autoRotateSpeed = 0.32;
-    controls.autoRotate = !reduceMotion && selectedRef.current === null;
+  }, [reduceMotion, startAmbientRotation]);
 
-    // Any deliberate interaction ends the ambient spin for good.
-    controls.addEventListener("start", () => {
-      controls.autoRotate = false;
-    });
-  }, [reduceMotion]);
+  useEffect(() => {
+    const element = containerRef.current;
+    if (!element) return;
+
+    const beginInteraction = () => {
+      clearRotationResume();
+      stopAmbientRotation();
+    };
+    const endInteraction = () => scheduleAmbientRotation();
+    const handleWheel = () => {
+      beginInteraction();
+      scheduleAmbientRotation();
+    };
+
+    element.addEventListener("pointerdown", beginInteraction);
+    element.addEventListener("pointerup", endInteraction);
+    element.addEventListener("pointercancel", endInteraction);
+    element.addEventListener("wheel", handleWheel, { passive: true });
+    return () => {
+      element.removeEventListener("pointerdown", beginInteraction);
+      element.removeEventListener("pointerup", endInteraction);
+      element.removeEventListener("pointercancel", endInteraction);
+      element.removeEventListener("wheel", handleWheel);
+    };
+  }, [clearRotationResume, scheduleAmbientRotation, stopAmbientRotation]);
 
   useEffect(
     () => {
@@ -200,17 +281,24 @@ export function TravelGlobe({ countries, selectedCode, onSelect, onHover }: Trav
         if (readyTimer.current) {
           clearTimeout(readyTimer.current);
         }
+        clearRotationResume();
+        cancelAmbientRotation();
       };
     },
-    [],
+    [cancelAmbientRotation, clearRotationResume],
   );
 
   useEffect(() => {
     const controls = globeRef.current?.controls();
-    if (controls && selectedCode !== null) {
-      controls.autoRotate = false;
+    if (!controls) return;
+    clearRotationResume();
+    if (reduceMotion || selectedCode !== null) {
+      cancelAmbientRotation();
+      const stateTimer = setTimeout(() => setAutoRotating(false), 0);
+      return () => clearTimeout(stateTimer);
     }
-  }, [selectedCode]);
+    scheduleAmbientRotation();
+  }, [cancelAmbientRotation, clearRotationResume, reduceMotion, scheduleAmbientRotation, selectedCode]);
 
   // Fly to the selected country; return to the overview when the selection clears.
   useEffect(() => {
@@ -455,6 +543,7 @@ export function TravelGlobe({ countries, selectedCode, onSelect, onHover }: Trav
         tabIndex={0}
         role="application"
         aria-busy={!ready}
+        data-auto-rotating={autoRotating && !reduceMotion && selectedCode === null}
         aria-label="여행 지구본. 방향키로 회전, 플러스·마이너스 키로 확대·축소, 0 키로 초기화합니다. 국가 선택은 아래 목록에서도 할 수 있습니다."
         onKeyDown={handleKeyDown}
         className="h-full w-full cursor-grab active:cursor-grabbing"

@@ -52,6 +52,12 @@ public class GlobalExceptionHandler {
                         ApiError.of(ErrorCode.AUTHENTICATION_FAILED.name())));
     }
 
+    @ExceptionHandler(AccessDeniedException.class)
+    public ResponseEntity<ApiResponse<Void>> handleAccessDenied(AccessDeniedException ex) {
+        return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                .body(ApiResponse.failure(ex.getMessage(), ApiError.of(ErrorCode.ACCESS_DENIED.name())));
+    }
+
     @ExceptionHandler(ConflictException.class)
     public ResponseEntity<ApiResponse<Void>> handleConflict(ConflictException ex) {
         return ResponseEntity.status(HttpStatus.CONFLICT)

@@ -8,6 +8,8 @@ import com.travelglobe.trableglobeapi.location.domain.Country;
 import com.travelglobe.trableglobeapi.location.service.LocationResolverService;
 import com.travelglobe.trableglobeapi.member.domain.Member;
 import com.travelglobe.trableglobeapi.member.repository.MemberRepository;
+import com.travelglobe.trableglobeapi.social.repository.TravelCommentRepository;
+import com.travelglobe.trableglobeapi.social.repository.TravelLikeRepository;
 import com.travelglobe.trableglobeapi.travel.domain.Travel;
 import com.travelglobe.trableglobeapi.travel.domain.TravelPhoto;
 import com.travelglobe.trableglobeapi.travel.domain.TravelPlace;
@@ -33,15 +35,21 @@ public class TravelCommandService {
     private final MemberRepository memberRepository;
     private final TravelRepository travelRepository;
     private final TravelPhotoRepository travelPhotoRepository;
+    private final TravelLikeRepository travelLikeRepository;
+    private final TravelCommentRepository travelCommentRepository;
     private final LocationResolverService locationResolverService;
 
     public TravelCommandService(MemberRepository memberRepository,
                                 TravelRepository travelRepository,
                                 TravelPhotoRepository travelPhotoRepository,
+                                TravelLikeRepository travelLikeRepository,
+                                TravelCommentRepository travelCommentRepository,
                                 LocationResolverService locationResolverService) {
         this.memberRepository = memberRepository;
         this.travelRepository = travelRepository;
         this.travelPhotoRepository = travelPhotoRepository;
+        this.travelLikeRepository = travelLikeRepository;
+        this.travelCommentRepository = travelCommentRepository;
         this.locationResolverService = locationResolverService;
     }
 
@@ -106,7 +114,10 @@ public class TravelCommandService {
 
     @Transactional
     public void delete(MemberPrincipal principal, Long travelId) {
-        travelRepository.delete(ownedTravel(principal, travelId));
+        Travel travel = ownedTravel(principal, travelId);
+        travelLikeRepository.deleteAllByTravelId(travelId);
+        travelCommentRepository.deleteAllByTravelId(travelId);
+        travelRepository.delete(travel);
     }
 
     private Travel ownedTravel(MemberPrincipal principal, Long travelId) {

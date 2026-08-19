@@ -69,11 +69,13 @@ export function AccountNavigation({
   return mobile ? (
     <>
       <Link href="/studio" onClick={onNavigate}><span>내 여행 관리</span><span aria-hidden="true">→</span></Link>
+      <Link href="/settings" onClick={onNavigate}><span>프로필 · 계정 설정</span><span aria-hidden="true">→</span></Link>
       <button type="button" className="site-mobile-menu__button" onClick={logout}><span>로그아웃</span><span aria-hidden="true">↗</span></button>
     </>
   ) : (
     <div className="site-account-nav">
       <Link href="/studio" className="site-profile-link">내 기록</Link>
+      <Link href="/settings">설정</Link>
       <button type="button" onClick={logout}>로그아웃</button>
     </div>
   );

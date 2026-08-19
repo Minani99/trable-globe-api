@@ -24,6 +24,8 @@ import org.springframework.data.repository.query.Param;
  */
 public interface TravelRepository extends JpaRepository<Travel, Long> {
 
+    Optional<Travel> findByIdAndVisibility(Long id, Visibility visibility);
+
     @Query("""
             select t
             from Travel t

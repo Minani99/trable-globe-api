@@ -355,6 +355,19 @@ Base URL: `http://localhost:8080` (개발). Next.js 서버와 동일 출처 `/ap
 
 ---
 
+## 여행 교류 API
+
+| Method | Path | 인증 | 설명 |
+| --- | --- | --- | --- |
+| GET | `/api/travels/{travelId}/social` | 없음 | 좋아요 수와 최근 댓글 100개 조회 |
+| GET | `/api/private/travels/{travelId}/social` | 필요 | 내 좋아요·댓글 삭제 권한을 포함해 조회 |
+| POST | `/api/private/travels/{travelId}/likes` | 필요 | 좋아요 토글 |
+| POST | `/api/private/travels/{travelId}/comments` | 필요 | 500자 이내 댓글 작성 |
+| DELETE | `/api/private/travels/{travelId}/comments/{commentId}` | 필요 | 댓글 작성자 또는 여행 소유자가 삭제 |
+
+교류 API는 `PUBLIC` 여행에만 접근할 수 있습니다. 댓글 전체 개수는 `commentCount`로
+반환하고, 본문 목록은 화면 성능과 남용 방지를 위해 최신 100개까지만 제공합니다.
+
 ## 인증과 쓰기 API
 
 브라우저는 Next.js의 `/api/auth/*`, `/api/private/*` BFF를 사용합니다. BFF가 원문
@@ -385,5 +398,6 @@ Location search is submitted explicitly rather than called on every keystroke. T
 identifies the application, serializes public Nominatim requests to at most one per second per
 instance, caches repeated searches, and keeps latitude/longitude out of the ordinary form UI.
 
-모든 `/api/private/**` 조회와 변경은 `travel_id`만 보지 않고 인증된 `member_id`까지
-같이 조회합니다. 다른 사용자의 ID를 알아도 404만 반환합니다.
+여행 CRUD는 `travel_id`만 보지 않고 인증된 `member_id`까지 같이 조회합니다. 다른
+사용자의 비공개 여행 ID를 알아도 404만 반환합니다. 소셜 쓰기는 공개 여행에 한해
+허용하고, 댓글 삭제 시 작성자 또는 여행 소유자 여부를 별도로 검증합니다.

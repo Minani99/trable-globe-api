@@ -23,6 +23,8 @@ import com.travelglobe.trableglobeapi.global.exception.InvalidRequestException;
 import com.travelglobe.trableglobeapi.global.exception.ResourceNotFoundException;
 import com.travelglobe.trableglobeapi.member.domain.Member;
 import com.travelglobe.trableglobeapi.member.repository.MemberRepository;
+import com.travelglobe.trableglobeapi.social.repository.TravelCommentRepository;
+import com.travelglobe.trableglobeapi.social.repository.TravelLikeRepository;
 import com.travelglobe.trableglobeapi.travel.domain.Travel;
 import com.travelglobe.trableglobeapi.travel.repository.TravelPhotoRepository;
 import com.travelglobe.trableglobeapi.travel.repository.TravelRepository;
@@ -49,6 +51,8 @@ public class AuthService {
     private final AccountActionTokenRepository actionTokenRepository;
     private final TravelRepository travelRepository;
     private final TravelPhotoRepository travelPhotoRepository;
+    private final TravelLikeRepository travelLikeRepository;
+    private final TravelCommentRepository travelCommentRepository;
     private final AuthSessionService authSessionService;
     private final AccountActionTokenService actionTokenService;
     private final AccountMailService accountMailService;
@@ -61,6 +65,8 @@ public class AuthService {
                        AccountActionTokenRepository actionTokenRepository,
                        TravelRepository travelRepository,
                        TravelPhotoRepository travelPhotoRepository,
+                       TravelLikeRepository travelLikeRepository,
+                       TravelCommentRepository travelCommentRepository,
                        AuthSessionService authSessionService,
                        AccountActionTokenService actionTokenService,
                        AccountMailService accountMailService,
@@ -71,6 +77,8 @@ public class AuthService {
         this.actionTokenRepository = actionTokenRepository;
         this.travelRepository = travelRepository;
         this.travelPhotoRepository = travelPhotoRepository;
+        this.travelLikeRepository = travelLikeRepository;
+        this.travelCommentRepository = travelCommentRepository;
         this.authSessionService = authSessionService;
         this.actionTokenService = actionTokenService;
         this.accountMailService = accountMailService;
@@ -161,6 +169,10 @@ public class AuthService {
             throw new AuthenticationFailedException();
         }
         Long memberId = credential.getMember().getId();
+        travelLikeRepository.deleteAllByMemberId(memberId);
+        travelCommentRepository.deleteAllByMemberId(memberId);
+        travelLikeRepository.deleteAllByTravelMemberId(memberId);
+        travelCommentRepository.deleteAllByTravelMemberId(memberId);
         travelPhotoRepository.deleteAllForMember(memberId);
         List<Travel> travels = travelRepository.findOwnedTravels(memberId);
         travelRepository.deleteAll(travels);

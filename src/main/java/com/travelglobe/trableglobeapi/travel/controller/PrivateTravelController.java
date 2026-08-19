@@ -3,6 +3,9 @@ package com.travelglobe.trableglobeapi.travel.controller;
 import com.travelglobe.trableglobeapi.auth.security.MemberPrincipal;
 import com.travelglobe.trableglobeapi.auth.security.AuthenticatedRequest;
 import com.travelglobe.trableglobeapi.global.response.ApiResponse;
+import com.travelglobe.trableglobeapi.social.dto.CreateCommentRequest;
+import com.travelglobe.trableglobeapi.social.dto.TravelSocialResponse;
+import com.travelglobe.trableglobeapi.social.service.TravelSocialService;
 import com.travelglobe.trableglobeapi.travel.dto.OwnedTravelSummaryResponse;
 import com.travelglobe.trableglobeapi.travel.dto.TravelDetailResponse;
 import com.travelglobe.trableglobeapi.travel.dto.write.TravelWriteRequest;
@@ -26,9 +29,12 @@ import org.springframework.web.bind.annotation.RestController;
 public class PrivateTravelController {
 
     private final TravelCommandService travelCommandService;
+    private final TravelSocialService travelSocialService;
 
-    public PrivateTravelController(TravelCommandService travelCommandService) {
+    public PrivateTravelController(TravelCommandService travelCommandService,
+                                   TravelSocialService travelSocialService) {
         this.travelCommandService = travelCommandService;
+        this.travelSocialService = travelSocialService;
     }
 
     @GetMapping
@@ -71,5 +77,38 @@ public class PrivateTravelController {
         MemberPrincipal principal = AuthenticatedRequest.principal(request);
         travelCommandService.delete(principal, travelId);
         return ApiResponse.ok(null, "여행을 삭제했습니다.");
+    }
+
+    @GetMapping("/{travelId}/social")
+    public ApiResponse<TravelSocialResponse> getSocial(
+            HttpServletRequest request, @PathVariable Long travelId) {
+        return ApiResponse.ok(travelSocialService.getForMember(
+                AuthenticatedRequest.principal(request), travelId));
+    }
+
+    @PostMapping("/{travelId}/likes")
+    public ApiResponse<TravelSocialResponse> toggleLike(
+            HttpServletRequest request, @PathVariable Long travelId) {
+        return ApiResponse.ok(travelSocialService.toggleLike(
+                AuthenticatedRequest.principal(request), travelId));
+    }
+
+    @PostMapping("/{travelId}/comments")
+    @ResponseStatus(HttpStatus.CREATED)
+    public ApiResponse<TravelSocialResponse> addComment(
+            HttpServletRequest request,
+            @PathVariable Long travelId,
+            @Valid @RequestBody CreateCommentRequest body) {
+        return ApiResponse.ok(travelSocialService.addComment(
+                AuthenticatedRequest.principal(request), travelId, body.content()), "댓글을 남겼습니다.");
+    }
+
+    @DeleteMapping("/{travelId}/comments/{commentId}")
+    public ApiResponse<TravelSocialResponse> deleteComment(
+            HttpServletRequest request,
+            @PathVariable Long travelId,
+            @PathVariable Long commentId) {
+        return ApiResponse.ok(travelSocialService.deleteComment(
+                AuthenticatedRequest.principal(request), travelId, commentId), "댓글을 삭제했습니다.");
     }
 }

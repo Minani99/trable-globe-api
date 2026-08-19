@@ -4,8 +4,6 @@ import { redirect } from "next/navigation";
 
 import { SiteFooter } from "@/components/layout/SiteFooter";
 import { SiteHeader } from "@/components/layout/SiteHeader";
-import { ProfileEditor } from "@/components/studio/ProfileEditor";
-import { AccountSettings } from "@/components/studio/AccountSettings";
 import { authenticatedBackendGet, getCurrentMember } from "@/lib/api/server-session";
 import { formatDateRange } from "@/lib/utils/format";
 import type { OwnedTravelSummary } from "@/types";
@@ -29,11 +27,12 @@ export default async function StudioPage() {
             </div>
             <div className="studio-hero__actions">
               <Link href={`/${member.username}`} className="studio-secondary-action">공개 지구본 보기 ↗</Link>
+              <Link href="/settings" className="studio-secondary-action">프로필 설정</Link>
               <Link href="/studio/travels/new" className="studio-primary-action">새 여행 기록 <span>＋</span></Link>
             </div>
           </header>
 
-          <div className="studio-layout">
+          <div className="studio-layout studio-layout--records">
             <section aria-labelledby="studio-travels-heading" className="studio-travels">
               <div className="studio-section-heading">
                 <div><p className="eyebrow">Your archive</p><h2 id="studio-travels-heading">여행 기록</h2></div>
@@ -59,7 +58,6 @@ export default async function StudioPage() {
                 </div>
               )}
             </section>
-            <aside className="studio-account-stack"><ProfileEditor member={member} /><AccountSettings member={member} /></aside>
           </div>
         </div>
       </main>

@@ -320,6 +320,69 @@ class TravelGlobeApiTest {
                 .andExpect(jsonPath("$.error.code").value("AUTHENTICATION_REQUIRED"));
     }
 
+    @Test
+    @DisplayName("공개 여행에서 회원끼리 좋아요와 댓글을 주고받을 수 있다")
+    void travelLikesAndCommentsCreateConversation() throws Exception {
+        String ownerResponse = mockMvc.perform(post("/api/auth/register")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {"username":"social_owner","displayName":"여행 주인",
+                                 "email":"social-owner@example.com","password":"social-password-42"}
+                                """))
+                .andExpect(status().isOk())
+                .andReturn().getResponse().getContentAsString();
+        String ownerToken = stringValue(ownerResponse, "token");
+
+        String visitorResponse = mockMvc.perform(post("/api/auth/register")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {"username":"social_visitor","displayName":"다정한 여행자",
+                                 "email":"social-visitor@example.com","password":"social-password-42"}
+                                """))
+                .andExpect(status().isOk())
+                .andReturn().getResponse().getContentAsString();
+        String visitorToken = stringValue(visitorResponse, "token");
+
+        String travelResponse = mockMvc.perform(post("/api/private/travels")
+                        .header("Authorization", "Bearer " + ownerToken)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(travelPayload("함께 이야기할 여행", "PUBLIC")))
+                .andExpect(status().isCreated())
+                .andReturn().getResponse().getContentAsString();
+        long travelId = Long.parseLong(numberValue(travelResponse, "id"));
+
+        mockMvc.perform(get("/api/travels/" + travelId + "/social"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.likeCount").value(0))
+                .andExpect(jsonPath("$.data.commentCount").value(0));
+
+        mockMvc.perform(post("/api/private/travels/" + travelId + "/likes")
+                        .header("Authorization", "Bearer " + visitorToken))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.likeCount").value(1))
+                .andExpect(jsonPath("$.data.likedByCurrentMember").value(true));
+
+        String commentResponse = mockMvc.perform(post("/api/private/travels/" + travelId + "/comments")
+                        .header("Authorization", "Bearer " + visitorToken)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"content\":\"다음 여행 코스도 궁금해요!\"}"))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.data.commentCount").value(1))
+                .andExpect(jsonPath("$.data.comments[0].author.username").value("social_visitor"))
+                .andExpect(jsonPath("$.data.comments[0].canDelete").value(true))
+                .andReturn().getResponse().getContentAsString();
+        long commentId = Long.parseLong(numberValue(commentResponse, "id"));
+
+        mockMvc.perform(get("/api/travels/" + travelId + "/social"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.comments[0].canDelete").value(false));
+
+        mockMvc.perform(delete("/api/private/travels/" + travelId + "/comments/" + commentId)
+                        .header("Authorization", "Bearer " + ownerToken))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.commentCount").value(0));
+    }
+
     private static String travelPayload(String title, String visibility) {
         return """
                 {

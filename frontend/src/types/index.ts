@@ -138,6 +138,27 @@ export interface AuthMember {
   emailVerified: boolean;
 }
 
+export interface SocialAuthor {
+  username: string;
+  displayName: string;
+  profileImageUrl: string | null;
+}
+
+export interface TravelComment {
+  id: number;
+  author: SocialAuthor;
+  content: string;
+  createdAt: string;
+  canDelete: boolean;
+}
+
+export interface TravelSocial {
+  likeCount: number;
+  likedByCurrentMember: boolean;
+  commentCount: number;
+  comments: TravelComment[];
+}
+
 export interface AccountActionResult {
   message: string;
   developmentToken: string | null;

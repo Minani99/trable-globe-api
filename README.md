@@ -55,11 +55,12 @@ trable-globe-api/
 │  ├─ member/        Member 도메인
 │  ├─ location/      Country / City 마스터 데이터
 │  ├─ travel/        Travel / TravelPlace / TravelPhoto 및 조회 API
+│  ├─ social/        공개 여행 좋아요·댓글 및 권한 처리
 │  ├─ statistics/    프로필 통계
 │  └─ profile/       공개 프로필 읽기 파사드 (여러 도메인을 조합)
 ├─ src/main/resources/
 │  ├─ application.yaml, application-{local,postgres,prod}.yaml
-│  └─ db/migration/V1__init_travel_globe_schema.sql
+│  └─ db/migration/V1__...sql ~ V4__...sql
 ├─ frontend/
 │  ├─ src/app/       /, /about, /[username], /[username]/travel/[travelId]
 │  ├─ src/components/{layout,globe,profile,travel,common}
@@ -205,6 +206,8 @@ Pull Request와 `master` push에는 GitHub Actions가 자동으로 백엔드 테
 | GET | `/api/profiles/{username}/travels` | 여행 목록 |
 | GET | `/api/profiles/{username}/countries/{code}/travels` | 국가별 여행 |
 | GET | `/api/travels/{travelId}` | 여행 상세 |
+| GET | `/api/travels/{travelId}/social` | 공개 좋아요·댓글 |
+| GET/POST/DELETE | `/api/private/travels/{travelId}/...` | 내 여행 관리 및 좋아요·댓글 쓰기 |
 
 모든 응답은 `{ success, data, message }` 형태로 감싸며, 실패 시 `error.code`가 추가됩니다.
 
@@ -214,13 +217,16 @@ Pull Request와 `master` push에는 GitHub Actions가 자동으로 백엔드 테
 
 - 공개 프로필 조회와 소유자 전용 여행 CRUD API
 - 회원가입·로그인·이메일 인증·비밀번호 재설정·회원 탈퇴, DB 기반 불투명 세션
-- Flyway 마이그레이션 3개, 4개 실행 프로필 (`local`, `postgres`, `prod`, `demo`)
+- Flyway 마이그레이션 4개, 4개 실행 프로필 (`local`, `postgres`, `prod`, `demo`)
 - 3D 지구본: 회전 / 확대·축소 / 방문 국가 강조 / 마커 / hover / click / 카메라 이동 / 국가 패널
 - 국가 선택에 따른 여행 카드 필터, 여행 타임라인, 여행 상세(경로 지도·장소·사진·이전/다음)
 - Loading / Error / Not Found / Empty 상태
 - 키보드 조작과 국가 목록 대체 UI, `prefers-reduced-motion` 대응
 - 반응형 (모바일 / 태블릿 / 데스크톱)
 - 지도 검색·지도 클릭 기반 장소 선택, 작성 자동 저장·복구와 장소 순서 편집
+- 프로필·계정 전용 설정 화면, 프로필 사진 업로드·미리보기·교체·삭제
+- 공개 여행 좋아요·댓글, 작성자·여행 소유자 댓글 삭제 권한
+- 지구본 조작 종료 6초 뒤 자동 회전 재개 (`prefers-reduced-motion` 예외)
 - Cloudflare R2 직접 사진 업로드, 대표 사진·순서·장소 연결·삭제
 - DB readiness/liveness, 요청 추적 번호, 느린 요청 로그, 인증 데이터 자동 정리
 - Open Graph 공유 이미지, robots, sitemap, GitHub Actions CI
