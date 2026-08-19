@@ -60,3 +60,73 @@ A backup is not considered working until it has been restored successfully.
 - Authentication cleanup runs daily and keeps expired or revoked material for seven days by default.
 - Review slow-request logs before increasing server or database resources; repeated slow endpoints
   should first be profiled and given bounded pagination or targeted indexes.
+
+## Keeping the free instance awake
+
+A Render free web service sleeps after roughly 15 minutes without traffic, and the
+next visitor pays a 50-second wake-up. An external uptime monitor requesting
+`/api/health` on a schedule keeps that timer from ever expiring.
+
+`/api/health` is the right target: it reports database connectivity, so a monitor
+that keeps the service awake also tells us when the database link breaks.
+
+### Settings
+
+| Setting | Value |
+| --- | --- |
+| URL | `https://travel-globe-api-cexs.onrender.com/api/health` |
+| Method | `GET` |
+| Interval | 10 minutes |
+| Expected | HTTP 200 with `"status":"UP"` |
+
+Five-minute polling buys nothing here - the sleep timer is 15 minutes, so 10
+leaves a full missed request of slack.
+
+### The hour budget is the real constraint
+
+The free plan grants a fixed number of instance-hours per month (750 at the time
+of writing - confirm on the dashboard, as it changes). Staying awake continuously
+costs almost all of it:
+
+```
+24h x 31 days = 744h used
+                750h granted
+                  6h margin
+```
+
+One always-on free service fits. A second free service does not, and exhausting
+the budget stops the service until the month rolls over - strictly worse than the
+cold start we were avoiding. So while this monitor runs, keep exactly one free
+service on the account.
+
+Pausing the monitor overnight restores real margin. Six hours off per day:
+
+```
+18h x 31 days = 558h used   (192h margin)
+```
+
+### If you pause, mind the cleanup job
+
+`AuthDataCleanupService` deletes expired sessions and one-time tokens on
+`AUTH_CLEANUP_CRON`, which is expressed in **UTC**. A sleeping instance runs no
+scheduled work at all, so the cron must fall inside the awake window or the
+cleanup silently never happens.
+
+The default is `0 17 3 * * *` - and UTC is nine hours behind KST:
+
+| UTC | KST |
+| --- | --- |
+| 03:17 | **12:17 (midday)** |
+| 16:00-22:00 | 01:00-07:00 (overnight) |
+
+So the default already runs at Korean lunchtime, comfortably inside any sensible
+awake window. Pausing the monitor from 01:00 to 07:00 KST does not affect it.
+
+Change the schedule only through `AUTH_CLEANUP_CRON`, and convert to UTC first.
+
+### Retiring the monitor
+
+This arrangement trades the free hour budget for uptime; it is a stopgap for the
+testing phase, not an operating model. On a paid instance the service no longer
+sleeps, so delete the monitor - or keep it purely as an alerting probe, which is
+what an uptime monitor is actually for.
