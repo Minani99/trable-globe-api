@@ -17,6 +17,7 @@ export default async function StudioPage() {
   ]);
   if (!member) redirect("/login?next=/studio");
   const travels = travelRecords ?? [];
+  const profileReady = Boolean(member.profileImageUrl && member.bio?.trim());
 
   return (
     <>
@@ -34,13 +35,47 @@ export default async function StudioPage() {
             </div>
           </header>
 
-          <div className="studio-layout studio-layout--records">
-            <section aria-labelledby="studio-travels-heading" className="studio-travels">
-              <div className="studio-section-heading">
-                <h2 id="studio-travels-heading">여행 기록</h2>
-                <span>{travels.length}개</span>
-              </div>
-              {travels.length ? (
+          {travels.length === 0 ? (
+            <section aria-labelledby="getting-started-heading" className="studio-onboarding">
+              <header>
+                <div>
+                  <p className="eyebrow">Getting started</p>
+                  <h2 id="getting-started-heading">내 여행 세계를 완성하는 순서</h2>
+                </div>
+                <span>{profileReady ? "1" : "0"} / 3</span>
+              </header>
+              <ol>
+                <OnboardingStep
+                  index="01"
+                  title="나를 소개하기"
+                  description="프로필 사진과 여행 취향을 추가해 공개 페이지의 첫인상을 만드세요."
+                  href="/settings#profile"
+                  action={profileReady ? "다시 편집" : "프로필 설정"}
+                  complete={profileReady}
+                />
+                <OnboardingStep
+                  index="02"
+                  title="첫 여행 기록하기"
+                  description="한 나라와 한 장소만 입력해도 내 지구본이 바로 변화합니다."
+                  href="/studio/travels/new"
+                  action="여행 시작"
+                />
+                <OnboardingStep
+                  index="03"
+                  title="완성된 지구본 공유하기"
+                  description="첫 기록을 공개하면 고유 프로필 주소로 여행 세계를 공유할 수 있습니다."
+                />
+              </ol>
+            </section>
+          ) : null}
+
+          {travels.length > 0 ? (
+            <div className="studio-layout studio-layout--records">
+              <section aria-labelledby="studio-travels-heading" className="studio-travels">
+                <div className="studio-section-heading">
+                  <h2 id="studio-travels-heading">여행 기록</h2>
+                  <span>{travels.length}개</span>
+                </div>
                 <ol className="studio-travel-list">
                   {travels.map(({ travel, visibility }) => (
                     <li key={travel.id}>
@@ -53,17 +88,39 @@ export default async function StudioPage() {
                     </li>
                   ))}
                 </ol>
-              ) : (
-                <div className="studio-empty">
-                  <p>아직 기록한 여행이 없습니다.</p>
-                  <Link href="/studio/travels/new">첫 여행 기록하기 →</Link>
-                </div>
-              )}
-            </section>
-          </div>
+              </section>
+            </div>
+          ) : null}
         </div>
       </main>
       <SiteFooter />
     </>
+  );
+}
+
+function OnboardingStep({
+  index,
+  title,
+  description,
+  href,
+  action,
+  complete = false,
+}: {
+  index: string;
+  title: string;
+  description: string;
+  href?: string;
+  action?: string;
+  complete?: boolean;
+}) {
+  return (
+    <li className={complete ? "is-complete" : undefined}>
+      <span>{complete ? "✓" : index}</span>
+      <div>
+        <strong>{title}</strong>
+        <p>{description}</p>
+      </div>
+      {href && action ? <Link href={href}>{action} →</Link> : <small>첫 여행 작성 후 열립니다</small>}
+    </li>
   );
 }

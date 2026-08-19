@@ -46,6 +46,7 @@ interface TravelEditorProps {
   username: string;
   countries: CountryOption[];
   initialTravel?: TravelDetail;
+  initialCountryCode?: string;
 }
 
 interface StoredTravelDraft {
@@ -63,7 +64,12 @@ interface StoredTravelDraft {
 
 const draftKey = () => `${Date.now()}-${Math.random().toString(36).slice(2)}`;
 
-export function TravelEditor({ username, countries, initialTravel }: TravelEditorProps) {
+export function TravelEditor({
+  username,
+  countries,
+  initialTravel,
+  initialCountryCode = "KR",
+}: TravelEditorProps) {
   const router = useRouter();
   const editing = Boolean(initialTravel);
   const draftStorageKey = `travel-globe:draft:${username}:${initialTravel?.id ?? "new"}`;
@@ -87,7 +93,7 @@ export function TravelEditor({ username, countries, initialTravel }: TravelEdito
           visitedAt: place.visitedAt ?? "",
           memo: place.memo ?? "",
         }))
-      : [emptyPlace("KR")],
+      : [emptyPlace(initialCountryCode)],
   );
   const [photos, setPhotos] = useState<PhotoDraft[]>(() =>
     initialTravel?.photos.map((photo) => ({

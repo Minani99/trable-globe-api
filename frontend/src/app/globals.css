@@ -680,6 +680,13 @@ body {
   background: var(--accent-strong);
 }
 
+.landing-primary-cta.is-loading {
+  pointer-events: none;
+  min-width: 10.5rem;
+  background: var(--surface-raised);
+  color: var(--text-tertiary);
+}
+
 .landing-secondary-cta {
   padding: 0.2rem 1.35rem;
   border: 1px solid var(--border-strong);
@@ -845,6 +852,7 @@ body {
   z-index: 3;
   pointer-events: none;
   display: flex;
+  flex-wrap: wrap;
   align-items: flex-end;
   justify-content: space-between;
   gap: 1rem;
@@ -862,6 +870,47 @@ body {
   flex: 0 0 auto;
   font-size: 1.55rem;
   line-height: 1;
+}
+
+.landing-landmark-card__action {
+  pointer-events: auto;
+  display: flex;
+  min-height: 2.4rem;
+  flex: 1 0 100%;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 0.1rem;
+  padding: 0.2rem 0.35rem 0.2rem 0.75rem;
+  border-radius: 0.7rem;
+  background: var(--accent);
+  color: #190b05;
+  font-size: 0.7rem;
+  font-weight: 650;
+  transition: background-color 0.16s ease, transform 0.16s ease;
+}
+
+.landing-landmark-card__action:hover,
+.landing-landmark-card__action:focus-visible {
+  background: var(--accent-strong);
+  color: #fff;
+  transform: translateY(-1px);
+}
+
+.landing-landmark-card__action.is-loading {
+  pointer-events: none;
+  justify-content: center;
+  background: var(--surface-raised);
+  color: var(--text-tertiary);
+}
+
+.landing-landmark-card__action span:last-child {
+  display: grid;
+  width: 1.75rem;
+  height: 1.75rem;
+  place-items: center;
+  border-radius: 50%;
+  background: rgba(19, 10, 6, 0.9);
+  color: #fff;
 }
 
 .landing-globe-link:hover .landing-landmark-card {
@@ -2966,6 +3015,104 @@ body {
   gap: 0.8rem;
 }
 
+.studio-onboarding {
+  margin-top: clamp(2rem, 4vw, 3.5rem);
+  padding: clamp(1.2rem, 3vw, 2rem);
+  border: 1px solid var(--border);
+  border-radius: 1.4rem;
+  background: color-mix(in srgb, var(--surface) 90%, transparent);
+  box-shadow: 0 1rem 3rem rgba(31, 62, 69, 0.06);
+}
+
+.studio-onboarding > header {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 1rem;
+  padding-bottom: 1.2rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.studio-onboarding h2 {
+  margin-top: 0.45rem;
+  font-size: clamp(1.25rem, 2vw, 1.75rem);
+  font-weight: 600;
+  letter-spacing: -0.04em;
+}
+
+.studio-onboarding > header > span {
+  color: var(--text-tertiary);
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+}
+
+.studio-onboarding ol {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.studio-onboarding li {
+  display: grid;
+  min-width: 0;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-content: start;
+  gap: 0.75rem;
+  padding: 1.25rem 1.25rem 0.25rem 0;
+}
+
+.studio-onboarding li + li {
+  padding-left: 1.25rem;
+  border-left: 1px solid var(--border);
+}
+
+.studio-onboarding li > span {
+  display: grid;
+  width: 1.8rem;
+  height: 1.8rem;
+  place-items: center;
+  border: 1px solid var(--border-strong);
+  border-radius: 50%;
+  color: var(--text-tertiary);
+  font-family: var(--font-mono);
+  font-size: 0.58rem;
+}
+
+.studio-onboarding li.is-complete > span {
+  border-color: var(--accent-border);
+  background: var(--accent-soft);
+  color: var(--accent-strong);
+}
+
+.studio-onboarding strong {
+  color: var(--text-primary);
+  font-size: 0.82rem;
+  font-weight: 600;
+}
+
+.studio-onboarding p {
+  margin-top: 0.45rem;
+  color: var(--text-tertiary);
+  font-size: 0.72rem;
+  line-height: 1.65;
+  word-break: keep-all;
+}
+
+.studio-onboarding li > a,
+.studio-onboarding li > small {
+  grid-column: 2;
+  margin-top: 0.15rem;
+  font-size: 0.68rem;
+}
+
+.studio-onboarding li > a {
+  color: var(--accent-strong);
+  font-weight: 600;
+}
+
+.studio-onboarding li > small {
+  color: var(--text-tertiary);
+}
+
 .studio-primary-action,
 .studio-secondary-action {
   display: inline-flex;
@@ -4069,6 +4216,20 @@ body {
 
   .studio-hero__actions {
     width: 100%;
+  }
+
+  .studio-onboarding ol {
+    grid-template-columns: 1fr;
+  }
+
+  .studio-onboarding li,
+  .studio-onboarding li + li {
+    padding: 1rem 0;
+    border-left: 0;
+  }
+
+  .studio-onboarding li + li {
+    border-top: 1px solid var(--border);
   }
 
   .studio-primary-action,

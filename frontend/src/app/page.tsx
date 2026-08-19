@@ -1,6 +1,5 @@
-import Link from "next/link";
-
 import { LandingGlobePreview } from "@/components/landing/LandingGlobePreview";
+import { LandingStartAction } from "@/components/landing/LandingStartAction";
 import { SiteFooter } from "@/components/layout/SiteFooter";
 import { SiteHeader } from "@/components/layout/SiteHeader";
 
@@ -23,13 +22,7 @@ export default function LandingPage() {
             </p>
 
             <div className="landing-reveal landing-reveal--actions mt-10 flex flex-wrap items-center gap-3">
-              <Link
-                href="/register"
-                className="landing-primary-cta group"
-              >
-                <span>내 지구본 시작하기</span>
-                <span className="landing-primary-cta__arrow" aria-hidden="true">↗</span>
-              </Link>
+              <LandingStartAction />
             </div>
 
           </div>

@@ -38,6 +38,7 @@ export function ProfileExperience({ profile, countries, travels, viewer, relatio
     iso2Code: string;
     travels: TravelSummary[];
   } | null>(null);
+  const isOwnProfile = viewer?.username === profile.username;
 
   const selectedCountry = useMemo(
     () => countries.find((country) => country.iso2Code === selectedCode) ?? null,
@@ -128,6 +129,9 @@ export function ProfileExperience({ profile, countries, travels, viewer, relatio
                     eyebrow="기록 전"
                     title="아직 여행 기록이 없습니다"
                     description="첫 여행을 기록하면 이곳에 새로운 나라가 표시됩니다."
+                    action={isOwnProfile
+                      ? { href: "/studio/travels/new", label: "첫 여행 기록하기" }
+                      : undefined}
                   />
                 </div>
               )}
@@ -136,7 +140,7 @@ export function ProfileExperience({ profile, countries, travels, viewer, relatio
             <div className="profile-globe-card__profile">
               <ProfilePanel
                 profile={profile}
-                isOwnProfile={viewer?.username === profile.username}
+                isOwnProfile={isOwnProfile}
                 viewerAuthenticated={Boolean(viewer)}
                 initialFollowing={relationship?.following ?? false}
               />
@@ -223,6 +227,14 @@ export function ProfileExperience({ profile, countries, travels, viewer, relatio
                   ? "필터를 해제하면 다른 나라의 여행도 확인할 수 있습니다."
                   : "첫 여행을 기록하면 이곳에 여행 카드가 표시됩니다."
               }
+              action={isOwnProfile
+                ? {
+                    href: selectedCountry
+                      ? `/studio/travels/new?country=${encodeURIComponent(selectedCountry.iso2Code)}`
+                      : "/studio/travels/new",
+                    label: selectedCountry ? `${selectedCountry.nameKo} 여행 기록하기` : "첫 여행 기록하기",
+                  }
+                : undefined}
             />
           )}
         </section>

@@ -16,6 +16,9 @@ export function AuthForm({ mode, nextPath }: { mode: "login" | "register"; nextP
   const [completed, setCompleted] = useState(false);
   const isRegister = mode === "register";
   const destination = nextPath ?? "/studio";
+  const switchHref = `${isRegister ? "/login" : "/register"}${
+    nextPath ? `?next=${encodeURIComponent(nextPath)}` : ""
+  }`;
 
   useEffect(() => {
     router.prefetch(destination);
@@ -106,7 +109,7 @@ export function AuthForm({ mode, nextPath }: { mode: "login" | "register"; nextP
 
       <p className="auth-form__switch">
         {isRegister ? "이미 계정이 있나요?" : "아직 계정이 없나요?"}{" "}
-        <Link href={isRegister ? "/login" : "/register"}>
+        <Link href={switchHref}>
           {isRegister ? "로그인" : "계정 만들기"}
         </Link>
       </p>

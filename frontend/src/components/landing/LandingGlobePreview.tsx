@@ -1,17 +1,31 @@
 "use client";
 
-import { useState } from "react";
+import Link from "next/link";
+import { useEffect, useState } from "react";
 
 import { TravelGlobe, type GlobeCountryHover } from "@/components/globe/TravelGlobe";
+import {
+  getCachedAuthMember,
+  loadAuthMember,
+  subscribeToAuthState,
+} from "@/lib/auth-state";
 import { countryFlag, getWorldLandmarkPlace } from "@/lib/worldLandmarks";
+import type { AuthMember } from "@/types";
 
 export function LandingGlobePreview() {
   const [selectedCode, setSelectedCode] = useState<string | null>(null);
   const [hoveredCountry, setHoveredCountry] = useState<GlobeCountryHover | null>(null);
   const [selectedCountry, setSelectedCountry] = useState<GlobeCountryHover | null>(null);
   const [centeredCountry, setCenteredCountry] = useState<GlobeCountryHover | null>(null);
+  const [member, setMember] = useState<AuthMember | null | undefined>(() => getCachedAuthMember());
   const activeCountry = selectedCountry ?? hoveredCountry ?? centeredCountry;
   const activePlace = activeCountry ? getWorldLandmarkPlace(activeCountry.code) : null;
+
+  useEffect(() => {
+    const unsubscribe = subscribeToAuthState(setMember);
+    if (getCachedAuthMember() === undefined) void loadAuthMember();
+    return unsubscribe;
+  }, []);
 
   const handleSelect = (code: string | null) => {
     setSelectedCode(code);
@@ -57,6 +71,23 @@ export function LandingGlobePreview() {
                     {activePlace.place}
                   </p>
                 </div>
+                {selectedCountry && member !== undefined ? (
+                  <Link
+                    href={countryActionHref(selectedCountry.code, Boolean(member))}
+                    className="landing-landmark-card__action"
+                  >
+                    <span>
+                      {member
+                        ? `${selectedCountry.nameKo} 여행 기록하기`
+                        : "내 지구본에 이 나라 추가"}
+                    </span>
+                    <span aria-hidden="true">→</span>
+                  </Link>
+                ) : selectedCountry ? (
+                  <span className="landing-landmark-card__action is-loading" aria-label="계정 상태 확인 중">
+                    계정 상태 확인 중…
+                  </span>
+                ) : null}
               </>
             ) : (
               <div>
@@ -75,4 +106,10 @@ export function LandingGlobePreview() {
       </figure>
     </div>
   );
+}
+
+function countryActionHref(code: string, authenticated: boolean): string {
+  const editorCode = code === "Kosovo" ? "XK" : code === "N. Cyprus" ? "CY" : code === "Somaliland" ? "SO" : code;
+  const destination = `/studio/travels/new?country=${encodeURIComponent(editorCode)}`;
+  return authenticated ? destination : `/register?next=${encodeURIComponent(destination)}`;
 }

@@ -6,7 +6,14 @@ import { SiteHeader } from "@/components/layout/SiteHeader";
 
 export const metadata: Metadata = { title: "계정 만들기" };
 
-export default function RegisterPage() {
+export default async function RegisterPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ next?: string }>;
+}) {
+  const { next } = await searchParams;
+  const nextPath =
+    next?.startsWith("/") && !next.startsWith("//") && !next.includes("\\") ? next : undefined;
   return (
     <>
       <SiteHeader />
@@ -17,7 +24,7 @@ export default function RegisterPage() {
           <p className="auth-card__intro">
             사용자명은 공개 프로필 주소가 됩니다. 이메일은 로그인에만 사용하고 공개하지 않습니다.
           </p>
-          <AuthForm mode="register" />
+          <AuthForm mode="register" nextPath={nextPath} />
         </section>
       </main>
       <SiteFooter />
