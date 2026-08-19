@@ -26,12 +26,12 @@ export function SiteHeader({ username, member }: SiteHeaderProps) {
       <div className="site-shell site-header__inner">
         <Link
           href="/"
-          className="site-wordmark text-content flex items-center gap-3 text-[0.76rem] font-medium tracking-[0.24em]"
+          className="site-wordmark text-content flex items-center"
         >
           <span className="site-wordmark__mark">
             <BrandMark />
           </span>
-          {siteConfig.wordmark}
+          <span className="site-wordmark__text">{siteConfig.wordmark}</span>
         </Link>
         <Suspense fallback={<HeaderNavigationFallback />}>
           <HeaderNavigation username={username} initialMember={member} />

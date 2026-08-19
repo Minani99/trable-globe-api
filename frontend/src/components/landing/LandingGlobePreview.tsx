@@ -9,12 +9,12 @@ export function LandingGlobePreview() {
   const [selectedCode, setSelectedCode] = useState<string | null>(null);
   const [hoveredCountry, setHoveredCountry] = useState<GlobeCountryHover | null>(null);
   const [selectedCountry, setSelectedCountry] = useState<GlobeCountryHover | null>(null);
-  const activeCountry = hoveredCountry ?? selectedCountry;
+  const [centeredCountry, setCenteredCountry] = useState<GlobeCountryHover | null>(null);
+  const activeCountry = hoveredCountry ?? selectedCountry ?? centeredCountry;
   const activePlace = activeCountry ? getWorldLandmarkPlace(activeCountry.code) : null;
 
   const handleSelect = (code: string | null) => {
     setSelectedCode(code);
-    setSelectedCountry(code ? hoveredCountry : null);
   };
 
   return (
@@ -28,6 +28,8 @@ export function LandingGlobePreview() {
               onSelect={handleSelect}
               onHover={() => undefined}
               onCountryHover={setHoveredCountry}
+              onCountryCenter={setCenteredCountry}
+              onCountrySelect={setSelectedCountry}
               mode="world"
             />
           </div>
@@ -60,7 +62,7 @@ export function LandingGlobePreview() {
               <div>
                 <p className="text-content text-[0.88rem] font-medium">세계를 탐색해 보세요</p>
                 <p className="text-content-faint mt-1 text-[0.68rem]">
-                  국가에 마우스를 올리면 대표 장소가 나타납니다.
+                  회전 중인 국가를 누르면 중앙에 고정됩니다.
                 </p>
               </div>
             )}

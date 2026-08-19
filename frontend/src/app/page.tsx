@@ -17,9 +17,9 @@ export default function LandingPage() {
               <span className="landing-title-line landing-title-line--two">하나의 지구본에.</span>
             </h1>
 
-            <p className="text-body landing-reveal landing-reveal--body mt-8 max-w-[44ch] text-[1rem] sm:text-[1.05rem]">
-              방문한 나라는 좌표로, 도시 사이의 이동은 경로로 남습니다. 사진과 메모를
-              더할수록 지구본은 나만의 여행 이야기가 됩니다.
+            <p className="text-body landing-intro landing-reveal landing-reveal--body mt-7 max-w-[40ch]">
+              방문한 나라와 도시, 사진과 메모를 한곳에 모아 나만의 여행 지구본을
+              완성하세요.
             </p>
 
             <div className="landing-reveal landing-reveal--actions mt-10 flex flex-wrap items-center gap-3">
@@ -71,8 +71,8 @@ export default function LandingPage() {
 function Feature({ term, description }: { term: string; description: string }) {
   return (
     <div className="landing-feature">
-      <dt className="text-content text-[0.9rem] font-medium">{term}</dt>
-      <dd className="text-body mt-3 text-[0.86rem]">{description}</dd>
+      <dt className="text-content text-[0.94rem] font-semibold">{term}</dt>
+      <dd className="text-body mt-2.5 text-[0.88rem]">{description}</dd>
     </div>
   );
 }

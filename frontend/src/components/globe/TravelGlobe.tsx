@@ -26,7 +26,10 @@ interface CountryFeature {
   type: "Feature";
   id: string;
   properties: { iso2: string | null; iso3: string | null; nameEn: string; nameKo: string };
-  geometry: unknown;
+  geometry: {
+    type: "Polygon" | "MultiPolygon";
+    coordinates: unknown;
+  };
 }
 
 export interface GlobeCountryHover {
@@ -41,6 +44,8 @@ interface TravelGlobeProps {
   onSelect: (iso2Code: string | null) => void;
   onHover: (iso2Code: string | null) => void;
   onCountryHover?: (country: GlobeCountryHover | null) => void;
+  onCountryCenter?: (country: GlobeCountryHover | null) => void;
+  onCountrySelect?: (country: GlobeCountryHover | null) => void;
   mode?: "travel" | "world";
 }
 
@@ -54,6 +59,8 @@ const ALTITUDE_MAX = 4;
 const INITIAL_VIEW = { lat: 24, lng: 127, altitude: ALTITUDE_DEFAULT } as const;
 const LOADING_INDICATOR_MINIMUM_MS = 650;
 const AUTO_ROTATE_RESUME_DELAY_MS = 6_000;
+const CENTER_HIGHLIGHT_INTERVAL_MS = 180;
+const CENTER_HIGHLIGHT_MAX_DISTANCE_DEGREES = 24;
 
 export function TravelGlobe({
   countries,
@@ -61,6 +68,8 @@ export function TravelGlobe({
   onSelect,
   onHover,
   onCountryHover,
+  onCountryCenter,
+  onCountrySelect,
   mode = "travel",
 }: TravelGlobeProps) {
   const globeRef = useRef<GlobeMethods | undefined>(undefined);
@@ -78,6 +87,7 @@ export function TravelGlobe({
   const [ready, setReady] = useState(false);
   const [autoRotating, setAutoRotating] = useState(false);
   const [hoveredCode, setHoveredCode] = useState<string | null>(null);
+  const [centeredCode, setCenteredCode] = useState<string | null>(null);
   const reduceMotion = usePrefersReducedMotion();
   const colorTheme = useColorTheme();
   const globeTheme = globeThemes[colorTheme];
@@ -154,6 +164,21 @@ export function TravelGlobe({
     countries.forEach((country) => map.set(country.iso2Code, country));
     return map;
   }, [countries]);
+
+  const featureCenters = useMemo(
+    () =>
+      features.flatMap((feature) => {
+        const code = getFeatureCode(feature);
+        const center = getFeatureCenter(feature);
+        return code && center ? [{ code, center, feature }] : [];
+      }),
+    [features],
+  );
+
+  const featureCenterByCode = useMemo(
+    () => new Map(featureCenters.map(({ code, center }) => [code, center])),
+    [featureCenters],
+  );
 
   const maxTravelCount = useMemo(
     () => countries.reduce((max, country) => Math.max(max, country.travelCount), 1),
@@ -313,8 +338,20 @@ export function TravelGlobe({
       const stateTimer = setTimeout(() => setAutoRotating(false), 0);
       return () => clearTimeout(stateTimer);
     }
+    if (isWorldExplorer) {
+      const rotationTimer = setTimeout(startAmbientRotation, 0);
+      return () => clearTimeout(rotationTimer);
+    }
     scheduleAmbientRotation();
-  }, [cancelAmbientRotation, clearRotationResume, reduceMotion, scheduleAmbientRotation, selectedCode]);
+  }, [
+    cancelAmbientRotation,
+    clearRotationResume,
+    isWorldExplorer,
+    reduceMotion,
+    scheduleAmbientRotation,
+    selectedCode,
+    startAmbientRotation,
+  ]);
 
   // Fly to the selected country; return to the overview when the selection clears.
   useEffect(() => {
@@ -325,7 +362,7 @@ export function TravelGlobe({
     const transition = reduceMotion ? 0 : 900;
 
     if (selectedCode === null) {
-      globe.pointOfView(INITIAL_VIEW, transition);
+      if (!isWorldExplorer) globe.pointOfView(INITIAL_VIEW, transition);
       return;
     }
     const country = visitedByCode.get(selectedCode);
@@ -334,8 +371,47 @@ export function TravelGlobe({
         { lat: country.latitude, lng: country.longitude, altitude: ALTITUDE_FOCUSED },
         transition,
       );
+      return;
     }
-  }, [selectedCode, ready, reduceMotion, visitedByCode]);
+    const center = isWorldExplorer ? featureCenterByCode.get(selectedCode) : undefined;
+    if (center) {
+      globe.pointOfView({ ...center, altitude: ALTITUDE_FOCUSED }, transition);
+    }
+  }, [featureCenterByCode, isWorldExplorer, selectedCode, ready, reduceMotion, visitedByCode]);
+
+  // While the globe turns on its own, softly identify the country nearest the camera's
+  // center. The interval is deliberately low-frequency: it feels live without causing a
+  // React render for every WebGL animation frame.
+  useEffect(() => {
+    if (!isWorldExplorer || !ready || !autoRotating || selectedCode !== null) return;
+    let announcedCode: string | null = null;
+
+    const updateCenteredCountry = () => {
+      const view = globeRef.current?.pointOfView();
+      if (!view) return;
+      const nearest = findNearestFeature(featureCenters, view.lat, view.lng);
+      const next = nearest && nearest.distance <= CENTER_HIGHLIGHT_MAX_DISTANCE_DEGREES
+        ? nearest.item
+        : null;
+      const nextCode = next?.code ?? null;
+      if (nextCode === announcedCode) return;
+      announcedCode = nextCode;
+      setCenteredCode(nextCode);
+      onCountryCenter?.(
+        next
+          ? {
+              code: next.code,
+              nameKo: next.feature.properties.nameKo,
+              nameEn: next.feature.properties.nameEn,
+            }
+          : null,
+      );
+    };
+
+    updateCenteredCountry();
+    const interval = setInterval(updateCenteredCountry, CENTER_HIGHLIGHT_INTERVAL_MS);
+    return () => clearInterval(interval);
+  }, [autoRotating, featureCenters, isWorldExplorer, onCountryCenter, ready, selectedCode]);
 
   // Stop rendering when the component goes away, so a navigation cannot leave a
   // requestAnimationFrame loop running against a detached canvas.
@@ -420,12 +496,24 @@ export function TravelGlobe({
       if (code === hoveredCode) {
         return globeTheme.hovered;
       }
+      if (isWorldExplorer && autoRotating && code === centeredCode) {
+        return globeTheme.hovered;
+      }
       if (!visited) {
         return globeTheme.land;
       }
       return visitedColor(visited.travelCount, maxTravelCount, globeTheme);
     },
-    [visitedByCode, selectedCode, hoveredCode, maxTravelCount, globeTheme],
+    [
+      visitedByCode,
+      selectedCode,
+      hoveredCode,
+      isWorldExplorer,
+      autoRotating,
+      centeredCode,
+      maxTravelCount,
+      globeTheme,
+    ],
   );
 
   const altitude = useCallback(
@@ -440,9 +528,12 @@ export function TravelGlobe({
       if (code === hoveredCode) {
         return 0.036;
       }
+      if (isWorldExplorer && autoRotating && code === centeredCode) {
+        return 0.03;
+      }
       return 0.018;
     },
-    [visitedByCode, selectedCode, hoveredCode, isWorldExplorer],
+    [visitedByCode, selectedCode, hoveredCode, isWorldExplorer, autoRotating, centeredCode],
   );
 
   const polygonTooltip = useCallback(
@@ -470,12 +561,32 @@ export function TravelGlobe({
   );
 
   const handlePolygonClick = useCallback((polygon: object) => {
-    const code = getFeatureCode(polygon as CountryFeature);
+    const feature = polygon as CountryFeature;
+    const code = getFeatureCode(feature);
     if (!code || (!isWorldExplorer && !visitedByCode.has(code))) {
       return;
     }
-    onSelectRef.current(selectedRef.current === code ? null : code);
-  }, [visitedByCode, isWorldExplorer]);
+    const nextCode = selectedRef.current === code ? null : code;
+    selectedRef.current = nextCode;
+    clearRotationResume();
+    stopAmbientRotation();
+    onSelectRef.current(nextCode);
+    onCountrySelect?.(
+      nextCode
+        ? { code: nextCode, nameKo: feature.properties.nameKo, nameEn: feature.properties.nameEn }
+        : null,
+    );
+    if (isWorldExplorer && nextCode === null && !reduceMotionRef.current) {
+      setTimeout(startAmbientRotation, 0);
+    }
+  }, [
+    clearRotationResume,
+    isWorldExplorer,
+    onCountrySelect,
+    startAmbientRotation,
+    stopAmbientRotation,
+    visitedByCode,
+  ]);
 
   const handlePolygonHover = useCallback(
     (polygon: object | null) => {
@@ -736,4 +847,95 @@ function escapeHtml(value: string): string {
 
 function getFeatureCode(feature: CountryFeature): string | null {
   return feature.properties.iso2 ?? feature.properties.nameEn ?? null;
+}
+
+interface FeatureCenter {
+  lat: number;
+  lng: number;
+}
+
+function getFeatureCenter(feature: CountryFeature): FeatureCenter | null {
+  const polygons = feature.geometry.type === "Polygon"
+    ? [feature.geometry.coordinates]
+    : feature.geometry.coordinates;
+  if (!Array.isArray(polygons)) return null;
+
+  let largest: { area: number; center: FeatureCenter } | null = null;
+  for (const polygon of polygons) {
+    if (!Array.isArray(polygon) || !Array.isArray(polygon[0])) continue;
+    const candidate = getRingCenter(polygon[0]);
+    if (candidate && (!largest || candidate.area > largest.area)) largest = candidate;
+  }
+  return largest?.center ?? null;
+}
+
+function getRingCenter(ring: unknown[]): { area: number; center: FeatureCenter } | null {
+  const points = ring.filter(
+    (point): point is [number, number] =>
+      Array.isArray(point) && typeof point[0] === "number" && typeof point[1] === "number",
+  );
+  if (points.length < 3) return null;
+
+  const unwrapped: [number, number][] = [];
+  let previousLng = points[0][0];
+  for (const [rawLng, lat] of points) {
+    let lng = rawLng;
+    while (lng - previousLng > 180) lng -= 360;
+    while (lng - previousLng < -180) lng += 360;
+    unwrapped.push([lng, lat]);
+    previousLng = lng;
+  }
+
+  let twiceArea = 0;
+  let weightedLng = 0;
+  let weightedLat = 0;
+  for (let index = 0; index < unwrapped.length; index += 1) {
+    const [x1, y1] = unwrapped[index];
+    const [x2, y2] = unwrapped[(index + 1) % unwrapped.length];
+    const cross = x1 * y2 - x2 * y1;
+    twiceArea += cross;
+    weightedLng += (x1 + x2) * cross;
+    weightedLat += (y1 + y2) * cross;
+  }
+
+  if (Math.abs(twiceArea) < 1e-7) {
+    const [lng, lat] = unwrapped[0];
+    return { area: 0, center: { lat, lng: normalizeLongitude(lng) } };
+  }
+  return {
+    area: Math.abs(twiceArea),
+    center: {
+      lat: weightedLat / (3 * twiceArea),
+      lng: normalizeLongitude(weightedLng / (3 * twiceArea)),
+    },
+  };
+}
+
+function findNearestFeature(
+  features: { code: string; center: FeatureCenter; feature: CountryFeature }[],
+  lat: number,
+  lng: number,
+) {
+  let nearest: { item: (typeof features)[number]; distance: number } | null = null;
+  for (const item of features) {
+    const distance = angularDistanceDegrees(lat, lng, item.center.lat, item.center.lng);
+    if (!nearest || distance < nearest.distance) nearest = { item, distance };
+  }
+  return nearest;
+}
+
+function angularDistanceDegrees(lat1: number, lng1: number, lat2: number, lng2: number): number {
+  const toRadians = Math.PI / 180;
+  const phi1 = lat1 * toRadians;
+  const phi2 = lat2 * toRadians;
+  const deltaPhi = (lat2 - lat1) * toRadians;
+  const deltaLambda = (lng2 - lng1) * toRadians;
+  const a = Math.sin(deltaPhi / 2) ** 2
+    + Math.cos(phi1) * Math.cos(phi2) * Math.sin(deltaLambda / 2) ** 2;
+  const clamped = Math.min(1, Math.max(0, a));
+  return (2 * Math.atan2(Math.sqrt(clamped), Math.sqrt(1 - clamped))) / toRadians;
+}
+
+function normalizeLongitude(lng: number): number {
+  return ((lng + 540) % 360) - 180;
 }

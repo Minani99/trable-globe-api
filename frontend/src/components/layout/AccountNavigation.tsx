@@ -73,7 +73,7 @@ export function AccountNavigation({
   if (compact) {
     return (
       <Link
-        href={member ? "/settings#profile" : "/register"}
+        href={member ? "/settings#profile" : "/login"}
         className={`site-mobile-auth-link${member ? " site-mobile-profile" : ""}`}
         onClick={onNavigate}
       >
@@ -87,7 +87,7 @@ export function AccountNavigation({
             />
             <span>프로필</span>
           </>
-        ) : "시작하기"}
+        ) : "로그인"}
       </Link>
     );
   }
@@ -100,7 +100,7 @@ export function AccountNavigation({
     ) : (
       <div className="site-account-entry">
         <Link href="/login" className="site-account-login">로그인</Link>
-        <Link href="/register" className="site-profile-link site-profile-link--accent">시작하기</Link>
+        <Link href="/register" className="site-profile-link site-profile-link--accent">계정 만들기</Link>
       </div>
     );
   }
@@ -125,14 +125,13 @@ export function AccountNavigation({
           />
           <span>
             <strong>{member.displayName}</strong>
-            <small>@{member.username}</small>
           </span>
         </Link>
         <button
           type="button"
           className="site-account-menu__toggle"
           onClick={() => setMenuOpen((open) => !open)}
-          aria-label="계정 메뉴 열기"
+          aria-label={menuOpen ? "계정 메뉴 닫기" : "계정 메뉴 열기"}
           aria-expanded={menuOpen}
           aria-haspopup="menu"
         >

@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono, Noto_Sans_KR, Noto_Serif_KR } from "next/font/google";
+import { Geist, Geist_Mono, Noto_Sans_KR } from "next/font/google";
 
 import { AppFeedback } from "@/components/common/AppFeedback";
 import { siteConfig } from "@/lib/config";
@@ -32,13 +32,6 @@ const notoSansKr = Noto_Sans_KR({
   preload: false,
 });
 
-const notoSerifKr = Noto_Serif_KR({
-  variable: "--font-noto-serif-kr",
-  weight: ["400", "500"],
-  display: "swap",
-  preload: false,
-});
-
 export const metadata: Metadata = {
   metadataBase: getSiteUrl(),
   applicationName: siteConfig.name,
@@ -67,7 +60,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
     <html
       lang="ko"
       suppressHydrationWarning
-      className={`${geistSans.variable} ${geistMono.variable} ${notoSansKr.variable} ${notoSerifKr.variable} h-full antialiased`}
+      className={`${geistSans.variable} ${geistMono.variable} ${notoSansKr.variable} h-full antialiased`}
     >
       <body className="bg-background text-content flex min-h-full flex-col">
         <script dangerouslySetInnerHTML={{ __html: themeInitScript }} />
