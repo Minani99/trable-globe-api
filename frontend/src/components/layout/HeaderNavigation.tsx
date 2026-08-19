@@ -6,35 +6,35 @@ import { useEffect, useState } from "react";
 
 import { ThemeToggle } from "@/components/theme/ThemeToggle";
 import { AccountNavigation } from "@/components/layout/AccountNavigation";
+import {
+  getCachedAuthMember,
+  loadAuthMember,
+  setCachedAuthMember,
+  subscribeToAuthState,
+} from "@/lib/auth-state";
 import { globePath, profilePath, siteConfig } from "@/lib/config";
 import type { AuthMember } from "@/types";
 
 interface HeaderNavigationProps {
   username?: string;
+  initialMember?: AuthMember | null;
 }
 
-export function HeaderNavigation({ username }: HeaderNavigationProps) {
+export function HeaderNavigation({ username, initialMember }: HeaderNavigationProps) {
   const pathname = usePathname();
   const [menuOpen, setMenuOpen] = useState(false);
-  const [member, setMember] = useState<AuthMember | null | undefined>(undefined);
+  const [member, setMember] = useState<AuthMember | null | undefined>(() =>
+    initialMember !== undefined ? initialMember : getCachedAuthMember(),
+  );
 
   useEffect(() => {
-    let active = true;
-    fetch("/api/auth/me", { headers: { Accept: "application/json" }, cache: "no-store" })
-      .then(async (response) => {
-        if (!active) return;
-        if (!response.ok) {
-          setMember(null);
-          return;
-        }
-        const body = (await response.json()) as { data?: AuthMember };
-        setMember(body.data ?? null);
-      })
-      .catch(() => active && setMember(null));
-    return () => {
-      active = false;
-    };
-  }, []);
+    if (initialMember !== undefined) setCachedAuthMember(initialMember);
+    const unsubscribe = subscribeToAuthState(setMember);
+    if (initialMember === undefined && getCachedAuthMember() === undefined) {
+      void loadAuthMember();
+    }
+    return unsubscribe;
+  }, [initialMember]);
 
   useEffect(() => {
     if (!menuOpen) return;
@@ -51,6 +51,9 @@ export function HeaderNavigation({ username }: HeaderNavigationProps) {
     (pathname === samplePath || pathname.startsWith(`${samplePath}/`)) && !profileExact;
   const aboutActive = pathname === "/about";
   const discoverActive = pathname === "/discover";
+  const showContextProfile = Boolean(
+    username && (member === undefined || member === null || member.username !== username),
+  );
 
   return (
     <div className="site-header-actions">
@@ -76,7 +79,7 @@ export function HeaderNavigation({ username }: HeaderNavigationProps) {
         >
           서비스 소개
         </Link>
-        {username ? (
+        {showContextProfile && username ? (
           <Link
             href={profilePath(username)}
             className="site-profile-link"
@@ -85,13 +88,13 @@ export function HeaderNavigation({ username }: HeaderNavigationProps) {
             @{username}
           </Link>
         ) : null}
-        <AccountNavigation member={member} onLoggedOut={() => setMember(null)} />
+        <AccountNavigation member={member} onLoggedOut={() => setCachedAuthMember(null)} />
       </nav>
 
       <ThemeToggle />
 
       <div className="site-mobile-account">
-        <AccountNavigation member={member} compact onLoggedOut={() => setMember(null)} />
+        <AccountNavigation member={member} compact onLoggedOut={() => setCachedAuthMember(null)} />
       </div>
 
       <button
@@ -135,7 +138,7 @@ export function HeaderNavigation({ username }: HeaderNavigationProps) {
           <span>서비스 소개</span>
           <span aria-hidden="true">↗</span>
         </Link>
-        {username ? (
+        {showContextProfile && username ? (
           <Link
             href={profilePath(username)}
             aria-current={profileExact ? "page" : undefined}
@@ -149,7 +152,7 @@ export function HeaderNavigation({ username }: HeaderNavigationProps) {
           member={member}
           mobile
           onNavigate={() => setMenuOpen(false)}
-          onLoggedOut={() => setMember(null)}
+          onLoggedOut={() => setCachedAuthMember(null)}
         />
       </nav>
     </div>
@@ -163,12 +166,11 @@ export function HeaderNavigationFallback() {
         <Link href={globePath} className="site-nav-link">지구본</Link>
         <Link href="/discover" className="site-nav-link">사람 찾기</Link>
         <Link href="/about" className="site-nav-link">서비스 소개</Link>
-        <Link href="/login" className="site-account-login">로그인</Link>
-        <Link href="/register" className="site-profile-link site-profile-link--accent">시작하기</Link>
+        <span className="site-account-loading" aria-label="계정 정보 불러오는 중" />
       </nav>
       <ThemeToggle />
       <div className="site-mobile-account">
-        <Link href="/register" className="site-mobile-auth-link">시작하기</Link>
+        <span className="site-account-loading is-compact" aria-label="계정 정보 불러오는 중" />
       </div>
     </div>
   );

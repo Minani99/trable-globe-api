@@ -5,6 +5,8 @@ import { useRouter } from "next/navigation";
 import { FormEvent, useState } from "react";
 
 import { ApiError, apiMutation } from "@/lib/api/client";
+import { showFeedback } from "@/components/common/AppFeedback";
+import { setCachedAuthMember } from "@/lib/auth-state";
 import type { AccountActionResult, AuthMember } from "@/types";
 
 export function AccountSettings({ member }: { member: AuthMember }) {
@@ -41,7 +43,9 @@ export function AccountSettings({ member }: { member: AuthMember }) {
     setDeleteStatus(null);
     try {
       await apiMutation<null>("/api/auth/account", "DELETE", { password: formData.get("password") });
-      router.push("/");
+      setCachedAuthMember(null);
+      showFeedback("계정과 여행 기록을 삭제했습니다.", "success");
+      router.replace("/");
       router.refresh();
     } catch (error) {
       setDeleteStatus(error instanceof ApiError ? error.message : "계정을 삭제하지 못했습니다.");

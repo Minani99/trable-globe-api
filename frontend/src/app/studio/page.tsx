@@ -11,13 +11,16 @@ import type { OwnedTravelSummary } from "@/types";
 export const metadata: Metadata = { title: "내 여행 관리", robots: { index: false, follow: false } };
 
 export default async function StudioPage() {
-  const member = await getCurrentMember();
+  const [member, travelRecords] = await Promise.all([
+    getCurrentMember(),
+    authenticatedBackendGet<OwnedTravelSummary[]>("/api/private/travels"),
+  ]);
   if (!member) redirect("/login?next=/studio");
-  const travels = (await authenticatedBackendGet<OwnedTravelSummary[]>("/api/private/travels")) ?? [];
+  const travels = travelRecords ?? [];
 
   return (
     <>
-      <SiteHeader username={member.username} />
+      <SiteHeader username={member.username} member={member} />
       <main id="main" className="studio-page flex-1">
         <div className="site-shell studio-shell">
           <header className="studio-hero">

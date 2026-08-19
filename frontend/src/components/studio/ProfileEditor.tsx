@@ -3,6 +3,8 @@
 import { ChangeEvent, FormEvent, useEffect, useState } from "react";
 
 import { TravelImage } from "@/components/common/TravelImage";
+import { showFeedback } from "@/components/common/AppFeedback";
+import { setCachedAuthMember } from "@/lib/auth-state";
 import { ApiError, apiMutation } from "@/lib/api/client";
 import {
   deleteUploadedPhoto,
@@ -74,6 +76,7 @@ export function ProfileEditor({ member }: { member: AuthMember }) {
       });
       if (result) {
         setSavedMember(result);
+        setCachedAuthMember(result);
         setImageUrl(result.profileImageUrl ?? "");
         setImageFile(null);
         setPreviewUrl(null);
@@ -82,6 +85,7 @@ export function ProfileEditor({ member }: { member: AuthMember }) {
         void deleteUploadedPhoto({ publicUrl: previousImageUrl }).catch(() => undefined);
       }
       setStatus("프로필을 저장했습니다.");
+      showFeedback("프로필 변경사항을 저장했습니다.", "success");
     } catch (error) {
       if (uploaded) {
         void deleteUploadedPhoto({ objectKey: uploaded.objectKey }).catch(() => undefined);

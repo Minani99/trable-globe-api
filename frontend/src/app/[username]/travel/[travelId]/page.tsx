@@ -54,8 +54,9 @@ export default async function TravelDetailPage(
   }
 
   let travel: TravelDetail;
+  let currentMember: Awaited<ReturnType<typeof getCurrentMember>> = null;
   try {
-    travel = await loadTravel(id);
+    [travel, currentMember] = await Promise.all([loadTravel(id), getCurrentMember()]);
   } catch (error) {
     if (error instanceof ApiError && error.isNotFound) {
       notFound();
@@ -95,7 +96,6 @@ export default async function TravelDetailPage(
     ),
   );
   const locationLabel = cityNames.length > 0 ? cityNames.join(" → ") : countryNames.join(" · ");
-  const currentMember = await getCurrentMember();
   const emptySocial: TravelSocial = {
     likeCount: 0,
     likedByCurrentMember: false,
@@ -109,7 +109,7 @@ export default async function TravelDetailPage(
 
   return (
     <>
-      <SiteHeader username={travel.owner.username} />
+      <SiteHeader username={travel.owner.username} member={currentMember} />
 
       <main id="main" className="travel-detail-page flex-1">
         <article className="site-shell">

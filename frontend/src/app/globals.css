@@ -117,6 +117,71 @@ body {
     color 0.35s ease;
 }
 
+.app-feedback-region {
+  position: fixed;
+  right: clamp(1rem, 3vw, 2rem);
+  bottom: clamp(1rem, 3vw, 2rem);
+  z-index: 120;
+  pointer-events: none;
+}
+
+.app-feedback {
+  display: grid;
+  min-width: min(22rem, calc(100vw - 2rem));
+  max-width: 27rem;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 0.7rem;
+  padding: 0.75rem 0.8rem;
+  border: 1px solid var(--border-strong);
+  border-radius: 0.9rem;
+  background: color-mix(in srgb, var(--surface) 96%, transparent);
+  box-shadow: 0 1rem 3rem rgba(20, 42, 49, 0.18);
+  color: var(--text-primary);
+  font-size: 0.78rem;
+  line-height: 1.5;
+  pointer-events: auto;
+  backdrop-filter: blur(20px);
+  animation: feedback-enter 0.2s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.app-feedback__icon {
+  display: grid;
+  width: 1.65rem;
+  height: 1.65rem;
+  place-items: center;
+  border-radius: 50%;
+  background: var(--accent-soft);
+  color: var(--accent-strong);
+  font-size: 0.72rem;
+  font-weight: 750;
+}
+
+.app-feedback.is-error {
+  border-color: var(--accent-border);
+}
+
+.app-feedback > button {
+  display: grid;
+  width: 1.8rem;
+  height: 1.8rem;
+  place-items: center;
+  border-radius: 50%;
+  color: var(--text-tertiary);
+  font-size: 1rem;
+}
+
+.app-feedback > button:hover,
+.app-feedback > button:focus-visible {
+  background: var(--surface-hover);
+  color: var(--text-primary);
+}
+
+@keyframes feedback-enter {
+  from { opacity: 0; transform: translateY(0.6rem) scale(0.98); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
 .site-shell {
   width: 100%;
   max-width: 1400px;
@@ -2610,22 +2675,141 @@ body {
   gap: 0.7rem;
 }
 
-.site-account-nav > button {
-  color: var(--text-tertiary);
-  font-size: 0.7rem;
-  transition: color 0.2s ease;
+.site-account-menu {
+  position: relative;
+  display: flex;
+  align-items: stretch;
 }
 
-.site-account-nav > button:hover {
+.site-account-menu .site-member-profile {
+  border-radius: 999px 0 0 999px;
+  border-right: 0;
+}
+
+.site-account-menu__toggle {
+  display: grid;
+  width: 2rem;
+  min-height: 2.45rem;
+  place-items: center;
+  border: 1px solid var(--border-strong);
+  border-left: 0;
+  border-radius: 0 999px 999px 0;
+  color: var(--text-tertiary);
+  transition: color 0.16s ease, border-color 0.16s ease, background-color 0.16s ease;
+}
+
+.site-account-menu__toggle span {
+  display: inline-block;
+  transform: translateY(-0.12rem);
+  transition: transform 0.16s ease;
+}
+
+.site-account-menu:hover .site-member-profile,
+.site-account-menu.is-open .site-member-profile,
+.site-account-menu:hover .site-account-menu__toggle,
+.site-account-menu.is-open .site-account-menu__toggle {
+  border-color: var(--accent-border);
+  background: var(--accent-soft);
   color: var(--accent-strong);
 }
 
+.site-account-menu.is-open .site-account-menu__toggle span {
+  transform: translateY(0.12rem) rotate(180deg);
+}
+
+.site-account-popover {
+  position: absolute;
+  top: calc(100% + 0.65rem);
+  right: 0;
+  z-index: 70;
+  width: 15.5rem;
+  padding: 0.45rem;
+  border: 1px solid var(--border);
+  border-radius: 1rem;
+  background: color-mix(in srgb, var(--surface) 96%, transparent);
+  box-shadow: 0 1.15rem 3rem rgba(25, 56, 64, 0.18);
+  backdrop-filter: blur(22px);
+  animation: tg-fade-up 0.16s ease both;
+}
+
+.site-account-popover__identity {
+  display: grid;
+  gap: 0.15rem;
+  padding: 0.75rem 0.8rem 0.8rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.site-account-popover__identity strong {
+  color: var(--text-primary);
+  font-size: 0.8rem;
+}
+
+.site-account-popover__identity span {
+  color: var(--text-tertiary);
+  font-size: 0.65rem;
+}
+
+.site-account-popover > a,
+.site-account-popover__logout {
+  display: flex;
+  width: 100%;
+  min-height: 2.65rem;
+  align-items: center;
+  justify-content: space-between;
+  padding-inline: 0.8rem;
+  border-radius: 0.7rem;
+  color: var(--text-secondary);
+  font-size: 0.74rem;
+  text-align: left;
+  transition: color 0.14s ease, background-color 0.14s ease;
+}
+
+.site-account-popover > a:hover,
+.site-account-popover > a:focus-visible {
+  background: var(--surface-hover);
+  color: var(--text-primary);
+}
+
+.site-account-popover__logout {
+  margin-top: 0.25rem;
+  border-top: 1px solid var(--border);
+  color: var(--accent-strong);
+  font-weight: 600;
+}
+
+.site-account-popover__logout:hover,
+.site-account-popover__logout:focus-visible {
+  background: var(--accent-soft);
+}
+
+.site-account-popover__logout:disabled,
+.site-mobile-menu__button:disabled {
+  cursor: wait;
+  opacity: 0.6;
+}
+
 .site-account-loading {
-  width: 4rem;
-  height: 1.7rem;
+  position: relative;
+  display: inline-block;
+  width: 7.2rem;
+  height: 2.45rem;
+  overflow: hidden;
   border-radius: 999px;
   background: var(--surface-raised);
-  animation: studio-pulse 1.4s ease-in-out infinite;
+}
+
+.site-account-loading::after {
+  position: absolute;
+  inset: 0;
+  content: "";
+  background: linear-gradient(100deg, transparent 15%, rgba(255, 255, 255, 0.48) 45%, transparent 75%);
+  transform: translateX(-100%);
+  animation: account-shimmer 1.05s ease-in-out infinite;
+}
+
+.site-account-loading.is-compact {
+  width: 4.9rem;
+  height: 2.25rem;
 }
 
 .site-account-loading.is-mobile {
@@ -2647,6 +2831,15 @@ body {
   color: var(--text-secondary);
   font-size: 0.84rem;
   text-align: left;
+}
+
+.site-mobile-menu__button.is-logout {
+  color: var(--accent-strong);
+  font-weight: 600;
+}
+
+@keyframes account-shimmer {
+  to { transform: translateX(100%); }
 }
 
 .auth-page {
@@ -2785,6 +2978,33 @@ body {
 
 .auth-form > button {
   margin-top: 0.45rem;
+  gap: 0.65rem;
+}
+
+.auth-form__button-label {
+  line-height: 1;
+}
+
+.action-spinner {
+  display: inline-grid;
+  width: 1rem;
+  height: 1rem;
+  flex: 0 0 auto;
+  place-items: center;
+  border: 1.5px solid rgba(255, 255, 255, 0.4);
+  border-top-color: #fff;
+  border-radius: 50%;
+  font-size: 0.65rem;
+  animation: action-spin 0.65s linear infinite;
+}
+
+.action-spinner.is-complete {
+  border-color: transparent;
+  animation: none;
+}
+
+@keyframes action-spin {
+  to { transform: rotate(360deg); }
 }
 
 .auth-form > button:hover,

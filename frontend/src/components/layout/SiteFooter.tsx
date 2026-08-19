@@ -1,5 +1,6 @@
 import Link from "next/link";
 
+import { FooterAccountLinks } from "@/components/layout/FooterAccountLinks";
 import { globePath, siteConfig } from "@/lib/config";
 
 export function SiteFooter({ compact = false }: { compact?: boolean }) {
@@ -22,16 +23,7 @@ export function SiteFooter({ compact = false }: { compact?: boolean }) {
                 Travel Globe 소개
               </Link>
             </li>
-            <li>
-              <Link className="transition-colors hover:text-[var(--text-primary)]" href="/register">
-                시작하기
-              </Link>
-            </li>
-            <li>
-              <Link className="transition-colors hover:text-[var(--text-primary)]" href="/login">
-                로그인
-              </Link>
-            </li>
+            <FooterAccountLinks />
           </ul>
         </nav>
       </div>

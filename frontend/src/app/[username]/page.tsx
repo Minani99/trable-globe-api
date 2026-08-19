@@ -75,7 +75,7 @@ export default async function ProfilePage(props: PageProps<"/[username]">) {
 
   return (
     <>
-      <SiteHeader username={profile.username} />
+      <SiteHeader username={profile.username} member={viewer} />
       <main id="main" className="flex-1">
         <ProfileExperience
           profile={profile}

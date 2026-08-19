@@ -21,7 +21,7 @@ export default async function DiscoverPage() {
 
   return (
     <>
-      <SiteHeader username={member?.username} />
+      <SiteHeader username={member?.username} member={member} />
       <main id="main" className="discover-page flex-1">
         <div className="site-shell discover-shell">
           <header className="discover-hero">

@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono, Noto_Sans_KR, Noto_Serif_KR } from "next/font/google";
 
+import { AppFeedback } from "@/components/common/AppFeedback";
 import { siteConfig } from "@/lib/config";
 import { getSiteUrl } from "@/lib/site-url";
 import "./globals.css";
@@ -73,6 +74,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         <a className="skip-link" href="#main">
           본문으로 건너뛰기
         </a>
+        <AppFeedback />
         {children}
       </body>
     </html>

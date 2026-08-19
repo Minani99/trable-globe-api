@@ -2,8 +2,10 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { FormEvent, useState } from "react";
+import { FormEvent, useEffect, useState } from "react";
 
+import { showFeedback } from "@/components/common/AppFeedback";
+import { setCachedAuthMember } from "@/lib/auth-state";
 import { apiMutation, ApiError } from "@/lib/api/client";
 import type { AuthMember } from "@/types";
 
@@ -11,7 +13,13 @@ export function AuthForm({ mode, nextPath }: { mode: "login" | "register"; nextP
   const router = useRouter();
   const [error, setError] = useState<string | null>(null);
   const [pending, setPending] = useState(false);
+  const [completed, setCompleted] = useState(false);
   const isRegister = mode === "register";
+  const destination = nextPath ?? "/studio";
+
+  useEffect(() => {
+    router.prefetch(destination);
+  }, [destination, router]);
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -32,7 +40,15 @@ export function AuthForm({ mode, nextPath }: { mode: "login" | "register"; nextP
       if (!member) {
         throw new ApiError(500, "계정 정보를 확인할 수 없습니다.");
       }
-      router.push(nextPath ?? "/studio");
+      setCachedAuthMember(member);
+      setCompleted(true);
+      showFeedback(
+        isRegister
+          ? `${member.displayName}님의 여행 지구본이 준비됐어요.`
+          : `${member.displayName}님, 다시 만나 반가워요.`,
+        "success",
+      );
+      router.replace(destination);
       router.refresh();
     } catch (caught) {
       setError(caught instanceof ApiError ? caught.message : "요청을 처리하지 못했습니다.");
@@ -81,8 +97,11 @@ export function AuthForm({ mode, nextPath }: { mode: "login" | "register"; nextP
 
       {error ? <p className="auth-form__error" role="alert">{error}</p> : null}
       {!isRegister ? <Link className="auth-form__forgot" href="/forgot-password">비밀번호를 잊으셨나요?</Link> : null}
-      <button type="submit" disabled={pending}>
-        {pending ? "처리 중…" : isRegister ? "내 지구본 시작하기" : "로그인"}
+      <button type="submit" disabled={pending || completed} aria-busy={pending || completed}>
+        <span className="auth-form__button-label">
+          {completed ? "완료 · 이동 중" : pending ? "안전하게 확인 중…" : isRegister ? "내 지구본 시작하기" : "로그인"}
+        </span>
+        {(pending || completed) ? <span className={`action-spinner${completed ? " is-complete" : ""}`} aria-hidden="true">{completed ? "✓" : ""}</span> : null}
       </button>
 
       <p className="auth-form__switch">

@@ -19,7 +19,7 @@ export default async function SettingsPage() {
 
   return (
     <>
-      <SiteHeader username={member.username} />
+      <SiteHeader username={member.username} member={member} />
       <main id="main" className="studio-page settings-page flex-1">
         <div className="site-shell studio-shell">
           <nav aria-label="현재 위치" className="studio-breadcrumb">
