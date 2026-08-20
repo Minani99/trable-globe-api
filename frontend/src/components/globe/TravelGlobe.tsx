@@ -61,6 +61,8 @@ const LOADING_INDICATOR_MINIMUM_MS = 650;
 const AUTO_ROTATE_RESUME_DELAY_MS = 6_000;
 const CENTER_HIGHLIGHT_INTERVAL_MS = 180;
 const CENTER_HIGHLIGHT_MAX_DISTANCE_DEGREES = 24;
+/** Makes small countries tappable without turning broad ocean taps into selections. */
+const WORLD_SURFACE_SNAP_DISTANCE_DEGREES = 11;
 
 export function TravelGlobe({
   countries,
@@ -561,8 +563,7 @@ export function TravelGlobe({
     [visitedByCode, isWorldExplorer, selectedCode],
   );
 
-  const handlePolygonClick = useCallback((polygon: object) => {
-    const feature = polygon as CountryFeature;
+  const selectWorldFeature = useCallback((feature: CountryFeature) => {
     const code = getFeatureCode(feature);
     if (!code || (!isWorldExplorer && !visitedByCode.has(code))) {
       return;
@@ -591,6 +592,17 @@ export function TravelGlobe({
     stopAmbientRotation,
     visitedByCode,
   ]);
+
+  const handlePolygonClick = useCallback((polygon: object) => {
+    selectWorldFeature(polygon as CountryFeature);
+  }, [selectWorldFeature]);
+
+  const handleGlobeClick = useCallback((coords: { lat: number; lng: number }) => {
+    if (!isWorldExplorer) return;
+    const nearest = findNearestFeature(featureCenters, coords.lat, coords.lng);
+    if (!nearest || nearest.distance > WORLD_SURFACE_SNAP_DISTANCE_DEGREES) return;
+    selectWorldFeature(nearest.item.feature);
+  }, [featureCenters, isWorldExplorer, selectWorldFeature]);
 
   const handlePolygonHover = useCallback(
     (polygon: object | null) => {
@@ -739,6 +751,7 @@ export function TravelGlobe({
             polygonsTransitionDuration={reduceMotion ? 0 : 320}
             onPolygonClick={handlePolygonClick}
             onPolygonHover={handlePolygonHover}
+            onGlobeClick={handleGlobeClick}
             htmlElementsData={markerData}
             htmlLat={(d: object) => (d as VisitedCountry).latitude}
             htmlLng={(d: object) => (d as VisitedCountry).longitude}

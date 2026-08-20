@@ -22,6 +22,7 @@ export function TravelSocialPanel({
   const [social, setSocial] = useState(initialSocial);
   const [pendingAction, setPendingAction] = useState<string | null>(null);
   const [status, setStatus] = useState<string | null>(null);
+  const [commentsOpen, setCommentsOpen] = useState(false);
   const loginPath = `/login?next=${encodeURIComponent(travelPath(ownerUsername, travelId))}`;
 
   async function mutate(path: string, method: "POST" | "DELETE", body?: unknown) {
@@ -69,94 +70,110 @@ export function TravelSocialPanel({
           <p className="eyebrow">Travel conversation</p>
           <h2 id="travel-social-heading">여행 이야기를 나눠요</h2>
         </div>
-        {currentMember ? (
+        <div className="travel-social__actions">
           <button
             type="button"
-            className={`travel-social__like${social.likedByCurrentMember ? " is-liked" : ""}`}
-            onClick={toggleLike}
-            disabled={pendingAction !== null}
-            aria-pressed={social.likedByCurrentMember}
+            className="travel-social__comment-toggle"
+            aria-expanded={commentsOpen}
+            aria-controls="travel-comments"
+            onClick={() => setCommentsOpen((open) => !open)}
           >
-            <span aria-hidden="true">{social.likedByCurrentMember ? "♥" : "♡"}</span>
-            좋아요 {social.likeCount}
+            <span aria-hidden="true">{commentsOpen ? "−" : "+"}</span>
+            댓글 {social.commentCount}
           </button>
-        ) : (
-          <Link href={loginPath} className="travel-social__like" aria-label="로그인하고 좋아요 남기기">
-            <span aria-hidden="true">♡</span> 좋아요 {social.likeCount}
-          </Link>
-        )}
-      </div>
-
-      {currentMember ? (
-        <form className="travel-social__composer" onSubmit={addComment}>
-          <TravelImage
-            src={currentMember.profileImageUrl}
-            alt={`${currentMember.displayName} 프로필 이미지`}
-            fallbackLabel={currentMember.username.slice(0, 2)}
-            className="travel-social__avatar"
-          />
-          <label>
-            <span className="sr-only">댓글</span>
-            <textarea name="content" rows={2} maxLength={500} placeholder="여행에서 궁금한 점이나 반가운 마음을 남겨보세요." required />
-          </label>
-          <button type="submit" disabled={pendingAction !== null}>
-            {pendingAction === "comment" ? "남기는 중…" : "댓글 남기기"}
-          </button>
-        </form>
-      ) : (
-        <div className="travel-social__guest">
-          <p>로그인하고 이 여행에 좋아요와 댓글을 남겨보세요.</p>
-          <Link href={loginPath}>로그인하고 대화 참여하기 →</Link>
+          {currentMember ? (
+            <button
+              type="button"
+              className={`travel-social__like${social.likedByCurrentMember ? " is-liked" : ""}`}
+              onClick={toggleLike}
+              disabled={pendingAction !== null}
+              aria-pressed={social.likedByCurrentMember}
+            >
+              <span aria-hidden="true">{social.likedByCurrentMember ? "♥" : "♡"}</span>
+              좋아요 {social.likeCount}
+            </button>
+          ) : (
+            <Link href={loginPath} className="travel-social__like" aria-label="로그인하고 좋아요 남기기">
+              <span aria-hidden="true">♡</span> 좋아요 {social.likeCount}
+            </Link>
+          )}
         </div>
-      )}
+      </div>
 
       {status ? <p className="travel-social__status" role="alert">{status}</p> : null}
 
-      <div className="travel-social__comments">
-        <div className="travel-social__count">
-          <span>댓글</span>
-          <strong>{social.commentCount}</strong>
-          {social.commentCount > social.comments.length ? <small>최근 {social.comments.length}개</small> : null}
-        </div>
-        {social.comments.length ? (
-          <ol>
-            {social.comments.map((comment) => (
-              <li key={comment.id}>
-                <Link href={profilePath(comment.author.username)} aria-label={`${comment.author.displayName} 프로필 보기`}>
-                  <TravelImage
-                    src={comment.author.profileImageUrl}
-                    alt={`${comment.author.displayName} 프로필 이미지`}
-                    fallbackLabel={comment.author.username.slice(0, 2)}
-                    className="travel-social__avatar"
-                  />
-                </Link>
-                <div>
-                  <div className="travel-social__comment-meta">
-                    <Link href={profilePath(comment.author.username)}>
-                      <strong>{comment.author.displayName}</strong>
-                      <span>@{comment.author.username}</span>
+      {commentsOpen ? (
+        <div id="travel-comments" className="travel-social__body">
+          {currentMember ? (
+            <form className="travel-social__composer" onSubmit={addComment}>
+              <TravelImage
+                src={currentMember.profileImageUrl}
+                alt={`${currentMember.displayName} 프로필 이미지`}
+                fallbackLabel={currentMember.username.slice(0, 2)}
+                className="travel-social__avatar"
+              />
+              <label>
+                <span className="sr-only">댓글</span>
+                <textarea name="content" rows={2} maxLength={500} placeholder="여행에서 궁금한 점이나 반가운 마음을 남겨보세요." required />
+              </label>
+              <button type="submit" disabled={pendingAction !== null}>
+                {pendingAction === "comment" ? "남기는 중…" : "댓글 남기기"}
+              </button>
+            </form>
+          ) : (
+            <div className="travel-social__guest">
+              <p>로그인하고 이 여행에 좋아요와 댓글을 남겨보세요.</p>
+              <Link href={loginPath}>로그인하고 대화 참여하기 →</Link>
+            </div>
+          )}
+
+          <div className="travel-social__comments">
+            <div className="travel-social__count">
+              <span>댓글</span>
+              <strong>{social.commentCount}</strong>
+              {social.commentCount > social.comments.length ? <small>최근 {social.comments.length}개</small> : null}
+            </div>
+            {social.comments.length ? (
+              <ol>
+                {social.comments.map((comment) => (
+                  <li key={comment.id}>
+                    <Link href={profilePath(comment.author.username)} aria-label={`${comment.author.displayName} 프로필 보기`}>
+                      <TravelImage
+                        src={comment.author.profileImageUrl}
+                        alt={`${comment.author.displayName} 프로필 이미지`}
+                        fallbackLabel={comment.author.username.slice(0, 2)}
+                        className="travel-social__avatar"
+                      />
                     </Link>
-                    <time dateTime={comment.createdAt}>{formatCommentDate(comment.createdAt)}</time>
-                  </div>
-                  <p>{comment.content}</p>
-                </div>
-                {comment.canDelete ? (
-                  <button
-                    type="button"
-                    onClick={() => deleteComment(comment.id)}
-                    disabled={pendingAction !== null}
-                    aria-label={`${comment.author.displayName}의 댓글 삭제`}
-                  >
-                    {pendingAction === `delete-${comment.id}` ? "삭제 중" : "삭제"}
-                  </button>
-                ) : null}
-              </li>
-            ))}
-          </ol>
-        ) : (
-          <p className="travel-social__empty">아직 댓글이 없습니다. 첫 이야기를 건네보세요.</p>
-        )}
-      </div>
+                    <div>
+                      <div className="travel-social__comment-meta">
+                        <Link href={profilePath(comment.author.username)}>
+                          <strong>{comment.author.displayName}</strong>
+                          <span>@{comment.author.username}</span>
+                        </Link>
+                        <time dateTime={comment.createdAt}>{formatCommentDate(comment.createdAt)}</time>
+                      </div>
+                      <p>{comment.content}</p>
+                    </div>
+                    {comment.canDelete ? (
+                      <button
+                        type="button"
+                        onClick={() => deleteComment(comment.id)}
+                        disabled={pendingAction !== null}
+                        aria-label={`${comment.author.displayName}의 댓글 삭제`}
+                      >
+                        {pendingAction === `delete-${comment.id}` ? "삭제 중" : "삭제"}
+                      </button>
+                    ) : null}
+                  </li>
+                ))}
+              </ol>
+            ) : (
+              <p className="travel-social__empty">아직 댓글이 없습니다. 첫 이야기를 건네보세요.</p>
+            )}
+          </div>
+        </div>
+      ) : null}
     </section>
   );
 }

@@ -1,25 +1,26 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useEffect, useSyncExternalStore } from "react";
 
 import {
   getCachedAuthMember,
   loadAuthMember,
   subscribeToAuthState,
 } from "@/lib/auth-state";
-import type { AuthMember } from "@/types";
 
 const linkClass = "transition-colors hover:text-[var(--text-primary)]";
 
 export function FooterAccountLinks() {
-  const [member, setMember] = useState<AuthMember | null | undefined>(getCachedAuthMember);
+  const member = useSyncExternalStore(
+    subscribeToAuthState,
+    getCachedAuthMember,
+    () => undefined,
+  );
 
   useEffect(() => {
-    const unsubscribe = subscribeToAuthState(setMember);
-    if (getCachedAuthMember() === undefined) void loadAuthMember();
-    return unsubscribe;
-  }, []);
+    if (member === undefined) void loadAuthMember();
+  }, [member]);
 
   if (member === undefined) return null;
 

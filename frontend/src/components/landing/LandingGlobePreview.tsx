@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useSyncExternalStore } from "react";
 
 import { TravelGlobe, type GlobeCountryHover } from "@/components/globe/TravelGlobe";
 import {
@@ -10,22 +10,23 @@ import {
   subscribeToAuthState,
 } from "@/lib/auth-state";
 import { countryFlag, getWorldLandmarkPlace } from "@/lib/worldLandmarks";
-import type { AuthMember } from "@/types";
 
 export function LandingGlobePreview() {
   const [selectedCode, setSelectedCode] = useState<string | null>(null);
   const [hoveredCountry, setHoveredCountry] = useState<GlobeCountryHover | null>(null);
   const [selectedCountry, setSelectedCountry] = useState<GlobeCountryHover | null>(null);
   const [centeredCountry, setCenteredCountry] = useState<GlobeCountryHover | null>(null);
-  const [member, setMember] = useState<AuthMember | null | undefined>(() => getCachedAuthMember());
+  const member = useSyncExternalStore(
+    subscribeToAuthState,
+    getCachedAuthMember,
+    () => undefined,
+  );
   const activeCountry = selectedCountry ?? hoveredCountry ?? centeredCountry;
   const activePlace = activeCountry ? getWorldLandmarkPlace(activeCountry.code) : null;
 
   useEffect(() => {
-    const unsubscribe = subscribeToAuthState(setMember);
-    if (getCachedAuthMember() === undefined) void loadAuthMember();
-    return unsubscribe;
-  }, []);
+    if (member === undefined) void loadAuthMember();
+  }, [member]);
 
   const handleSelect = (code: string | null) => {
     setSelectedCode(code);
