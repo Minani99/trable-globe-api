@@ -20,12 +20,17 @@ test("연도 링크를 열고 바꾸면 지구본, 기록, 리캡과 공유 주�
   expect((await ogImage.body()).byteLength).toBeGreaterThan(20_000);
   await expect(yearFilter.getByRole("button", { name: "2025" })).toHaveAttribute("aria-pressed", "true");
   await expect(page.getByRole("heading", { name: "2025년, 내가 만든 여행 세계" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "그해의 여행 리듬" })).toBeVisible();
+  await expect(page.locator(".travel-recap__month-chart .is-active")).toHaveCount(3);
+  await expect(page.locator(".travel-recap__cities li")).toHaveCount(3);
   await expect(page.locator(".travel-recap__memories a")).toHaveCount(3);
   await expect(page.locator(".travel-card")).toHaveCount(3);
 
   await yearFilter.getByRole("button", { name: "2026" }).click();
   await expect(page).toHaveURL(/\/traveler\?year=2026$/);
   await expect(page.getByRole("heading", { name: "2026년, 내가 만든 여행 세계" })).toBeVisible();
+  await expect(page.locator(".travel-recap__month-chart .is-active")).toHaveCount(2);
+  await expect(page.locator(".travel-recap__cities li")).toHaveCount(2);
   await expect(page.locator(".travel-recap__memories a")).toHaveCount(2);
   await expect(page.locator(".travel-card")).toHaveCount(2);
   await expect(countryList.getByRole("button", { name: /대만/ })).toBeVisible();
@@ -34,10 +39,35 @@ test("연도 링크를 열고 바꾸면 지구본, 기록, 리캡과 공유 주�
   await expect(page.locator("#timeline-2026")).toBeVisible();
   await expect(page.locator("#timeline-2025")).toHaveCount(0);
 
-  const recapShare = page.locator(".profile-share--recap");
-  await recapShare.getByRole("button", { name: "2026 리캡 공유" }).click();
-  await expect(recapShare.getByRole("status")).toHaveText("링크를 복사했습니다.");
+  const recapActions = page.locator(".recap-actions");
+  const downloadPromise = page.waitForEvent("download");
+  await recapActions.getByRole("button", { name: "이미지 저장" }).click();
+  const download = await downloadPromise;
+  expect(download.suggestedFilename()).toBe("travel-globe-traveler-2026.png");
+  await expect(recapActions.getByRole("status")).toHaveText("리캡 이미지를 저장했습니다.");
+
+  await recapActions.getByRole("button", { name: "리캡 공유" }).click();
+  await expect(recapActions.getByRole("status")).toHaveText("리캡 링크를 복사했습니다.");
   await expect.poll(() => page.evaluate(() => navigator.clipboard.readText())).toContain("/traveler?year=2026");
+
+  await page.evaluate(() => {
+    const testWindow = window as typeof window & { sharedRecapFilename?: string };
+    Object.defineProperty(navigator, "canShare", {
+      configurable: true,
+      value: (data: ShareData) => Boolean(data.files?.length),
+    });
+    Object.defineProperty(navigator, "share", {
+      configurable: true,
+      value: async (data: ShareData) => {
+        testWindow.sharedRecapFilename = data.files?.[0]?.name;
+      },
+    });
+  });
+  await recapActions.getByRole("button", { name: "리캡 공유" }).click();
+  await expect(recapActions.getByRole("status")).toHaveText("리캡 이미지를 공유했습니다.");
+  await expect.poll(() => page.evaluate(() => (
+    window as typeof window & { sharedRecapFilename?: string }
+  ).sharedRecapFilename)).toBe("travel-globe-traveler-2026.png");
 
   await yearFilter.getByRole("button", { name: "전체" }).click();
   await expect(page).toHaveURL(/\/traveler$/);

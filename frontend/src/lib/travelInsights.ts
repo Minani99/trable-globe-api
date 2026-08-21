@@ -13,8 +13,27 @@ export interface TravelRecap {
   latestTravel: TravelSummary | null;
   longestTravel: TravelSummary | null;
   featuredTravels: TravelSummary[];
+  monthSummaries: TravelMonthSummary[];
+  cityHighlights: TravelCityHighlight[];
   topCountry: TravelSummary["countries"][number] | null;
   topCountryVisits: number;
+}
+
+export interface TravelMonthSummary {
+  month: number;
+  travelCount: number;
+  travelDays: number;
+  countryCount: number;
+}
+
+export interface TravelCityHighlight {
+  id: number;
+  nameKo: string;
+  nameEn: string;
+  countryNameKo: string | null;
+  visitCount: number;
+  travelDays: number;
+  latestTravelId: number;
 }
 
 export function travelYears(travels: TravelSummary[]): number[] {
@@ -35,9 +54,35 @@ export function buildTravelRecap(travels: TravelSummary[], year: number | null):
   const countries = new Map<string, TravelSummary["countries"][number]>();
   const countryVisits = new Map<string, number>();
   const cities = new Set<number>();
+  const monthAccumulators = Array.from({ length: 12 }, (_, index) => ({
+    month: index + 1,
+    travelCount: 0,
+    travelDays: 0,
+    countries: new Set<string>(),
+  }));
+  const cityAccumulators = new Map<number, TravelCityHighlight>();
 
   for (const travel of ordered) {
-    if (travel.primaryCity) cities.add(travel.primaryCity.id);
+    const month = Number(travel.startDate.slice(5, 7));
+    const monthAccumulator = monthAccumulators[month - 1];
+    if (monthAccumulator) {
+      monthAccumulator.travelCount += 1;
+      monthAccumulator.travelDays += travel.durationDays;
+      travel.countries.forEach((country) => monthAccumulator.countries.add(country.iso2Code));
+    }
+    if (travel.primaryCity) {
+      cities.add(travel.primaryCity.id);
+      const existingCity = cityAccumulators.get(travel.primaryCity.id);
+      cityAccumulators.set(travel.primaryCity.id, {
+        id: travel.primaryCity.id,
+        nameKo: travel.primaryCity.nameKo,
+        nameEn: travel.primaryCity.nameEn,
+        countryNameKo: travel.primaryCountry?.nameKo ?? existingCity?.countryNameKo ?? null,
+        visitCount: (existingCity?.visitCount ?? 0) + 1,
+        travelDays: (existingCity?.travelDays ?? 0) + travel.durationDays,
+        latestTravelId: travel.id,
+      });
+    }
     for (const country of travel.countries) {
       countries.set(country.iso2Code, country);
       countryVisits.set(country.iso2Code, (countryVisits.get(country.iso2Code) ?? 0) + 1);
@@ -65,6 +110,17 @@ export function buildTravelRecap(travels: TravelSummary[], year: number | null):
     latestTravel: ordered.at(-1) ?? null,
     longestTravel,
     featuredTravels: [...ordered].reverse().slice(0, 3),
+    monthSummaries: monthAccumulators.map(({ countries: monthCountries, ...summary }) => ({
+      ...summary,
+      countryCount: monthCountries.size,
+    })),
+    cityHighlights: [...cityAccumulators.values()]
+      .sort((left, right) => (
+        right.visitCount - left.visitCount
+        || right.travelDays - left.travelDays
+        || left.nameKo.localeCompare(right.nameKo, "ko")
+      ))
+      .slice(0, 3),
     topCountry: topCountryEntry ? countries.get(topCountryEntry[0]) ?? null : null,
     topCountryVisits: topCountryEntry?.[1] ?? 0,
   };
