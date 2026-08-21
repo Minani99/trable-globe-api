@@ -114,8 +114,58 @@ export function countriesAtMoment(
   });
 }
 
+export function countriesForTravels(
+  countries: VisitedCountry[],
+  travels: TravelSummary[],
+): VisitedCountry[] {
+  return countries.flatMap((country) => {
+    const matching = travels.filter((travel) => (
+      travel.countries.some((candidate) => candidate.iso2Code === country.iso2Code)
+    ));
+    if (matching.length === 0) return [];
+
+    const primaryCities = new Set(
+      matching.flatMap((travel) => (
+        travel.primaryCountry?.iso2Code === country.iso2Code && travel.primaryCity
+          ? [travel.primaryCity.id]
+          : []
+      )),
+    );
+    const lastVisitedAt = matching.reduce(
+      (latest, travel) => travel.endDate > latest ? travel.endDate : latest,
+      matching[0].endDate,
+    );
+
+    return [{
+      ...country,
+      travelCount: matching.length,
+      cityCount: primaryCities.size,
+      lastVisitedAt,
+    }];
+  });
+}
+
 export function arcsAtMoment(timeline: GlobeTimeline, momentIndex: number): GlobeRouteArc[] {
   return timeline.arcs.filter((arc) => arc.momentIndex <= momentIndex);
+}
+
+export function distanceForTravelsKm(travels: TravelSummary[]): number {
+  const orderedTravels = [...travels].sort((left, right) => (
+    left.startDate.localeCompare(right.startDate) || left.id - right.id
+  ));
+  let previousPoint: RoutePoint | null = null;
+  let distanceKm = 0;
+
+  for (const travel of orderedTravels) {
+    for (const point of routePointsForTravel(travel)) {
+      if (previousPoint && !samePoint(previousPoint, point)) {
+        distanceKm += haversineDistanceKm(previousPoint, point);
+      }
+      previousPoint = point;
+    }
+  }
+
+  return distanceKm;
 }
 
 function routePointsForTravel(travel: TravelSummary): RoutePoint[] {
@@ -152,4 +202,17 @@ function countryPoint(country: TravelSummary["countries"][number]): RoutePoint {
 
 function samePoint(left: RoutePoint, right: RoutePoint): boolean {
   return Math.abs(left.lat - right.lat) < 0.01 && Math.abs(left.lng - right.lng) < 0.01;
+}
+
+function haversineDistanceKm(start: RoutePoint, end: RoutePoint): number {
+  const earthRadiusKm = 6_371;
+  const toRadians = (degrees: number) => degrees * Math.PI / 180;
+  const latitudeDelta = toRadians(end.lat - start.lat);
+  const longitudeDelta = toRadians(end.lng - start.lng);
+  const startLatitude = toRadians(start.lat);
+  const endLatitude = toRadians(end.lat);
+  const haversine = Math.sin(latitudeDelta / 2) ** 2
+    + Math.cos(startLatitude) * Math.cos(endLatitude) * Math.sin(longitudeDelta / 2) ** 2;
+
+  return earthRadiusKm * 2 * Math.atan2(Math.sqrt(haversine), Math.sqrt(1 - haversine));
 }

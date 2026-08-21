@@ -4484,6 +4484,63 @@ body {
   font-size: 0.68rem;
 }
 
+.travel-year-filter {
+  display: flex;
+  min-height: 3.2rem;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 0.85rem;
+  padding: 0.4rem 0.45rem 0.4rem 1rem;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--surface) 88%, transparent);
+}
+
+.travel-year-filter__label {
+  flex: 0 0 auto;
+  color: var(--text-tertiary);
+  font-size: 0.66rem;
+  font-weight: 650;
+  letter-spacing: 0.09em;
+}
+
+.travel-year-filter__options {
+  display: flex;
+  min-width: 0;
+  gap: 0.25rem;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.travel-year-filter__options::-webkit-scrollbar {
+  display: none;
+}
+
+.travel-year-filter__options button {
+  min-width: 3.7rem;
+  min-height: 2.35rem;
+  flex: 0 0 auto;
+  padding-inline: 0.75rem;
+  border-radius: 999px;
+  color: var(--text-secondary);
+  font-family: var(--font-mono);
+  font-size: 0.67rem;
+  font-weight: 650;
+  transition: background-color 0.18s ease, color 0.18s ease, transform 0.18s ease;
+}
+
+.travel-year-filter__options button:hover {
+  background: var(--background-elevated);
+  color: var(--text-primary);
+}
+
+.travel-year-filter__options button.is-active {
+  background: var(--text-primary);
+  color: var(--background);
+  box-shadow: 0 0.45rem 1.2rem rgba(28, 52, 60, 0.13);
+}
+
 .profile-globe-card {
   position: relative;
   min-height: clamp(39rem, 66vw, 45rem);
@@ -4581,6 +4638,115 @@ body {
   padding-top: clamp(4rem, 8vw, 7rem);
 }
 
+.travel-recap {
+  overflow: hidden;
+  margin-bottom: clamp(3.25rem, 6vw, 5rem);
+  border: 1px solid var(--border);
+  border-radius: 1.4rem;
+  background:
+    linear-gradient(135deg, color-mix(in srgb, var(--surface) 96%, transparent), color-mix(in srgb, var(--background-elevated) 86%, transparent));
+  box-shadow: 0 1rem 3.5rem rgba(35, 64, 71, 0.06);
+}
+
+.travel-recap__heading {
+  display: grid;
+  grid-template-columns: minmax(0, 0.95fr) minmax(19rem, 0.65fr);
+  align-items: end;
+  gap: 2rem;
+  padding: clamp(1.5rem, 3vw, 2.25rem);
+}
+
+.travel-recap__heading h2 {
+  max-width: 17ch;
+  margin-top: 0.55rem;
+  font-family: var(--font-editorial);
+  font-size: clamp(1.7rem, 3vw, 2.65rem);
+  font-weight: 430;
+  line-height: 1.12;
+  letter-spacing: -0.035em;
+  word-break: keep-all;
+}
+
+.travel-recap__heading > p {
+  color: var(--text-secondary);
+  font-size: 0.84rem;
+  line-height: 1.75;
+  word-break: keep-all;
+}
+
+.travel-recap__stats {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  border-block: 1px solid var(--border);
+}
+
+.travel-recap__stats > div {
+  min-width: 0;
+  padding: 1.15rem clamp(1rem, 2.5vw, 1.65rem);
+  border-right: 1px solid var(--border);
+}
+
+.travel-recap__stats > div:last-child {
+  border-right: 0;
+}
+
+.travel-recap__stats dt {
+  color: var(--text-tertiary);
+  font-size: 0.63rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+}
+
+.travel-recap__stats dd {
+  margin-top: 0.35rem;
+  color: var(--text-primary);
+  font-family: var(--font-mono);
+  font-size: clamp(1rem, 2vw, 1.35rem);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.04em;
+}
+
+.travel-recap__memories {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.travel-recap__memories a {
+  position: relative;
+  display: grid;
+  min-width: 0;
+  gap: 0.25rem;
+  padding: 1.25rem clamp(1rem, 2.5vw, 1.65rem);
+  transition: background-color 0.18s ease;
+}
+
+.travel-recap__memories a:first-child {
+  border-right: 1px solid var(--border);
+}
+
+.travel-recap__memories a:hover,
+.travel-recap__memories a:focus-visible {
+  background: var(--accent-soft);
+}
+
+.travel-recap__memories span,
+.travel-recap__memories small {
+  overflow: hidden;
+  color: var(--text-tertiary);
+  font-size: 0.62rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.travel-recap__memories strong {
+  overflow: hidden;
+  color: var(--text-primary);
+  font-size: 0.84rem;
+  font-weight: 650;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 .profile-country-filter {
   display: grid;
   grid-template-columns: minmax(12rem, 0.38fr) minmax(0, 1.62fr);
@@ -4644,6 +4810,11 @@ body {
     align-items: start;
     gap: 1.25rem;
   }
+
+  .travel-recap__heading {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
 }
 
 @media (max-width: 560px) {
@@ -4657,6 +4828,59 @@ body {
 
   .profile-globe-card {
     border-radius: 1.25rem;
+  }
+
+  .travel-year-filter {
+    align-items: stretch;
+    flex-direction: column;
+    gap: 0.35rem;
+    padding: 0.7rem;
+    border-radius: 1rem;
+  }
+
+  .travel-year-filter__label {
+    padding-inline: 0.25rem;
+  }
+
+  .travel-year-filter__options {
+    margin-inline: -0.15rem;
+  }
+
+  .travel-year-filter__options button {
+    min-height: 2.2rem;
+  }
+
+  .travel-recap {
+    border-radius: 1.1rem;
+  }
+
+  .travel-recap__heading {
+    padding: 1.25rem;
+  }
+
+  .travel-recap__heading h2 {
+    font-size: 1.65rem;
+  }
+
+  .travel-recap__stats {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .travel-recap__stats > div:nth-child(2) {
+    border-right: 0;
+  }
+
+  .travel-recap__stats > div:nth-child(-n + 2) {
+    border-bottom: 1px solid var(--border);
+  }
+
+  .travel-recap__memories {
+    grid-template-columns: 1fr;
+  }
+
+  .travel-recap__memories a:first-child {
+    border-right: 0;
+    border-bottom: 1px solid var(--border);
   }
 
   .profile-globe-card__meta {

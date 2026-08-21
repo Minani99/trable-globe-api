@@ -11,6 +11,7 @@ export function GlobeTimelineControls({
   onIndexChange,
   onTogglePlaying,
   onPresent,
+  presentLabel = "현재",
 }: {
   moments: GlobeTimelineMoment[];
   activeIndex: number;
@@ -19,6 +20,7 @@ export function GlobeTimelineControls({
   onIndexChange: (index: number) => void;
   onTogglePlaying: () => void;
   onPresent: () => void;
+  presentLabel?: string;
 }) {
   const active = moments[activeIndex];
   if (!active) return null;
@@ -31,7 +33,7 @@ export function GlobeTimelineControls({
           <strong>{formatDate(active.date)}</strong>
         </div>
         <button type="button" onClick={onPresent} disabled={!engaged}>
-          현재
+          {presentLabel}
         </button>
       </div>
 
