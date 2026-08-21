@@ -12,6 +12,7 @@ export interface TravelRecap {
   firstTravel: TravelSummary | null;
   latestTravel: TravelSummary | null;
   longestTravel: TravelSummary | null;
+  featuredTravels: TravelSummary[];
   topCountry: TravelSummary["countries"][number] | null;
   topCountryVisits: number;
 }
@@ -63,6 +64,7 @@ export function buildTravelRecap(travels: TravelSummary[], year: number | null):
     firstTravel: ordered[0] ?? null,
     latestTravel: ordered.at(-1) ?? null,
     longestTravel,
+    featuredTravels: [...ordered].reverse().slice(0, 3),
     topCountry: topCountryEntry ? countries.get(topCountryEntry[0]) ?? null : null,
     topCountryVisits: topCountryEntry?.[1] ?? 0,
   };

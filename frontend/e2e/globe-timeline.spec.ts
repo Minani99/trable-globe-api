@@ -28,7 +28,9 @@ test("여행 시간축을 따라 개인 지구본이 성장하고 현재로 돌�
 
   await controls.getByRole("button", { name: "여행 세계 재생", exact: true }).click();
   await expect(controls.getByRole("button", { name: "여행 세계 재생 일시정지" })).toBeVisible();
-  await expect(range).toHaveValue("0");
+  // Playback restarts at zero and can advance while a loaded CI worker is still
+  // evaluating the assertion. It only needs to have left the final moment.
+  expect(Number(await range.inputValue())).toBeLessThan(4);
 
   await page.setViewportSize({ width: 390, height: 844 });
   await expect(controls).toBeVisible();

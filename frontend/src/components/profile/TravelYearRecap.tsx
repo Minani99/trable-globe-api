@@ -1,5 +1,6 @@
 import Link from "next/link";
 
+import { TravelImage } from "@/components/common/TravelImage";
 import { ShareProfileButton } from "@/components/profile/ShareProfileButton";
 import { travelPath } from "@/lib/config";
 import { formatDate } from "@/lib/utils/format";
@@ -45,19 +46,27 @@ export function TravelYearRecap({ recap, username, displayName }: TravelYearReca
         <RecapStat label="이어진 거리" value={`${numberFormatter.format(recap.distanceKm)}km`} />
       </dl>
 
-      <div className="travel-recap__memories">
-        {recap.longestTravel ? (
-          <Link href={travelPath(username, recap.longestTravel.id)}>
-            <span>가장 오래 머문 여행</span>
-            <strong>{recap.longestTravel.title}</strong>
-            <small>{recap.longestTravel.durationDays}일 · {formatDate(recap.longestTravel.startDate)}</small>
+      <div className="travel-recap__memories" aria-label={`${scopeLabel} 대표 여행 장면`}>
+        {recap.featuredTravels.map((travel, index) => (
+          <Link key={travel.id} href={travelPath(username, travel.id)}>
+            <TravelImage
+              src={travel.coverImageUrl}
+              alt={`${travel.title} 대표 이미지`}
+              fallbackLabel={travel.primaryCountry?.iso2Code}
+              className="travel-recap__memory-image"
+            />
+            <span className="travel-recap__memory-shade" aria-hidden="true" />
+            <span className="travel-recap__memory-copy">
+              <small>
+                {index === 0
+                  ? recap.year ? "그해 마지막 장면" : "가장 최근 장면"
+                  : travel.primaryCountry?.nameKo ?? "여행의 한 장면"}
+              </small>
+              <strong>{travel.title}</strong>
+              <small>{formatDate(travel.startDate)} · 사진 {travel.photoCount}장</small>
+            </span>
           </Link>
-        ) : null}
-        <Link href={travelPath(username, recap.latestTravel.id)}>
-          <span>{recap.year ? "그해 마지막 기억" : "가장 최근의 기억"}</span>
-          <strong>{recap.latestTravel.title}</strong>
-          <small>{formatDate(recap.latestTravel.startDate)} · 사진 {recap.latestTravel.photoCount}장</small>
-        </Link>
+        ))}
       </div>
     </section>
   );

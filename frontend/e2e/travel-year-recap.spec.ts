@@ -12,13 +12,21 @@ test("연도 링크를 열고 바꾸면 지구본, 기록, 리캡과 공유 주�
   await expect(yearFilter).toBeVisible();
   await expect(page).toHaveURL(/\/traveler\?year=2025$/);
   await expect(page).toHaveTitle(/2025 여행 세계/);
+  const ogImageUrl = await page.locator('meta[property="og:image"]').getAttribute("content");
+  expect(ogImageUrl).toContain("/api/og/profile?username=traveler&year=2025");
+  const ogImage = await page.request.get(ogImageUrl!);
+  expect(ogImage.ok()).toBeTruthy();
+  expect(ogImage.headers()["content-type"]).toContain("image/png");
+  expect((await ogImage.body()).byteLength).toBeGreaterThan(20_000);
   await expect(yearFilter.getByRole("button", { name: "2025" })).toHaveAttribute("aria-pressed", "true");
   await expect(page.getByRole("heading", { name: "2025년, 내가 만든 여행 세계" })).toBeVisible();
+  await expect(page.locator(".travel-recap__memories a")).toHaveCount(3);
   await expect(page.locator(".travel-card")).toHaveCount(3);
 
   await yearFilter.getByRole("button", { name: "2026" }).click();
   await expect(page).toHaveURL(/\/traveler\?year=2026$/);
   await expect(page.getByRole("heading", { name: "2026년, 내가 만든 여행 세계" })).toBeVisible();
+  await expect(page.locator(".travel-recap__memories a")).toHaveCount(2);
   await expect(page.locator(".travel-card")).toHaveCount(2);
   await expect(countryList.getByRole("button", { name: /대만/ })).toBeVisible();
   await expect(countryList.getByRole("button", { name: /일본/ })).toBeVisible();

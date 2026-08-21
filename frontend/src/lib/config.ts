@@ -47,6 +47,13 @@ export function profilePath(username: string): string {
   return `/${encodeURIComponent(username)}`;
 }
 
+/** Dynamic social preview for a profile or one of its yearly recaps. */
+export function profileRecapImagePath(username: string, year: number | null): string {
+  const params = new URLSearchParams({ username });
+  if (year !== null) params.set("year", String(year));
+  return `/api/og/profile?${params.toString()}`;
+}
+
 /** Travel detail path within a profile. */
 export function travelPath(username: string, travelId: number): string {
   return `/${encodeURIComponent(username)}/travel/${travelId}`;
