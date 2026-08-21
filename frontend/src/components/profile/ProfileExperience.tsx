@@ -182,7 +182,7 @@ export function ProfileExperience({ profile, countries, travels, viewer, relatio
           />
         </section>
 
-        <section aria-labelledby="travels-heading" className="pt-20">
+        <section aria-labelledby="travels-heading" className="profile-travel-section">
           <SectionHeading
             id="travels-heading"
             eyebrow="Travel archive"
@@ -242,7 +242,7 @@ export function ProfileExperience({ profile, countries, travels, viewer, relatio
         </section>
 
         {travels.length > 0 ? (
-          <section aria-labelledby="timeline-heading" className="pt-28">
+          <section aria-labelledby="timeline-heading" className="profile-timeline-section">
             <SectionHeading id="timeline-heading" eyebrow="By year" title="시간순 여행 기록" />
             <TravelTimeline travels={travels} username={profile.username} />
           </section>

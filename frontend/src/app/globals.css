@@ -6461,3 +6461,631 @@ a.profile-panel__identity:focus-visible {
   .discover-results > header { align-items: flex-start; }
   .discover-results h2 { font-size: 1.75rem; }
 }
+
+/* 2026 visual refinement -------------------------------------------------
+ * One restrained type scale and denser spacing across public and account pages.
+ * The globe remains the visual hero; supporting screens should feel calm and quick.
+ */
+:root {
+  --type-page: clamp(2.45rem, 4.25vw, 4.2rem);
+  --type-page-compact: clamp(2.05rem, 3.2vw, 3.15rem);
+  --type-section: clamp(1.65rem, 2.65vw, 2.7rem);
+  --type-card: clamp(1.05rem, 1.35vw, 1.22rem);
+  --page-space: clamp(3.5rem, 6vw, 5.75rem);
+  --section-space: clamp(4.5rem, 7vw, 7rem);
+  --card-radius: 1.25rem;
+}
+
+.site-shell {
+  max-width: 1320px;
+}
+
+@layer components {
+  .text-display {
+    font-size: clamp(2.2rem, 5vw, 3.8rem);
+    font-weight: 480;
+    letter-spacing: -0.045em;
+  }
+
+  .text-heading {
+    font-size: clamp(1.55rem, 2.7vw, 2.1rem);
+    font-weight: 520;
+    letter-spacing: -0.035em;
+  }
+
+  .text-title {
+    font-size: var(--type-card);
+    font-weight: 560;
+  }
+
+  .text-body {
+    font-size: 0.9rem;
+    line-height: 1.68;
+  }
+
+  .eyebrow {
+    font-size: 0.66rem;
+    font-weight: 600;
+    letter-spacing: 0.15em;
+  }
+}
+
+/* Authentication: a focused two-column welcome screen on desktop. */
+.auth-page {
+  min-height: calc(100svh - 3.75rem - 6.5rem);
+  padding: clamp(2.25rem, 5vw, 4.75rem) 1rem;
+}
+
+.auth-page + .site-footer {
+  margin-top: 0;
+}
+
+.auth-card,
+.auth-card--wide {
+  position: relative;
+  display: grid;
+  width: min(100%, 62rem);
+  min-height: 30rem;
+  grid-template-columns: minmax(0, 0.82fr) minmax(21rem, 1fr);
+  grid-template-rows: auto auto 1fr auto;
+  align-items: start;
+  column-gap: clamp(3rem, 6vw, 5.25rem);
+  padding: clamp(2.25rem, 4vw, 3.5rem);
+  overflow: hidden;
+  border-radius: 1.5rem;
+  box-shadow: 0 1.5rem 4.5rem rgba(28, 58, 66, 0.1);
+}
+
+.auth-card::before {
+  position: absolute;
+  bottom: 1.8rem;
+  left: 2rem;
+  width: 37%;
+  height: 5.5rem;
+  border-radius: 999px;
+  content: "";
+  opacity: 0.72;
+  background:
+    radial-gradient(circle at 18% 54%, var(--accent) 0 0.22rem, transparent 0.26rem),
+    radial-gradient(circle at 76% 31%, var(--accent) 0 0.22rem, transparent 0.26rem),
+    linear-gradient(168deg, transparent 47.5%, color-mix(in srgb, var(--accent) 65%, transparent) 48% 49%, transparent 49.5%),
+    radial-gradient(ellipse at center, color-mix(in srgb, var(--globe-ocean) 20%, transparent), transparent 68%);
+  pointer-events: none;
+}
+
+.auth-card > .eyebrow,
+.auth-card > h1,
+.auth-card > .auth-card__intro,
+.auth-card > .auth-form__notice,
+.auth-card > .auth-form__error {
+  position: relative;
+  z-index: 1;
+  grid-column: 1;
+}
+
+.auth-card h1 {
+  max-width: 9ch;
+  margin-top: 0.7rem;
+  font-size: var(--type-page-compact);
+  font-weight: 540;
+  line-height: 1.12;
+  letter-spacing: -0.05em;
+}
+
+.auth-card__intro {
+  max-width: 30ch;
+  margin-top: 1.15rem;
+  font-size: 0.85rem;
+  line-height: 1.7;
+}
+
+.auth-form {
+  grid-row: 1 / span 5;
+  grid-column: 2;
+  align-self: center;
+  gap: 0.85rem;
+  margin-top: 0;
+  padding-left: clamp(2rem, 4vw, 3.25rem);
+  border-left: 1px solid var(--border);
+}
+
+.auth-form input {
+  min-height: 3rem;
+  border-radius: 0.7rem;
+}
+
+.auth-form > button,
+.auth-form--action .auth-form__primary-link {
+  min-height: 3rem;
+}
+
+/* Marketing, discovery and profile titles share one calm hierarchy. */
+.about-hero {
+  min-height: auto;
+  padding-block: var(--page-space) clamp(3rem, 5vw, 4.5rem);
+}
+
+.about-hero__copy h1,
+.discover-hero h1,
+.studio-hero h1,
+.travel-editor-hero h1,
+.profile-world__intro h1 {
+  font-size: var(--type-page);
+  font-weight: 520;
+  line-height: 1.08;
+  letter-spacing: -0.05em;
+}
+
+.about-hero__copy h1 {
+  max-width: 13ch;
+}
+
+.about-hero__copy > p:not(.eyebrow) {
+  margin-top: 1.5rem;
+  font-size: 0.94rem;
+}
+
+.about-section-heading h2,
+.discover-results h2,
+.travel-detail-section__heading h2,
+.travel-detail-more h2,
+.travel-social__heading h2,
+.travel-editor__section-heading h2 {
+  font-size: var(--type-section);
+  font-weight: 520;
+  line-height: 1.16;
+  letter-spacing: -0.04em;
+}
+
+.about-capability-grid li {
+  min-height: 11.5rem;
+  padding: 1.3rem;
+  border-radius: var(--card-radius);
+}
+
+.about-capability-grid h3 {
+  margin-top: 1.9rem;
+  font-size: 1.15rem;
+  font-weight: 560;
+}
+
+.discover-shell {
+  padding-block: var(--page-space) clamp(4.5rem, 7vw, 6rem);
+}
+
+.discover-hero {
+  grid-template-columns: minmax(0, 0.9fr) minmax(20rem, 0.58fr);
+  gap: clamp(2rem, 5vw, 4rem);
+}
+
+.discover-hero h1 {
+  max-width: 11ch;
+}
+
+.discover-search {
+  margin-top: clamp(2rem, 4vw, 3rem);
+  padding: 0.6rem;
+  border-radius: var(--card-radius);
+}
+
+.discover-search__field {
+  min-height: 3.45rem;
+  border-radius: 0.85rem;
+}
+
+.discover-search__field input {
+  min-height: 3.25rem;
+  font-size: 0.98rem;
+}
+
+.discover-results {
+  padding-top: clamp(2.75rem, 4vw, 3.75rem);
+}
+
+.member-card,
+.travel-card,
+.travel-detail-nav-card {
+  border-radius: var(--card-radius);
+}
+
+.member-card {
+  min-height: 16rem;
+  padding: 1.15rem;
+}
+
+/* Profile world: preserve the globe, tighten everything around it. */
+.profile-world {
+  padding-top: var(--page-space);
+}
+
+.profile-world__intro {
+  gap: clamp(2rem, 5vw, 4rem);
+  margin-bottom: 1.6rem;
+}
+
+.profile-world__intro h1 {
+  max-width: 13ch;
+}
+
+.profile-globe-card {
+  min-height: clamp(36rem, 60vw, 42rem);
+  border-radius: 1.5rem;
+  box-shadow: 0 1.75rem 5rem rgba(37, 62, 68, 0.09);
+}
+
+.profile-archive {
+  padding-top: clamp(3.5rem, 6vw, 5rem);
+}
+
+.profile-travel-section {
+  padding-top: clamp(3.75rem, 6vw, 5.5rem);
+}
+
+.profile-timeline-section {
+  padding-top: clamp(4.5rem, 7vw, 6.5rem);
+}
+
+/* Travel detail: editorial, but not oversized. */
+.travel-detail-hero {
+  grid-template-columns: minmax(0, 1.2fr) minmax(21rem, 0.8fr);
+  min-height: clamp(33rem, 61vh, 40rem);
+  border-radius: 1.5rem;
+  box-shadow: 0 1.75rem 5rem rgba(37, 62, 68, 0.09);
+}
+
+.travel-detail-hero__media {
+  min-height: 28rem;
+}
+
+.travel-detail-hero__content {
+  gap: 1.8rem;
+  padding: clamp(2.2rem, 4vw, 3.5rem);
+}
+
+.travel-detail-hero__content h1 {
+  max-width: 12ch;
+  font-size: clamp(2.55rem, 4.2vw, 4.35rem);
+  font-weight: 520;
+  line-height: 1.04;
+  letter-spacing: -0.055em;
+}
+
+.travel-detail-hero__description {
+  font-family: var(--font-sans);
+  font-size: clamp(0.9rem, 1.15vw, 1rem);
+  line-height: 1.75;
+}
+
+.travel-detail-section {
+  padding-top: var(--section-space);
+}
+
+.travel-detail-section__heading {
+  margin-bottom: 1.75rem;
+}
+
+.travel-social {
+  margin-top: var(--section-space);
+  padding: clamp(1.35rem, 3vw, 2.25rem);
+  border-radius: 1.35rem;
+}
+
+.travel-detail-more {
+  padding-block: var(--section-space) 4rem;
+}
+
+/* Studio, settings and editor use a compact application scale. */
+.studio-shell {
+  padding-block: var(--page-space) clamp(4.5rem, 7vw, 6rem);
+}
+
+.studio-hero {
+  padding-bottom: clamp(2.25rem, 4vw, 3.75rem);
+}
+
+.studio-hero h1,
+.travel-editor-hero h1 {
+  max-width: 14ch;
+}
+
+.settings-layout,
+.studio-layout {
+  padding-top: clamp(2.25rem, 4vw, 3.75rem);
+}
+
+.settings-layout {
+  grid-template-columns: minmax(0, 1.2fr) minmax(18rem, 0.8fr);
+  gap: clamp(1.25rem, 3vw, 2.5rem);
+}
+
+.settings-layout .studio-profile,
+.settings-layout .studio-account,
+.studio-onboarding {
+  border-radius: var(--card-radius);
+  box-shadow: 0 1rem 3rem rgba(31, 62, 69, 0.055);
+}
+
+.settings-avatar {
+  grid-template-columns: 5.75rem minmax(0, 1fr);
+  gap: 1.15rem;
+  padding: 0.9rem;
+}
+
+.settings-avatar__preview {
+  width: 5.75rem;
+  height: 5.75rem;
+}
+
+.studio-section-heading h2,
+.studio-profile__heading h2 {
+  font-size: 1.75rem;
+  font-weight: 520;
+}
+
+.studio-account__heading h2 {
+  font-size: 1.45rem;
+  font-weight: 520;
+}
+
+.travel-editor-hero {
+  padding-block: clamp(1.75rem, 4vw, 3.25rem) clamp(2.5rem, 5vw, 4.5rem);
+}
+
+.travel-editor__section {
+  padding-block: clamp(2.75rem, 5vw, 4.5rem);
+}
+
+@media (max-width: 900px) {
+  .settings-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .auth-card,
+  .auth-card--wide {
+    width: min(100%, 32rem);
+    min-height: 0;
+    grid-template-columns: 1fr;
+    grid-template-rows: auto;
+    gap: 0;
+  }
+
+  .auth-card::before {
+    display: none;
+  }
+
+  .auth-card > .eyebrow,
+  .auth-card > h1,
+  .auth-card > .auth-card__intro,
+  .auth-card > .auth-form__notice,
+  .auth-card > .auth-form__error,
+  .auth-form {
+    grid-row: auto;
+    grid-column: 1;
+  }
+
+  .auth-form {
+    margin-top: 1.75rem;
+    padding-left: 0;
+    border-left: 0;
+  }
+
+  .auth-card h1 {
+    max-width: 13ch;
+  }
+}
+
+@media (max-width: 700px) {
+  :root {
+    --type-page: clamp(2.15rem, 9.8vw, 2.7rem);
+    --type-page-compact: clamp(1.9rem, 8.2vw, 2.25rem);
+    --type-section: clamp(1.6rem, 7.4vw, 2rem);
+    --page-space: 2.75rem;
+    --section-space: 4.5rem;
+    --card-radius: 1.1rem;
+  }
+
+  body:has(.auth-page) {
+    padding-bottom: 0;
+  }
+
+  body:has(.auth-page) .site-mobile-bottom-nav,
+  body:has(.auth-page) .site-footer {
+    display: none;
+  }
+
+  .auth-page {
+    min-height: calc(100svh - 3.5rem);
+    place-items: start center;
+    padding: clamp(1.25rem, 5vw, 2rem) 1rem;
+  }
+
+  .auth-card,
+  .auth-card--wide {
+    padding: 1.5rem;
+    border-radius: 1.15rem;
+  }
+
+  .auth-card h1 {
+    margin-top: 0.55rem;
+  }
+
+  .auth-card__intro {
+    max-width: 36ch;
+    margin-top: 0.9rem;
+    font-size: 0.82rem;
+  }
+
+  .auth-form {
+    gap: 0.72rem;
+    margin-top: 1.4rem;
+  }
+
+  .about-hero {
+    padding-block: 3.25rem 2.5rem;
+  }
+
+  .about-hero__copy h1,
+  .discover-hero h1,
+  .studio-hero h1,
+  .travel-editor-hero h1,
+  .profile-world__intro h1 {
+    font-size: var(--type-page);
+  }
+
+  .about-capability-grid li {
+    min-height: 10.5rem;
+  }
+
+  .discover-shell {
+    padding-block: var(--page-space) 4.5rem;
+  }
+
+  .discover-hero {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+
+  .discover-hero h1 {
+    max-width: 10ch;
+  }
+
+  .discover-hero > p:last-child {
+    padding-bottom: 0;
+    font-size: 0.86rem;
+    line-height: 1.7;
+  }
+
+  .discover-search {
+    margin-top: 1.75rem;
+    padding: 0.55rem;
+  }
+
+  .discover-results {
+    padding-top: 2.5rem;
+  }
+
+  .profile-world {
+    padding-top: 2.75rem;
+  }
+
+  .profile-world__intro {
+    gap: 1rem;
+    margin-bottom: 1.35rem;
+  }
+
+  .profile-world__summary > p {
+    font-size: 0.85rem;
+    line-height: 1.7;
+  }
+
+  .profile-globe-card {
+    border-radius: 1.15rem;
+  }
+
+  .profile-globe-card__canvas {
+    height: min(100vw, 27rem);
+    min-height: 20rem;
+  }
+
+  .profile-archive {
+    padding-top: 3.25rem;
+  }
+
+  .profile-country-filter {
+    padding-block: 1.25rem;
+  }
+
+  .profile-travel-section {
+    padding-top: 3.25rem;
+  }
+
+  .profile-timeline-section {
+    padding-top: 4.25rem;
+  }
+
+  .travel-detail-breadcrumb {
+    min-height: 4rem;
+  }
+
+  .travel-detail-hero {
+    grid-template-columns: 1fr;
+    border-radius: 1.15rem;
+  }
+
+  .travel-detail-hero__media {
+    min-height: clamp(17rem, 72vw, 21rem);
+  }
+
+  .travel-detail-hero__content {
+    gap: 1.45rem;
+    padding: 1.5rem 1.35rem;
+  }
+
+  .travel-detail-hero__content h1 {
+    font-size: clamp(2.15rem, 10.5vw, 2.65rem);
+    line-height: 1.06;
+  }
+
+  .travel-detail-hero__date {
+    margin-top: 1rem;
+  }
+
+  .travel-detail-hero__description {
+    font-size: 0.88rem;
+  }
+
+  .travel-detail-section__heading {
+    gap: 0.8rem;
+    margin-bottom: 1.35rem;
+  }
+
+  .travel-detail-section__heading > p {
+    font-size: 0.84rem;
+    line-height: 1.68;
+  }
+
+  .travel-social {
+    margin-inline: -0.2rem;
+  }
+
+  .travel-detail-more {
+    gap: 1.25rem;
+    padding-bottom: 2.5rem;
+  }
+
+  .studio-shell {
+    padding-block: 2.75rem 4.5rem;
+  }
+
+  .studio-hero {
+    gap: 1.5rem;
+    padding-bottom: 2.25rem;
+  }
+
+  .studio-onboarding,
+  .settings-layout .studio-profile,
+  .settings-layout .studio-account {
+    padding: 1.15rem;
+  }
+
+  .settings-avatar {
+    grid-template-columns: 4.75rem minmax(0, 1fr);
+  }
+
+  .settings-avatar__preview {
+    width: 4.75rem;
+    height: 4.75rem;
+  }
+
+  .travel-editor__section {
+    gap: 1.5rem;
+    padding-block: 2.75rem;
+  }
+}
+
+@media (max-width: 420px) {
+  .auth-card,
+  .auth-card--wide {
+    padding: 1.25rem;
+  }
+}

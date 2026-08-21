@@ -28,7 +28,7 @@ export default async function SettingsPage() {
           <header className="studio-hero settings-hero">
             <div>
               <p className="eyebrow">Settings · @{member.username}</p>
-              <h1>나를 보여주는 방식과<br />계정을 관리하세요</h1>
+              <h1>나를 보여주는 방식과 계정을 관리하세요</h1>
             </div>
             <Link href={`/${member.username}`} className="studio-secondary-action">공개 프로필 보기 ↗</Link>
           </header>

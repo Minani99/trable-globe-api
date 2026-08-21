@@ -27,7 +27,7 @@ export default async function StudioPage() {
           <header className="studio-hero">
             <div>
               <p className="eyebrow">Travel studio · @{member.username}</p>
-              <h1>내 여행을<br />기록하고 다듬는 곳</h1>
+              <h1>내 여행을 기록하고 다듬는 곳</h1>
             </div>
             <div className="studio-hero__actions">
               <Link href={`/${member.username}`} className="studio-secondary-action">공개 프로필</Link>
