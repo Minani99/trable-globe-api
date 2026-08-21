@@ -2,7 +2,13 @@ import { expect, test } from "@playwright/test";
 
 test("연도 링크를 열고 바꾸면 지구본, 기록, 리캡과 공유 주소가 함께 바뀐다", async ({ page }) => {
   const pageErrors: string[] = [];
+  let recapImageRequests = 0;
   page.on("pageerror", (error) => pageErrors.push(error.message));
+  page.on("request", (request) => {
+    if (request.url().includes("/api/og/profile?username=traveler&year=2026")) {
+      recapImageRequests += 1;
+    }
+  });
 
   await page.goto("/traveler?year=2025");
   await expect(page.locator(".profile-globe-card canvas")).toBeVisible({ timeout: 30_000 });
@@ -23,6 +29,7 @@ test("연도 링크를 열고 바꾸면 지구본, 기록, 리캡과 공유 주�
   await expect(page.getByRole("heading", { name: "그해의 여행 리듬" })).toBeVisible();
   await expect(page.locator(".travel-recap__month-chart .is-active")).toHaveCount(3);
   await expect(page.locator(".travel-recap__cities li")).toHaveCount(3);
+  await expect(page.locator(".travel-recap__comparison")).toHaveCount(0);
   await expect(page.locator(".travel-recap__memories a")).toHaveCount(3);
   await expect(page.locator(".travel-card")).toHaveCount(3);
 
@@ -31,6 +38,10 @@ test("연도 링크를 열고 바꾸면 지구본, 기록, 리캡과 공유 주�
   await expect(page.getByRole("heading", { name: "2026년, 내가 만든 여행 세계" })).toBeVisible();
   await expect(page.locator(".travel-recap__month-chart .is-active")).toHaveCount(2);
   await expect(page.locator(".travel-recap__cities li")).toHaveCount(2);
+  const comparison = page.locator(".travel-recap__comparison");
+  await expect(comparison.getByRole("heading", { name: "2025년과 2026년 비교" })).toBeVisible();
+  await expect(comparison).toContainText("지구본에는 대만의 기억이 새로 더해졌습니다.");
+  await expect(comparison.getByRole("list", { name: "새로 더해진 나라" })).toContainText("대만");
   await expect(page.locator(".travel-recap__memories a")).toHaveCount(2);
   await expect(page.locator(".travel-card")).toHaveCount(2);
   await expect(countryList.getByRole("button", { name: /대만/ })).toBeVisible();
@@ -51,7 +62,10 @@ test("연도 링크를 열고 바꾸면 지구본, 기록, 리캡과 공유 주�
   await expect.poll(() => page.evaluate(() => navigator.clipboard.readText())).toContain("/traveler?year=2026");
 
   await page.evaluate(() => {
-    const testWindow = window as typeof window & { sharedRecapFilename?: string };
+    const testWindow = window as typeof window & {
+      sharedRecapFilename?: string;
+      sharedRecapText?: string;
+    };
     Object.defineProperty(navigator, "canShare", {
       configurable: true,
       value: (data: ShareData) => Boolean(data.files?.length),
@@ -60,6 +74,7 @@ test("연도 링크를 열고 바꾸면 지구본, 기록, 리캡과 공유 주�
       configurable: true,
       value: async (data: ShareData) => {
         testWindow.sharedRecapFilename = data.files?.[0]?.name;
+        testWindow.sharedRecapText = data.text;
       },
     });
   });
@@ -68,6 +83,10 @@ test("연도 링크를 열고 바꾸면 지구본, 기록, 리캡과 공유 주�
   await expect.poll(() => page.evaluate(() => (
     window as typeof window & { sharedRecapFilename?: string }
   ).sharedRecapFilename)).toBe("travel-globe-traveler-2026.png");
+  await expect.poll(() => page.evaluate(() => (
+    window as typeof window & { sharedRecapText?: string }
+  ).sharedRecapText)).toContain("지구본에는 대만의 기억이 새로 더해졌습니다.");
+  expect(recapImageRequests).toBe(1);
 
   await yearFilter.getByRole("button", { name: "전체" }).click();
   await expect(page).toHaveURL(/\/traveler$/);

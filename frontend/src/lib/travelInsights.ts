@@ -36,6 +36,16 @@ export interface TravelCityHighlight {
   latestTravelId: number;
 }
 
+export interface TravelYearComparison {
+  currentYear: number;
+  previousYear: number;
+  travelCountDelta: number;
+  countryCountDelta: number;
+  travelDaysDelta: number;
+  distanceKmDelta: number;
+  newCountries: TravelSummary["countries"];
+}
+
 export function travelYears(travels: TravelSummary[]): number[] {
   return [...new Set(travels.map((travel) => Number(travel.startDate.slice(0, 4))))]
     .filter(Number.isFinite)
@@ -123,5 +133,40 @@ export function buildTravelRecap(travels: TravelSummary[], year: number | null):
       .slice(0, 3),
     topCountry: topCountryEntry ? countries.get(topCountryEntry[0]) ?? null : null,
     topCountryVisits: topCountryEntry?.[1] ?? 0,
+  };
+}
+
+export function buildTravelYearComparison(
+  travels: TravelSummary[],
+  currentYear: number | null,
+  currentRecap?: TravelRecap,
+): TravelYearComparison | null {
+  if (currentYear === null) return null;
+
+  const previousYear = travelYears(travels).find((year) => year < currentYear);
+  if (previousYear === undefined) return null;
+
+  const currentTravels = travelsForYear(travels, currentYear);
+  const previousTravels = travelsForYear(travels, previousYear);
+  const resolvedCurrentRecap = currentRecap ?? buildTravelRecap(currentTravels, currentYear);
+  const previousRecap = buildTravelRecap(previousTravels, previousYear);
+  const previousCountryCodes = new Set(
+    previousTravels.flatMap((travel) => travel.countries.map((country) => country.iso2Code)),
+  );
+  const currentCountries = new Map<string, TravelSummary["countries"][number]>();
+  currentTravels.forEach((travel) => {
+    travel.countries.forEach((country) => currentCountries.set(country.iso2Code, country));
+  });
+
+  return {
+    currentYear,
+    previousYear,
+    travelCountDelta: resolvedCurrentRecap.travelCount - previousRecap.travelCount,
+    countryCountDelta: resolvedCurrentRecap.countryCount - previousRecap.countryCount,
+    travelDaysDelta: resolvedCurrentRecap.travelDays - previousRecap.travelDays,
+    distanceKmDelta: resolvedCurrentRecap.distanceKm - previousRecap.distanceKm,
+    newCountries: [...currentCountries.values()]
+      .filter((country) => !previousCountryCodes.has(country.iso2Code))
+      .sort((left, right) => left.nameKo.localeCompare(right.nameKo, "ko")),
   };
 }

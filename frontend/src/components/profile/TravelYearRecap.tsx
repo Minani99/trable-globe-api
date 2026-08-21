@@ -4,17 +4,18 @@ import { TravelImage } from "@/components/common/TravelImage";
 import { RecapActions } from "@/components/profile/RecapActions";
 import { travelPath } from "@/lib/config";
 import { formatDate } from "@/lib/utils/format";
-import type { TravelRecap } from "@/lib/travelInsights";
+import type { TravelRecap, TravelYearComparison } from "@/lib/travelInsights";
 
 interface TravelYearRecapProps {
   recap: TravelRecap;
+  comparison: TravelYearComparison | null;
   username: string;
   displayName: string;
 }
 
 const numberFormatter = new Intl.NumberFormat("ko-KR");
 
-export function TravelYearRecap({ recap, username, displayName }: TravelYearRecapProps) {
+export function TravelYearRecap({ recap, comparison, username, displayName }: TravelYearRecapProps) {
   if (!recap.latestTravel) return null;
 
   const scopeLabel = recap.year ? `${recap.year}년` : "지금까지";
@@ -26,6 +27,8 @@ export function TravelYearRecap({ recap, username, displayName }: TravelYearReca
   ))[0];
   const activeMonthCount = recap.monthSummaries.filter((month) => month.travelCount > 0).length;
   const maxMonthValue = Math.max(...recap.monthSummaries.map((month) => month.travelCount), 1);
+  const comparisonNarrative = comparison ? buildComparisonNarrative(comparison) : null;
+  const shareText = `${displayName}님의 ${scopeLabel} 여행 세계입니다. ${comparisonNarrative ?? narrative}`;
 
   return (
     <section className="travel-recap" aria-labelledby="travel-recap-heading">
@@ -40,6 +43,7 @@ export function TravelYearRecap({ recap, username, displayName }: TravelYearReca
             displayName={displayName}
             username={username}
             year={recap.year}
+            shareText={shareText}
           />
         </div>
       </div>
@@ -81,6 +85,13 @@ export function TravelYearRecap({ recap, username, displayName }: TravelYearReca
               </span>
             ))}
           </div>
+          <ul className="sr-only">
+            {recap.monthSummaries.filter((month) => month.travelCount > 0).map((month) => (
+              <li key={month.month}>
+                {month.month}월 여행 {month.travelCount}회, {month.travelDays}일, {month.countryCount}개 나라
+              </li>
+            ))}
+          </ul>
         </section>
 
         <section aria-labelledby="travel-recap-cities-heading" className="travel-recap__cities">
@@ -114,7 +125,35 @@ export function TravelYearRecap({ recap, username, displayName }: TravelYearReca
         </section>
       </div>
 
-      <div className="travel-recap__memories" aria-label={`${scopeLabel} 대표 여행 장면`}>
+      {comparison && comparisonNarrative ? (
+        <section className="travel-recap__comparison" aria-labelledby="travel-recap-comparison-heading">
+          <div className="travel-recap__comparison-intro">
+            <p className="eyebrow">World comparison</p>
+            <h3 id="travel-recap-comparison-heading">
+              {comparison.previousYear}년과 {comparison.currentYear}년 비교
+            </h3>
+            <p>{comparisonNarrative}</p>
+            {comparison.newCountries.length > 0 ? (
+              <ul aria-label="새로 더해진 나라">
+                {comparison.newCountries.map((country) => (
+                  <li key={country.iso2Code}>{country.nameKo}</li>
+                ))}
+              </ul>
+            ) : null}
+          </div>
+          <dl className="travel-recap__comparison-stats">
+            <ComparisonStat label="여행" value={comparison.travelCountDelta} unit="회" />
+            <ComparisonStat label="나라" value={comparison.countryCountDelta} unit="개" />
+            <ComparisonStat label="여행한 날" value={comparison.travelDaysDelta} unit="일" />
+            <ComparisonStat label="이어진 거리" value={comparison.distanceKmDelta} unit="km" />
+          </dl>
+        </section>
+      ) : null}
+
+      <div
+        className={`travel-recap__memories travel-recap__memories--${recap.featuredTravels.length}`}
+        aria-label={`${scopeLabel} 대표 여행 장면`}
+      >
         {recap.featuredTravels.map((travel, index) => (
           <Link key={travel.id} href={travelPath(username, travel.id)}>
             <TravelImage
@@ -147,4 +186,39 @@ function RecapStat({ label, value }: { label: string; value: string }) {
       <dd>{value}</dd>
     </div>
   );
+}
+
+function ComparisonStat({ label, value, unit }: { label: string; value: number; unit: string }) {
+  const formatted = numberFormatter.format(Math.abs(value));
+  return (
+    <div>
+      <dt>{label}</dt>
+      <dd className={value > 0 ? "is-positive" : value < 0 ? "is-negative" : undefined}>
+        {value > 0 ? "+" : value < 0 ? "−" : ""}{formatted}{unit}
+      </dd>
+    </div>
+  );
+}
+
+function buildComparisonNarrative(comparison: TravelYearComparison): string {
+  const newCountryNames = comparison.newCountries
+    .map((country) => country.nameKo)
+    .join("·");
+  if (comparison.newCountries.length > 0) {
+    if (comparison.travelCountDelta > 0) {
+      return `${comparison.previousYear}년보다 ${comparison.travelCountDelta}번 더 떠났고, 지구본에는 ${newCountryNames}의 기억이 새로 더해졌습니다.`;
+    }
+    if (comparison.travelCountDelta < 0) {
+      return `${comparison.previousYear}년보다 여행 횟수는 ${Math.abs(comparison.travelCountDelta)}번 줄었지만, 지구본에는 ${newCountryNames}의 기억이 새로 더해졌습니다.`;
+    }
+    return `${comparison.previousYear}년과 같은 횟수로 여행하며 지구본에 ${newCountryNames}의 기억을 새로 더했습니다.`;
+  }
+
+  if (comparison.travelCountDelta > 0) {
+    return `${comparison.previousYear}년보다 ${comparison.travelCountDelta}번 더 떠나 익숙한 나라의 기억을 이어갔습니다.`;
+  }
+  if (comparison.travelCountDelta < 0) {
+    return `${comparison.previousYear}년보다 ${Math.abs(comparison.travelCountDelta)}번 적게 떠나며 익숙한 나라를 천천히 다시 보았습니다.`;
+  }
+  return `${comparison.previousYear}년과 같은 횟수로 여행하며 익숙한 나라의 기억을 이어갔습니다.`;
 }

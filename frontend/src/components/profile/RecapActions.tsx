@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 
 import { profileRecapImagePath } from "@/lib/config";
 
@@ -8,6 +8,7 @@ interface RecapActionsProps {
   displayName: string;
   username: string;
   year: number | null;
+  shareText: string;
 }
 
 function recapScope(year: number | null): string {
@@ -18,16 +19,27 @@ function recapFilename(username: string, year: number | null): string {
   return `travel-globe-${username}-${year ?? "all"}.png`;
 }
 
-export function RecapActions({ displayName, username, year }: RecapActionsProps) {
+export function RecapActions({ displayName, username, year, shareText }: RecapActionsProps) {
   const [status, setStatus] = useState<string | null>(null);
   const [busyAction, setBusyAction] = useState<"download" | "share" | null>(null);
   const imagePath = profileRecapImagePath(username, year);
+  const fileRequestRef = useRef<{ path: string; request: Promise<File> } | null>(null);
 
-  async function fetchRecapFile(): Promise<File> {
-    const response = await fetch(imagePath);
-    if (!response.ok) throw new Error("Recap image request failed");
-    const blob = await response.blob();
-    return new File([blob], recapFilename(username, year), { type: "image/png" });
+  function fetchRecapFile(): Promise<File> {
+    if (fileRequestRef.current?.path === imagePath) return fileRequestRef.current.request;
+
+    const request = fetch(imagePath)
+      .then(async (response) => {
+        if (!response.ok) throw new Error("Recap image request failed");
+        const blob = await response.blob();
+        return new File([blob], recapFilename(username, year), { type: "image/png" });
+      })
+      .catch((error: unknown) => {
+        if (fileRequestRef.current?.path === imagePath) fileRequestRef.current = null;
+        throw error;
+      });
+    fileRequestRef.current = { path: imagePath, request };
+    return request;
   }
 
   async function downloadRecap() {
@@ -61,22 +73,21 @@ export function RecapActions({ displayName, username, year }: RecapActionsProps)
     else shareUrl.searchParams.set("year", String(year));
 
     try {
-      const file = await fetchRecapFile();
-      const fileShareData: ShareData = {
-        files: [file],
-        title: `${displayName}의 ${scope}`,
-        text: `${displayName}님이 지구본에 쌓은 ${scope}를 둘러보세요.`,
-      };
-      if (navigator.share && navigator.canShare?.(fileShareData)) {
-        await navigator.share(fileShareData);
-        setStatus("리캡 이미지를 공유했습니다.");
-        return;
-      }
-
       if (navigator.share) {
+        const file = await fetchRecapFile();
+        const fileShareData: ShareData = {
+          files: [file],
+          title: `${displayName}의 ${scope}`,
+          text: shareText,
+        };
+        if (navigator.canShare?.(fileShareData)) {
+          await navigator.share(fileShareData);
+          setStatus("리캡 이미지를 공유했습니다.");
+          return;
+        }
         await navigator.share({
           title: `${displayName}의 ${scope}`,
-          text: `${displayName}님이 지구본에 쌓은 ${scope}를 둘러보세요.`,
+          text: shareText,
           url: shareUrl.toString(),
         });
         return;

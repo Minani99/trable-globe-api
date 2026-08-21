@@ -4924,12 +4924,111 @@ body {
   font-size: 0.6rem;
 }
 
+.travel-recap__comparison {
+  display: grid;
+  grid-template-columns: minmax(18rem, 0.85fr) minmax(0, 1.15fr);
+  border-bottom: 1px solid var(--border);
+  background:
+    radial-gradient(circle at 8% 15%, color-mix(in srgb, var(--accent-soft) 82%, transparent), transparent 17rem),
+    color-mix(in srgb, var(--background-elevated) 68%, transparent);
+}
+
+.travel-recap__comparison-intro {
+  padding: clamp(1.35rem, 3vw, 2rem);
+  border-right: 1px solid var(--border);
+}
+
+.travel-recap__comparison-intro h3 {
+  margin-top: 0.4rem;
+  font-family: var(--font-editorial);
+  font-size: clamp(1.2rem, 2.2vw, 1.65rem);
+  font-weight: 450;
+  letter-spacing: -0.03em;
+}
+
+.travel-recap__comparison-intro > p:last-of-type {
+  max-width: 36rem;
+  margin-top: 0.7rem;
+  color: var(--text-secondary);
+  font-size: 0.76rem;
+  line-height: 1.75;
+  text-wrap: pretty;
+  word-break: keep-all;
+}
+
+.travel-recap__comparison-intro ul {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin-top: 0.9rem;
+}
+
+.travel-recap__comparison-intro li {
+  padding: 0.3rem 0.58rem;
+  border: 1px solid var(--accent-border);
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--accent-soft) 70%, transparent);
+  color: var(--accent-strong);
+  font-size: 0.61rem;
+  font-weight: 650;
+}
+
+.travel-recap__comparison-stats {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.travel-recap__comparison-stats > div {
+  display: grid;
+  min-width: 0;
+  align-content: center;
+  gap: 0.42rem;
+  padding: 1.25rem clamp(0.8rem, 2vw, 1.35rem);
+  border-right: 1px solid var(--border);
+}
+
+.travel-recap__comparison-stats > div:last-child {
+  border-right: 0;
+}
+
+.travel-recap__comparison-stats dt {
+  color: var(--text-tertiary);
+  font-size: 0.61rem;
+}
+
+.travel-recap__comparison-stats dd {
+  overflow: hidden;
+  color: var(--text-primary);
+  font-family: var(--font-mono);
+  font-size: clamp(0.9rem, 1.6vw, 1.18rem);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.045em;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.travel-recap__comparison-stats dd.is-positive {
+  color: var(--accent-strong);
+}
+
+.travel-recap__comparison-stats dd.is-negative {
+  color: var(--text-secondary);
+}
+
 .travel-recap__memories {
   display: grid;
   grid-template-columns: 1.35fr repeat(2, minmax(0, 1fr));
   min-height: 12rem;
   gap: 1px;
   background: var(--border);
+}
+
+.travel-recap__memories--2 {
+  grid-template-columns: 1.18fr 1fr;
+}
+
+.travel-recap__memories--1 {
+  grid-template-columns: 1fr;
 }
 
 .travel-recap__memories a {
@@ -4995,7 +5094,7 @@ body {
 
 .profile-country-filter {
   display: grid;
-  grid-template-columns: minmax(12rem, 0.38fr) minmax(0, 1.62fr);
+  grid-template-columns: minmax(16rem, 0.5fr) minmax(0, 1.5fr);
   align-items: center;
   gap: 2.5rem;
   padding-block: 1.6rem;
@@ -5067,6 +5166,15 @@ body {
   }
 
   .travel-recap__rhythm {
+    border-right: 0;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .travel-recap__comparison {
+    grid-template-columns: 1fr;
+  }
+
+  .travel-recap__comparison-intro {
     border-right: 0;
     border-bottom: 1px solid var(--border);
   }
@@ -5155,6 +5263,22 @@ body {
 
   .travel-recap__month-chart {
     gap: 0.22rem;
+  }
+
+  .travel-recap__comparison-intro {
+    padding: 1.25rem;
+  }
+
+  .travel-recap__comparison-stats {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .travel-recap__comparison-stats > div:nth-child(2) {
+    border-right: 0;
+  }
+
+  .travel-recap__comparison-stats > div:nth-child(-n + 2) {
+    border-bottom: 1px solid var(--border);
   }
 
   .travel-recap__memories {

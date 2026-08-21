@@ -17,7 +17,7 @@ import { TravelCard } from "@/components/travel/TravelCard";
 import { TravelTimeline } from "@/components/travel/TravelTimeline";
 import { fetchTravelsByCountry } from "@/lib/api/profile";
 import { arcsAtMoment, buildGlobeTimeline, countriesAtMoment, countriesForTravels } from "@/lib/globeTimeline";
-import { buildTravelRecap, travelsForYear, travelYears } from "@/lib/travelInsights";
+import { buildTravelRecap, buildTravelYearComparison, travelsForYear, travelYears } from "@/lib/travelInsights";
 import type { AuthMember, FollowStatus, MemberSafetyStatus, TravelSummary, UserProfile, VisitedCountry } from "@/types";
 
 interface ProfileExperienceProps {
@@ -63,6 +63,10 @@ export function ProfileExperience({
   const recap = useMemo(
     () => buildTravelRecap(scopedTravels, selectedYear),
     [scopedTravels, selectedYear],
+  );
+  const yearComparison = useMemo(
+    () => buildTravelYearComparison(travels, selectedYear, recap),
+    [recap, selectedYear, travels],
   );
   const timeline = useMemo(() => buildGlobeTimeline(scopedTravels), [scopedTravels]);
   const lastMomentIndex = Math.max(0, timeline.moments.length - 1);
@@ -334,7 +338,12 @@ export function ProfileExperience({
       </section>
 
       <div className="site-shell profile-archive">
-        <TravelYearRecap recap={recap} username={profile.username} displayName={profile.displayName} />
+        <TravelYearRecap
+          recap={recap}
+          comparison={yearComparison}
+          username={profile.username}
+          displayName={profile.displayName}
+        />
 
         <section aria-labelledby="visited-heading" className="profile-country-filter">
           <div>
