@@ -2,13 +2,7 @@ import { expect, test } from "@playwright/test";
 
 test("연도 링크를 열고 바꾸면 지구본, 기록, 리캡과 공유 주소가 함께 바뀐다", async ({ page }) => {
   const pageErrors: string[] = [];
-  let recapImageRequests = 0;
   page.on("pageerror", (error) => pageErrors.push(error.message));
-  page.on("request", (request) => {
-    if (request.url().includes("/api/og/profile?username=traveler&year=2026")) {
-      recapImageRequests += 1;
-    }
-  });
 
   await page.goto("/traveler?year=2025");
   await expect(page.locator(".profile-globe-card canvas")).toBeVisible({ timeout: 30_000 });
@@ -50,6 +44,34 @@ test("연도 링크를 열고 바꾸면 지구본, 기록, 리캡과 공유 주�
   await expect(page.locator("#timeline-2026")).toBeVisible();
   await expect(page.locator("#timeline-2025")).toHaveCount(0);
 
+  await yearFilter.getByRole("button", { name: "전체" }).click();
+  await expect(page).toHaveURL(/\/traveler$/);
+  await expect(page.getByRole("heading", { name: "지금까지, 내가 만든 여행 세계" })).toBeVisible();
+  await expect(page.locator(".travel-card")).toHaveCount(5);
+
+  await page.setViewportSize({ width: 390, height: 844 });
+  const layout = await page.evaluate(() => ({
+    viewportWidth: window.innerWidth,
+    documentWidth: document.documentElement.scrollWidth,
+  }));
+  expect(layout.documentWidth).toBeLessThanOrEqual(layout.viewportWidth + 1);
+  expect(pageErrors).toEqual([]);
+});
+
+test("연도 리캡 이미지를 저장하고 링크와 네이티브 공유로 전달한다", async ({ page }) => {
+  const pageErrors: string[] = [];
+  let recapImageRequests = 0;
+  page.on("pageerror", (error) => pageErrors.push(error.message));
+  page.on("request", (request) => {
+    if (request.url().includes("/api/og/profile?username=traveler&year=2026")) {
+      recapImageRequests += 1;
+    }
+  });
+
+  await page.goto("/traveler?year=2026");
+  await expect(page.locator(".profile-globe-card canvas")).toBeVisible({ timeout: 30_000 });
+  await expect(page.getByRole("heading", { name: "2026년, 내가 만든 여행 세계" })).toBeVisible();
+
   const recapActions = page.locator(".recap-actions");
   const downloadPromise = page.waitForEvent("download");
   await recapActions.getByRole("button", { name: "이미지 저장" }).click();
@@ -87,17 +109,5 @@ test("연도 링크를 열고 바꾸면 지구본, 기록, 리캡과 공유 주�
     window as typeof window & { sharedRecapText?: string }
   ).sharedRecapText)).toContain("지구본에는 대만의 기억이 새로 더해졌습니다.");
   expect(recapImageRequests).toBe(1);
-
-  await yearFilter.getByRole("button", { name: "전체" }).click();
-  await expect(page).toHaveURL(/\/traveler$/);
-  await expect(page.getByRole("heading", { name: "지금까지, 내가 만든 여행 세계" })).toBeVisible();
-  await expect(page.locator(".travel-card")).toHaveCount(5);
-
-  await page.setViewportSize({ width: 390, height: 844 });
-  const layout = await page.evaluate(() => ({
-    viewportWidth: window.innerWidth,
-    documentWidth: document.documentElement.scrollWidth,
-  }));
-  expect(layout.documentWidth).toBeLessThanOrEqual(layout.viewportWidth + 1);
   expect(pageErrors).toEqual([]);
 });
