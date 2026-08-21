@@ -116,6 +116,13 @@ class ProfileServiceTest {
         assertThat(travels.get(0).title()).isEqualTo("Taipei, again.");
         assertThat(travels.get(0).primaryCountry().iso2Code()).isEqualTo("TW");
         assertThat(travels.get(0).primaryCity().nameEn()).isEqualTo("Taipei");
+        assertThat(travels.get(0).routePoints()).hasSize(3);
+        assertThat(travels.get(0).routePoints()).allSatisfy(point -> {
+            assertThat(point.latitude()).isNotNull();
+            assertThat(point.longitude()).isNotNull();
+            assertThat(point.label()).isNotBlank();
+            assertThat(point.countryCode()).isEqualTo("TW");
+        });
         assertThat(travels).extracting(TravelSummaryResponse::startDate).isSortedAccordingTo(
                 java.util.Comparator.reverseOrder());
     }

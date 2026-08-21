@@ -1,5 +1,6 @@
 import Link from "next/link";
 
+import { ShareProfileButton } from "@/components/profile/ShareProfileButton";
 import { travelPath } from "@/lib/config";
 import { formatDate } from "@/lib/utils/format";
 import type { TravelRecap } from "@/lib/travelInsights";
@@ -7,11 +8,12 @@ import type { TravelRecap } from "@/lib/travelInsights";
 interface TravelYearRecapProps {
   recap: TravelRecap;
   username: string;
+  displayName: string;
 }
 
 const numberFormatter = new Intl.NumberFormat("ko-KR");
 
-export function TravelYearRecap({ recap, username }: TravelYearRecapProps) {
+export function TravelYearRecap({ recap, username, displayName }: TravelYearRecapProps) {
   if (!recap.latestTravel) return null;
 
   const scopeLabel = recap.year ? `${recap.year}년` : "지금까지";
@@ -26,7 +28,14 @@ export function TravelYearRecap({ recap, username }: TravelYearRecapProps) {
           <p className="eyebrow">World recap</p>
           <h2 id="travel-recap-heading">{scopeLabel}, 내가 만든 여행 세계</h2>
         </div>
-        <p>{narrative}</p>
+        <div className="travel-recap__summary">
+          <p>{narrative}</p>
+          <ShareProfileButton
+            displayName={displayName}
+            selectedYear={recap.year}
+            variant="recap"
+          />
+        </div>
       </div>
 
       <dl className="travel-recap__stats">

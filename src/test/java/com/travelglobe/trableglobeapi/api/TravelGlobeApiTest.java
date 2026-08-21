@@ -90,7 +90,11 @@ class TravelGlobeApiTest {
                 .andExpect(jsonPath("$.data.length()").value(5))
                 .andExpect(jsonPath("$.data[0].title").value("Taipei, again."))
                 .andExpect(jsonPath("$.data[0].primaryCountry.nameKo").value("대만"))
-                .andExpect(jsonPath("$.data[0].durationDays").value(3));
+                .andExpect(jsonPath("$.data[0].durationDays").value(3))
+                .andExpect(jsonPath("$.data[0].routePoints.length()").value(3))
+                .andExpect(jsonPath("$.data[0].routePoints[0].label").isNotEmpty())
+                .andExpect(jsonPath("$.data[0].routePoints[0].latitude").isNumber())
+                .andExpect(jsonPath("$.data[0].routePoints[0].longitude").isNumber());
     }
 
     @Test

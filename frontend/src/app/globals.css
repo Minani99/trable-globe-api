@@ -4667,11 +4667,20 @@ body {
   word-break: keep-all;
 }
 
-.travel-recap__heading > p {
+.travel-recap__summary > p {
   color: var(--text-secondary);
   font-size: 0.84rem;
   line-height: 1.75;
   word-break: keep-all;
+}
+
+.travel-recap__summary .profile-share {
+  margin-top: 0.8rem;
+}
+
+.profile-share--recap button {
+  min-height: 2.2rem;
+  background: color-mix(in srgb, var(--surface) 72%, transparent);
 }
 
 .travel-recap__stats {

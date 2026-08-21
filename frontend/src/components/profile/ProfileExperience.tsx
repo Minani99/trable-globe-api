@@ -27,6 +27,7 @@ interface ProfileExperienceProps {
   viewer: AuthMember | null;
   relationship: FollowStatus | null;
   safetyStatus: MemberSafetyStatus | null;
+  initialYear?: number | null;
 }
 
 /**
@@ -35,12 +36,22 @@ interface ProfileExperienceProps {
  * The globe, filters, detail panel and archive all read and write it, so it lives here
  * rather than in a store - there is one consumer tree and no cross-page persistence.
  */
-export function ProfileExperience({ profile, countries, travels, viewer, relationship, safetyStatus }: ProfileExperienceProps) {
+export function ProfileExperience({
+  profile,
+  countries,
+  travels,
+  viewer,
+  relationship,
+  safetyStatus,
+  initialYear = null,
+}: ProfileExperienceProps) {
+  const years = useMemo(() => travelYears(travels), [travels]);
   const [selectedCode, setSelectedCode] = useState<string | null>(null);
   const [hoveredCode, setHoveredCode] = useState<string | null>(null);
   const [centeredCode, setCenteredCode] = useState<string | null>(null);
-  const [selectedYear, setSelectedYear] = useState<number | null>(null);
-  const years = useMemo(() => travelYears(travels), [travels]);
+  const [selectedYear, setSelectedYear] = useState<number | null>(() => (
+    initialYear !== null && years.includes(initialYear) ? initialYear : null
+  ));
   const scopedTravels = useMemo(
     () => travelsForYear(travels, selectedYear),
     [selectedYear, travels],
@@ -195,6 +206,13 @@ export function ProfileExperience({ profile, countries, travels, viewer, relatio
 
   const handleYearChange = useCallback((year: number | null) => {
     const nextTravels = travelsForYear(travels, year);
+    const url = new URL(window.location.href);
+    if (year === null) {
+      url.searchParams.delete("year");
+    } else {
+      url.searchParams.set("year", String(year));
+    }
+    window.history.replaceState(null, "", `${url.pathname}${url.search}${url.hash}`);
     setSelectedYear(year);
     setSelectedCode(null);
     setHoveredCode(null);
@@ -220,7 +238,7 @@ export function ProfileExperience({ profile, countries, travels, viewer, relatio
               {" "}재생 버튼으로 세계가 확장된 시간을 따라가거나 나라를 선택해
               그곳에 쌓인 기억을 살펴보세요.
             </p>
-            <ShareProfileButton displayName={profile.displayName} />
+            <ShareProfileButton displayName={profile.displayName} selectedYear={selectedYear} />
           </div>
         </div>
 
@@ -316,7 +334,7 @@ export function ProfileExperience({ profile, countries, travels, viewer, relatio
       </section>
 
       <div className="site-shell profile-archive">
-        <TravelYearRecap recap={recap} username={profile.username} />
+        <TravelYearRecap recap={recap} username={profile.username} displayName={profile.displayName} />
 
         <section aria-labelledby="visited-heading" className="profile-country-filter">
           <div>

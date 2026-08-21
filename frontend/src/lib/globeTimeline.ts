@@ -169,6 +169,16 @@ export function distanceForTravelsKm(travels: TravelSummary[]): number {
 }
 
 function routePointsForTravel(travel: TravelSummary): RoutePoint[] {
+  // During a rolling deploy an older API may briefly omit this additive field. The
+  // country-centroid fallback keeps the profile usable until both releases converge.
+  if (travel.routePoints?.length) {
+    return travel.routePoints.map((point) => ({
+      lat: point.latitude,
+      lng: point.longitude,
+      label: point.label,
+    }));
+  }
+
   const points: RoutePoint[] = [];
   const primaryCountryCode = travel.primaryCountry?.iso2Code;
 

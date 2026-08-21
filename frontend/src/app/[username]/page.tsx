@@ -17,17 +17,28 @@ import type { FollowStatus, MemberSafetyStatus } from "@/types";
  * one request per render pass.
  */
 const loadProfile = cache((username: string) => fetchProfile(username));
+const loadTravels = cache((username: string) => fetchTravels(username));
 
 export async function generateMetadata(props: PageProps<"/[username]">): Promise<Metadata> {
-  const { username } = await props.params;
+  const [{ username }, searchParams] = await Promise.all([props.params, props.searchParams]);
+  const year = parseYearParam(searchParams.year);
 
   try {
-    const profile = await loadProfile(username);
+    const [profile, travels] = await Promise.all([
+      loadProfile(username),
+      year === null ? Promise.resolve(null) : loadTravels(username),
+    ]);
+    const sharedYear = year !== null && travels?.some((travel) => travel.startDate.startsWith(`${year}-`))
+      ? year
+      : null;
     return {
-      title: `${profile.displayName} (@${profile.username})`,
-      description:
-        profile.bio ??
-        `${profile.displayName}님이 기록한 ${profile.statistics.countryCount}개 나라와 여행 이야기를 지구본에서 만나보세요.`,
+      title: sharedYear
+        ? `${sharedYear} 여행 세계 · ${profile.displayName} (@${profile.username})`
+        : `${profile.displayName} (@${profile.username})`,
+      description: sharedYear
+        ? `${profile.displayName}님이 ${sharedYear}년에 기록한 여행 동선과 기억을 지구본에서 만나보세요.`
+        : profile.bio ??
+          `${profile.displayName}님이 기록한 ${profile.statistics.countryCount}개 나라와 여행 이야기를 지구본에서 만나보세요.`,
     };
   } catch {
     return { title: `@${username}` };
@@ -35,7 +46,8 @@ export async function generateMetadata(props: PageProps<"/[username]">): Promise
 }
 
 export default async function ProfilePage(props: PageProps<"/[username]">) {
-  const { username } = await props.params;
+  const [{ username }, searchParams] = await Promise.all([props.params, props.searchParams]);
+  const initialYear = parseYearParam(searchParams.year);
 
   let data: Awaited<ReturnType<typeof loadProfileBundle>>;
   let viewer: Awaited<ReturnType<typeof getCurrentMember>> = null;
@@ -89,11 +101,18 @@ export default async function ProfilePage(props: PageProps<"/[username]">) {
           viewer={viewer}
           relationship={relationship}
           safetyStatus={safetyStatus}
+          initialYear={initialYear}
         />
       </main>
       <SiteFooter />
     </>
   );
+}
+
+function parseYearParam(value: string | string[] | undefined): number | null {
+  if (Array.isArray(value) || !value || !/^\d{4}$/.test(value)) return null;
+  const year = Number(value);
+  return year >= 1900 && year <= 2100 ? year : null;
 }
 
 /**
@@ -104,7 +123,7 @@ async function loadProfileBundle(username: string) {
   const [profile, countries, travels] = await Promise.all([
     loadProfile(username),
     fetchVisitedCountries(username),
-    fetchTravels(username),
+    loadTravels(username),
   ]);
   return { profile, countries, travels };
 }

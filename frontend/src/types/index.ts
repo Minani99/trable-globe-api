@@ -57,6 +57,14 @@ export interface CityRef {
   longitude: number;
 }
 
+/** A map-ready itinerary stop exposed on public travel summaries. */
+export interface TravelRoutePoint {
+  latitude: number;
+  longitude: number;
+  label: string;
+  countryCode: string;
+}
+
 export interface TravelSummary {
   id: number;
   title: string;
@@ -68,6 +76,7 @@ export interface TravelSummary {
   primaryCountry: CountryRef | null;
   primaryCity: CityRef | null;
   countries: CountryRef[];
+  routePoints: TravelRoutePoint[];
   placeCount: number;
   photoCount: number;
 }

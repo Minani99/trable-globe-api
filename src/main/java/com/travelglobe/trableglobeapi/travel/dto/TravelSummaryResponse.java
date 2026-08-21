@@ -26,6 +26,7 @@ public record TravelSummaryResponse(
         CountryRef primaryCountry,
         CityRef primaryCity,
         List<CountryRef> countries,
+        List<TravelRoutePointResponse> routePoints,
         int placeCount,
         long photoCount) {
 
@@ -44,6 +45,7 @@ public record TravelSummaryResponse(
                 first == null ? null : CountryRef.from(first.getCountry()),
                 first == null ? null : CityRef.from(first.getCity()),
                 distinctCountries(places),
+                places.stream().map(TravelRoutePointResponse::from).toList(),
                 places.size(),
                 photoCount);
     }

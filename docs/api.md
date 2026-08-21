@@ -223,6 +223,12 @@ Base URL: `http://localhost:8080` (개발). Next.js 서버와 동일 출처 `/ap
         { "iso2Code": "TW", "iso3Code": "TWN", "nameEn": "Taiwan", "nameKo": "대만",
           "latitude": 23.69781, "longitude": 120.960515 }
       ],
+      "routePoints": [
+        { "latitude": 25.033964, "longitude": 121.564468,
+          "label": "타이베이 101", "countryCode": "TW" },
+        { "latitude": 25.042141, "longitude": 121.507654,
+          "label": "시먼딩", "countryCode": "TW" }
+      ],
       "placeCount": 3,
       "photoCount": 3
     }
@@ -235,6 +241,8 @@ Base URL: `http://localhost:8080` (개발). Next.js 서버와 동일 출처 `/ap
   장소가 없는 여행이면 둘 다 `null`입니다.
 - `countries`는 그 여행이 거친 **모든 국가**를 일정 순서대로 중복 없이 담습니다.
   프론트엔드가 국가 선택에 따라 카드를 필터링할 때 씁니다.
+- `routePoints`는 장소 → 도시 → 국가 중심점 순으로 좌표를 보완한 **전체 방문 장소 동선**입니다.
+  공개 프로필의 지구본 이동선과 연결 거리 계산에 일정 순서 그대로 사용합니다.
 - `durationDays`는 시작일과 종료일을 모두 포함해 셉니다(당일치기 = 1).
 
 ---
