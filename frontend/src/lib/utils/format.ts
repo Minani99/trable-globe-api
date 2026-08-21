@@ -52,6 +52,14 @@ export function formatStat(value: number): string {
   return value < 10 ? `0${value}` : String(value);
 }
 
+/** Social counts stay natural at small values and become compact only when needed. */
+export function formatCount(value: number): string {
+  return new Intl.NumberFormat("ko-KR", {
+    notation: value >= 1_000 ? "compact" : "standard",
+    maximumFractionDigits: 1,
+  }).format(value);
+}
+
 /** `3박 4일`, or `당일치기` for a same-day trip. */
 export function formatDuration(durationDays: number): string {
   if (durationDays <= 1) {

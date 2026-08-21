@@ -382,6 +382,17 @@ class TravelGlobeApiTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.data.followerCount").value(1));
 
+        mockMvc.perform(get("/api/private/discovery/profiles/discover_target/followers")
+                        .header("Authorization", "Bearer " + seekerToken))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data[0].username").value("discover_seeker"))
+                .andExpect(jsonPath("$.data[0].currentMember").value(true));
+
+        mockMvc.perform(get("/api/discovery/profiles/discover_seeker/following"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data[0].username").value("discover_target"))
+                .andExpect(jsonPath("$.data[0].currentMember").value(false));
+
         mockMvc.perform(delete("/api/private/discovery/profiles/discover_target/follow")
                         .header("Authorization", "Bearer " + seekerToken))
                 .andExpect(status().isOk())

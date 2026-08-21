@@ -5,6 +5,7 @@ import com.travelglobe.trableglobeapi.auth.security.MemberPrincipal;
 import com.travelglobe.trableglobeapi.global.response.ApiResponse;
 import com.travelglobe.trableglobeapi.social.dto.FollowStatusResponse;
 import com.travelglobe.trableglobeapi.social.dto.CreateMemberReportRequest;
+import com.travelglobe.trableglobeapi.social.dto.MemberConnectionResponse;
 import com.travelglobe.trableglobeapi.social.dto.MemberDiscoveryResponse;
 import com.travelglobe.trableglobeapi.social.dto.MemberReportResponse;
 import com.travelglobe.trableglobeapi.social.dto.MemberSafetyStatusResponse;
@@ -44,6 +45,22 @@ public class MemberDiscoveryController {
             HttpServletRequest request,
             @RequestParam(defaultValue = "8") int limit) {
         return ApiResponse.ok(discoveryService.recommendations(principal(request), limit));
+    }
+
+    @GetMapping("/profiles/{username}/followers")
+    public ApiResponse<List<MemberConnectionResponse>> followers(
+            HttpServletRequest request,
+            @PathVariable String username,
+            @RequestParam(defaultValue = "24") int limit) {
+        return ApiResponse.ok(discoveryService.followers(principal(request), username, limit));
+    }
+
+    @GetMapping("/profiles/{username}/following")
+    public ApiResponse<List<MemberConnectionResponse>> following(
+            HttpServletRequest request,
+            @PathVariable String username,
+            @RequestParam(defaultValue = "24") int limit) {
+        return ApiResponse.ok(discoveryService.following(principal(request), username, limit));
     }
 
     @GetMapping("/profiles/{username}")

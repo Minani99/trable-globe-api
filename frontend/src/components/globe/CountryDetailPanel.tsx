@@ -3,7 +3,7 @@
 import Link from "next/link";
 
 import { travelPath } from "@/lib/config";
-import { formatDateRange } from "@/lib/utils/format";
+import { formatDate, formatDateRange } from "@/lib/utils/format";
 import type { TravelSummary, VisitedCountry } from "@/types";
 
 interface CountryDetailPanelProps {
@@ -25,6 +25,10 @@ export function CountryDetailPanel({
   username,
   onClear,
 }: CountryDetailPanelProps) {
+  const orderedTravels = [...travels].sort((left, right) => right.startDate.localeCompare(left.startDate));
+  const firstTravel = orderedTravels.at(-1) ?? null;
+  const latestTravel = orderedTravels[0] ?? null;
+
   return (
     <aside
       aria-label={`${country.nameKo} 여행 요약`}
@@ -47,7 +51,7 @@ export function CountryDetailPanel({
         </button>
       </div>
 
-      <dl className="border-border-subtle mb-4 flex gap-6 border-y py-3">
+      <dl className="country-detail__memory-stats border-border-subtle mb-4 grid grid-cols-3 gap-3 border-y py-3">
         <div>
           <dt className="eyebrow">여행</dt>
           <dd className="text-content mt-1 font-mono text-[1.05rem]">{country.travelCount}</dd>
@@ -56,11 +60,24 @@ export function CountryDetailPanel({
           <dt className="eyebrow">도시</dt>
           <dd className="text-content mt-1 font-mono text-[1.05rem]">{country.cityCount}</dd>
         </div>
+        <div>
+          <dt className="eyebrow">첫 기억</dt>
+          <dd className="text-content mt-1 font-mono text-[0.72rem]">
+            {firstTravel ? formatDate(firstTravel.startDate).slice(0, 7) : "—"}
+          </dd>
+        </div>
       </dl>
+
+      {latestTravel ? (
+        <div className="country-detail__latest">
+          <small>가장 최근의 기억 · {formatDate(latestTravel.startDate)}</small>
+          <strong>{latestTravel.title}</strong>
+        </div>
+      ) : null}
 
       {travels.length > 0 ? (
         <ul className="flex flex-col gap-1">
-          {travels.map((travel) => (
+          {orderedTravels.slice(0, 3).map((travel) => (
             <li key={travel.id}>
               <Link
                 href={travelPath(username, travel.id)}
@@ -73,6 +90,9 @@ export function CountryDetailPanel({
               </Link>
             </li>
           ))}
+          {orderedTravels.length > 3 ? (
+            <li className="country-detail__more">외 {orderedTravels.length - 3}개의 여행</li>
+          ) : null}
         </ul>
       ) : (
         <p className="text-caption">이 국가에 공개된 여행 기록이 없습니다.</p>

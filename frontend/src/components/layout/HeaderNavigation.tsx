@@ -6,6 +6,7 @@ import { useEffect, useSyncExternalStore } from "react";
 
 import { ThemeToggle } from "@/components/theme/ThemeToggle";
 import { AccountNavigation } from "@/components/layout/AccountNavigation";
+import { TravelImage } from "@/components/common/TravelImage";
 import {
   getCachedAuthMember,
   loadAuthMember,
@@ -105,7 +106,16 @@ function MobileBottomNavigation({
         emphasized
       />
       <MobileNavLink href="/discover" label="발견" icon="search" active={pathname === "/discover"} />
-      <MobileNavLink href={profileHref} label="프로필" icon="profile" active={profileActive} />
+      <MobileNavLink
+        href={profileHref}
+        label="프로필"
+        icon="profile"
+        active={profileActive}
+        avatar={member ? {
+          src: member.profileImageUrl,
+          fallbackLabel: member.username.slice(0, 2),
+        } : undefined}
+      />
     </nav>
   );
 }
@@ -116,20 +126,29 @@ function MobileNavLink({
   icon,
   active,
   emphasized = false,
+  avatar,
 }: {
   href: string;
   label: string;
   icon: "home" | "globe" | "add" | "search" | "profile";
   active: boolean;
   emphasized?: boolean;
+  avatar?: { src: string | null; fallbackLabel: string };
 }) {
   return (
     <Link
       href={href}
-      className={`site-mobile-bottom-nav__item${emphasized ? " is-emphasized" : ""}`}
+      className={`site-mobile-bottom-nav__item${emphasized ? " is-emphasized" : ""}${avatar ? " has-avatar" : ""}`}
       aria-current={active ? "page" : undefined}
     >
-      <MobileNavIcon name={icon} />
+      {avatar ? (
+        <TravelImage
+          src={avatar.src}
+          alt=""
+          fallbackLabel={avatar.fallbackLabel}
+          className="site-mobile-bottom-nav__avatar"
+        />
+      ) : <MobileNavIcon name={icon} />}
       <span>{label}</span>
     </Link>
   );
@@ -137,7 +156,7 @@ function MobileNavLink({
 
 function MobileNavIcon({ name }: { name: "home" | "globe" | "add" | "search" | "profile" }) {
   if (name === "home") {
-    return <svg aria-hidden="true" viewBox="0 0 24 24"><path d="m4 10 8-6 8 6v9H8v-6h8v6" /></svg>;
+    return <svg aria-hidden="true" viewBox="0 0 24 24"><path d="m4 10 8-6 8 6v9h-5v-6H9v6H4Z" /></svg>;
   }
   if (name === "globe") {
     return <svg aria-hidden="true" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5" /><path d="M3.8 12h16.4M12 3.5c2.2 2.3 3.3 5.1 3.3 8.5S14.2 18.2 12 20.5M12 3.5C9.8 5.8 8.7 8.6 8.7 12s1.1 6.2 3.3 8.5" /></svg>;

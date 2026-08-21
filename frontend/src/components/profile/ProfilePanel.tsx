@@ -5,6 +5,7 @@ import { useState } from "react";
 
 import { TravelImage } from "@/components/common/TravelImage";
 import { FollowButton } from "@/components/discovery/FollowButton";
+import { ProfileConnections } from "@/components/profile/ProfileConnections";
 import { ProfileSafetyActions } from "@/components/profile/ProfileSafetyActions";
 import { formatStat } from "@/lib/utils/format";
 import type { FollowStatus, MemberSafetyStatus, UserProfile } from "@/types";
@@ -82,10 +83,12 @@ export function ProfilePanel({
         <Stat label="여행" value={statistics.travelCount} />
       </dl>
 
-      <div className="profile-panel__social">
-        <p><strong>{formatStat(followerCount)}</strong> 팔로워</p>
-        <p><strong>{formatStat(profile.followingCount)}</strong> 팔로잉</p>
-      </div>
+      <ProfileConnections
+        username={profile.username}
+        followerCount={followerCount}
+        followingCount={profile.followingCount}
+        viewerAuthenticated={viewerAuthenticated}
+      />
 
       {isOwnProfile ? (
         <Link href="/settings#profile" className="profile-panel__primary-action">프로필 편집</Link>

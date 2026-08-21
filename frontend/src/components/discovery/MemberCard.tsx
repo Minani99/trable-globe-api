@@ -4,6 +4,7 @@ import Link from "next/link";
 
 import { TravelImage } from "@/components/common/TravelImage";
 import { FollowButton } from "@/components/discovery/FollowButton";
+import { formatCount } from "@/lib/utils/format";
 import type { MemberDiscovery } from "@/types";
 
 export function MemberCard({ member, viewerAuthenticated }: { member: MemberDiscovery; viewerAuthenticated: boolean }) {
@@ -25,9 +26,15 @@ export function MemberCard({ member, viewerAuthenticated }: { member: MemberDisc
       <p className="member-card__bio">{member.bio || "여행으로 자신의 세계를 기록하고 있어요."}</p>
 
       <div className="member-card__reason">
-        <span aria-hidden="true">◎</span>
-        {member.recommendationReason}
+        <span>추천 이유</span>
+        <strong>{member.recommendationReason}</strong>
       </div>
+
+      <dl className="member-card__stats">
+        <MemberStat label="국가" value={member.countryCount} />
+        <MemberStat label="여행" value={member.travelCount} />
+        <MemberStat label="팔로워" value={member.followerCount} />
+      </dl>
 
       <div className="member-card__actions">
         <Link href={`/${member.username}`}>지구본 보기 <span aria-hidden="true">→</span></Link>
@@ -43,4 +50,8 @@ export function MemberCard({ member, viewerAuthenticated }: { member: MemberDisc
       </div>
     </article>
   );
+}
+
+function MemberStat({ label, value }: { label: string; value: number }) {
+  return <div><dt>{label}</dt><dd>{formatCount(value)}</dd></div>;
 }

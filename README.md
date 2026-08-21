@@ -220,8 +220,9 @@ Pull Request와 `master` push에는 GitHub Actions가 자동으로 백엔드 테
 
 - 공개 프로필 조회와 소유자 전용 여행 CRUD API
 - 회원가입·로그인·이메일 인증·비밀번호 재설정·회원 탈퇴, DB 기반 불투명 세션
-- Flyway 마이그레이션 5개, 4개 실행 프로필 (`local`, `postgres`, `prod`, `demo`)
+- Flyway 마이그레이션 6개, 4개 실행 프로필 (`local`, `postgres`, `prod`, `demo`)
 - 3D 지구본: 회전 / 확대·축소 / 방문 국가 강조 / 마커 / hover / click / 카메라 이동 / 국가 패널
+- 여행 날짜 재생·시점 슬라이더, 시점별 국가 성장 표현, 최근 여행 강조와 대표 도시·국가 이동선
 - 국가 선택에 따른 여행 카드 필터, 여행 타임라인, 여행 상세(경로 지도·장소·사진·이전/다음)
 - Loading / Error / Not Found / Empty 상태
 - 키보드 조작과 국가 목록 대체 UI, `prefers-reduced-motion` 대응

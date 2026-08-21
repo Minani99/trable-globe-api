@@ -1,11 +1,14 @@
 import { apiGet, apiMutation, apiSessionGet } from "@/lib/api/client";
 import type {
   FollowStatus,
+  MemberConnection,
   MemberDiscovery,
   MemberReportReason,
   MemberReportReceipt,
   MemberSafetyStatus,
 } from "@/types";
+
+export type ConnectionKind = "followers" | "following";
 
 export function searchMembers(query: string, authenticated: boolean): Promise<MemberDiscovery[]> {
   const suffix = `?query=${encodeURIComponent(query)}&limit=16`;
@@ -20,6 +23,17 @@ export function fetchRecommendations(): Promise<MemberDiscovery[]> {
 
 export function fetchPublicRecommendations(): Promise<MemberDiscovery[]> {
   return apiGet<MemberDiscovery[]>("/api/discovery/recommendations?limit=8");
+}
+
+export function fetchMemberConnections(
+  username: string,
+  kind: ConnectionKind,
+  authenticated: boolean,
+): Promise<MemberConnection[]> {
+  const path = `/profiles/${encodeURIComponent(username)}/${kind}?limit=24`;
+  return authenticated
+    ? apiSessionGet<MemberConnection[]>(`/api/private/discovery${path}`)
+    : apiGet<MemberConnection[]>(`/api/discovery${path}`);
 }
 
 export function followMember(username: string): Promise<FollowStatus | null> {

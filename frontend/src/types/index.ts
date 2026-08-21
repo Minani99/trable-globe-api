@@ -177,6 +177,16 @@ export interface MemberDiscovery {
   recommendationReason: string;
 }
 
+export interface MemberConnection {
+  username: string;
+  displayName: string;
+  bio: string | null;
+  profileImageUrl: string | null;
+  followerCount: number;
+  following: boolean;
+  currentMember: boolean;
+}
+
 export interface SocialAuthor {
   username: string;
   displayName: string;

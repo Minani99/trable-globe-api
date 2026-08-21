@@ -17,6 +17,7 @@ export const globeThemes = {
     shininess: 18,
     visitedRamp: ["#f2c5ae", "#eda584", "#e98a61", "#e8703a", "#cf5425"],
     hovered: "#f37f4b",
+    recent: "#f08a56",
     selected: "#c94619",
   },
   dark: {
@@ -30,6 +31,7 @@ export const globeThemes = {
     shininess: 16,
     visitedRamp: ["#7a3c22", "#9c4a26", "#c25c2c", "#e8703a", "#ff8a52"],
     hovered: "#ffa46f",
+    recent: "#f7945f",
     selected: "#ffb281",
   },
 } as const;

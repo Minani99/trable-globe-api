@@ -20,12 +20,15 @@ export function ProfileEditor({ member }: { member: AuthMember }) {
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [uploadConfig, setUploadConfig] = useState<UploadConfiguration | null>(null);
+  const [uploadConfigFailed, setUploadConfigFailed] = useState(false);
   const [uploadProgress, setUploadProgress] = useState<number | null>(null);
   const [status, setStatus] = useState<string | null>(null);
   const [pending, setPending] = useState(false);
 
   useEffect(() => {
-    getUploadConfiguration().then(setUploadConfig).catch(() => setUploadConfig(null));
+    getUploadConfiguration()
+      .then(setUploadConfig)
+      .catch(() => setUploadConfigFailed(true));
   }, []);
 
   useEffect(() => () => {
@@ -116,10 +119,16 @@ export function ProfileEditor({ member }: { member: AuthMember }) {
         />
         <div className="settings-avatar__actions">
           <strong>프로필 사진</strong>
-          <p>정사각형 이미지를 권장합니다. JPG, PNG, WebP · 최대 10MB</p>
+          <p>얼굴이나 나를 잘 보여주는 정사각형 이미지를 권장합니다. JPG, PNG, WebP · 최대 10MB</p>
           <div>
             <label className={`settings-avatar__upload${uploadConfig?.configured ? "" : " is-disabled"}`}>
-              <span>{imageFile ? "다른 사진 선택" : "사진 업로드"}</span>
+              <span>{imageFile
+                ? "다른 사진 선택"
+                : uploadConfig === null && !uploadConfigFailed
+                  ? "업로드 확인 중…"
+                  : uploadConfig?.configured
+                    ? "사진 업로드"
+                    : "파일 업로드 준비 중"}</span>
               <input
                 type="file"
                 accept="image/jpeg,image/png,image/webp"
@@ -134,7 +143,13 @@ export function ProfileEditor({ member }: { member: AuthMember }) {
             ) : null}
           </div>
           {uploadConfig && !uploadConfig.configured ? (
-            <small>사진 저장소가 연결되기 전에는 아래 이미지 URL을 사용할 수 있습니다.</small>
+            <small className="settings-avatar__notice" role="status">
+              파일 저장소 연결이 아직 완료되지 않았습니다. 아래에서 이미지 URL을 등록할 수 있습니다.
+            </small>
+          ) : uploadConfigFailed ? (
+            <small className="settings-avatar__notice is-error" role="alert">
+              업로드 가능 여부를 확인하지 못했습니다. 새로고침 후 다시 시도해 주세요.
+            </small>
           ) : null}
           {uploadProgress !== null ? <small role="status">업로드 {uploadProgress}%</small> : null}
         </div>

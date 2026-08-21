@@ -7,6 +7,7 @@ import type { GlobeMethods } from "react-globe.gl";
 
 import { GlobeLoadingIndicator } from "@/components/globe/GlobeLoadingIndicator";
 import { globeThemes, visitedColor } from "@/components/globe/globeTheme";
+import type { GlobeRouteArc } from "@/lib/globeTimeline";
 import { useColorTheme } from "@/lib/theme";
 import type { VisitedCountry } from "@/types";
 
@@ -41,6 +42,9 @@ export interface GlobeCountryHover {
 interface TravelGlobeProps {
   countries: VisitedCountry[];
   selectedCode: string | null;
+  focusCode?: string | null;
+  recentCode?: string | null;
+  routeArcs?: GlobeRouteArc[];
   onSelect: (iso2Code: string | null) => void;
   onHover: (iso2Code: string | null) => void;
   onCountryHover?: (country: GlobeCountryHover | null) => void;
@@ -67,6 +71,9 @@ const WORLD_SURFACE_SNAP_DISTANCE_DEGREES = 11;
 export function TravelGlobe({
   countries,
   selectedCode,
+  focusCode = null,
+  recentCode = null,
+  routeArcs = [],
   onSelect,
   onHover,
   onCountryHover,
@@ -99,13 +106,15 @@ export function TravelGlobe({
   // against imperative DOM, so they read the latest values through refs rather than
   // closing over a stale render.
   const selectedRef = useRef(selectedCode);
+  const focusRef = useRef(focusCode);
   const onSelectRef = useRef(onSelect);
   const reduceMotionRef = useRef(reduceMotion);
 
   useEffect(() => {
     selectedRef.current = selectedCode;
+    focusRef.current = focusCode;
     onSelectRef.current = onSelect;
-  }, [selectedCode, onSelect]);
+  }, [focusCode, selectedCode, onSelect]);
 
   useEffect(() => {
     reduceMotionRef.current = reduceMotion;
@@ -125,12 +134,12 @@ export function TravelGlobe({
   }, [cancelAmbientRotation]);
 
   const startAmbientRotation = useCallback(() => {
-    if (autoRotateFrame.current !== null || reduceMotionRef.current || selectedRef.current !== null) return;
+    if (autoRotateFrame.current !== null || reduceMotionRef.current || selectedRef.current !== null || focusRef.current !== null) return;
     setAutoRotating(true);
 
     const rotate = (time: number) => {
       const globe = globeRef.current;
-      if (!globe || reduceMotionRef.current || selectedRef.current !== null) {
+      if (!globe || reduceMotionRef.current || selectedRef.current !== null || focusRef.current !== null) {
         autoRotateFrame.current = null;
         lastRotationAt.current = null;
         setAutoRotating(false);
@@ -157,7 +166,7 @@ export function TravelGlobe({
 
   const scheduleAmbientRotation = useCallback(() => {
     clearRotationResume();
-    if (reduceMotionRef.current || selectedRef.current !== null) return;
+    if (reduceMotionRef.current || selectedRef.current !== null || focusRef.current !== null) return;
     autoRotateTimer.current = setTimeout(startAmbientRotation, AUTO_ROTATE_RESUME_DELAY_MS);
   }, [clearRotationResume, startAmbientRotation]);
 
@@ -181,6 +190,15 @@ export function TravelGlobe({
     () => new Map(featureCenters.map(({ code, center }) => [code, center])),
     [featureCenters],
   );
+
+  const centerCandidates = useMemo(
+    () => isWorldExplorer
+      ? featureCenters
+      : featureCenters.filter(({ code }) => visitedByCode.has(code)),
+    [featureCenters, isWorldExplorer, visitedByCode],
+  );
+
+  const activeCode = selectedCode ?? focusCode;
 
   const maxTravelCount = useMemo(
     () => countries.reduce((max, country) => Math.max(max, country.travelCount), 1),
@@ -335,7 +353,7 @@ export function TravelGlobe({
     const controls = globeRef.current?.controls();
     if (!controls) return;
     clearRotationResume();
-    if (reduceMotion || selectedCode !== null) {
+    if (reduceMotion || activeCode !== null) {
       cancelAmbientRotation();
       const stateTimer = setTimeout(() => setAutoRotating(false), 0);
       return () => clearTimeout(stateTimer);
@@ -351,7 +369,7 @@ export function TravelGlobe({
     isWorldExplorer,
     reduceMotion,
     scheduleAmbientRotation,
-    selectedCode,
+    activeCode,
     startAmbientRotation,
   ]);
 
@@ -363,11 +381,11 @@ export function TravelGlobe({
     }
     const transition = reduceMotion ? 0 : 900;
 
-    if (selectedCode === null) {
+    if (activeCode === null) {
       if (!isWorldExplorer) globe.pointOfView(INITIAL_VIEW, transition);
       return;
     }
-    const country = visitedByCode.get(selectedCode);
+    const country = visitedByCode.get(activeCode);
     if (country) {
       globe.pointOfView(
         { lat: country.latitude, lng: country.longitude, altitude: ALTITUDE_FOCUSED },
@@ -375,23 +393,23 @@ export function TravelGlobe({
       );
       return;
     }
-    const center = isWorldExplorer ? featureCenterByCode.get(selectedCode) : undefined;
+    const center = isWorldExplorer ? featureCenterByCode.get(activeCode) : undefined;
     if (center) {
       globe.pointOfView({ ...center, altitude: ALTITUDE_FOCUSED }, transition);
     }
-  }, [featureCenterByCode, isWorldExplorer, selectedCode, ready, reduceMotion, visitedByCode]);
+  }, [activeCode, featureCenterByCode, isWorldExplorer, ready, reduceMotion, visitedByCode]);
 
   // While the globe turns on its own, softly identify the country nearest the camera's
   // center. The interval is deliberately low-frequency: it feels live without causing a
   // React render for every WebGL animation frame.
   useEffect(() => {
-    if (!isWorldExplorer || !ready || !autoRotating || selectedCode !== null) return;
+    if (!ready || !autoRotating || activeCode !== null || centerCandidates.length === 0) return;
     let announcedCode: string | null = null;
 
     const updateCenteredCountry = () => {
       const view = globeRef.current?.pointOfView();
       if (!view) return;
-      const nearest = findNearestFeature(featureCenters, view.lat, view.lng);
+      const nearest = findNearestFeature(centerCandidates, view.lat, view.lng);
       const next = nearest && nearest.distance <= CENTER_HIGHLIGHT_MAX_DISTANCE_DEGREES
         ? nearest.item
         : null;
@@ -413,7 +431,7 @@ export function TravelGlobe({
     updateCenteredCountry();
     const interval = setInterval(updateCenteredCountry, CENTER_HIGHLIGHT_INTERVAL_MS);
     return () => clearInterval(interval);
-  }, [autoRotating, featureCenters, isWorldExplorer, onCountryCenter, ready, selectedCode]);
+  }, [activeCode, autoRotating, centerCandidates, onCountryCenter, ready]);
 
   // Stop rendering when the component goes away, so a navigation cannot leave a
   // requestAnimationFrame loop running against a detached canvas.
@@ -477,10 +495,12 @@ export function TravelGlobe({
 
     markerElements.current.forEach((element, code) => {
       element.classList.toggle("is-selected", code === selectedCode);
+      element.classList.toggle("is-timeline", code === focusCode);
+      element.classList.toggle("is-recent", code === recentCode);
       element.classList.toggle("is-hovered", code === hoveredCode);
-      element.classList.toggle("is-dimmed", selectedCode !== null && code !== selectedCode);
+      element.classList.toggle("is-dimmed", activeCode !== null && code !== activeCode);
     });
-  }, [selectedCode, hoveredCode, markerData]);
+  }, [activeCode, focusCode, hoveredCode, markerData, recentCode, selectedCode]);
 
   useEffect(() => {
     onHover(hoveredCode);
@@ -495,12 +515,16 @@ export function TravelGlobe({
       if (code === selectedCode) {
         return globeTheme.selected;
       }
-      if (selectedCode === null && code === hoveredCode) {
+      if (selectedCode === null && code === focusCode) {
+        return globeTheme.recent;
+      }
+      if (activeCode === null && code === hoveredCode) {
         return globeTheme.hovered;
       }
-      if (isWorldExplorer && selectedCode === null && autoRotating && code === centeredCode) {
+      if (activeCode === null && autoRotating && code === centeredCode) {
         return globeTheme.hovered;
       }
+      if (!isWorldExplorer && code === recentCode) return globeTheme.recent;
       if (!visited) {
         return globeTheme.land;
       }
@@ -508,7 +532,10 @@ export function TravelGlobe({
     },
     [
       visitedByCode,
+      activeCode,
       selectedCode,
+      focusCode,
+      recentCode,
       hoveredCode,
       isWorldExplorer,
       autoRotating,
@@ -527,15 +554,19 @@ export function TravelGlobe({
       if (code === selectedCode) {
         return 0.055;
       }
-      if (selectedCode === null && code === hoveredCode) {
+      if (selectedCode === null && code === focusCode) {
+        return 0.045;
+      }
+      if (activeCode === null && code === hoveredCode) {
         return 0.036;
       }
-      if (isWorldExplorer && selectedCode === null && autoRotating && code === centeredCode) {
+      if (activeCode === null && autoRotating && code === centeredCode) {
         return 0.03;
       }
+      if (!isWorldExplorer && code === recentCode) return 0.026;
       return 0.018;
     },
-    [visitedByCode, selectedCode, hoveredCode, isWorldExplorer, autoRotating, centeredCode],
+    [activeCode, autoRotating, centeredCode, focusCode, hoveredCode, isWorldExplorer, recentCode, selectedCode, visitedByCode],
   );
 
   const polygonTooltip = useCallback(
@@ -645,9 +676,16 @@ export function TravelGlobe({
   // Ambient pulse on visited countries. Purely decorative, so it is dropped entirely
   // when the visitor asked for reduced motion.
   const ringData = useMemo(
-    () => (reduceMotion ? [] : markerData),
-    [reduceMotion, markerData],
+    () => reduceMotion || !recentCode
+      ? []
+      : markerData.filter((country) => country.iso2Code === recentCode),
+    [markerData, recentCode, reduceMotion],
   );
+
+  const arcTooltip = useCallback((arc: object) => {
+    const route = arc as GlobeRouteArc;
+    return `<div class="tg-tip"><strong>${escapeHtml(route.fromLabel)}</strong><span>→ ${escapeHtml(route.toLabel)}</span></div>`;
+  }, []);
 
   const globeMaterial = useMemo(
     () =>
@@ -724,7 +762,7 @@ export function TravelGlobe({
         tabIndex={0}
         role="application"
         aria-busy={!ready}
-        data-auto-rotating={autoRotating && !reduceMotion && selectedCode === null}
+        data-auto-rotating={autoRotating && !reduceMotion && activeCode === null}
         aria-label={isWorldExplorer
           ? "세계 랜드마크 지구본. 모든 국가에 마우스를 올려 대표 장소를 확인할 수 있습니다. 방향키로 회전하고 플러스·마이너스 키로 확대·축소합니다."
           : "여행 지구본. 방향키로 회전, 플러스·마이너스 키로 확대·축소, 0 키로 초기화합니다. 국가 선택은 아래 목록에서도 할 수 있습니다."}
@@ -742,6 +780,19 @@ export function TravelGlobe({
             atmosphereColor={globeTheme.atmosphere}
             atmosphereAltitude={0.17}
             onGlobeReady={handleReady}
+            arcsData={isWorldExplorer ? [] : routeArcs}
+            arcStartLat={(d: object) => (d as GlobeRouteArc).startLat}
+            arcStartLng={(d: object) => (d as GlobeRouteArc).startLng}
+            arcEndLat={(d: object) => (d as GlobeRouteArc).endLat}
+            arcEndLng={(d: object) => (d as GlobeRouteArc).endLng}
+            arcColor={() => [globeTheme.visitedRamp[1], globeTheme.recent]}
+            arcAltitudeAutoScale={0.24}
+            arcStroke={0.38}
+            arcDashLength={reduceMotion ? 1 : 0.58}
+            arcDashGap={reduceMotion ? 0 : 0.22}
+            arcDashAnimateTime={reduceMotion ? 0 : 1_800}
+            arcsTransitionDuration={reduceMotion ? 0 : 420}
+            arcLabel={arcTooltip}
             polygonsData={features}
             polygonCapColor={capColor}
             polygonSideColor={() => globeTheme.side}

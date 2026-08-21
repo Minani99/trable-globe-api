@@ -10,6 +10,7 @@ import com.travelglobe.trableglobeapi.social.domain.MemberFollow;
 import com.travelglobe.trableglobeapi.social.domain.MemberReport;
 import com.travelglobe.trableglobeapi.social.dto.CreateMemberReportRequest;
 import com.travelglobe.trableglobeapi.social.dto.FollowStatusResponse;
+import com.travelglobe.trableglobeapi.social.dto.MemberConnectionResponse;
 import com.travelglobe.trableglobeapi.social.dto.MemberDiscoveryResponse;
 import com.travelglobe.trableglobeapi.social.dto.MemberReportResponse;
 import com.travelglobe.trableglobeapi.social.dto.MemberSafetyStatusResponse;
@@ -121,6 +122,28 @@ public class MemberDiscoveryService {
     }
 
     @Transactional(readOnly = true)
+    public List<MemberConnectionResponse> followers(
+            MemberPrincipal principal, String username, int requestedLimit) {
+        return connections(principal.memberId(), username, requestedLimit, true);
+    }
+
+    @Transactional(readOnly = true)
+    public List<MemberConnectionResponse> following(
+            MemberPrincipal principal, String username, int requestedLimit) {
+        return connections(principal.memberId(), username, requestedLimit, false);
+    }
+
+    @Transactional(readOnly = true)
+    public List<MemberConnectionResponse> publicFollowers(String username, int requestedLimit) {
+        return connections(null, username, requestedLimit, true);
+    }
+
+    @Transactional(readOnly = true)
+    public List<MemberConnectionResponse> publicFollowing(String username, int requestedLimit) {
+        return connections(null, username, requestedLimit, false);
+    }
+
+    @Transactional(readOnly = true)
     public FollowStatusResponse status(MemberPrincipal principal, String username) {
         Member target = requireTarget(username);
         return followStatus(principal.memberId(), target);
@@ -218,6 +241,26 @@ public class MemberDiscoveryService {
                 following,
                 sharedCountries,
                 reason);
+    }
+
+    private List<MemberConnectionResponse> connections(
+            Long currentMemberId, String username, int requestedLimit, boolean followers) {
+        Member target = requireTarget(username);
+        List<Member> members = followers
+                ? followRepository.findFollowers(target.getId(), PageRequest.of(0, normalizeLimit(requestedLimit)))
+                : followRepository.findFollowing(target.getId(), PageRequest.of(0, normalizeLimit(requestedLimit)));
+        return members.stream()
+                .filter(member -> currentMemberId == null
+                        || !blockRepository.existsBetween(currentMemberId, member.getId()))
+                .map(member -> MemberConnectionResponse.of(
+                        member,
+                        followRepository.countByFollowingId(member.getId()),
+                        currentMemberId != null
+                                && !currentMemberId.equals(member.getId())
+                                && followRepository.existsByFollowerIdAndFollowingId(
+                                        currentMemberId, member.getId()),
+                        currentMemberId != null && currentMemberId.equals(member.getId())))
+                .toList();
     }
 
     private FollowStatusResponse followStatus(Long currentMemberId, Member target) {

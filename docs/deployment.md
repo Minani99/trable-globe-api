@@ -144,7 +144,18 @@ DB_POOL_MIN_IDLE=0
 ```dotenv
 API_BASE_URL=https://<render-service>.onrender.com
 SITE_URL=https://<vercel-project>.vercel.app
+R2_ACCOUNT_ID=<cloudflare-account-id>
+R2_ACCESS_KEY_ID=<r2-api-token-access-key>
+R2_SECRET_ACCESS_KEY=<r2-api-token-secret>
+R2_BUCKET_NAME=travel-globe-photos
+R2_PUBLIC_BASE_URL=https://<public-r2-domain>
 ```
+
+The five `R2_*` variables are required for profile and travel-photo file uploads. Without
+them the app deliberately disables the file picker and only accepts an externally hosted
+image URL. Configure the R2 bucket CORS policy to allow `PUT` from the final `SITE_URL`,
+with the `Content-Type` request header. After redeploying, confirm that
+`GET /api/uploads/presign` returns `data.configured: true` before inviting users.
 
 ## Production switch checklist
 
@@ -154,11 +165,12 @@ Before accepting real user records:
 2. Use a fresh production database rather than reusing the showcase database.
 3. Set the final HTTPS frontend origin in `CORS_ALLOWED_ORIGINS`.
 4. Set the same frontend origin in Vercel's `SITE_URL`.
-5. Redeploy both services and repeat the smoke test.
-6. Confirm Neon history retention and complete the restore rehearsal in [`operations.md`](./operations.md).
-7. Verify the Resend sending domain and run the email verification/reset smoke tests.
-8. Add rate limits for registration, login and account-link requests at the edge.
-9. Add the two production URLs as GitHub repository variables and verify one manual smoke run.
+5. Confirm the R2 bucket CORS origin matches `SITE_URL` and the upload readiness endpoint is true.
+6. Redeploy both services and repeat the smoke test.
+7. Confirm Neon history retention and complete the restore rehearsal in [`operations.md`](./operations.md).
+8. Verify the Resend sending domain and run the email verification/reset smoke tests.
+9. Add rate limits for registration, login and account-link requests at the edge.
+10. Add the two production URLs as GitHub repository variables and verify one manual smoke run.
 
 Use [`beta-checklist.md`](./beta-checklist.md) for the first 5–10 user invitation and feedback gate.
 

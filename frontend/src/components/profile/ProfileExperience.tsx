@@ -6,12 +6,15 @@ import { SectionHeading } from "@/components/common/SectionHeading";
 import { StateMessage } from "@/components/common/StateMessage";
 import { CountryDetailPanel } from "@/components/globe/CountryDetailPanel";
 import { CountryKeyboardList } from "@/components/globe/CountryKeyboardList";
+import { GlobeMemorySpotlight } from "@/components/globe/GlobeMemorySpotlight";
+import { GlobeTimelineControls } from "@/components/globe/GlobeTimelineControls";
 import { TravelGlobe } from "@/components/globe/TravelGlobe";
 import { ProfilePanel } from "@/components/profile/ProfilePanel";
 import { ShareProfileButton } from "@/components/profile/ShareProfileButton";
 import { TravelCard } from "@/components/travel/TravelCard";
 import { TravelTimeline } from "@/components/travel/TravelTimeline";
 import { fetchTravelsByCountry } from "@/lib/api/profile";
+import { arcsAtMoment, buildGlobeTimeline, countriesAtMoment } from "@/lib/globeTimeline";
 import type { AuthMember, FollowStatus, MemberSafetyStatus, TravelSummary, UserProfile, VisitedCountry } from "@/types";
 
 interface ProfileExperienceProps {
@@ -33,6 +36,12 @@ interface ProfileExperienceProps {
 export function ProfileExperience({ profile, countries, travels, viewer, relationship, safetyStatus }: ProfileExperienceProps) {
   const [selectedCode, setSelectedCode] = useState<string | null>(null);
   const [hoveredCode, setHoveredCode] = useState<string | null>(null);
+  const [centeredCode, setCenteredCode] = useState<string | null>(null);
+  const timeline = useMemo(() => buildGlobeTimeline(travels), [travels]);
+  const lastMomentIndex = Math.max(0, timeline.moments.length - 1);
+  const [timeIndex, setTimeIndex] = useState(lastMomentIndex);
+  const [timelineEngaged, setTimelineEngaged] = useState(false);
+  const [timelinePlaying, setTimelinePlaying] = useState(false);
   // Keyed by the country it was fetched for, so a result arriving after the visitor moved
   // on is simply ignored instead of briefly showing the wrong country's trips.
   const [countryTravels, setCountryTravels] = useState<{
@@ -40,6 +49,31 @@ export function ProfileExperience({ profile, countries, travels, viewer, relatio
     travels: TravelSummary[];
   } | null>(null);
   const isOwnProfile = viewer?.username === profile.username;
+
+  useEffect(() => {
+    if (!timelinePlaying) return;
+    if (timeIndex >= lastMomentIndex) {
+      const stopTimer = window.setTimeout(() => setTimelinePlaying(false), 1_250);
+      return () => window.clearTimeout(stopTimer);
+    }
+    const advanceTimer = window.setTimeout(
+      () => setTimeIndex((current) => Math.min(lastMomentIndex, current + 1)),
+      1_250,
+    );
+    return () => window.clearTimeout(advanceTimer);
+  }, [lastMomentIndex, timeIndex, timelinePlaying]);
+
+  const globeCountries = useMemo(
+    () => timelineEngaged ? countriesAtMoment(countries, timeline, timeIndex) : countries,
+    [countries, timeIndex, timeline, timelineEngaged],
+  );
+  const globeArcs = useMemo(
+    () => timelineEngaged ? arcsAtMoment(timeline, timeIndex) : timeline.arcs,
+    [timeIndex, timeline, timelineEngaged],
+  );
+  const activeMoment = timeline.moments[timeIndex] ?? null;
+  const timelineFocusCode = timelineEngaged ? activeMoment?.focusCode ?? null : null;
+  const latestCode = timeline.moments.at(-1)?.focusCode ?? null;
 
   const selectedCountry = useMemo(
     () => countries.find((country) => country.iso2Code === selectedCode) ?? null,
@@ -83,14 +117,60 @@ export function ProfileExperience({ profile, countries, travels, viewer, relatio
   const visibleTravels = selectedCode ? (confirmedTravels ?? locallyFiltered) : travels;
 
   const handleSelect = useCallback((iso2Code: string | null) => {
+    if (iso2Code) {
+      setTimelinePlaying(false);
+      setTimelineEngaged(false);
+      setTimeIndex(lastMomentIndex);
+    }
     setSelectedCode(iso2Code);
-  }, []);
+  }, [lastMomentIndex]);
 
   const handleHover = useCallback((iso2Code: string | null) => {
     setHoveredCode(iso2Code);
   }, []);
 
+  const handleCountryCenter = useCallback((country: { code: string } | null) => {
+    setCenteredCode(country?.code ?? null);
+  }, []);
+
   const hoveredCountry = countries.find((country) => country.iso2Code === hoveredCode) ?? null;
+  const spotlightCode = selectedCode === null
+    ? (timelineFocusCode ?? centeredCode)
+    : null;
+  const spotlightCountry = globeCountries.find((country) => country.iso2Code === spotlightCode) ?? null;
+  const timelineVisibleTravels = timelineEngaged
+    ? timeline.travels.slice(0, timeIndex + 1)
+    : timeline.travels;
+  const spotlightTravel = spotlightCode
+    ? [...timelineVisibleTravels].reverse().find((travel) => (
+        travel.countries.some((country) => country.iso2Code === spotlightCode)
+      )) ?? null
+    : null;
+
+  const handleTimelineIndex = useCallback((index: number) => {
+    setSelectedCode(null);
+    setTimelinePlaying(false);
+    setTimelineEngaged(true);
+    setTimeIndex(index);
+  }, []);
+
+  const toggleTimelinePlaying = useCallback(() => {
+    if (timelinePlaying) {
+      setTimelinePlaying(false);
+      return;
+    }
+    setSelectedCode(null);
+    setTimelineEngaged(true);
+    if (timeIndex >= lastMomentIndex) setTimeIndex(0);
+    setTimelinePlaying(true);
+  }, [lastMomentIndex, timeIndex, timelinePlaying]);
+
+  const showPresentWorld = useCallback(() => {
+    setTimelinePlaying(false);
+    setTimelineEngaged(false);
+    setTimeIndex(lastMomentIndex);
+    setSelectedCode(null);
+  }, [lastMomentIndex]);
 
   return (
     <>
@@ -103,7 +183,8 @@ export function ProfileExperience({ profile, countries, travels, viewer, relatio
           <div className="profile-world__summary">
             <p>
               {countries.length}개 나라, {travels.length}번의 여행이 하나의 지구본 위에
-              이어집니다. 지구본을 돌리거나 마커를 선택해 기록을 살펴보세요.
+              이어집니다. 재생 버튼으로 세계가 확장된 시간을 따라가거나 나라를 선택해
+              그곳에 쌓인 기억을 살펴보세요.
             </p>
             <ShareProfileButton displayName={profile.displayName} />
           </div>
@@ -113,16 +194,23 @@ export function ProfileExperience({ profile, countries, travels, viewer, relatio
           <div className="profile-globe-card">
             <div className="profile-globe-card__meta" aria-hidden="true">
               <span>TRAVEL GLOBE · LIVE ARCHIVE</span>
-              <span>{String(countries.length).padStart(2, "0")} COUNTRIES · {String(profile.statistics.cityCount).padStart(2, "0")} CITIES</span>
+              <span>
+                {String(globeCountries.length).padStart(2, "0")} COUNTRIES
+                {timelineEngaged && activeMoment ? ` · ${activeMoment.year}` : ` · ${String(profile.statistics.cityCount).padStart(2, "0")} CITIES`}
+              </span>
             </div>
 
             <div className="profile-globe-card__canvas">
               {countries.length > 0 ? (
                 <TravelGlobe
-                  countries={countries}
+                  countries={globeCountries}
                   selectedCode={selectedCode}
+                  focusCode={timelineFocusCode}
+                  recentCode={timelineFocusCode ?? latestCode}
+                  routeArcs={globeArcs}
                   onSelect={handleSelect}
                   onHover={handleHover}
+                  onCountryCenter={handleCountryCenter}
                 />
               ) : (
                 <div className="flex h-full items-center justify-center px-6">
@@ -136,6 +224,27 @@ export function ProfileExperience({ profile, countries, travels, viewer, relatio
                   />
                 </div>
               )}
+
+              {countries.length > 0 && timeline.moments.length > 0 ? (
+                <GlobeTimelineControls
+                  moments={timeline.moments}
+                  activeIndex={timeIndex}
+                  playing={timelinePlaying}
+                  engaged={timelineEngaged}
+                  onIndexChange={handleTimelineIndex}
+                  onTogglePlaying={toggleTimelinePlaying}
+                  onPresent={showPresentWorld}
+                />
+              ) : null}
+
+              {spotlightCountry ? (
+                <GlobeMemorySpotlight
+                  country={spotlightCountry}
+                  travel={spotlightTravel}
+                  timelineActive={timelineEngaged}
+                  onSelect={() => handleSelect(spotlightCountry.iso2Code)}
+                />
+              ) : null}
             </div>
 
             <div className="profile-globe-card__profile">
@@ -161,7 +270,7 @@ export function ProfileExperience({ profile, countries, travels, viewer, relatio
               <p className="profile-globe-card__hint" aria-live="polite">
                 {hoveredCountry
                   ? `${hoveredCountry.nameKo} · 여행 ${hoveredCountry.travelCount}회`
-                  : "돌려보고 · 선택하고 · 다시 보기"}
+                  : "재생하고 · 돌려보고 · 기억 열기"}
               </p>
             )}
           </div>
