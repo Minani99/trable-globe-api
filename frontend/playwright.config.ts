@@ -7,7 +7,10 @@ const backendCommand = isWindows
 
 export default defineConfig({
   testDir: "./e2e",
-  timeout: 60_000,
+  // The profile journeys generate share images while a WebGL globe is mounted.
+  // GitHub's software-rendered browser can legitimately take longer than a local
+  // GPU-backed run, so leave enough room for the complete user journey.
+  timeout: process.env.CI ? 120_000 : 60_000,
   fullyParallel: false,
   forbidOnly: Boolean(process.env.CI),
   retries: process.env.CI ? 1 : 0,
@@ -17,6 +20,11 @@ export default defineConfig({
     baseURL: "http://127.0.0.1:3000",
     trace: "retain-on-failure",
     screenshot: "only-on-failure",
+    // CI has no GPU. Respecting the reduced-motion path prevents the ambient
+    // globe rotation from competing with clicks and assertions on a loaded worker.
+    contextOptions: {
+      reducedMotion: process.env.CI ? "reduce" : "no-preference",
+    },
     permissions: ["clipboard-read", "clipboard-write"],
   },
   projects: [
