@@ -8305,3 +8305,502 @@ a.profile-panel__identity:focus-visible {
     width: 2.6rem;
   }
 }
+
+/* Globe focus mode ------------------------------------------------------
+ * Keep the globe as the primary canvas. Supporting profile, timeline and
+ * recap information starts compact and expands only when the visitor asks.
+ */
+.profile-globe-card {
+  min-height: clamp(34rem, 56vw, 40rem);
+  isolation: isolate;
+}
+
+.profile-globe-card__hint {
+  display: none;
+}
+
+.profile-globe-card__profile {
+  top: 4.15rem;
+  left: 1.25rem;
+  width: min(20rem, calc(100% - 2.5rem));
+}
+
+.profile-globe-dock {
+  overflow: hidden;
+  border: 1px solid color-mix(in srgb, var(--border-strong) 78%, transparent);
+  border-radius: 1rem;
+  background: color-mix(in srgb, var(--surface) 88%, transparent);
+  box-shadow: 0 0.85rem 2.6rem rgba(24, 51, 58, 0.12);
+  backdrop-filter: blur(20px) saturate(1.12);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.profile-globe-dock.is-expanded {
+  border-color: color-mix(in srgb, var(--accent-border) 70%, var(--border));
+  box-shadow: 0 1.25rem 3.2rem rgba(24, 51, 58, 0.17);
+}
+
+.profile-globe-dock__bar {
+  display: grid;
+  min-height: 3.45rem;
+  grid-template-columns: auto minmax(0, 1fr) auto auto;
+  align-items: center;
+  gap: 0.68rem;
+  padding: 0.48rem 0.52rem 0.48rem 0.58rem;
+}
+
+.profile-globe-dock__avatar {
+  width: 2.35rem;
+  height: 2.35rem;
+  border: 1px solid var(--border);
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.profile-globe-dock__identity {
+  display: grid;
+  min-width: 0;
+  line-height: 1.2;
+}
+
+.profile-globe-dock__identity strong,
+.profile-globe-dock__identity small {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.profile-globe-dock__identity strong {
+  color: var(--text-primary);
+  font-size: 0.78rem;
+  font-weight: 650;
+}
+
+.profile-globe-dock__identity small {
+  margin-top: 0.2rem;
+  color: var(--text-tertiary);
+  font-family: var(--font-mono);
+  font-size: 0.56rem;
+}
+
+.profile-globe-dock__stats {
+  display: flex;
+  align-items: center;
+  gap: 0.42rem;
+  color: var(--text-tertiary);
+  font-size: 0.55rem;
+  white-space: nowrap;
+}
+
+.profile-globe-dock__stats span {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 0.16rem;
+}
+
+.profile-globe-dock__stats strong {
+  color: var(--text-primary);
+  font-family: var(--font-mono);
+  font-size: 0.62rem;
+  font-weight: 650;
+}
+
+.profile-globe-dock__stats i {
+  width: 1px;
+  height: 0.7rem;
+  background: var(--border);
+}
+
+.profile-globe-dock__toggle,
+.globe-time-controls__toggle {
+  display: inline-flex;
+  min-width: 2.75rem;
+  min-height: 2.75rem;
+  align-items: center;
+  justify-content: center;
+  gap: 0.32rem;
+  padding-inline: 0.62rem;
+  border: 1px solid var(--border);
+  border-radius: 0.78rem;
+  background: color-mix(in srgb, var(--background-elevated) 78%, transparent);
+  color: var(--text-secondary);
+  font-size: 0.58rem;
+  font-weight: 650;
+  transition: border-color 0.18s ease, background-color 0.18s ease, color 0.18s ease;
+}
+
+.profile-globe-dock__toggle:hover,
+.profile-globe-dock__toggle:focus-visible,
+.globe-time-controls__toggle:hover,
+.globe-time-controls__toggle:focus-visible {
+  border-color: var(--accent-border);
+  background: var(--accent-soft);
+  color: var(--accent-strong);
+}
+
+.profile-globe-dock__toggle svg,
+.globe-time-controls__toggle svg,
+.travel-recap__details-toggle svg {
+  width: 0.82rem;
+  height: 0.82rem;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.7;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  transition: transform 0.22s ease;
+}
+
+.profile-globe-dock__toggle[aria-expanded="true"] svg,
+.globe-time-controls__toggle[aria-expanded="true"] svg,
+.travel-recap__details-toggle[aria-expanded="true"] svg {
+  transform: rotate(180deg);
+}
+
+.profile-globe-dock__details {
+  max-height: min(30rem, calc(100svh - 11rem));
+  overflow-y: auto;
+  border-top: 1px solid var(--border);
+  animation: globe-dock-reveal 0.24s ease both;
+}
+
+.profile-globe-dock .panel,
+.profile-globe-card__profile .profile-globe-dock .panel {
+  width: 100%;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+.globe-time-controls {
+  bottom: 1.1rem;
+  display: block;
+  width: min(32rem, calc(100% - 4rem));
+  min-width: 0;
+  padding: 0.48rem 0.52rem;
+  border-radius: 1rem;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.globe-time-controls.is-expanded {
+  box-shadow: 0 1.15rem 3.1rem rgba(24, 51, 58, 0.18);
+}
+
+.globe-time-controls__bar {
+  display: grid;
+  min-height: 2.8rem;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 0.66rem;
+}
+
+.globe-time-controls__play {
+  width: 2.6rem;
+  height: 2.6rem;
+}
+
+.globe-time-controls__now {
+  display: grid;
+  min-width: 0;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: baseline;
+  gap: 0.2rem 0.48rem;
+}
+
+.globe-time-controls__now > span {
+  color: var(--text-tertiary);
+  font-size: 0.53rem;
+  font-weight: 650;
+  letter-spacing: 0.06em;
+}
+
+.globe-time-controls__now > strong {
+  overflow: hidden;
+  color: var(--text-primary);
+  font-size: 0.7rem;
+  font-weight: 650;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.globe-time-controls__now > small {
+  color: var(--text-tertiary);
+  font-family: var(--font-mono);
+  font-size: 0.52rem;
+  white-space: nowrap;
+}
+
+.globe-time-controls__now > i {
+  grid-column: 1 / -1;
+  height: 2px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: var(--border-strong);
+}
+
+.globe-time-controls__now > i span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: var(--accent);
+}
+
+.globe-time-controls__details {
+  margin-top: 0.46rem;
+  padding: 0.58rem 0.2rem 0.12rem;
+  border-top: 1px solid var(--border);
+  animation: globe-dock-reveal 0.24s ease both;
+}
+
+.globe-time-controls__player {
+  gap: 0.75rem;
+  margin-top: 0.45rem;
+}
+
+.globe-time-controls__player output {
+  width: 6.75rem;
+}
+
+.globe-memory-spotlight {
+  right: 1.1rem;
+  bottom: 1.1rem;
+  width: min(13.25rem, calc(100% - 2.2rem));
+  min-height: 3.65rem;
+  padding: 0.55rem 0.65rem;
+  border-radius: 0.9rem;
+}
+
+.globe-memory-spotlight__body small {
+  display: none;
+}
+
+.globe-memory-spotlight__body strong {
+  margin-top: 0;
+  font-size: 0.76rem;
+}
+
+.globe-memory-spotlight__body > span {
+  font-size: 0.54rem;
+}
+
+.travel-recap__details-toggle {
+  display: flex;
+  width: 100%;
+  min-height: 3.65rem;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.7rem clamp(1.25rem, 3vw, 2.25rem);
+  border-top: 1px solid var(--border);
+  background: color-mix(in srgb, var(--background-elevated) 64%, transparent);
+  color: var(--text-secondary);
+  text-align: left;
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+.travel-recap__details-toggle:hover,
+.travel-recap__details-toggle:focus-visible {
+  background: var(--surface-hover);
+  color: var(--text-primary);
+}
+
+.travel-recap__details-toggle > span {
+  display: grid;
+  gap: 0.14rem;
+}
+
+.travel-recap__details-toggle small {
+  color: var(--text-tertiary);
+  font-size: 0.58rem;
+  letter-spacing: 0.04em;
+}
+
+.travel-recap__details-toggle strong {
+  color: currentColor;
+  font-size: 0.72rem;
+  font-weight: 650;
+}
+
+.travel-recap__details-toggle svg {
+  flex: 0 0 auto;
+}
+
+.travel-recap__details {
+  animation: globe-dock-reveal 0.28s ease both;
+}
+
+@keyframes globe-dock-reveal {
+  from {
+    opacity: 0;
+    transform: translateY(-0.35rem);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (max-width: 1040px) {
+  .globe-memory-spotlight {
+    display: none;
+  }
+}
+
+@media (max-width: 800px) {
+  .profile-globe-card {
+    min-height: 0;
+    padding-bottom: 0;
+  }
+
+  .profile-globe-card__canvas {
+    height: min(104vw, 29rem);
+    min-height: 22rem;
+  }
+
+  .profile-globe-card__profile {
+    position: absolute;
+    top: 3.2rem;
+    right: 4.5rem;
+    left: 0.7rem;
+    z-index: 8;
+    width: auto;
+    margin: 0;
+  }
+
+  .profile-globe-dock__stats {
+    display: none;
+  }
+
+  .profile-globe-dock__bar {
+    grid-template-columns: auto minmax(0, 1fr) auto;
+  }
+
+  .profile-globe-dock__details {
+    max-height: min(58svh, 27rem);
+  }
+
+  .profile-globe-card .globe-view-controls {
+    top: 3.2rem;
+    right: 0.7rem;
+  }
+
+  .globe-time-controls {
+    right: 0.65rem;
+    bottom: 0.65rem;
+    left: 0.65rem;
+    width: auto;
+    transform: none;
+  }
+
+  .travel-recap__heading {
+    padding-bottom: 1.35rem;
+  }
+}
+
+@media (max-width: 560px) {
+  .profile-globe-card__meta {
+    top: 0.85rem;
+    right: 0.85rem;
+    left: 0.85rem;
+  }
+
+  .profile-globe-card__canvas {
+    height: min(112vw, 27rem);
+    min-height: 21.5rem;
+  }
+
+  .profile-globe-dock__bar {
+    min-height: 3.1rem;
+    gap: 0.5rem;
+    padding: 0.42rem 0.46rem;
+  }
+
+  .profile-globe-dock__avatar {
+    width: 2.1rem;
+    height: 2.1rem;
+  }
+
+  .profile-globe-dock__toggle span,
+  .globe-time-controls__toggle span {
+    display: none;
+  }
+
+  .profile-globe-dock__toggle,
+  .globe-time-controls__toggle {
+    width: 2.65rem;
+    min-width: 2.65rem;
+    min-height: 2.65rem;
+    padding: 0;
+  }
+
+  .globe-time-controls {
+    padding: 0.42rem 0.46rem;
+    border-radius: 0.92rem;
+  }
+
+  .globe-time-controls__bar {
+    min-height: 2.7rem;
+    gap: 0.52rem;
+  }
+
+  .globe-time-controls__play {
+    width: 2.5rem;
+    height: 2.5rem;
+  }
+
+  .globe-time-controls__now {
+    grid-template-columns: minmax(0, 1fr) auto;
+  }
+
+  .globe-time-controls__now > span {
+    display: none;
+  }
+
+  .globe-time-controls__now > strong {
+    font-size: 0.66rem;
+  }
+
+  .globe-time-controls__now > small {
+    font-size: 0.48rem;
+  }
+
+  .globe-time-controls__player output {
+    width: 3.5rem;
+  }
+
+  .globe-time-controls__player output strong {
+    display: none;
+  }
+
+  .travel-recap__details-toggle {
+    min-height: 3.9rem;
+    padding-inline: 1.25rem;
+  }
+}
+
+@media (max-width: 380px) {
+  .profile-globe-card__profile {
+    right: 4.1rem;
+  }
+
+  .profile-globe-dock__identity small {
+    display: none;
+  }
+
+  .globe-time-controls__now > small {
+    display: none;
+  }
+
+  .globe-time-controls__now {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .profile-globe-dock__details,
+  .globe-time-controls__details,
+  .travel-recap__details {
+    animation: none;
+  }
+}

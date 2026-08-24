@@ -9,7 +9,7 @@ import { CountryKeyboardList } from "@/components/globe/CountryKeyboardList";
 import { GlobeMemorySpotlight } from "@/components/globe/GlobeMemorySpotlight";
 import { GlobeTimelineControls } from "@/components/globe/GlobeTimelineControls";
 import { TravelGlobe } from "@/components/globe/TravelGlobe";
-import { ProfilePanel } from "@/components/profile/ProfilePanel";
+import { ProfileGlobeDock } from "@/components/profile/ProfileGlobeDock";
 import { ShareProfileButton } from "@/components/profile/ShareProfileButton";
 import { TravelYearFilter } from "@/components/profile/TravelYearFilter";
 import { TravelYearRecap } from "@/components/profile/TravelYearRecap";
@@ -73,6 +73,7 @@ export function ProfileExperience({
   const [timeIndex, setTimeIndex] = useState(lastMomentIndex);
   const [timelineEngaged, setTimelineEngaged] = useState(false);
   const [timelinePlaying, setTimelinePlaying] = useState(false);
+  const [timelineControlsExpanded, setTimelineControlsExpanded] = useState(false);
   // Keyed by the country it was fetched for, so a result arriving after the visitor moved
   // on is simply ignored instead of briefly showing the wrong country's trips.
   const [countryTravels, setCountryTravels] = useState<{
@@ -156,6 +157,7 @@ export function ProfileExperience({
     if (iso2Code) {
       setTimelinePlaying(false);
       setTimelineEngaged(false);
+      setTimelineControlsExpanded(false);
       setTimeIndex(lastMomentIndex);
     }
     setSelectedCode(iso2Code);
@@ -223,6 +225,7 @@ export function ProfileExperience({
     setCenteredCode(null);
     setTimelinePlaying(false);
     setTimelineEngaged(false);
+    setTimelineControlsExpanded(false);
     setTimeIndex(Math.max(0, nextTravels.length - 1));
   }, [travels]);
 
@@ -248,7 +251,7 @@ export function ProfileExperience({
 
         <div className="site-shell">
           <TravelYearFilter years={years} selectedYear={selectedYear} onChange={handleYearChange} />
-          <div className="profile-globe-card">
+          <div className={`profile-globe-card${timelineControlsExpanded ? " has-expanded-timeline" : ""}`}>
             <div className="profile-globe-card__meta" aria-hidden="true">
               <span>TRAVEL GLOBE · LIVE ARCHIVE</span>
               <span>
@@ -290,14 +293,16 @@ export function ProfileExperience({
                   activeIndex={timeIndex}
                   playing={timelinePlaying}
                   engaged={timelineEngaged}
+                  expanded={timelineControlsExpanded}
                   onIndexChange={handleTimelineIndex}
                   onTogglePlaying={toggleTimelinePlaying}
                   onPresent={showPresentWorld}
+                  onExpandedChange={setTimelineControlsExpanded}
                   presentLabel={selectedYear ? `${selectedYear} 전체` : "현재"}
                 />
               ) : null}
 
-              {spotlightCountry ? (
+              {spotlightCountry && !timelineControlsExpanded ? (
                 <GlobeMemorySpotlight
                   country={spotlightCountry}
                   travel={spotlightTravel}
@@ -308,7 +313,7 @@ export function ProfileExperience({
             </div>
 
             <div className="profile-globe-card__profile">
-              <ProfilePanel
+              <ProfileGlobeDock
                 profile={profile}
                 isOwnProfile={isOwnProfile}
                 viewerAuthenticated={Boolean(viewer)}

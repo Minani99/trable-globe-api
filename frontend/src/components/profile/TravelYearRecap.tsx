@@ -1,4 +1,7 @@
+"use client";
+
 import Link from "next/link";
+import { useId, useState } from "react";
 
 import { TravelImage } from "@/components/common/TravelImage";
 import { RecapActions } from "@/components/profile/RecapActions";
@@ -16,6 +19,9 @@ interface TravelYearRecapProps {
 const numberFormatter = new Intl.NumberFormat("ko-KR");
 
 export function TravelYearRecap({ recap, comparison, username, displayName }: TravelYearRecapProps) {
+  const [detailsExpanded, setDetailsExpanded] = useState(false);
+  const detailsId = useId();
+
   if (!recap.latestTravel) return null;
 
   const scopeLabel = recap.year ? `${recap.year}년` : "지금까지";
@@ -55,125 +61,141 @@ export function TravelYearRecap({ recap, comparison, username, displayName }: Tr
         <RecapStat label="이어진 거리" value={`${numberFormatter.format(recap.distanceKm)}km`} />
       </dl>
 
-      <div className="travel-recap__insights">
-        <section aria-labelledby="travel-recap-months-heading" className="travel-recap__rhythm">
-          <div className="travel-recap__insight-heading">
-            <div>
-              <p className="eyebrow">Travel rhythm</p>
-              <h3 id="travel-recap-months-heading">
-                {recap.year ? "그해의 여행 리듬" : "계절마다 쌓인 여행 리듬"}
-              </h3>
-            </div>
-            <p>
-              {busiestMonth?.travelCount
-                ? `${busiestMonth.month}월 · 여행 ${busiestMonth.travelCount}회, ${busiestMonth.travelDays}일`
-                : "아직 월별 기록이 없습니다."}
-            </p>
-          </div>
-          <div
-            className="travel-recap__month-chart"
-            role="img"
-            aria-label={`${activeMonthCount}개 월에 여행 기록이 있습니다.`}
-          >
-            {recap.monthSummaries.map((month) => (
-              <span key={month.month} className={month.travelCount ? "is-active" : undefined}>
-                <i
-                  style={{ height: `${month.travelCount ? Math.max(24, (month.travelCount / maxMonthValue) * 100) : 6}%` }}
-                  title={`${month.month}월: 여행 ${month.travelCount}회, ${month.travelDays}일, ${month.countryCount}개 나라`}
-                />
-                <small>{month.month}</small>
-              </span>
-            ))}
-          </div>
-          <ul className="sr-only">
-            {recap.monthSummaries.filter((month) => month.travelCount > 0).map((month) => (
-              <li key={month.month}>
-                {month.month}월 여행 {month.travelCount}회, {month.travelDays}일, {month.countryCount}개 나라
-              </li>
-            ))}
-          </ul>
-        </section>
+      <button
+        type="button"
+        className="travel-recap__details-toggle"
+        aria-expanded={detailsExpanded}
+        aria-controls={detailsId}
+        onClick={() => setDetailsExpanded((current) => !current)}
+      >
+        <span>
+          <small>여행 리듬 · 대표 도시 · 기억 장면</small>
+          <strong>{detailsExpanded ? "리캡 접기" : "리캡 자세히 보기"}</strong>
+        </span>
+        <svg aria-hidden="true" viewBox="0 0 20 20"><path d="m5 8 5 5 5-5" /></svg>
+      </button>
 
-        <section aria-labelledby="travel-recap-cities-heading" className="travel-recap__cities">
-          <div className="travel-recap__insight-heading">
-            <div>
-              <p className="eyebrow">City memories</p>
-              <h3 id="travel-recap-cities-heading">기억이 쌓인 대표 도시</h3>
+      <div id={detailsId} className="travel-recap__details" hidden={!detailsExpanded}>
+        <div className="travel-recap__insights">
+          <section aria-labelledby="travel-recap-months-heading" className="travel-recap__rhythm">
+            <div className="travel-recap__insight-heading">
+              <div>
+                <p className="eyebrow">Travel rhythm</p>
+                <h3 id="travel-recap-months-heading">
+                  {recap.year ? "그해의 여행 리듬" : "계절마다 쌓인 여행 리듬"}
+                </h3>
+              </div>
+              <p>
+                {busiestMonth?.travelCount
+                  ? `${busiestMonth.month}월 · 여행 ${busiestMonth.travelCount}회, ${busiestMonth.travelDays}일`
+                  : "아직 월별 기록이 없습니다."}
+              </p>
             </div>
-            <p>각 여행의 대표 도시를 기준으로 모았습니다.</p>
-          </div>
-          {recap.cityHighlights.length > 0 ? (
-            <ol>
-              {recap.cityHighlights.map((city, index) => (
-                <li key={city.id}>
-                  <Link href={travelPath(username, city.latestTravelId)}>
-                    <span>{String(index + 1).padStart(2, "0")}</span>
-                    <span>
-                      <strong>{city.nameKo || city.nameEn}</strong>
-                      <small>{city.countryNameKo ?? city.nameEn}</small>
-                    </span>
-                    <span>{city.visitCount}회 · {city.travelDays}일</span>
-                  </Link>
+            <div
+              className="travel-recap__month-chart"
+              role="img"
+              aria-label={`${activeMonthCount}개 월에 여행 기록이 있습니다.`}
+            >
+              {recap.monthSummaries.map((month) => (
+                <span key={month.month} className={month.travelCount ? "is-active" : undefined}>
+                  <i
+                    style={{ height: `${month.travelCount ? Math.max(24, (month.travelCount / maxMonthValue) * 100) : 6}%` }}
+                    title={`${month.month}월: 여행 ${month.travelCount}회, ${month.travelDays}일, ${month.countryCount}개 나라`}
+                  />
+                  <small>{month.month}</small>
+                </span>
+              ))}
+            </div>
+            <ul className="sr-only">
+              {recap.monthSummaries.filter((month) => month.travelCount > 0).map((month) => (
+                <li key={month.month}>
+                  {month.month}월 여행 {month.travelCount}회, {month.travelDays}일, {month.countryCount}개 나라
                 </li>
               ))}
-            </ol>
-          ) : (
-            <p className="travel-recap__cities-empty">
-              여행에 대표 도시를 더하면 이곳에 도시별 기억이 모입니다.
-            </p>
-          )}
-        </section>
-      </div>
+            </ul>
+          </section>
 
-      {comparison && comparisonNarrative ? (
-        <section className="travel-recap__comparison" aria-labelledby="travel-recap-comparison-heading">
-          <div className="travel-recap__comparison-intro">
-            <p className="eyebrow">World comparison</p>
-            <h3 id="travel-recap-comparison-heading">
-              {comparison.previousYear}년과 {comparison.currentYear}년 비교
-            </h3>
-            <p>{comparisonNarrative}</p>
-            {comparison.newCountries.length > 0 ? (
-              <ul aria-label="새로 더해진 나라">
-                {comparison.newCountries.map((country) => (
-                  <li key={country.iso2Code}>{country.nameKo}</li>
+          <section aria-labelledby="travel-recap-cities-heading" className="travel-recap__cities">
+            <div className="travel-recap__insight-heading">
+              <div>
+                <p className="eyebrow">City memories</p>
+                <h3 id="travel-recap-cities-heading">기억이 쌓인 대표 도시</h3>
+              </div>
+              <p>각 여행의 대표 도시를 기준으로 모았습니다.</p>
+            </div>
+            {recap.cityHighlights.length > 0 ? (
+              <ol>
+                {recap.cityHighlights.map((city, index) => (
+                  <li key={city.id}>
+                    <Link href={travelPath(username, city.latestTravelId)}>
+                      <span>{String(index + 1).padStart(2, "0")}</span>
+                      <span>
+                        <strong>{city.nameKo || city.nameEn}</strong>
+                        <small>{city.countryNameKo ?? city.nameEn}</small>
+                      </span>
+                      <span>{city.visitCount}회 · {city.travelDays}일</span>
+                    </Link>
+                  </li>
                 ))}
-              </ul>
-            ) : null}
-          </div>
-          <dl className="travel-recap__comparison-stats">
-            <ComparisonStat label="여행" value={comparison.travelCountDelta} unit="회" />
-            <ComparisonStat label="나라" value={comparison.countryCountDelta} unit="개" />
-            <ComparisonStat label="여행한 날" value={comparison.travelDaysDelta} unit="일" />
-            <ComparisonStat label="이어진 거리" value={comparison.distanceKmDelta} unit="km" />
-          </dl>
-        </section>
-      ) : null}
+              </ol>
+            ) : (
+              <p className="travel-recap__cities-empty">
+                여행에 대표 도시를 더하면 이곳에 도시별 기억이 모입니다.
+              </p>
+            )}
+          </section>
+        </div>
 
-      <div
-        className={`travel-recap__memories travel-recap__memories--${recap.featuredTravels.length}`}
-        aria-label={`${scopeLabel} 대표 여행 장면`}
-      >
-        {recap.featuredTravels.map((travel, index) => (
-          <Link key={travel.id} href={travelPath(username, travel.id)}>
-            <TravelImage
-              src={travel.coverImageUrl}
-              alt={`${travel.title} 대표 이미지`}
-              fallbackLabel={travel.primaryCountry?.iso2Code}
-              className="travel-recap__memory-image"
-            />
-            <span className="travel-recap__memory-shade" aria-hidden="true" />
-            <span className="travel-recap__memory-copy">
-              <small>
-                {index === 0
-                  ? recap.year ? "그해 마지막 장면" : "가장 최근 장면"
-                  : travel.primaryCountry?.nameKo ?? "여행의 한 장면"}
-              </small>
-              <strong>{travel.title}</strong>
-              <small>{formatDate(travel.startDate)} · 사진 {travel.photoCount}장</small>
-            </span>
-          </Link>
-        ))}
+        {comparison && comparisonNarrative ? (
+          <section className="travel-recap__comparison" aria-labelledby="travel-recap-comparison-heading">
+            <div className="travel-recap__comparison-intro">
+              <p className="eyebrow">World comparison</p>
+              <h3 id="travel-recap-comparison-heading">
+                {comparison.previousYear}년과 {comparison.currentYear}년 비교
+              </h3>
+              <p>{comparisonNarrative}</p>
+              {comparison.newCountries.length > 0 ? (
+                <ul aria-label="새로 더해진 나라">
+                  {comparison.newCountries.map((country) => (
+                    <li key={country.iso2Code}>{country.nameKo}</li>
+                  ))}
+                </ul>
+              ) : null}
+            </div>
+            <dl className="travel-recap__comparison-stats">
+              <ComparisonStat label="여행" value={comparison.travelCountDelta} unit="회" />
+              <ComparisonStat label="나라" value={comparison.countryCountDelta} unit="개" />
+              <ComparisonStat label="여행한 날" value={comparison.travelDaysDelta} unit="일" />
+              <ComparisonStat label="이어진 거리" value={comparison.distanceKmDelta} unit="km" />
+            </dl>
+          </section>
+        ) : null}
+
+        <div
+          className={`travel-recap__memories travel-recap__memories--${recap.featuredTravels.length}`}
+          aria-label={`${scopeLabel} 대표 여행 장면`}
+        >
+          {recap.featuredTravels.map((travel, index) => (
+            <Link key={travel.id} href={travelPath(username, travel.id)}>
+              <TravelImage
+                src={travel.coverImageUrl}
+                alt={`${travel.title} 대표 이미지`}
+                fallbackLabel={travel.primaryCountry?.iso2Code}
+                className="travel-recap__memory-image"
+              />
+              <span className="travel-recap__memory-shade" aria-hidden="true" />
+              <span className="travel-recap__memory-copy">
+                <small>
+                  {index === 0
+                    ? recap.year ? "그해 마지막 장면" : "가장 최근 장면"
+                    : travel.primaryCountry?.nameKo ?? "여행의 한 장면"}
+                </small>
+                <strong>{travel.title}</strong>
+                <small>{formatDate(travel.startDate)} · 사진 {travel.photoCount}장</small>
+              </span>
+            </Link>
+          ))}
+        </div>
       </div>
     </section>
   );

@@ -15,6 +15,7 @@ test("팔로워와 팔로잉 목록에서 사람을 확인하고 다시 교류�
   expect(followResponse.status()).toBe(200);
 
   await page.goto(`/${firstUsername}`);
+  await page.getByRole("button", { name: "프로필 정보 펼치기" }).click();
   await page.getByRole("button", { name: "1 팔로워" }).click();
   const followers = page.getByRole("dialog", { name: "팔로워" });
   await expect(followers).toBeVisible();
@@ -22,6 +23,7 @@ test("팔로워와 팔로잉 목록에서 사람을 확인하고 다시 교류�
   await followers.getByRole("button", { name: "팔로워 목록 닫기" }).click();
 
   await page.goto(`/${secondUsername}`);
+  await page.getByRole("button", { name: "프로필 정보 펼치기" }).click();
   await page.getByRole("button", { name: "1 팔로잉" }).click();
   const following = page.getByRole("dialog", { name: "팔로잉" });
   await expect(following.getByRole("link", { name: /첫 번째 여행자/ })).toBeVisible();

@@ -20,6 +20,10 @@ test("연도 링크를 열고 바꾸면 지구본, 기록, 리캡과 공유 주�
   expect((await ogImage.body()).byteLength).toBeGreaterThan(20_000);
   await expect(yearFilter.getByRole("button", { name: "2025" })).toHaveAttribute("aria-pressed", "true");
   await expect(page.getByRole("heading", { name: "2025년, 내가 만든 여행 세계" })).toBeVisible();
+  const recapDetailsToggle = page.getByRole("button", { name: "리캡 자세히 보기" });
+  await expect(recapDetailsToggle).toHaveAttribute("aria-expanded", "false");
+  await recapDetailsToggle.click();
+  await expect(page.getByRole("button", { name: "리캡 접기" })).toHaveAttribute("aria-expanded", "true");
   await expect(page.getByRole("heading", { name: "그해의 여행 리듬" })).toBeVisible();
   await expect(page.locator(".travel-recap__month-chart .is-active")).toHaveCount(3);
   await expect(page.locator(".travel-recap__cities li")).toHaveCount(3);

@@ -16,6 +16,7 @@ interface ProfilePanelProps {
   viewerAuthenticated: boolean;
   initialFollowing: boolean;
   initialSafetyStatus: MemberSafetyStatus | null;
+  showIdentity?: boolean;
 }
 
 export function ProfilePanel({
@@ -24,6 +25,7 @@ export function ProfilePanel({
   viewerAuthenticated,
   initialFollowing,
   initialSafetyStatus,
+  showIdentity = true,
 }: ProfilePanelProps) {
   const { statistics } = profile;
   const [followerCount, setFollowerCount] = useState(profile.followerCount);
@@ -65,19 +67,21 @@ export function ProfilePanel({
 
   return (
     <section aria-label="프로필" className="panel w-full p-5 lg:w-[280px]">
-      {isOwnProfile ? (
-        <Link href="/settings#profile" className="profile-panel__identity" aria-label="내 프로필 편집">
-          {identity}
-        </Link>
-      ) : (
-        <div className="profile-panel__identity">{identity}</div>
-      )}
-
-      {profile.bio ? (
-        <p className="text-body mt-4 text-[0.85rem] leading-relaxed">{profile.bio}</p>
+      {showIdentity ? (
+        isOwnProfile ? (
+          <Link href="/settings#profile" className="profile-panel__identity" aria-label="내 프로필 편집">
+            {identity}
+          </Link>
+        ) : (
+          <div className="profile-panel__identity">{identity}</div>
+        )
       ) : null}
 
-      <dl className="border-border-subtle mt-5 grid grid-cols-3 gap-2 border-t pt-4">
+      {profile.bio ? (
+        <p className={`text-body text-[0.85rem] leading-relaxed${showIdentity ? " mt-4" : ""}`}>{profile.bio}</p>
+      ) : null}
+
+      <dl className={`border-border-subtle grid grid-cols-3 gap-2${showIdentity || profile.bio ? " mt-5 border-t pt-4" : ""}`}>
         <Stat label="국가" value={statistics.countryCount} />
         <Stat label="도시" value={statistics.cityCount} />
         <Stat label="여행" value={statistics.travelCount} />

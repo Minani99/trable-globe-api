@@ -10,13 +10,16 @@ test("여행 시간축을 따라 개인 지구본이 성장하고 현재로 돌�
   const controls = page.getByRole("region", { name: "여행 시간 탐색" });
   const range = page.getByLabel("여행 시점 선택");
   await expect(controls).toBeVisible();
+  await expect(controls).toHaveClass(/is-collapsed/);
+  await controls.getByRole("button", { name: "타임라인 펼치기" }).click();
+  await expect(controls).toHaveClass(/is-expanded/);
   const max = Number(await range.getAttribute("max"));
   expect(max).toBeGreaterThan(0);
 
   await range.fill("0");
   await expect(controls).toHaveClass(/is-engaged/);
-  await expect(page.getByText("그때의 세계", { exact: true })).toBeVisible();
-  await expect(page.locator(".globe-memory-spotlight")).toBeVisible();
+  await expect(controls.getByText("그때의 세계", { exact: true }).first()).toBeVisible();
+  await expect(page.locator(".globe-memory-spotlight")).toHaveCount(0);
   const firstMarkerCount = await page.locator(".tg-marker").count();
 
   await range.fill(String(max));
@@ -32,8 +35,20 @@ test("여행 시간축을 따라 개인 지구본이 성장하고 현재로 돌�
   // evaluating the assertion. It only needs to have left the final moment.
   expect(Number(await range.inputValue())).toBeLessThan(4);
 
+  const profileDock = page.getByRole("region", { name: "여행자 정보" });
+  await profileDock.getByRole("button", { name: "프로필 정보 펼치기" }).click();
+  await expect(page.getByRole("region", { name: "프로필" })).toBeVisible();
+  await profileDock.getByRole("button", { name: "프로필 정보 접기" }).click();
+  await expect(page.getByRole("region", { name: "프로필" })).toBeHidden();
+
+  await controls.getByRole("button", { name: "타임라인 접기" }).click();
+  await expect(controls).toHaveClass(/is-collapsed/);
+  await expect(page.locator(".globe-memory-spotlight")).toBeVisible();
+
   await page.setViewportSize({ width: 390, height: 844 });
   await expect(controls).toBeVisible();
+  const compactControlsHeight = await controls.evaluate((element) => element.getBoundingClientRect().height);
+  expect(compactControlsHeight).toBeLessThan(76);
   const layout = await page.evaluate(() => ({
     viewportWidth: window.innerWidth,
     documentWidth: document.documentElement.scrollWidth,
