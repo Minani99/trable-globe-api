@@ -30,6 +30,8 @@ interface ProfileExperienceProps {
   initialYear?: number | null;
 }
 
+type MobileArchiveView = "travels" | "countries" | "timeline";
+
 /**
  * Owns the shared exploration state for the profile: selected year, moment and country.
  *
@@ -74,6 +76,7 @@ export function ProfileExperience({
   const [timelineEngaged, setTimelineEngaged] = useState(false);
   const [timelinePlaying, setTimelinePlaying] = useState(false);
   const [timelineControlsExpanded, setTimelineControlsExpanded] = useState(false);
+  const [mobileArchiveView, setMobileArchiveView] = useState<MobileArchiveView>("travels");
   // Keyed by the country it was fetched for, so a result arriving after the visitor moved
   // on is simply ignored instead of briefly showing the wrong country's trips.
   const [countryTravels, setCountryTravels] = useState<{
@@ -226,8 +229,13 @@ export function ProfileExperience({
     setTimelinePlaying(false);
     setTimelineEngaged(false);
     setTimelineControlsExpanded(false);
+    setMobileArchiveView("travels");
     setTimeIndex(Math.max(0, nextTravels.length - 1));
   }, [travels]);
+
+  const showCountryIndex = scopedCountries.length > 1;
+  const showTravelTimeline = scopedTravels.length > 1;
+  const mobileArchivePanelCount = 1 + Number(showCountryIndex) + Number(showTravelTimeline);
 
   return (
     <>
@@ -350,20 +358,66 @@ export function ProfileExperience({
           displayName={profile.displayName}
         />
 
-        <section aria-labelledby="visited-heading" className="profile-country-filter">
-          <div>
-            <p className="eyebrow">Country index</p>
-            <h2 id="visited-heading">{selectedYear ? `${selectedYear}년에 방문한 나라` : "방문한 나라"}</h2>
-          </div>
-          <CountryKeyboardList
-            countries={scopedCountries}
-            selectedCode={selectedCode}
-            onSelect={handleSelect}
-            onHover={handleHover}
-          />
-        </section>
+        {mobileArchivePanelCount > 1 ? (
+          <nav className="profile-archive__mobile-nav" aria-label="프로필 기록 보기">
+            <button
+              type="button"
+              className={mobileArchiveView === "travels" ? "is-active" : undefined}
+              aria-pressed={mobileArchiveView === "travels"}
+              aria-controls="profile-travel-archive"
+              onClick={() => setMobileArchiveView("travels")}
+            >
+              기록 <span>{scopedTravels.length}</span>
+            </button>
+            {showCountryIndex ? (
+              <button
+                type="button"
+                className={mobileArchiveView === "countries" ? "is-active" : undefined}
+                aria-pressed={mobileArchiveView === "countries"}
+                aria-controls="profile-country-index"
+                onClick={() => setMobileArchiveView("countries")}
+              >
+                나라 <span>{scopedCountries.length}</span>
+              </button>
+            ) : null}
+            {showTravelTimeline ? (
+              <button
+                type="button"
+                className={mobileArchiveView === "timeline" ? "is-active" : undefined}
+                aria-pressed={mobileArchiveView === "timeline"}
+                aria-controls="profile-travel-timeline"
+                onClick={() => setMobileArchiveView("timeline")}
+              >
+                연도 <span>{years.length}</span>
+              </button>
+            ) : null}
+          </nav>
+        ) : null}
 
-        <section aria-labelledby="travels-heading" className="profile-travel-section">
+        {showCountryIndex ? (
+          <section
+            id="profile-country-index"
+            aria-labelledby="visited-heading"
+            className={`profile-country-filter profile-archive__panel${mobileArchiveView === "countries" ? " is-mobile-active" : ""}`}
+          >
+            <div>
+              <p className="eyebrow">Country index</p>
+              <h2 id="visited-heading">{selectedYear ? `${selectedYear}년에 방문한 나라` : "방문한 나라"}</h2>
+            </div>
+            <CountryKeyboardList
+              countries={scopedCountries}
+              selectedCode={selectedCode}
+              onSelect={handleSelect}
+              onHover={handleHover}
+            />
+          </section>
+        ) : null}
+
+        <section
+          id="profile-travel-archive"
+          aria-labelledby="travels-heading"
+          className={`profile-travel-section profile-archive__panel${mobileArchiveView === "travels" ? " is-mobile-active" : ""}`}
+        >
           <SectionHeading
             id="travels-heading"
             eyebrow="Travel archive"
@@ -424,8 +478,12 @@ export function ProfileExperience({
           )}
         </section>
 
-        {scopedTravels.length > 0 ? (
-          <section aria-labelledby="timeline-heading" className="profile-timeline-section">
+        {showTravelTimeline ? (
+          <section
+            id="profile-travel-timeline"
+            aria-labelledby="timeline-heading"
+            className={`profile-timeline-section profile-archive__panel${mobileArchiveView === "timeline" ? " is-mobile-active" : ""}`}
+          >
             <SectionHeading id="timeline-heading" eyebrow="By year" title="시간순 여행 기록" />
             <TravelTimeline travels={scopedTravels} username={profile.username} />
           </section>

@@ -14,7 +14,12 @@ export default async function NewPlanPage({ searchParams }: { searchParams: Prom
   const member = await getCurrentMember();
   if (!member) redirect("/login?next=%2Fstudio%2Fplans%2Fnew");
   const { country } = await searchParams;
-  const today = new Date().toISOString().slice(0, 10);
+  const today = new Intl.DateTimeFormat("en-CA", {
+    timeZone: "Asia/Seoul",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).format(new Date());
   const requestedCountry = country?.toUpperCase() ?? "";
   const initialCountryCode = countryOptions.some((option) => option.iso2Code === requestedCountry) ? requestedCountry : "";
 

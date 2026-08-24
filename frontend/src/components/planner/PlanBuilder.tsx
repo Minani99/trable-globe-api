@@ -101,14 +101,14 @@ export function PlanBuilder({ countries, today, initialCountryCode = "" }: { cou
           <div className="plan-step__heading"><span>01</span><div><p className="eyebrow">Destination</p><h2 id="plan-country-heading">어디로 떠날까요?</h2></div></div>
           <label className="plan-country-select">
             <span className="sr-only">여행할 나라</span>
-            <select value={countryCode} onChange={(event) => setCountryCode(event.target.value)}>
+            <select value={countryCode} onChange={(event) => { setCountryCode(event.target.value); setError(null); }}>
               <option value="">나라를 검색하거나 선택하세요</option>
               {countries.map((country) => <option key={country.iso2Code} value={country.iso2Code}>{country.label}</option>)}
             </select>
           </label>
           <div className="plan-choice-row" aria-label="인기 여행지">
             {popularCountries.map((country) => (
-              <button key={country.iso2Code} type="button" className={countryCode === country.iso2Code ? "is-selected" : ""} onClick={() => setCountryCode(country.iso2Code)}>
+              <button key={country.iso2Code} type="button" className={countryCode === country.iso2Code ? "is-selected" : ""} onClick={() => { setCountryCode(country.iso2Code); setError(null); }}>
                 {country.nameKo}
               </button>
             ))}
@@ -118,8 +118,8 @@ export function PlanBuilder({ countries, today, initialCountryCode = "" }: { cou
         <section className="plan-step" aria-labelledby="plan-date-heading">
           <div className="plan-step__heading"><span>02</span><div><p className="eyebrow">When</p><h2 id="plan-date-heading">언제, 며칠 동안 갈까요?</h2></div></div>
           <div className="plan-date-row">
-            <label><span>출발일</span><input type="date" min={today} value={startDate} onChange={(event) => setStartDate(event.target.value)} /></label>
-            <div><span>여행 기간</span><div className="plan-choice-row is-compact">{[2, 3, 4, 5, 7].map((days) => <button key={days} type="button" className={tripDays === days ? "is-selected" : ""} onClick={() => setTripDays(days)}>{days - 1}박 {days}일</button>)}</div></div>
+            <label><span>출발일</span><input type="date" min={today} value={startDate} onChange={(event) => { setStartDate(event.target.value); setError(null); }} /></label>
+            <div><span>여행 기간</span><div className="plan-choice-row is-compact">{[1, 2, 3, 4, 5, 7].map((days) => <button key={days} type="button" className={tripDays === days ? "is-selected" : ""} onClick={() => setTripDays(days)}>{days === 1 ? "당일" : `${days - 1}박 ${days}일`}</button>)}</div></div>
           </div>
         </section>
 
@@ -148,6 +148,16 @@ export function PlanBuilder({ countries, today, initialCountryCode = "" }: { cou
         </button>
         <small>계획은 나에게만 보이며, 다녀온 뒤 기록으로 공개할 수 있어요.</small>
       </aside>
+
+      <div className="plan-builder__mobile-submit" aria-live="polite">
+        <span>
+          <small>{selectedCountry ? selectedCountry.nameKo : "여행지를 선택해 주세요"}</small>
+          <strong>{tripDays === 1 ? "당일 여행" : `${tripDays - 1}박 ${tripDays}일`} · {styles.length ? styles.join(" · ") : "자유롭게"}</strong>
+        </span>
+        <button type="button" onClick={createPlan} disabled={pending}>
+          {pending ? "만드는 중…" : "계획 만들기"}
+        </button>
+      </div>
     </div>
   );
 }
