@@ -30,16 +30,20 @@ test("여행 시간축을 따라 개인 지구본이 성장하고 현재로 돌�
   await expect(range).toHaveValue(String(max));
 
   await controls.getByRole("button", { name: "여행 세계 재생", exact: true }).click();
-  await expect(controls.getByRole("button", { name: "여행 세계 재생 일시정지" })).toBeVisible();
+  const pauseButton = controls.getByRole("button", { name: "여행 세계 재생 일시정지" });
+  await expect(pauseButton).toBeVisible();
   // Playback restarts at zero and can advance while a loaded CI worker is still
   // evaluating the assertion. It only needs to have left the final moment.
   expect(Number(await range.inputValue())).toBeLessThan(4);
+  await pauseButton.click();
+  await expect(controls.getByRole("button", { name: "여행 세계 재생", exact: true })).toBeVisible();
 
   const profileDock = page.getByRole("region", { name: "여행자 정보" });
+  const profileDetails = profileDock.locator(".profile-globe-dock__details");
   await profileDock.getByRole("button", { name: "프로필 정보 펼치기" }).click();
-  await expect(page.getByRole("region", { name: "프로필" })).toBeVisible();
+  await expect(profileDetails).not.toHaveAttribute("hidden", "");
   await profileDock.getByRole("button", { name: "프로필 정보 접기" }).click();
-  await expect(page.getByRole("region", { name: "프로필" })).toBeHidden();
+  await expect(profileDetails).toHaveAttribute("hidden", "");
 
   await controls.getByRole("button", { name: "타임라인 접기" }).click();
   await expect(controls).toHaveClass(/is-collapsed/);
