@@ -40,6 +40,7 @@ export function HeaderNavigation({ username, initialMember }: HeaderNavigationPr
   const exploreActive =
     (pathname === samplePath || pathname.startsWith(`${samplePath}/`)) && !profileExact;
   const discoverActive = pathname === "/discover";
+  const planActive = pathname.startsWith("/studio/plans");
 
   return (
     <div className="site-header-actions">
@@ -50,6 +51,13 @@ export function HeaderNavigation({ username, initialMember }: HeaderNavigationPr
           aria-current={exploreActive ? "page" : undefined}
         >
           지구본
+        </Link>
+        <Link
+          href="/studio/plans/new"
+          className="site-nav-link"
+          aria-current={planActive ? "page" : undefined}
+        >
+          여행 계획
         </Link>
         <Link
           href="/discover"
@@ -72,6 +80,7 @@ export function HeaderNavigationFallback() {
     <div className="site-header-actions">
       <nav aria-label="주요 메뉴" className="site-desktop-nav">
         <Link href={globePath} className="site-nav-link">지구본</Link>
+        <Link href="/studio/plans/new" className="site-nav-link">여행 계획</Link>
         <Link href="/discover" className="site-nav-link">사람 찾기</Link>
         <span className="site-account-loading" aria-label="계정 정보 불러오는 중" />
       </nav>
@@ -88,7 +97,7 @@ function MobileBottomNavigation({
   pathname: string;
   member: AuthMember | null | undefined;
 }) {
-  const createHref = member ? "/studio/travels/new" : "/register";
+  const createHref = member ? "/studio/plans/new" : "/register?next=%2Fstudio%2Fplans%2Fnew";
   const profileHref = member ? "/settings#profile" : "/login";
   const profileActive = member
     ? pathname === `/${member.username}` || pathname === "/settings"
@@ -100,9 +109,9 @@ function MobileBottomNavigation({
       <MobileNavLink href={globePath} label="지구본" icon="globe" active={pathname === globePath} />
       <MobileNavLink
         href={createHref}
-        label="기록"
+        label="계획"
         icon="add"
-        active={pathname.startsWith("/studio")}
+        active={pathname.startsWith("/studio/plans")}
         emphasized
       />
       <MobileNavLink href="/discover" label="발견" icon="search" active={pathname === "/discover"} />

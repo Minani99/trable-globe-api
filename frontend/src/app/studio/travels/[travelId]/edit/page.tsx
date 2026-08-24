@@ -21,7 +21,9 @@ export default async function EditTravelPage(props: PageProps<"/studio/travels/[
   ]);
   if (!member) redirect("/login?next=/studio");
   if (!travel) notFound();
+  const today = new Date().toISOString().slice(0, 10);
+  const planningMode = travel.visibility === "PRIVATE" && travel.endDate >= today;
   return (
-    <><SiteHeader username={member.username} member={member} /><main id="main" className="studio-page flex-1"><div className="site-shell travel-editor-shell"><nav className="studio-breadcrumb"><Link href="/studio">← 내 여행 관리</Link></nav><header className="travel-editor-hero"><p className="eyebrow">Edit journey</p><h1>{travel.title}</h1><p>저장하는 순간 공개 지구본과 상세 페이지에도 반영됩니다.</p></header><TravelEditor username={member.username} countries={countryOptions} initialTravel={travel} /></div></main><SiteFooter /></>
+    <><SiteHeader username={member.username} member={member} /><main id="main" className="studio-page flex-1"><div className="site-shell travel-editor-shell"><nav className="studio-breadcrumb"><Link href="/studio">← 여행 허브</Link></nav><header className="travel-editor-hero"><p className="eyebrow">{planningMode ? "Upcoming journey" : "Edit journey"}</p><h1>{travel.title}</h1><p>{planningMode ? "일차별 장소를 골라 계획을 완성하세요. 다녀온 뒤에는 이 화면에서 그대로 기록으로 바꿀 수 있습니다." : "저장하는 순간 공개 지구본과 상세 페이지에도 반영됩니다."}</p></header><TravelEditor username={member.username} countries={countryOptions} initialTravel={travel} planningMode={planningMode} /></div></main><SiteFooter /></>
   );
 }

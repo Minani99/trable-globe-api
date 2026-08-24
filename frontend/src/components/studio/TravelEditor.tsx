@@ -47,6 +47,7 @@ interface TravelEditorProps {
   countries: CountryOption[];
   initialTravel?: TravelDetail;
   initialCountryCode?: string;
+  planningMode?: boolean;
 }
 
 interface StoredTravelDraft {
@@ -69,6 +70,7 @@ export function TravelEditor({
   countries,
   initialTravel,
   initialCountryCode = "KR",
+  planningMode = false,
 }: TravelEditorProps) {
   const router = useRouter();
   const editing = Boolean(initialTravel);
@@ -447,7 +449,7 @@ export function TravelEditor({
   }
 
   async function handleDelete() {
-    if (!initialTravel || !window.confirm("이 여행 기록을 삭제할까요? 삭제 후에는 되돌릴 수 없습니다.")) return;
+    if (!initialTravel || !window.confirm(`${planningMode ? "이 여행 계획" : "이 여행 기록"}을 삭제할까요? 삭제 후에는 되돌릴 수 없습니다.`)) return;
     setPending(true);
     try {
       await apiMutation<null>(`/api/private/travels/${initialTravel.id}`, "DELETE");
@@ -467,12 +469,12 @@ export function TravelEditor({
   return (
     <form className={`travel-editor${draftHydrated ? "" : " is-restoring"}`} onSubmit={handleSubmit} onChange={() => setDirty(true)} aria-busy={!draftHydrated}>
       <section className="travel-editor__section">
-        <div className="travel-editor__section-heading"><span>01</span><div><p className="eyebrow">Journey</p><h2>여행 기본 정보</h2></div></div>
+        <div className="travel-editor__section-heading"><span>01</span><div><p className="eyebrow">Journey</p><h2>{planningMode ? "계획 기본 정보" : "여행 기본 정보"}</h2></div></div>
         <div className="travel-editor__fields">
-          <label className="is-wide"><span>여행 제목</span><input name="title" value={title} onChange={(event) => setTitle(event.target.value)} maxLength={120} placeholder="기억하고 싶은 이름을 붙여 주세요" required /></label>
+          <label className="is-wide"><span>여행 제목</span><input name="title" value={title} onChange={(event) => setTitle(event.target.value)} maxLength={120} placeholder={planningMode ? "다음 여행의 이름" : "기억하고 싶은 이름을 붙여 주세요"} required /></label>
           <label><span>시작일</span><input name="startDate" type="date" value={startDate} onChange={(event) => setStartDate(event.target.value)} required /></label>
           <label><span>종료일</span><input name="endDate" type="date" value={endDate} onChange={(event) => setEndDate(event.target.value)} required /></label>
-          <label className="is-wide"><span>여행 소개</span><textarea name="description" value={description} onChange={(event) => setDescription(event.target.value)} maxLength={2000} rows={5} placeholder="이 여행을 한 문단으로 남겨 보세요." /></label>
+          <label className="is-wide"><span>{planningMode ? "이번 여행의 방향" : "여행 소개"}</span><textarea name="description" value={description} onChange={(event) => setDescription(event.target.value)} maxLength={2000} rows={5} placeholder={planningMode ? "하고 싶은 것과 여행 분위기를 적어두세요." : "이 여행을 한 문단으로 남겨 보세요."} /></label>
           <div className="travel-editor__cover is-wide">
             <div>
               <span>대표 사진</span>
@@ -491,20 +493,20 @@ export function TravelEditor({
             </details>
           </div>
           <fieldset className="travel-editor__visibility is-wide">
-            <legend>공개 범위</legend>
-            <button type="button" className={visibility === "PRIVATE" ? "is-active" : ""} onClick={() => { setVisibility("PRIVATE"); setDirty(true); }}><strong>비공개</strong><span>작성 중인 기록은 나만 볼 수 있어요.</span></button>
-            <button type="button" className={visibility === "PUBLIC" ? "is-active" : ""} onClick={() => { setVisibility("PUBLIC"); setDirty(true); }}><strong>공개</strong><span>내 지구본과 공개 프로필에 바로 반영됩니다.</span></button>
+            <legend>{planningMode ? "여행 상태" : "공개 범위"}</legend>
+            <button type="button" className={visibility === "PRIVATE" ? "is-active" : ""} onClick={() => { setVisibility("PRIVATE"); setDirty(true); }}><strong>{planningMode ? "계획 중" : "비공개"}</strong><span>{planningMode ? "나만 보며 일정을 계속 다듬어요." : "작성 중인 기록은 나만 볼 수 있어요."}</span></button>
+            <button type="button" className={visibility === "PUBLIC" ? "is-active" : ""} onClick={() => { setVisibility("PUBLIC"); setDirty(true); }}><strong>{planningMode ? "다녀왔어요 · 기록 공개" : "공개"}</strong><span>{planningMode ? "계획을 완료된 여행 기록으로 바꿔 지구본에 남겨요." : "내 지구본과 공개 프로필에 바로 반영됩니다."}</span></button>
           </fieldset>
         </div>
       </section>
 
       <section className="travel-editor__section">
-        <div className="travel-editor__section-heading"><span>02</span><div><p className="eyebrow">Itinerary</p><h2>방문 장소</h2><p>입력한 순서대로 상세 지도의 경로가 이어집니다.</p></div></div>
+        <div className="travel-editor__section-heading"><span>02</span><div><p className="eyebrow">Itinerary</p><h2>{planningMode ? "일차별 일정" : "방문 장소"}</h2><p>{planningMode ? "자동으로 만든 일차별 카드를 실제 가고 싶은 장소로 바꿔보세요." : "입력한 순서대로 상세 지도의 경로가 이어집니다."}</p></div></div>
         <ol className="travel-editor__places">
           {places.map((place, index) => (
             <li key={place.key}>
               <div className="travel-editor__item-head">
-                <strong>{String(index + 1).padStart(2, "0")}번째 장소</strong>
+                <strong>{planningMode && place.visitedAt ? `${place.visitedAt.slice(5).replace("-", ".")} 일정` : `${String(index + 1).padStart(2, "0")}번째 장소`}</strong>
                 <div className="travel-editor__order-actions">
                   <button type="button" onClick={() => movePlace(index, -1)} disabled={index === 0 || pending} aria-label="장소를 앞으로 이동">↑</button>
                   <button type="button" onClick={() => movePlace(index, 1)} disabled={index === places.length - 1 || pending} aria-label="장소를 뒤로 이동">↓</button>
@@ -526,12 +528,12 @@ export function TravelEditor({
                 <label><span>도시</span><input value={place.cityName} onChange={(event) => updateCityName(index, event.target.value)} maxLength={100} placeholder="예: 서울" /></label>
                 <label className="is-wide"><span>장소 이름</span><input value={place.placeName} onChange={(event) => updatePlace(index, "placeName", event.target.value)} maxLength={150} placeholder="예: 서울숲" required /></label>
                 <label><span>방문일</span><input value={place.visitedAt} onChange={(event) => updatePlace(index, "visitedAt", event.target.value)} type="date" /></label>
-                <label className="is-wide"><span>메모</span><textarea value={place.memo} onChange={(event) => updatePlace(index, "memo", event.target.value)} maxLength={1000} rows={3} placeholder="그 장소에서 기억하고 싶은 장면" /></label>
+                <label className="is-wide"><span>메모</span><textarea value={place.memo} onChange={(event) => updatePlace(index, "memo", event.target.value)} maxLength={1000} rows={3} placeholder={planningMode ? "예약, 먹고 싶은 메뉴, 이동 팁" : "그 장소에서 기억하고 싶은 장면"} /></label>
               </div>
             </li>
           ))}
         </ol>
-        <div className="travel-editor__add-row"><p>추가한 순서대로 상세 지도의 여행 경로가 이어집니다.</p><button type="button" onClick={() => { setPlaces((current) => [...current, emptyPlace(current.at(-1)?.countryCode ?? "KR")]); setDirty(true); }}>＋ 장소 추가</button></div>
+        <div className="travel-editor__add-row"><p>{planningMode ? "실제로 갈 순서대로 장소를 추가하고 위아래로 옮겨보세요." : "추가한 순서대로 상세 지도의 여행 경로가 이어집니다."}</p><button type="button" onClick={() => { setPlaces((current) => [...current, emptyPlace(current.at(-1)?.countryCode ?? "KR")]); setDirty(true); }}>＋ 장소 추가</button></div>
       </section>
 
       <section className="travel-editor__section">
@@ -599,11 +601,11 @@ export function TravelEditor({
       {status ? <p className="travel-editor__error" role="alert">{status}</p> : null}
       <footer className="travel-editor__footer">
         <div className="travel-editor__draft-state">
-          {editing ? <button type="button" className="travel-editor__delete" onClick={handleDelete} disabled={pending}>여행 삭제</button> : null}
+          {editing ? <button type="button" className="travel-editor__delete" onClick={handleDelete} disabled={pending}>{planningMode ? "계획 삭제" : "여행 삭제"}</button> : null}
           <span aria-live="polite">{draftStatus}</span>
           {draftRestored ? <button type="button" onClick={discardDraft} disabled={pending}>임시 저장본 버리기</button> : null}
         </div>
-        <div><Link href={editing && initialTravel?.visibility === "PUBLIC" ? travelPath(username, initialTravel.id) : "/studio"}>취소</Link><button type="submit" disabled={pending}>{pending ? "저장 중…" : editing ? "변경 내용 저장" : "여행 기록 저장"}</button></div>
+        <div><Link href={editing && initialTravel?.visibility === "PUBLIC" ? travelPath(username, initialTravel.id) : "/studio"}>취소</Link><button type="submit" disabled={pending}>{pending ? "저장 중…" : planningMode && visibility === "PUBLIC" ? "기록으로 전환하기" : planningMode ? "계획 저장" : editing ? "변경 내용 저장" : "여행 기록 저장"}</button></div>
       </footer>
     </form>
   );

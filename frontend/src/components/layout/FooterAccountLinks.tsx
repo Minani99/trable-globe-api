@@ -26,7 +26,8 @@ export function FooterAccountLinks() {
 
   return member ? (
     <>
-      <li><Link className={linkClass} href="/studio">내 여행 기록</Link></li>
+      <li><Link className={linkClass} href="/studio/plans/new">새 여행 계획</Link></li>
+      <li><Link className={linkClass} href="/studio">계획과 기록</Link></li>
       <li><Link className={linkClass} href="/settings#profile">프로필 설정</Link></li>
     </>
   ) : (

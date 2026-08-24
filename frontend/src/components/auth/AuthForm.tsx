@@ -47,7 +47,7 @@ export function AuthForm({ mode, nextPath }: { mode: "login" | "register"; nextP
       setCompleted(true);
       showFeedback(
         isRegister
-          ? `${member.displayName}님의 여행 지구본이 준비됐어요.`
+          ? `${member.displayName}님의 첫 여행을 준비할 공간이 생겼어요.`
           : `${member.displayName}님, 다시 만나 반가워요.`,
         "success",
       );
@@ -102,7 +102,7 @@ export function AuthForm({ mode, nextPath }: { mode: "login" | "register"; nextP
       {!isRegister ? <Link className="auth-form__forgot" href="/forgot-password">비밀번호를 잊으셨나요?</Link> : null}
       <button type="submit" disabled={pending || completed} aria-busy={pending || completed}>
         <span className="auth-form__button-label">
-          {completed ? "완료 · 이동 중" : pending ? "안전하게 확인 중…" : isRegister ? "내 지구본 시작하기" : "로그인"}
+          {completed ? "완료 · 이동 중" : pending ? "안전하게 확인 중…" : isRegister ? "여행 시작하기" : "로그인"}
         </span>
         {(pending || completed) ? <span className={`action-spinner${completed ? " is-complete" : ""}`} aria-hidden="true">{completed ? "✓" : ""}</span> : null}
       </button>

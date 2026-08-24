@@ -94,7 +94,7 @@ export function AccountNavigation({
   if (!member) {
     return mobile ? (
       <>
-        <Link href="/register" onClick={onNavigate}><span>내 지구본 시작하기</span><span aria-hidden="true">→</span></Link>
+        <Link href="/register?next=%2Fstudio%2Fplans%2Fnew" onClick={onNavigate}><span>첫 여행 계획하기</span><span aria-hidden="true">→</span></Link>
         <Link href="/login" onClick={onNavigate}><span>로그인</span><span aria-hidden="true">→</span></Link>
       </>
     ) : (
@@ -107,7 +107,8 @@ export function AccountNavigation({
   return mobile ? (
     <>
       <Link href={`/${member.username}`} onClick={onNavigate}><span>내 프로필</span><span aria-hidden="true">→</span></Link>
-      <Link href="/studio" onClick={onNavigate}><span>여행 기록</span><span aria-hidden="true">→</span></Link>
+      <Link href="/studio/plans/new" onClick={onNavigate}><span>새 여행 계획</span><span aria-hidden="true">→</span></Link>
+      <Link href="/studio" onClick={onNavigate}><span>계획과 기록</span><span aria-hidden="true">→</span></Link>
       <Link href="/settings#profile" onClick={onNavigate}><span>설정</span><span aria-hidden="true">→</span></Link>
       <button type="button" className="site-mobile-menu__button is-logout" onClick={logout} disabled={logoutPending}>
         <span>{logoutPending ? "로그아웃 중…" : "로그아웃"}</span><span aria-hidden="true">→</span>
@@ -142,7 +143,8 @@ export function AccountNavigation({
         {menuOpen ? (
           <div className="site-account-popover" role="menu">
             <Link href={`/${member.username}`} role="menuitem" onClick={() => setMenuOpen(false)}><span>내 프로필</span><span aria-hidden="true">↗</span></Link>
-            <Link href="/studio" role="menuitem" onClick={() => setMenuOpen(false)}><span>여행 기록</span><span aria-hidden="true">→</span></Link>
+            <Link href="/studio/plans/new" role="menuitem" onClick={() => setMenuOpen(false)}><span>새 여행 계획</span><span aria-hidden="true">＋</span></Link>
+            <Link href="/studio" role="menuitem" onClick={() => setMenuOpen(false)}><span>계획과 기록</span><span aria-hidden="true">→</span></Link>
             <Link href="/settings#profile" role="menuitem" onClick={() => setMenuOpen(false)}><span>설정</span><span aria-hidden="true">→</span></Link>
             <button type="button" className="site-account-popover__logout" role="menuitem" onClick={logout} disabled={logoutPending}>
               <span>{logoutPending ? "로그아웃 중…" : "로그아웃"}</span>

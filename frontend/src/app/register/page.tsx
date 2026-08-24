@@ -19,10 +19,10 @@ export default async function RegisterPage({
       <SiteHeader />
       <main id="main" className="auth-page flex-1">
         <section className="auth-card auth-card--wide">
-          <p className="eyebrow">Create your world</p>
-          <h1>나만의 여행 지구본 만들기</h1>
+          <p className="eyebrow">Start your journey</p>
+          <h1>다음 여행부터 시작하기</h1>
           <p className="auth-card__intro">
-            사용자명은 공개 프로필 주소가 됩니다. 이메일은 로그인에만 사용하고 공개하지 않습니다.
+            계획은 비공개로 시작하고, 다녀온 여행만 지구본과 프로필에 공개할 수 있습니다.
           </p>
           <AuthForm mode="register" nextPath={nextPath} />
         </section>

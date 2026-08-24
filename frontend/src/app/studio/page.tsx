@@ -8,7 +8,7 @@ import { authenticatedBackendGet, getCurrentMember } from "@/lib/api/server-sess
 import { formatDateRange } from "@/lib/utils/format";
 import type { OwnedTravelSummary } from "@/types";
 
-export const metadata: Metadata = { title: "내 여행 관리", robots: { index: false, follow: false } };
+export const metadata: Metadata = { title: "여행 허브", robots: { index: false, follow: false } };
 
 export default async function StudioPage() {
   const [member, travelRecords] = await Promise.all([
@@ -17,6 +17,9 @@ export default async function StudioPage() {
   ]);
   if (!member) redirect("/login?next=/studio");
   const travels = travelRecords ?? [];
+  const today = new Date().toISOString().slice(0, 10);
+  const plans = travels.filter(({ travel, visibility }) => visibility === "PRIVATE" && travel.endDate >= today);
+  const records = travels.filter((item) => !plans.includes(item));
   const profileReady = Boolean(member.profileImageUrl && member.bio?.trim());
 
   return (
@@ -27,13 +30,49 @@ export default async function StudioPage() {
           <header className="studio-hero">
             <div>
               <p className="eyebrow">Travel studio · @{member.username}</p>
-              <h1>내 여행을 기록하고 다듬는 곳</h1>
+              <h1>다음 여행부터 지난 기록까지</h1>
+              <p>계획은 가볍게 시작하고, 다녀온 뒤 그대로 나의 여행 세계에 남겨보세요.</p>
             </div>
             <div className="studio-hero__actions">
               <Link href={`/${member.username}`} className="studio-secondary-action">공개 프로필</Link>
-              <Link href="/studio/travels/new" className="studio-primary-action">새 여행 기록 <span>＋</span></Link>
+              <Link href="/studio/travels/new" className="studio-secondary-action">지난 여행 기록</Link>
+              <Link href="/studio/plans/new" className="studio-primary-action">새 여행 계획 <span>＋</span></Link>
             </div>
           </header>
+
+          <section className="studio-plan-launch" aria-labelledby="studio-plan-launch-heading">
+            <div>
+              <p className="eyebrow">One-click planner</p>
+              <h2 id="studio-plan-launch-heading">템플릿을 찾지 말고, 선택만 하세요.</h2>
+              <p>나라·날짜·여행 취향을 고르면 일차별 뼈대가 만들어집니다. 여행이 끝나면 사진과 메모만 더해 기록으로 바꿀 수 있어요.</p>
+            </div>
+            <ol aria-label="여행 계획 흐름">
+              <li><span>01</span>나라와 날짜</li>
+              <li><span>02</span>취향과 속도</li>
+              <li><span>03</span>일정 자동 생성</li>
+            </ol>
+            <Link href="/studio/plans/new">3분 만에 계획 만들기 <span aria-hidden="true">→</span></Link>
+          </section>
+
+          {plans.length > 0 ? (
+            <section className="studio-plans" aria-labelledby="studio-plans-heading">
+              <div className="studio-section-heading">
+                <div><p className="eyebrow">Upcoming</p><h2 id="studio-plans-heading">다가오는 여행</h2></div>
+                <span>{plans.length}개</span>
+              </div>
+              <ol className="studio-plan-list">
+                {plans.map(({ travel }) => (
+                  <li key={travel.id}>
+                    <Link href={`/studio/travels/${travel.id}/edit?plan=1`}>
+                      <div className="studio-plan-list__date"><strong>{countdownLabel(today, travel.startDate)}</strong><span>{formatDateRange(travel.startDate, travel.endDate)}</span></div>
+                      <div><span>{travel.primaryCountry?.nameKo ?? "다음 여행"}</span><h3>{travel.title}</h3><p>일정 {travel.durationDays}일 · 장소 {travel.placeCount}곳</p></div>
+                      <span className="studio-plan-list__action">계획 열기 →</span>
+                    </Link>
+                  </li>
+                ))}
+              </ol>
+            </section>
+          ) : null}
 
           {travels.length === 0 ? (
             <section aria-labelledby="getting-started-heading" className="studio-onboarding">
@@ -55,29 +94,29 @@ export default async function StudioPage() {
                 />
                 <OnboardingStep
                   index="02"
-                  title="첫 여행 기록하기"
-                  description="한 나라와 한 장소만 입력해도 내 지구본이 바로 변화합니다."
-                  href="/studio/travels/new"
-                  action="여행 시작"
+                  title="다음 여행 계획하기"
+                  description="나라와 날짜, 취향만 고르면 일차별 일정이 자동으로 만들어집니다."
+                  href="/studio/plans/new"
+                  action="계획 시작"
                 />
                 <OnboardingStep
                   index="03"
-                  title="완성된 지구본 공유하기"
-                  description="첫 기록을 공개하면 고유 프로필 주소로 여행 세계를 공유할 수 있습니다."
+                  title="계획을 기록으로 남기기"
+                  description="다녀온 뒤 사진과 메모를 더하고 공개하면 지구본에 여행 세계가 쌓입니다."
                 />
               </ol>
             </section>
           ) : null}
 
-          {travels.length > 0 ? (
+          {records.length > 0 ? (
             <div className="studio-layout studio-layout--records">
               <section aria-labelledby="studio-travels-heading" className="studio-travels">
                 <div className="studio-section-heading">
-                  <h2 id="studio-travels-heading">여행 기록</h2>
-                  <span>{travels.length}개</span>
+                  <div><p className="eyebrow">Archive</p><h2 id="studio-travels-heading">다녀온 여행</h2></div>
+                  <span>{records.length}개</span>
                 </div>
                 <ol className="studio-travel-list">
-                  {travels.map(({ travel, visibility }) => (
+                  {records.map(({ travel, visibility }) => (
                     <li key={travel.id}>
                       <Link href={`/studio/travels/${travel.id}/edit`}>
                         <span className="studio-travel-list__country">{travel.primaryCountry?.nameKo ?? "여행"}</span>
@@ -96,6 +135,13 @@ export default async function StudioPage() {
       <SiteFooter />
     </>
   );
+}
+
+function countdownLabel(today: string, startDate: string): string {
+  const difference = Math.ceil((Date.parse(`${startDate}T00:00:00Z`) - Date.parse(`${today}T00:00:00Z`)) / 86_400_000);
+  if (difference === 0) return "D-DAY";
+  if (difference < 0) return "여행 중";
+  return `D-${difference}`;
 }
 
 function OnboardingStep({

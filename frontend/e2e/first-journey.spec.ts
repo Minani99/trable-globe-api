@@ -15,10 +15,10 @@ test("회원가입부터 프로필 완성, 첫 여행 공개와 공유까지 이
   await page.getByLabel("사용자명", { exact: true }).fill(username);
   await page.getByLabel("이메일", { exact: true }).fill(email);
   await page.locator('input[name="password"]').fill("journey-password-42");
-  await page.getByRole("button", { name: "내 지구본 시작하기" }).click();
+  await page.getByRole("button", { name: "여행 시작하기" }).click();
 
   await expect(page).toHaveURL(/\/studio\/travels\/new\?country=JP$/, { timeout: 30_000 });
-  await expect(page.getByRole("heading", { name: "새 여행 기록" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "지난 여행 기록하기" })).toBeVisible();
   await expect(page.locator(".travel-editor select").first()).toHaveValue("JP");
 
   await page.goto("/settings#profile");

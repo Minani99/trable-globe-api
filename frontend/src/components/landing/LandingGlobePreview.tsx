@@ -79,8 +79,8 @@ export function LandingGlobePreview() {
                   >
                     <span>
                       {member
-                        ? `${selectedCountry.nameKo} 여행 기록하기`
-                        : "내 지구본에 이 나라 추가"}
+                        ? `${selectedCountry.nameKo} 여행 계획하기`
+                        : "이 나라 여행 계획하기"}
                     </span>
                     <span aria-hidden="true">→</span>
                   </Link>
@@ -111,6 +111,6 @@ export function LandingGlobePreview() {
 
 function countryActionHref(code: string, authenticated: boolean): string {
   const editorCode = code === "Kosovo" ? "XK" : code === "N. Cyprus" ? "CY" : code === "Somaliland" ? "SO" : code;
-  const destination = `/studio/travels/new?country=${encodeURIComponent(editorCode)}`;
+  const destination = `/studio/plans/new?country=${encodeURIComponent(editorCode)}`;
   return authenticated ? destination : `/register?next=${encodeURIComponent(destination)}`;
 }

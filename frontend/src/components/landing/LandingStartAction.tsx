@@ -29,8 +29,8 @@ export function LandingStartAction() {
   }
 
   return (
-    <Link href={member ? "/studio" : "/register"} className="landing-primary-cta group">
-      <span>{member ? "내 여행 이어가기" : "내 지구본 시작하기"}</span>
+    <Link href={member ? "/studio/plans/new" : "/register?next=%2Fstudio%2Fplans%2Fnew"} className="landing-primary-cta group">
+      <span>{member ? "새 여행 계획하기" : "3분 만에 여행 계획하기"}</span>
       <span className="landing-primary-cta__arrow" aria-hidden="true">↗</span>
     </Link>
   );

@@ -16,8 +16,8 @@ export default async function LoginPage({ searchParams }: { searchParams: Promis
       <main id="main" className="auth-page flex-1">
         <section className="auth-card">
           <p className="eyebrow">Welcome back</p>
-          <h1>여행 기록으로 돌아가기</h1>
-          <p className="auth-card__intro">내 지구본과 아직 정리하지 못한 여행을 이어서 기록해 보세요.</p>
+          <h1>내 여행으로 돌아가기</h1>
+          <p className="auth-card__intro">다가오는 계획부터 다녀온 기록까지, 멈춘 곳에서 다시 이어보세요.</p>
           {reset === "1" ? <p className="auth-form__notice">새 비밀번호를 저장했습니다. 다시 로그인해 주세요.</p> : null}
           <AuthForm mode="login" nextPath={nextPath} />
         </section>
