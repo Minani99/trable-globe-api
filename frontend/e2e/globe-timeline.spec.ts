@@ -1,6 +1,11 @@
 import { expect, test } from "@playwright/test";
 
 test("여행 시간축을 따라 개인 지구본이 성장하고 현재로 돌아온다", async ({ page }) => {
+  // The CI browser renders the WebGL globe in software. Keep this journey's
+  // budget separate from the faster DOM-only tests so the final collapsed
+  // spotlight assertion is not cut off by the suite-wide 120s default.
+  test.setTimeout(process.env.CI ? 180_000 : 60_000);
+
   const pageErrors: string[] = [];
   page.on("pageerror", (error) => pageErrors.push(error.message));
 
