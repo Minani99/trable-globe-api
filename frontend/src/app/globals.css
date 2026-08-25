@@ -10036,3 +10036,211 @@ a.profile-panel__identity:focus-visible {
     text-align: center;
   }
 }
+
+/* Planning mode: keep long itineraries focused on one day at a time. */
+.travel-editor__itinerary-content {
+  min-width: 0;
+}
+
+.plan-itinerary {
+  display: grid;
+  gap: 1rem;
+  margin: 0 0 1.15rem;
+  padding: 1.1rem;
+  border: 1px solid color-mix(in srgb, var(--accent) 22%, var(--border));
+  border-radius: 1.15rem;
+  background:
+    radial-gradient(circle at 100% 0, color-mix(in srgb, var(--accent) 9%, transparent), transparent 36%),
+    var(--surface-soft);
+}
+
+.plan-itinerary__progress {
+  display: grid;
+  grid-template-columns: auto minmax(10rem, 1fr);
+  align-items: center;
+  gap: 1rem;
+}
+
+.plan-itinerary__progress > div {
+  display: flex;
+  align-items: baseline;
+  gap: 0.55rem;
+}
+
+.plan-itinerary__progress strong {
+  color: var(--text-primary);
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+}
+
+.plan-itinerary__progress div span {
+  color: var(--text-tertiary);
+  font-size: 0.58rem;
+}
+
+.plan-itinerary__progress > span {
+  position: relative;
+  display: block;
+  height: 0.35rem;
+  overflow: hidden;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--text-primary) 8%, transparent);
+}
+
+.plan-itinerary__progress i {
+  position: absolute;
+  inset: 0 auto 0 0;
+  min-width: 0.35rem;
+  border-radius: inherit;
+  background: var(--accent);
+  transition: width 220ms ease;
+}
+
+.plan-itinerary__days {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: minmax(6.4rem, 1fr);
+  gap: 0.55rem;
+  overflow-x: auto;
+  padding: 0.1rem 0 0.35rem;
+  scrollbar-width: thin;
+  scroll-snap-type: x proximity;
+}
+
+.plan-itinerary__days button {
+  display: grid;
+  justify-items: start;
+  gap: 0.25rem;
+  min-height: 4.5rem;
+  padding: 0.75rem;
+  border: 1px solid var(--border);
+  border-radius: 0.85rem;
+  background: color-mix(in srgb, var(--surface) 88%, transparent);
+  color: var(--text-secondary);
+  text-align: left;
+  scroll-snap-align: start;
+  transition: border-color 160ms ease, background 160ms ease, transform 160ms ease;
+}
+
+.plan-itinerary__days button:hover {
+  border-color: var(--border-strong);
+  transform: translateY(-1px);
+}
+
+.plan-itinerary__days button.is-active {
+  border-color: var(--accent);
+  background: var(--surface);
+  box-shadow: 0 0.55rem 1.35rem color-mix(in srgb, var(--accent) 10%, transparent);
+}
+
+.plan-itinerary__days button.is-ready:not(.is-active) {
+  border-color: color-mix(in srgb, var(--accent) 35%, var(--border));
+}
+
+.plan-itinerary__days small,
+.plan-itinerary__days span {
+  color: var(--text-tertiary);
+  font-family: var(--font-mono);
+  font-size: 0.5rem;
+  letter-spacing: 0.04em;
+}
+
+.plan-itinerary__days strong {
+  color: var(--text-primary);
+  font-size: 0.7rem;
+}
+
+.plan-itinerary__days .is-ready span {
+  color: var(--accent);
+}
+
+.plan-itinerary__toolbar {
+  display: grid;
+  grid-template-columns: minmax(8rem, 0.55fr) minmax(0, 1.45fr);
+  align-items: center;
+  gap: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--border);
+}
+
+.plan-itinerary__toolbar > div:first-child {
+  display: grid;
+  gap: 0.25rem;
+}
+
+.plan-itinerary__toolbar strong {
+  color: var(--text-primary);
+  font-size: 0.7rem;
+}
+
+.plan-itinerary__toolbar span {
+  color: var(--text-tertiary);
+  font-size: 0.58rem;
+}
+
+.plan-itinerary__quick-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.45rem;
+  flex-wrap: wrap;
+}
+
+.plan-itinerary__quick-actions button {
+  min-height: 2.4rem;
+  padding: 0.62rem 0.78rem;
+  border: 1px solid var(--border-strong);
+  border-radius: 0.7rem;
+  background: var(--surface);
+  color: var(--text-primary);
+  font-size: 0.6rem;
+  font-weight: 700;
+}
+
+.plan-itinerary__quick-actions button:hover,
+.plan-itinerary__quick-actions button:focus-visible {
+  border-color: var(--accent);
+  color: var(--accent-strong);
+}
+
+.plan-itinerary__quick-actions .is-copy {
+  border-color: color-mix(in srgb, var(--accent) 38%, var(--border));
+  background: color-mix(in srgb, var(--accent) 8%, var(--surface));
+}
+
+@media (max-width: 720px) {
+  .plan-itinerary {
+    margin-inline: -0.2rem;
+    padding: 0.85rem;
+    border-radius: 1rem;
+  }
+
+  .plan-itinerary__progress,
+  .plan-itinerary__toolbar {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .plan-itinerary__progress {
+    gap: 0.6rem;
+  }
+
+  .plan-itinerary__days {
+    margin-inline: -0.85rem;
+    padding-inline: 0.85rem;
+    grid-auto-columns: 6.25rem;
+  }
+
+  .plan-itinerary__quick-actions {
+    justify-content: flex-start;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .plan-itinerary__quick-actions button {
+    width: 100%;
+    min-height: 2.75rem;
+  }
+
+  .plan-itinerary__quick-actions .is-copy {
+    grid-column: 1 / -1;
+  }
+}

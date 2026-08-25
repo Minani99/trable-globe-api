@@ -64,6 +64,7 @@ interface StoredTravelDraft {
 }
 
 const draftKey = () => `${Date.now()}-${Math.random().toString(36).slice(2)}`;
+const PLAN_SLOT_PRESETS = ["관광", "식사", "카페", "숙소"] as const;
 
 export function TravelEditor({
   username,
@@ -97,6 +98,9 @@ export function TravelEditor({
         }))
       : [emptyPlace(initialCountryCode)],
   );
+  const [activePlanDate, setActivePlanDate] = useState(
+    initialTravel?.places.find((place) => place.visitedAt)?.visitedAt ?? initialTravel?.startDate ?? "",
+  );
   const [photos, setPhotos] = useState<PhotoDraft[]>(() =>
     initialTravel?.photos.map((photo) => ({
       key: draftKey(),
@@ -123,6 +127,23 @@ export function TravelEditor({
   const [draftStatus, setDraftStatus] = useState("변경 내용은 이 브라우저에 자동 저장됩니다.");
   const [draftRestored, setDraftRestored] = useState(false);
   const countryMap = useMemo(() => new Map(countries.map((country) => [country.iso2Code, country])), [countries]);
+  const planDays = useMemo(() => {
+    if (!planningMode) return [];
+    const scheduledDays = datesBetween(startDate, endDate);
+    const placeDays = places.map((place) => place.visitedAt).filter(Boolean);
+    return [...new Set([...scheduledDays, ...placeDays])].sort();
+  }, [endDate, places, planningMode, startDate]);
+  const activeDayPlaces = planningMode
+    ? places.map((place, index) => ({ place, index })).filter(({ place }) => place.visitedAt === activePlanDate)
+    : [];
+  const completedPlanDays = planDays.filter((day) =>
+    places.some((place) => place.visitedAt === day && !isPlanningPlaceholder(place)),
+  ).length;
+
+  useEffect(() => {
+    if (!planningMode || planDays.length === 0) return;
+    if (!activePlanDate || !planDays.includes(activePlanDate)) setActivePlanDate(planDays[0]);
+  }, [activePlanDate, planDays, planningMode]);
 
   useEffect(() => {
     let active = true;
@@ -277,6 +298,93 @@ export function TravelEditor({
     setDirty(true);
   }
 
+  function movePlanningPlace(index: number, direction: -1 | 1) {
+    const siblingIndexes = places
+      .map((place, placeIndex) => ({ place, placeIndex }))
+      .filter(({ place }) => place.visitedAt === activePlanDate)
+      .map(({ placeIndex }) => placeIndex);
+    const siblingIndex = siblingIndexes.indexOf(index);
+    const targetIndex = siblingIndexes[siblingIndex + direction];
+    if (targetIndex === undefined) return;
+    setPlaces((current) => {
+      const next = [...current];
+      [next[index], next[targetIndex]] = [next[targetIndex], next[index]];
+      return next;
+    });
+    setPhotos((current) => current.map((photo) => {
+      if (photo.placeIndex === String(index)) return { ...photo, placeIndex: String(targetIndex) };
+      if (photo.placeIndex === String(targetIndex)) return { ...photo, placeIndex: String(index) };
+      return photo;
+    }));
+    setDirty(true);
+  }
+
+  function addPlanningPlace(slot: (typeof PLAN_SLOT_PRESETS)[number]) {
+    if (!activePlanDate) return;
+    const countryCode = activeDayPlaces[0]?.place.countryCode
+      ?? places[0]?.countryCode
+      ?? initialCountryCode;
+    const country = countryMap.get(countryCode);
+    const insertionIndex = planDayInsertionIndex(places, activePlanDate);
+    const nextPlace: PlaceDraft = {
+      ...emptyPlace(countryCode),
+      placeName: `${slot} · 장소를 골라주세요`,
+      latitude: country ? String(country.latitude) : "",
+      longitude: country ? String(country.longitude) : "",
+      visitedAt: activePlanDate,
+    };
+    setPlaces((current) => {
+      const next = [...current];
+      next.splice(insertionIndex, 0, nextPlace);
+      return next;
+    });
+    setPhotos((current) => current.map((photo) => {
+      if (photo.placeIndex === "" || Number(photo.placeIndex) < insertionIndex) return photo;
+      return { ...photo, placeIndex: String(Number(photo.placeIndex) + 1) };
+    }));
+    setDirty(true);
+  }
+
+  function copyPreviousPlanDay() {
+    const activeDayIndex = planDays.indexOf(activePlanDate);
+    const previousDay = planDays[activeDayIndex - 1];
+    if (!previousDay) return;
+    const previousPlaces = places.filter(
+      (place) => place.visitedAt === previousDay && !isPlanningPlaceholder(place),
+    );
+    if (previousPlaces.length === 0) return;
+    const copies = previousPlaces.map((place) => ({ ...place, key: draftKey(), visitedAt: activePlanDate }));
+    const placeholderIndex = places.findIndex(
+      (place) => place.visitedAt === activePlanDate && isPlanningPlaceholder(place),
+    );
+    if (placeholderIndex >= 0) {
+      setPlaces((current) => {
+        const next = [...current];
+        next.splice(placeholderIndex, 1, ...copies);
+        return next;
+      });
+      const addedCount = copies.length - 1;
+      if (addedCount > 0) {
+        setPhotos((current) => current.map((photo) => {
+          if (photo.placeIndex === "" || Number(photo.placeIndex) <= placeholderIndex) return photo;
+          return { ...photo, placeIndex: String(Number(photo.placeIndex) + addedCount) };
+        }));
+      }
+    } else {
+      const insertionIndex = planDayInsertionIndex(places, activePlanDate);
+      setPlaces((current) => {
+        const next = [...current];
+        next.splice(insertionIndex, 0, ...copies);
+        return next;
+      });
+      setPhotos((current) => current.map((photo) => {
+        if (photo.placeIndex === "" || Number(photo.placeIndex) < insertionIndex) return photo;
+        return { ...photo, placeIndex: String(Number(photo.placeIndex) + copies.length) };
+      }));
+    }
+    setDirty(true);
+  }
+
   function removePlace(index: number) {
     setPlaces((current) => current.filter((_, placeIndex) => placeIndex !== index));
     setPhotos((current) => current.map((photo) => {
@@ -420,6 +528,9 @@ export function TravelEditor({
       if (photos.some((photo) => photo.uploadState === "error" || !photo.imageUrl.trim())) {
         throw new ApiError(400, "업로드하지 못한 사진을 다시 시도하거나 삭제해 주세요.");
       }
+      if (planningMode && visibility === "PUBLIC" && places.some(isPlanningPlaceholder)) {
+        throw new ApiError(400, "아직 장소를 고르지 않은 일정이 있어요. 모든 장소를 정한 뒤 기록으로 바꿔 주세요.");
+      }
       const payload: TravelWriteInput = {
         title: String(formData.get("title") ?? ""),
         description: nullable(String(formData.get("description") ?? "")),
@@ -502,14 +613,53 @@ export function TravelEditor({
 
       <section className="travel-editor__section">
         <div className="travel-editor__section-heading"><span>02</span><div><p className="eyebrow">Itinerary</p><h2>{planningMode ? "일차별 일정" : "방문 장소"}</h2><p>{planningMode ? "자동으로 만든 일차별 카드를 실제 가고 싶은 장소로 바꿔보세요." : "입력한 순서대로 상세 지도의 경로가 이어집니다."}</p></div></div>
+        <div className="travel-editor__itinerary-content">
+        {planningMode && planDays.length > 0 ? (
+          <div className="plan-itinerary">
+            <header className="plan-itinerary__progress">
+              <div><strong>{completedPlanDays} / {planDays.length}일</strong><span>장소를 정한 날</span></div>
+              <span aria-hidden="true"><i style={{ width: `${Math.round((completedPlanDays / planDays.length) * 100)}%` }} /></span>
+            </header>
+            <div className="plan-itinerary__days" role="tablist" aria-label="여행 날짜 선택">
+              {planDays.map((day, dayIndex) => {
+                const dayPlaces = places.filter((place) => place.visitedAt === day);
+                const ready = dayPlaces.some((place) => !isPlanningPlaceholder(place));
+                return (
+                  <button
+                    key={day}
+                    type="button"
+                    role="tab"
+                    aria-selected={activePlanDate === day}
+                    tabIndex={activePlanDate === day ? 0 : -1}
+                    className={`${activePlanDate === day ? "is-active" : ""}${ready ? " is-ready" : ""}`}
+                    onClick={() => setActivePlanDate(day)}
+                  >
+                    <small>DAY {dayIndex + 1}</small><strong>{formatPlanDay(day)}</strong><span>{ready ? `${dayPlaces.length}곳` : "미정"}</span>
+                  </button>
+                );
+              })}
+            </div>
+            <div className="plan-itinerary__toolbar">
+              <div><strong>일정 빠르게 추가</strong><span>종류를 고른 뒤 장소만 검색하세요.</span></div>
+              <div className="plan-itinerary__quick-actions">
+                {PLAN_SLOT_PRESETS.map((slot) => <button key={slot} type="button" onClick={() => addPlanningPlace(slot)}>＋ {slot}</button>)}
+                {planDays.indexOf(activePlanDate) > 0
+                  && places.some((place) => place.visitedAt === planDays[planDays.indexOf(activePlanDate) - 1] && !isPlanningPlaceholder(place))
+                  && !activeDayPlaces.some(({ place }) => !isPlanningPlaceholder(place)) ? (
+                  <button type="button" className="is-copy" onClick={copyPreviousPlanDay}>전날 일정 복사</button>
+                ) : null}
+              </div>
+            </div>
+          </div>
+        ) : null}
         <ol className="travel-editor__places">
-          {places.map((place, index) => (
+          {places.map((place, index) => planningMode && activePlanDate && place.visitedAt !== activePlanDate ? null : (
             <li key={place.key}>
               <div className="travel-editor__item-head">
-                <strong>{planningMode && place.visitedAt ? `${place.visitedAt.slice(5).replace("-", ".")} 일정` : `${String(index + 1).padStart(2, "0")}번째 장소`}</strong>
+                <strong>{planningMode ? `${String(activeDayPlaces.findIndex((item) => item.index === index) + 1).padStart(2, "0")}번째 일정` : `${String(index + 1).padStart(2, "0")}번째 장소`}</strong>
                 <div className="travel-editor__order-actions">
-                  <button type="button" onClick={() => movePlace(index, -1)} disabled={index === 0 || pending} aria-label="장소를 앞으로 이동">↑</button>
-                  <button type="button" onClick={() => movePlace(index, 1)} disabled={index === places.length - 1 || pending} aria-label="장소를 뒤로 이동">↓</button>
+                  <button type="button" onClick={() => planningMode ? movePlanningPlace(index, -1) : movePlace(index, -1)} disabled={(planningMode ? activeDayPlaces[0]?.index === index : index === 0) || pending} aria-label="장소를 앞으로 이동">↑</button>
+                  <button type="button" onClick={() => planningMode ? movePlanningPlace(index, 1) : movePlace(index, 1)} disabled={(planningMode ? activeDayPlaces.at(-1)?.index === index : index === places.length - 1) || pending} aria-label="장소를 뒤로 이동">↓</button>
                   {places.length > 1 ? <button type="button" className="is-danger" onClick={() => removePlace(index)}>삭제</button> : null}
                 </div>
               </div>
@@ -533,7 +683,8 @@ export function TravelEditor({
             </li>
           ))}
         </ol>
-        <div className="travel-editor__add-row"><p>{planningMode ? "실제로 갈 순서대로 장소를 추가하고 위아래로 옮겨보세요." : "추가한 순서대로 상세 지도의 여행 경로가 이어집니다."}</p><button type="button" onClick={() => { setPlaces((current) => [...current, emptyPlace(current.at(-1)?.countryCode ?? "KR")]); setDirty(true); }}>＋ 장소 추가</button></div>
+        {!planningMode ? <div className="travel-editor__add-row"><p>추가한 순서대로 상세 지도의 여행 경로가 이어집니다.</p><button type="button" onClick={() => { setPlaces((current) => [...current, emptyPlace(current.at(-1)?.countryCode ?? "KR")]); setDirty(true); }}>＋ 장소 추가</button></div> : null}
+        </div>
       </section>
 
       <section className="travel-editor__section">
@@ -637,6 +788,34 @@ function formatDraftTime(value: string) {
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) return "방금";
   return new Intl.DateTimeFormat("ko-KR", { hour: "2-digit", minute: "2-digit" }).format(date);
+}
+
+function datesBetween(startDate: string, endDate: string): string[] {
+  if (!startDate || !endDate || endDate < startDate) return [];
+  const start = Date.parse(`${startDate}T00:00:00Z`);
+  const end = Date.parse(`${endDate}T00:00:00Z`);
+  if (!Number.isFinite(start) || !Number.isFinite(end)) return [];
+  const days = Math.min(Math.floor((end - start) / 86_400_000) + 1, 31);
+  return Array.from({ length: days }, (_, index) => new Date(start + index * 86_400_000).toISOString().slice(0, 10));
+}
+
+function formatPlanDay(value: string): string {
+  const [, month, day] = value.split("-");
+  return `${Number(month)}.${String(day).padStart(2, "0")}`;
+}
+
+function isPlanningPlaceholder(place: PlaceDraft): boolean {
+  return !place.placeName.trim() || place.placeName.includes("장소를 골라주세요");
+}
+
+function planDayInsertionIndex(places: PlaceDraft[], day: string): number {
+  const lastSameDay = places.reduce(
+    (lastIndex, place, index) => place.visitedAt === day ? index : lastIndex,
+    -1,
+  );
+  if (lastSameDay >= 0) return lastSameDay + 1;
+  const firstLaterDay = places.findIndex((place) => Boolean(place.visitedAt) && place.visitedAt > day);
+  return firstLaterDay >= 0 ? firstLaterDay : places.length;
 }
 
 function nullable(value: string): string | null {

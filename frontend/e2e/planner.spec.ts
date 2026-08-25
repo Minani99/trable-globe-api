@@ -33,7 +33,18 @@ test("몇 번의 선택으로 여행 계획을 만들고 일차별 일정으로 
   await page.getByRole("button", { name: "＋ 추가" }).click();
   await expect(page.getByText("공항철도 예약", { exact: true })).toBeVisible();
   await expect(page.getByRole("heading", { name: "일차별 일정" })).toBeVisible();
+  await expect(page.getByRole("tab", { name: /DAY 1/ })).toHaveAttribute("aria-selected", "true");
+  await expect(page.getByText("0 / 3일", { exact: true })).toBeVisible();
   await expect(page.getByRole("textbox", { name: "장소 이름" }).first()).toHaveValue("1일차 · 장소를 골라주세요");
+  await page.getByRole("textbox", { name: "장소 이름" }).first().fill("도쿄역");
+  await expect(page.getByText("1 / 3일", { exact: true })).toBeVisible();
+  await page.getByRole("button", { name: "＋ 식사" }).click();
+  await expect(page.getByRole("textbox", { name: "장소 이름" })).toHaveCount(2);
+  await page.getByRole("tab", { name: /DAY 2/ }).click();
+  await expect(page.getByRole("button", { name: "전날 일정 복사" })).toBeVisible();
+  await page.getByRole("button", { name: "전날 일정 복사" }).click();
+  await expect(page.getByRole("textbox", { name: "장소 이름" })).toHaveCount(1);
+  await expect(page.getByRole("textbox", { name: "장소 이름" })).toHaveValue("도쿄역");
   await expect(page.getByRole("button", { name: "계획 저장" })).toBeVisible();
 
   await page.goto("/studio");
