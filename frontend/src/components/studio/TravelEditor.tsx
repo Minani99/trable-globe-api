@@ -694,6 +694,8 @@ export function TravelEditor({
                   key={place.countryCode}
                   countryCode={place.countryCode}
                   countryName={countryMap.get(place.countryCode)?.nameKo ?? "선택한 나라"}
+                  placeName={place.placeName}
+                  cityName={place.cityName}
                   fallbackLatitude={countryMap.get(place.countryCode)?.latitude ?? 36.5}
                   fallbackLongitude={countryMap.get(place.countryCode)?.longitude ?? 127.8}
                   latitude={coordinate(place.latitude)}

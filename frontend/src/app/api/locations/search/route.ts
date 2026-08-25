@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 
+import { waitForNominatimSlot } from "@/lib/nominatim";
+
 interface NominatimResult {
   place_id: number;
   display_name: string;
@@ -7,19 +9,6 @@ interface NominatimResult {
   lat: string;
   lon: string;
   address?: Record<string, string>;
-}
-
-let searchSlot = Promise.resolve();
-let lastSearchAt = 0;
-
-async function waitForPublicSearchSlot() {
-  const task = searchSlot.then(async () => {
-    const wait = Math.max(0, 1_050 - (Date.now() - lastSearchAt));
-    if (wait) await new Promise((resolve) => setTimeout(resolve, wait));
-    lastSearchAt = Date.now();
-  });
-  searchSlot = task.catch(() => undefined);
-  await task;
 }
 
 export async function GET(request: NextRequest) {
@@ -43,7 +32,7 @@ export async function GET(request: NextRequest) {
   if (country) params.set("countrycodes", country);
 
   try {
-    await waitForPublicSearchSlot();
+    await waitForNominatimSlot();
     const response = await fetch(`https://nominatim.openstreetmap.org/search?${params}`, {
       headers: {
         Accept: "application/json",

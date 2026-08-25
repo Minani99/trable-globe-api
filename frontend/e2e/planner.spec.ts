@@ -13,6 +13,25 @@ test("몇 번의 선택으로 여행 계획을 만들고 일차별 일정으로 
   });
   expect(registerResponse.status()).toBe(200);
 
+  await page.route("**/api/locations/search?**", async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      body: JSON.stringify({
+        success: true,
+        data: [{
+          id: "tokyo-station",
+          label: "일본 도쿄도 지요다구 마루노우치 1초메",
+          name: "도쿄역",
+          city: "도쿄",
+          latitude: 35.681236,
+          longitude: 139.767125,
+        }],
+        message: null,
+      }),
+    });
+  });
+
   await page.goto("/studio/plans/new");
   await page.setViewportSize({ width: 390, height: 844 });
   await expect(page.getByRole("heading", { name: /빈 페이지 없이/ })).toBeVisible();
@@ -64,7 +83,21 @@ test("몇 번의 선택으로 여행 계획을 만들고 일차별 일정으로 
   await expect(page.getByRole("tab", { name: /DAY 1/ })).toHaveAttribute("aria-selected", "true");
   await expect(page.getByText("0 / 3일", { exact: true })).toBeVisible();
   await expect(page.getByRole("textbox", { name: "장소 이름" }).first()).toHaveValue("1일차 · 장소를 골라주세요");
-  await page.getByRole("textbox", { name: "장소 이름" }).first().fill("도쿄역");
+  await expect(page.getByText("선택 완료", { exact: true })).toHaveCount(0);
+  await expect(page.getByRole("button", { name: /지도에서 직접 찾기/ }).first()).toBeVisible();
+  await page.getByRole("textbox", { name: "방문할 장소 검색" }).first().fill("도쿄역");
+  await page.getByRole("button", { name: "검색", exact: true }).first().click();
+  await page.getByRole("button", { name: /도쿄역.*선택/ }).click();
+  await expect(page.getByRole("textbox", { name: "장소 이름" }).first()).toHaveValue("도쿄역");
+  await expect(page.getByText("일본 도쿄도 지요다구 마루노우치 1초메", { exact: true })).toBeVisible();
+  await expect(page.locator(".place-picker__map")).toHaveCount(0);
+  await page.getByRole("button", { name: "위치 조정", exact: true }).first().click();
+  await expect(page.getByRole("dialog", { name: "지도에서 위치 조정" })).toBeVisible();
+  await expect(page.locator(".place-map-dialog__pin")).toBeVisible();
+  const mapSheet = await page.locator(".place-map-dialog__sheet").boundingBox();
+  expect(mapSheet?.width).toBeGreaterThanOrEqual(389);
+  expect(mapSheet?.height).toBeGreaterThanOrEqual(843);
+  await page.getByRole("button", { name: "지도 닫기" }).click();
   await expect(page.getByText("1 / 3일", { exact: true })).toBeVisible();
   await page.getByRole("button", { name: "＋ 식사" }).click();
   await expect(page.getByRole("textbox", { name: "장소 이름" })).toHaveCount(2);

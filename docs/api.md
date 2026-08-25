@@ -445,15 +445,20 @@ Base URL: `http://localhost:8080` (개발). Next.js 서버와 동일 출처 `/ap
 된 뒤에만 저장할 수 있고, `장소를 골라주세요` 상태가 남은 자동 일정은 실제 장소로 바꿔야 합니다.
 이 검사는 화면뿐 아니라 Spring 쓰기 API에도 적용되어 직접 요청으로 우회할 수 없습니다.
 
-### Location search BFF
+### Location picker support routes
 
 | Method | Path | Description |
 | --- | --- | --- |
-| GET | `/api/locations/search?q={query}&country={iso2}` | Search up to five place candidates for the travel editor |
+| GET | `/api/maps/config` | Return the browser map provider and origin-restricted MapTiler key, or fallback mode |
+| GET | `/api/locations/search?q={query}&country={iso2}` | Fallback search for up to five place candidates |
+| GET | `/api/locations/reverse?lat={lat}&lng={lng}` | Fallback reverse geocode for a manually adjusted pin |
 
-Location search is submitted explicitly rather than called on every keystroke. The Next.js route
-identifies the application, serializes public Nominatim requests to at most one per second per
-instance, caches repeated searches, and keeps latitude/longitude out of the ordinary form UI.
+The primary MapTiler SDK requests go directly from the browser, provide Korean labels and
+autocomplete, and persist only the location fields chosen by the user. If the key is absent or the
+initial provider connection fails, search is submitted explicitly rather than called on every
+keystroke. The fallback Next.js routes identify the application and serialize public Nominatim
+requests to at most one per second per instance. Latitude/longitude remain outside the ordinary
+form UI and are changed through the center-fixed map pin.
 
 여행 CRUD는 `travel_id`만 보지 않고 인증된 `member_id`까지 같이 조회합니다. 다른
 사용자의 비공개 여행 ID를 알아도 404만 반환합니다. 소셜 쓰기는 공개 여행에 한해

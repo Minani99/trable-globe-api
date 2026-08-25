@@ -4,6 +4,7 @@ import { Geist, Geist_Mono, Noto_Sans_KR } from "next/font/google";
 import { AppFeedback } from "@/components/common/AppFeedback";
 import { siteConfig } from "@/lib/config";
 import { getSiteUrl } from "@/lib/site-url";
+import "@maptiler/sdk/style.css";
 import "./globals.css";
 
 const themeInitScript = `(() => {

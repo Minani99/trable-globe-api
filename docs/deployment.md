@@ -171,6 +171,8 @@ Before accepting real user records:
 8. Verify the Resend sending domain and run the email verification/reset smoke tests.
 9. Add rate limits for registration, login and account-link requests at the edge.
 10. Add the two production URLs as GitHub repository variables and verify one manual smoke run.
+11. Add `MAPTILER_API_KEY` to Vercel Production and Preview, then restrict that key's allowed
+    origins to the corresponding frontend domains in MapTiler Cloud.
 
 Use [`beta-checklist.md`](./beta-checklist.md) for the first 5–10 user invitation and feedback gate.
 
@@ -182,6 +184,8 @@ Use [`beta-checklist.md`](./beta-checklist.md) for the first 5–10 user invitat
   such as Cloudflare R2 or S3, generate responsive derivatives, and save only URLs in this DB.
 - The `world-countries` catalog used by the writer is ODbL data. Keep its attribution and license
   obligations visible when the product moves beyond a private beta.
-- The beta location picker uses submitted (not autocomplete) searches through public Nominatim
-  and OpenStreetMap tiles with visible attribution. Before a broad or paid launch, configure a
-  contracted geocoding and tile provider with an SLA; the public community services are best-effort.
+- The location picker uses MapTiler for Korean labels, place autocomplete and the interactive map.
+  Its browser-readable key must be restricted by allowed origin and must never be logged.
+- If MapTiler is not configured or its initial connection fails, the picker automatically falls back
+  to submitted (not autocomplete) Nominatim searches and OpenStreetMap tiles with visible attribution.
+  These public community services are a continuity path, not the launch provider or an SLA.
