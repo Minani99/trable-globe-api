@@ -1,5 +1,6 @@
 package com.travelglobe.trableglobeapi.api;
 
+import static org.hamcrest.Matchers.hasItem;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
@@ -325,6 +326,97 @@ class TravelGlobeApiTest {
     }
 
     @Test
+    @DisplayName("여행 계획에는 준비 체크리스트가 생기고 소셜 반응은 최근 활동으로 모인다")
+    void planningTasksAndActivityFeed() throws Exception {
+        String ownerResponse = mockMvc.perform(post("/api/auth/register")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {
+                                  "username":"activity_owner",
+                                  "displayName":"활동을 받는 여행자",
+                                  "email":"activity-owner@example.com",
+                                  "password":"activity-password-42"
+                                }
+                                """))
+                .andExpect(status().isOk())
+                .andReturn().getResponse().getContentAsString();
+        String ownerToken = stringValue(ownerResponse, "token");
+
+        String planResponse = mockMvc.perform(post("/api/private/travels")
+                        .header("Authorization", "Bearer " + ownerToken)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(futureTravelPayload("체크할 다음 여행", "PRIVATE")))
+                .andExpect(status().isCreated())
+                .andReturn().getResponse().getContentAsString();
+        long planId = Long.parseLong(numberValue(planResponse, "id"));
+
+        String tasksResponse = mockMvc.perform(get("/api/private/travels/" + planId + "/tasks")
+                        .header("Authorization", "Bearer " + ownerToken))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.length()").value(6))
+                .andExpect(jsonPath("$.data[0].title").value("항공·교통편 확인"))
+                .andReturn().getResponse().getContentAsString();
+        long firstTaskId = Long.parseLong(numberValue(tasksResponse, "id"));
+
+        mockMvc.perform(patch("/api/private/travels/" + planId + "/tasks/" + firstTaskId)
+                        .header("Authorization", "Bearer " + ownerToken)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"completed\":true}"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data[0].completed").value(true));
+
+        mockMvc.perform(post("/api/private/travels/" + planId + "/tasks")
+                        .header("Authorization", "Bearer " + ownerToken)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"title\":\"공항철도 예약\",\"category\":\"RESERVATION\"}"))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.data.length()").value(7))
+                .andExpect(jsonPath("$.data[6].title").value("공항철도 예약"));
+
+        String publicTravelResponse = mockMvc.perform(post("/api/private/travels")
+                        .header("Authorization", "Bearer " + ownerToken)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(travelPayload("반응을 받을 여행", "PUBLIC")))
+                .andExpect(status().isCreated())
+                .andReturn().getResponse().getContentAsString();
+        long publicTravelId = Long.parseLong(numberValue(publicTravelResponse, "id"));
+
+        String actorResponse = mockMvc.perform(post("/api/auth/register")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {
+                                  "username":"activity_actor",
+                                  "displayName":"반응을 남긴 여행자",
+                                  "email":"activity-actor@example.com",
+                                  "password":"activity-password-42"
+                                }
+                                """))
+                .andExpect(status().isOk())
+                .andReturn().getResponse().getContentAsString();
+        String actorToken = stringValue(actorResponse, "token");
+
+        mockMvc.perform(post("/api/private/discovery/profiles/activity_owner/follow")
+                        .header("Authorization", "Bearer " + actorToken))
+                .andExpect(status().isOk());
+        mockMvc.perform(post("/api/private/travels/" + publicTravelId + "/likes")
+                        .header("Authorization", "Bearer " + actorToken))
+                .andExpect(status().isOk());
+        mockMvc.perform(post("/api/private/travels/" + publicTravelId + "/comments")
+                        .header("Authorization", "Bearer " + actorToken)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"content\":\"저도 가보고 싶어요!\"}"))
+                .andExpect(status().isCreated());
+
+        mockMvc.perform(get("/api/private/activity")
+                        .header("Authorization", "Bearer " + ownerToken))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.length()").value(3))
+                .andExpect(jsonPath("$.data[?(@.type == 'FOLLOW')].actor.username").value(hasItem("activity_actor")))
+                .andExpect(jsonPath("$.data[?(@.type == 'LIKE')].travelTitle").value(hasItem("반응을 받을 여행")))
+                .andExpect(jsonPath("$.data[?(@.type == 'COMMENT')].preview").value(hasItem("저도 가보고 싶어요!")));
+    }
+
+    @Test
     @DisplayName("회원 검색과 추천에서 다른 여행자를 팔로우할 수 있다")
     void memberDiscoveryCreatesFollowConnections() throws Exception {
         String seekerResponse = mockMvc.perform(post("/api/auth/register")
@@ -592,6 +684,10 @@ class TravelGlobeApiTest {
                   "photos": []
                 }
                 """.formatted(title, visibility);
+    }
+
+    private static String futureTravelPayload(String title, String visibility) {
+        return travelPayload(title, visibility).replace("2026-08-01", "2099-08-01");
     }
 
     private static String stringValue(String json, String field) {

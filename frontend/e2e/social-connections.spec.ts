@@ -33,6 +33,17 @@ test("팔로워와 팔로잉 목록에서 사람을 확인하고 다시 교류�
   await page.goto(`/${secondUsername}`);
   const mobileNavigation = page.getByRole("navigation", { name: "모바일 주요 메뉴" });
   await expect(mobileNavigation.locator(".site-mobile-bottom-nav__avatar")).toBeVisible();
+
+  await page.request.post("/api/auth/logout");
+  const loginResponse = await page.request.post("/api/auth/login", {
+    data: { email: `${firstUsername}@example.com`, password: "social-password-42" },
+  });
+  expect(loginResponse.status()).toBe(200);
+  await page.goto("/studio#activity");
+  const activity = page.getByRole("region", { name: "최근 활동" });
+  await expect(activity).toBeVisible();
+  await expect(activity.getByText("두 번째 여행자", { exact: true })).toBeVisible();
+  await expect(activity.getByText("내 여행 세계를 팔로우하기 시작했어요.", { exact: true })).toBeVisible();
 });
 
 async function register(

@@ -13,6 +13,7 @@ import com.travelglobe.trableglobeapi.social.repository.TravelLikeRepository;
 import com.travelglobe.trableglobeapi.travel.domain.Travel;
 import com.travelglobe.trableglobeapi.travel.domain.TravelPhoto;
 import com.travelglobe.trableglobeapi.travel.domain.TravelPlace;
+import com.travelglobe.trableglobeapi.travel.domain.TravelTask;
 import com.travelglobe.trableglobeapi.travel.dto.OwnedTravelSummaryResponse;
 import com.travelglobe.trableglobeapi.travel.dto.TravelDetailResponse;
 import com.travelglobe.trableglobeapi.travel.dto.write.TravelPhotoWriteRequest;
@@ -20,6 +21,9 @@ import com.travelglobe.trableglobeapi.travel.dto.write.TravelPlaceWriteRequest;
 import com.travelglobe.trableglobeapi.travel.dto.write.TravelWriteRequest;
 import com.travelglobe.trableglobeapi.travel.repository.TravelPhotoRepository;
 import com.travelglobe.trableglobeapi.travel.repository.TravelRepository;
+import com.travelglobe.trableglobeapi.travel.repository.TravelTaskRepository;
+import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -37,6 +41,7 @@ public class TravelCommandService {
     private final TravelPhotoRepository travelPhotoRepository;
     private final TravelLikeRepository travelLikeRepository;
     private final TravelCommentRepository travelCommentRepository;
+    private final TravelTaskRepository travelTaskRepository;
     private final LocationResolverService locationResolverService;
 
     public TravelCommandService(MemberRepository memberRepository,
@@ -44,12 +49,14 @@ public class TravelCommandService {
                                 TravelPhotoRepository travelPhotoRepository,
                                 TravelLikeRepository travelLikeRepository,
                                 TravelCommentRepository travelCommentRepository,
+                                TravelTaskRepository travelTaskRepository,
                                 LocationResolverService locationResolverService) {
         this.memberRepository = memberRepository;
         this.travelRepository = travelRepository;
         this.travelPhotoRepository = travelPhotoRepository;
         this.travelLikeRepository = travelLikeRepository;
         this.travelCommentRepository = travelCommentRepository;
+        this.travelTaskRepository = travelTaskRepository;
         this.locationResolverService = locationResolverService;
     }
 
@@ -90,6 +97,10 @@ public class TravelCommandService {
                 request.visibility());
         travel.replacePlaces(buildPlaces(request.places()));
         Travel saved = travelRepository.saveAndFlush(travel);
+        if (request.visibility() == com.travelglobe.trableglobeapi.travel.domain.Visibility.PRIVATE
+                && !request.endDate().isBefore(LocalDate.now(ZoneId.of("Asia/Seoul")))) {
+            travelTaskRepository.saveAll(TravelTask.defaultsFor(saved));
+        }
         List<TravelPhoto> photos = savePhotos(saved, request.photos());
         return TravelDetailResponse.of(saved, photos, null, null);
     }
@@ -117,6 +128,7 @@ public class TravelCommandService {
         Travel travel = ownedTravel(principal, travelId);
         travelLikeRepository.deleteAllByTravelId(travelId);
         travelCommentRepository.deleteAllByTravelId(travelId);
+        travelTaskRepository.deleteAllByTravelId(travelId);
         travelRepository.delete(travel);
     }
 

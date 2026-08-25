@@ -4,20 +4,23 @@ import { redirect } from "next/navigation";
 
 import { SiteFooter } from "@/components/layout/SiteFooter";
 import { SiteHeader } from "@/components/layout/SiteHeader";
+import { ActivityFeed } from "@/components/studio/ActivityFeed";
 import { authenticatedBackendGet, getCurrentMember } from "@/lib/api/server-session";
+import { todayInKorea } from "@/lib/utils/date";
 import { formatDateRange } from "@/lib/utils/format";
-import type { OwnedTravelSummary } from "@/types";
+import type { ActivityEvent, OwnedTravelSummary } from "@/types";
 
 export const metadata: Metadata = { title: "여행 허브", robots: { index: false, follow: false } };
 
 export default async function StudioPage() {
-  const [member, travelRecords] = await Promise.all([
+  const [member, travelRecords, activity] = await Promise.all([
     getCurrentMember(),
     authenticatedBackendGet<OwnedTravelSummary[]>("/api/private/travels"),
+    authenticatedBackendGet<ActivityEvent[]>("/api/private/activity?limit=8"),
   ]);
   if (!member) redirect("/login?next=/studio");
   const travels = travelRecords ?? [];
-  const today = new Date().toISOString().slice(0, 10);
+  const today = todayInKorea();
   const plans = travels.filter(({ travel, visibility }) => visibility === "PRIVATE" && travel.endDate >= today);
   const records = travels.filter((item) => !plans.includes(item));
   const profileReady = Boolean(member.profileImageUrl && member.bio?.trim());
@@ -107,6 +110,8 @@ export default async function StudioPage() {
               </ol>
             </section>
           ) : null}
+
+          <ActivityFeed events={activity ?? []} />
 
           {records.length > 0 ? (
             <div className="studio-layout studio-layout--records">

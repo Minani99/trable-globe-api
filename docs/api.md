@@ -393,6 +393,15 @@ Base URL: `http://localhost:8080` (개발). Next.js 서버와 동일 출처 `/ap
 비로그인 사용자는 공개 여행 활동을 기준으로 여행자를 둘러볼 수 있습니다. 검색·추천
 응답은 최대 24명이며, 팔로우는 중복 생성되지 않고 자기 자신을 팔로우할 수 없습니다.
 
+## 최근 활동 API
+
+| Method | Path | 인증 | 설명 |
+| --- | --- | --- | --- |
+| GET | `/api/private/activity?limit={n}` | 필요 | 내 여행의 좋아요·댓글과 새 팔로워를 최신순으로 조회 |
+
+최근 활동은 `FOLLOW`, `LIKE`, `COMMENT`로 구분하며, 차단 관계와 본인이 만든 반응은
+제외합니다. 응답은 최대 24개이고 스튜디오에서는 최근 8개를 간결한 피드로 보여줍니다.
+
 ## 인증과 쓰기 API
 
 브라우저는 Next.js의 `/api/auth/*`, `/api/private/*` BFF를 사용합니다. BFF가 원문
@@ -412,6 +421,13 @@ Base URL: `http://localhost:8080` (개발). Next.js 서버와 동일 출처 `/ap
 | POST | `/api/private/travels` | 여행·장소·사진 URL 생성 |
 | PUT | `/api/private/travels/{id}` | 여행 aggregate 전체 수정 |
 | DELETE | `/api/private/travels/{id}` | 여행과 장소·사진 삭제 |
+| GET | `/api/private/travels/{id}/tasks` | 내 여행 준비 체크리스트 조회 |
+| POST | `/api/private/travels/{id}/tasks` | 준비 항목 추가 (최대 30개) |
+| PATCH | `/api/private/travels/{id}/tasks/{taskId}` | 준비 항목 완료 상태 변경 |
+| DELETE | `/api/private/travels/{id}/tasks/{taskId}` | 준비 항목 삭제 |
+
+미래 날짜의 비공개 여행 계획을 만들면 예약·서류·결제·짐 준비에 필요한 기본 항목
+6개를 자동으로 생성합니다. 체크리스트는 여행 소유자만 조회하고 수정할 수 있습니다.
 
 ### Location search BFF
 

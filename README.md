@@ -54,13 +54,13 @@ trable-globe-api/
 │  ├─ global/        공통 설정, 응답 규격, 예외, BaseEntity, 시드 데이터
 │  ├─ member/        Member 도메인
 │  ├─ location/      Country / City 마스터 데이터
-│  ├─ travel/        Travel / TravelPlace / TravelPhoto 및 조회 API
-│  ├─ social/        좋아요·댓글·회원 검색·추천·팔로우 및 권한 처리
+│  ├─ travel/        Travel / TravelPlace / TravelPhoto / TravelTask 및 조회·계획 API
+│  ├─ social/        좋아요·댓글·최근 활동·회원 검색·추천·팔로우 및 권한 처리
 │  ├─ statistics/    프로필 통계
 │  └─ profile/       공개 프로필 읽기 파사드 (여러 도메인을 조합)
 ├─ src/main/resources/
 │  ├─ application.yaml, application-{local,postgres,prod}.yaml
-│  └─ db/migration/V1__...sql ~ V5__...sql
+│  └─ db/migration/V1__...sql ~ V7__...sql
 ├─ frontend/
 │  ├─ src/app/       /, /about, /[username], /[username]/travel/[travelId]
 │  ├─ src/components/{layout,globe,profile,travel,common}
@@ -208,6 +208,8 @@ Pull Request와 `master` push에는 GitHub Actions가 자동으로 백엔드 테
 | GET | `/api/travels/{travelId}` | 여행 상세 |
 | GET | `/api/travels/{travelId}/social` | 공개 좋아요·댓글 |
 | GET/POST/DELETE | `/api/private/travels/{travelId}/...` | 내 여행 관리 및 좋아요·댓글 쓰기 |
+| GET/POST/PATCH/DELETE | `/api/private/travels/{travelId}/tasks/...` | 여행 준비 체크리스트 관리 |
+| GET | `/api/private/activity` | 팔로우·좋아요·댓글 최근 활동 |
 | GET | `/api/discovery/search` | 공개 프로필 검색 |
 | GET | `/api/discovery/recommendations` | 활동 기반 여행자 추천 |
 | GET/POST/DELETE | `/api/private/discovery/...` | 개인화 추천·검색 및 팔로우 관리 |
@@ -220,7 +222,9 @@ Pull Request와 `master` push에는 GitHub Actions가 자동으로 백엔드 테
 
 - 공개 프로필 조회와 소유자 전용 여행 CRUD API
 - 회원가입·로그인·이메일 인증·비밀번호 재설정·회원 탈퇴, DB 기반 불투명 세션
-- Flyway 마이그레이션 6개, 4개 실행 프로필 (`local`, `postgres`, `prod`, `demo`)
+- Flyway 마이그레이션 7개, 4개 실행 프로필 (`local`, `postgres`, `prod`, `demo`)
+- 미래 여행을 위한 기본 준비 체크리스트, 사용자 항목 추가·완료·삭제와 진행률 표시
+- 팔로우·좋아요·댓글을 한곳에서 확인하는 로그인 사용자용 최근 활동 피드
 - 3D 지구본: 회전 / 확대·축소 / 방문 국가 강조 / 마커 / hover / click / 카메라 이동 / 국가 패널
 - 여행 날짜 재생·시점 슬라이더, 시점별 국가 성장 표현, 최근 여행 강조와 전체 방문 장소 이동선
 - 연도별 지구본·이동선·기록 필터, 정확한 연결 거리·사진 중심 리캡과 연도 공유 링크

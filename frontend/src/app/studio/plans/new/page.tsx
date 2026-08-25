@@ -7,6 +7,7 @@ import { SiteHeader } from "@/components/layout/SiteHeader";
 import { PlanBuilder } from "@/components/planner/PlanBuilder";
 import { getCurrentMember } from "@/lib/api/server-session";
 import { countryOptions } from "@/lib/countries";
+import { todayInKorea } from "@/lib/utils/date";
 
 export const metadata: Metadata = { title: "새 여행 계획", robots: { index: false, follow: false } };
 
@@ -14,12 +15,7 @@ export default async function NewPlanPage({ searchParams }: { searchParams: Prom
   const member = await getCurrentMember();
   if (!member) redirect("/login?next=%2Fstudio%2Fplans%2Fnew");
   const { country } = await searchParams;
-  const today = new Intl.DateTimeFormat("en-CA", {
-    timeZone: "Asia/Seoul",
-    year: "numeric",
-    month: "2-digit",
-    day: "2-digit",
-  }).format(new Date());
+  const today = todayInKorea();
   const requestedCountry = country?.toUpperCase() ?? "";
   const initialCountryCode = countryOptions.some((option) => option.iso2Code === requestedCountry) ? requestedCountry : "";
 

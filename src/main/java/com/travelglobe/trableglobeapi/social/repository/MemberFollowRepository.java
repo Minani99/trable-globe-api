@@ -37,5 +37,14 @@ public interface MemberFollowRepository extends JpaRepository<MemberFollow, Long
             """)
     List<Member> findFollowing(@Param("memberId") Long memberId, Pageable pageable);
 
+    @Query("""
+            select relation
+            from MemberFollow relation
+              join fetch relation.follower
+            where relation.following.id = :memberId
+            order by relation.createdAt desc, relation.id desc
+            """)
+    List<MemberFollow> findRecentFollowerEvents(@Param("memberId") Long memberId, Pageable pageable);
+
     void deleteAllByFollowerIdOrFollowingId(Long followerId, Long followingId);
 }

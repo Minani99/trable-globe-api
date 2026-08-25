@@ -25,6 +25,13 @@ test("몇 번의 선택으로 여행 계획을 만들고 일차별 일정으로 
 
   await expect(page).toHaveURL(/\/studio\/travels\/\d+\/edit\?plan=1$/, { timeout: 30_000 });
   await expect(page.getByRole("heading", { name: "일본 3일 여행" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "여행 준비 체크리스트" })).toBeVisible();
+  await expect(page.locator(".travel-checklist__items li")).toHaveCount(6);
+  await page.getByRole("button", { name: "항공·교통편 확인 완료로 변경" }).click();
+  await expect(page.locator(".travel-checklist__items li").first()).toHaveClass(/is-complete/);
+  await page.getByRole("textbox", { name: "새 준비 항목" }).fill("공항철도 예약");
+  await page.getByRole("button", { name: "＋ 추가" }).click();
+  await expect(page.getByText("공항철도 예약", { exact: true })).toBeVisible();
   await expect(page.getByRole("heading", { name: "일차별 일정" })).toBeVisible();
   await expect(page.getByRole("textbox", { name: "장소 이름" }).first()).toHaveValue("1일차 · 장소를 골라주세요");
   await expect(page.getByRole("button", { name: "계획 저장" })).toBeVisible();
@@ -32,6 +39,7 @@ test("몇 번의 선택으로 여행 계획을 만들고 일차별 일정으로 
   await page.goto("/studio");
   await expect(page.getByRole("heading", { name: "다가오는 여행" })).toBeVisible();
   await expect(page.getByRole("heading", { name: "일본 3일 여행" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "최근 활동" })).toBeVisible();
 
   const layout = await page.evaluate(() => ({
     viewportWidth: window.innerWidth,

@@ -9672,3 +9672,367 @@ a.profile-panel__identity:focus-visible {
     grid-column: 1;
   }
 }
+
+/* Planning checklist ----------------------------------------------------- */
+.travel-checklist {
+  display: grid;
+  gap: 1.35rem;
+  margin-top: clamp(1.5rem, 4vw, 2.75rem);
+  padding: clamp(1.25rem, 3vw, 2rem);
+  border: 1px solid var(--border);
+  border-radius: 1.35rem;
+  background:
+    linear-gradient(135deg, color-mix(in srgb, var(--globe-ocean) 9%, var(--surface)), var(--surface));
+  box-shadow: 0 1.2rem 3.5rem rgba(28, 56, 64, 0.06);
+}
+
+.travel-editor-hero.is-planning {
+  padding-block: clamp(1.5rem, 3vw, 2.5rem) clamp(2rem, 4vw, 3.25rem);
+}
+
+.travel-editor-hero.is-planning h1 {
+  font-size: clamp(2.35rem, 4.5vw, 4.5rem);
+}
+
+.travel-checklist > header {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(9rem, 0.28fr);
+  align-items: end;
+  gap: 1.5rem;
+}
+
+.travel-checklist h2 {
+  margin-top: 0.42rem;
+  font-size: clamp(1.45rem, 3vw, 2.15rem);
+  font-weight: 580;
+  letter-spacing: -0.05em;
+}
+
+.travel-checklist > header > div:first-child > p:last-child {
+  margin-top: 0.55rem;
+  color: var(--text-secondary);
+  font-size: 0.73rem;
+  line-height: 1.65;
+  word-break: keep-all;
+}
+
+.travel-checklist__progress {
+  display: grid;
+  gap: 0.35rem;
+}
+
+.travel-checklist__progress strong {
+  font-family: var(--font-mono);
+  font-size: 1.25rem;
+  font-weight: 620;
+}
+
+.travel-checklist__progress > span {
+  overflow: hidden;
+  height: 0.34rem;
+  border-radius: 999px;
+  background: var(--border);
+}
+
+.travel-checklist__progress i {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: var(--accent);
+  transition: width 0.25s ease;
+}
+
+.travel-checklist__progress small {
+  color: var(--text-tertiary);
+  font-size: 0.6rem;
+}
+
+.travel-checklist__items {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.55rem;
+}
+
+.travel-checklist__items li {
+  display: grid;
+  min-width: 0;
+  grid-template-columns: minmax(0, 1fr) auto auto;
+  align-items: center;
+  gap: 0.55rem;
+  padding: 0.55rem 0.65rem;
+  border: 1px solid var(--border);
+  border-radius: 0.9rem;
+  background: color-mix(in srgb, var(--background-elevated) 88%, transparent);
+}
+
+.travel-checklist__items li.is-complete {
+  border-color: color-mix(in srgb, var(--accent) 38%, var(--border));
+  background: color-mix(in srgb, var(--accent-soft) 42%, var(--surface));
+}
+
+.travel-checklist__toggle {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: 0.65rem;
+  text-align: left;
+}
+
+.travel-checklist__toggle > span {
+  display: grid;
+  flex: 0 0 1.35rem;
+  width: 1.35rem;
+  height: 1.35rem;
+  place-items: center;
+  border: 1px solid var(--border-strong);
+  border-radius: 0.42rem;
+  color: #251108;
+  font-size: 0.68rem;
+}
+
+.is-complete .travel-checklist__toggle > span {
+  border-color: var(--accent);
+  background: var(--accent);
+}
+
+.travel-checklist__toggle strong {
+  overflow: hidden;
+  color: var(--text-primary);
+  font-size: 0.72rem;
+  font-weight: 650;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.is-complete .travel-checklist__toggle strong {
+  color: var(--text-tertiary);
+  text-decoration: line-through;
+}
+
+.travel-checklist__items li > small {
+  padding: 0.26rem 0.42rem;
+  border-radius: 999px;
+  background: var(--surface-hover);
+  color: var(--text-tertiary);
+  font-size: 0.55rem;
+}
+
+.travel-checklist__delete {
+  display: grid;
+  width: 1.6rem;
+  height: 1.6rem;
+  place-items: center;
+  border-radius: 50%;
+  color: var(--text-tertiary);
+  font-size: 1rem;
+}
+
+.travel-checklist__delete:hover,
+.travel-checklist__delete:focus-visible {
+  background: var(--surface-hover);
+  color: var(--accent-strong);
+}
+
+.travel-checklist__composer {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto auto;
+  gap: 0.5rem;
+}
+
+.travel-checklist__composer input,
+.travel-checklist__composer select {
+  width: 100%;
+  min-height: 2.9rem;
+  border: 1px solid var(--border-strong);
+  border-radius: 0.76rem;
+  background: var(--background-elevated);
+  color: var(--text-primary);
+  font-size: 0.7rem;
+}
+
+.travel-checklist__composer input {
+  padding-inline: 0.85rem;
+}
+
+.travel-checklist__composer select {
+  min-width: 5.5rem;
+  padding-inline: 0.65rem;
+}
+
+.travel-checklist__composer button {
+  min-height: 2.9rem;
+  padding-inline: 1rem;
+  border-radius: 0.76rem;
+  background: var(--text-primary);
+  color: var(--background-elevated);
+  font-size: 0.68rem;
+  font-weight: 700;
+}
+
+.travel-checklist__composer button:disabled,
+.travel-checklist__toggle:disabled,
+.travel-checklist__delete:disabled {
+  cursor: wait;
+  opacity: 0.55;
+}
+
+.travel-checklist__empty,
+.travel-checklist__error {
+  color: var(--text-secondary);
+  font-size: 0.7rem;
+}
+
+.travel-checklist__error {
+  color: var(--accent-strong);
+}
+
+/* Logged-in activity ----------------------------------------------------- */
+.studio-activity {
+  scroll-margin-top: 6rem;
+  padding-top: clamp(3rem, 6vw, 5rem);
+}
+
+.studio-activity .studio-section-heading > a {
+  color: var(--text-secondary);
+  font-size: 0.66rem;
+  font-weight: 650;
+}
+
+.studio-activity__list {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.65rem;
+  margin-top: 1rem;
+}
+
+.studio-activity__list a {
+  display: grid;
+  min-height: 5.8rem;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 0.8rem;
+  padding: 0.9rem;
+  border: 1px solid var(--border);
+  border-radius: 1rem;
+  background: var(--surface);
+  transition: border-color 0.18s ease, transform 0.18s ease;
+}
+
+.studio-activity__list a:hover,
+.studio-activity__list a:focus-visible {
+  transform: translateY(-1px);
+  border-color: var(--accent-border);
+}
+
+.studio-activity__avatar {
+  width: 2.45rem;
+  height: 2.45rem;
+  border-radius: 50%;
+}
+
+.studio-activity__list a > span {
+  min-width: 0;
+}
+
+.studio-activity__list strong {
+  font-size: 0.72rem;
+  font-weight: 700;
+}
+
+.studio-activity__list p,
+.studio-activity__list q {
+  display: block;
+  overflow: hidden;
+  margin-top: 0.2rem;
+  color: var(--text-secondary);
+  font-size: 0.65rem;
+  line-height: 1.45;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.studio-activity__list q {
+  color: var(--text-tertiary);
+}
+
+.studio-activity__list time {
+  align-self: start;
+  color: var(--text-tertiary);
+  font-family: var(--font-mono);
+  font-size: 0.52rem;
+  white-space: nowrap;
+}
+
+.studio-activity__empty {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 1rem;
+  margin-top: 1rem;
+  padding: 1.2rem;
+  border: 1px dashed var(--border-strong);
+  border-radius: 1rem;
+  color: var(--text-secondary);
+}
+
+.studio-activity__empty > span {
+  font-size: 1.5rem;
+}
+
+.studio-activity__empty strong {
+  color: var(--text-primary);
+  font-size: 0.75rem;
+}
+
+.studio-activity__empty p {
+  margin-top: 0.25rem;
+  font-size: 0.65rem;
+  line-height: 1.5;
+}
+
+.studio-activity__empty a {
+  min-height: 2.65rem;
+  padding: 0.75rem 0.9rem;
+  border: 1px solid var(--border-strong);
+  border-radius: 0.72rem;
+  font-size: 0.64rem;
+  font-weight: 700;
+}
+
+@media (max-width: 720px) {
+  .travel-checklist > header,
+  .travel-checklist__items,
+  .studio-activity__list {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .travel-checklist__progress {
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    align-items: center;
+  }
+
+  .travel-checklist__progress > span {
+    order: 2;
+  }
+
+  .travel-checklist__progress small {
+    order: 3;
+  }
+
+  .travel-checklist__composer {
+    grid-template-columns: minmax(0, 1fr) 5.5rem;
+  }
+
+  .travel-checklist__composer button {
+    grid-column: 1 / -1;
+  }
+
+  .studio-activity__empty {
+    grid-template-columns: auto minmax(0, 1fr);
+  }
+
+  .studio-activity__empty a {
+    grid-column: 1 / -1;
+    text-align: center;
+  }
+}

@@ -229,6 +229,29 @@ export interface OwnedTravelSummary {
   updatedAt: string;
 }
 
+export type TravelTaskCategory = "RESERVATION" | "DOCUMENT" | "MONEY" | "PACKING" | "OTHER";
+
+export interface TravelTask {
+  id: number;
+  title: string;
+  category: TravelTaskCategory;
+  completed: boolean;
+  sortOrder: number;
+  updatedAt: string;
+}
+
+export type ActivityEventType = "FOLLOW" | "LIKE" | "COMMENT";
+
+export interface ActivityEvent {
+  id: string;
+  type: ActivityEventType;
+  actor: SocialAuthor;
+  travelId: number | null;
+  travelTitle: string | null;
+  preview: string | null;
+  createdAt: string;
+}
+
 export interface CountryWriteInput {
   iso2Code: string;
   iso3Code: string;

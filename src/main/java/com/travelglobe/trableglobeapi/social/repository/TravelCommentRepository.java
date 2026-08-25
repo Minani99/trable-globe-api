@@ -18,6 +18,16 @@ public interface TravelCommentRepository extends JpaRepository<TravelComment, Lo
             """)
     List<TravelComment> findLatest(@Param("travelId") Long travelId, Pageable pageable);
 
+    @Query("""
+            select interaction
+            from TravelComment interaction
+              join fetch interaction.member
+              join fetch interaction.travel travel
+            where travel.member.id = :memberId and interaction.member.id <> :memberId
+            order by interaction.createdAt desc, interaction.id desc
+            """)
+    List<TravelComment> findRecentForTravelOwner(@Param("memberId") Long memberId, Pageable pageable);
+
     long countByTravelId(Long travelId);
 
     void deleteAllByTravelId(Long travelId);
