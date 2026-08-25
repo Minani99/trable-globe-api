@@ -166,8 +166,14 @@ export function PlaceLocationPicker({
           });
           if (requestId !== requestIdRef.current) return;
           const nextResults = response.features.map(toSearchSuggestion);
-          setResults(nextResults);
-          if (!nextResults.length) setStatus("검색 결과가 없습니다. 장소명이나 주소를 조금 더 구체적으로 입력해 주세요.");
+          if (nextResults.length) {
+            setResults(nextResults);
+          } else {
+            // MapTiler's Korean basemap is consistent, but some overseas POIs are
+            // indexed only under their local name. Keep the map provider and use
+            // the Korean-first Nominatim route as a search coverage supplement.
+            await searchWithFallback();
+          }
         } catch {
           if (requestId !== requestIdRef.current) return;
           setProvider("fallback");
