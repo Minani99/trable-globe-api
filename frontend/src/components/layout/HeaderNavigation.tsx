@@ -40,7 +40,8 @@ export function HeaderNavigation({ username, initialMember }: HeaderNavigationPr
   const exploreActive =
     (pathname === samplePath || pathname.startsWith(`${samplePath}/`)) && !profileExact;
   const discoverActive = pathname === "/discover";
-  const planActive = pathname.startsWith("/studio/plans");
+  const travelActive = pathname.startsWith("/studio");
+  const travelHref = member ? "/studio" : "/studio/plans/new";
 
   return (
     <div className="site-header-actions">
@@ -53,11 +54,11 @@ export function HeaderNavigation({ username, initialMember }: HeaderNavigationPr
           지구본
         </Link>
         <Link
-          href="/studio/plans/new"
+          href={travelHref}
           className="site-nav-link"
-          aria-current={planActive ? "page" : undefined}
+          aria-current={travelActive ? "page" : undefined}
         >
-          여행 계획
+          {member ? "내 여행" : "여행 계획"}
         </Link>
         <Link
           href="/discover"
@@ -80,7 +81,7 @@ export function HeaderNavigationFallback() {
     <div className="site-header-actions">
       <nav aria-label="주요 메뉴" className="site-desktop-nav">
         <Link href={globePath} className="site-nav-link">지구본</Link>
-        <Link href="/studio/plans/new" className="site-nav-link">여행 계획</Link>
+        <Link href="/studio" className="site-nav-link">내 여행</Link>
         <Link href="/discover" className="site-nav-link">사람 찾기</Link>
         <span className="site-account-loading" aria-label="계정 정보 불러오는 중" />
       </nav>
@@ -97,7 +98,7 @@ function MobileBottomNavigation({
   pathname: string;
   member: AuthMember | null | undefined;
 }) {
-  const createHref = member ? "/studio/plans/new" : "/register?next=%2Fstudio%2Fplans%2Fnew";
+  const travelHref = member ? "/studio" : "/register?next=%2Fstudio";
   const profileHref = member ? "/settings#profile" : "/login";
   const profileActive = member
     ? pathname === `/${member.username}` || pathname === "/settings"
@@ -108,10 +109,10 @@ function MobileBottomNavigation({
       <MobileNavLink href="/" label="홈" icon="home" active={pathname === "/"} />
       <MobileNavLink href={globePath} label="지구본" icon="globe" active={pathname === globePath} />
       <MobileNavLink
-        href={createHref}
-        label="계획"
-        icon="add"
-        active={pathname.startsWith("/studio/plans")}
+        href={travelHref}
+        label="여행"
+        icon="trip"
+        active={pathname.startsWith("/studio")}
         emphasized
       />
       <MobileNavLink href="/discover" label="발견" icon="search" active={pathname === "/discover"} />
@@ -139,7 +140,7 @@ function MobileNavLink({
 }: {
   href: string;
   label: string;
-  icon: "home" | "globe" | "add" | "search" | "profile";
+  icon: "home" | "globe" | "trip" | "search" | "profile";
   active: boolean;
   emphasized?: boolean;
   avatar?: { src: string | null; fallbackLabel: string };
@@ -163,15 +164,15 @@ function MobileNavLink({
   );
 }
 
-function MobileNavIcon({ name }: { name: "home" | "globe" | "add" | "search" | "profile" }) {
+function MobileNavIcon({ name }: { name: "home" | "globe" | "trip" | "search" | "profile" }) {
   if (name === "home") {
     return <svg aria-hidden="true" viewBox="0 0 24 24"><path d="m4 10 8-6 8 6v9h-5v-6H9v6H4Z" /></svg>;
   }
   if (name === "globe") {
     return <svg aria-hidden="true" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5" /><path d="M3.8 12h16.4M12 3.5c2.2 2.3 3.3 5.1 3.3 8.5S14.2 18.2 12 20.5M12 3.5C9.8 5.8 8.7 8.6 8.7 12s1.1 6.2 3.3 8.5" /></svg>;
   }
-  if (name === "add") {
-    return <svg aria-hidden="true" viewBox="0 0 24 24"><path d="M12 6v12M6 12h12" /></svg>;
+  if (name === "trip") {
+    return <svg aria-hidden="true" viewBox="0 0 24 24"><path d="M6.5 7.5h11A2.5 2.5 0 0 1 20 10v7.5H4V10a2.5 2.5 0 0 1 2.5-2.5Z" /><path d="M9 7.5V6a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v1.5M4 12h16M8 17.5v1.5M16 17.5v1.5" /></svg>;
   }
   if (name === "search") {
     return <svg aria-hidden="true" viewBox="0 0 24 24"><circle cx="10.5" cy="10.5" r="6.5" /><path d="m15.5 15.5 4 4" /></svg>;

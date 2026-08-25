@@ -8,7 +8,7 @@ import { ActivityFeed } from "@/components/studio/ActivityFeed";
 import { authenticatedBackendGet, getCurrentMember } from "@/lib/api/server-session";
 import { todayInKorea } from "@/lib/utils/date";
 import { formatDateRange } from "@/lib/utils/format";
-import type { ActivityEvent, OwnedTravelSummary } from "@/types";
+import type { ActivityEvent, OwnedTravelSummary, TravelSummary } from "@/types";
 
 export const metadata: Metadata = { title: "여행 허브", robots: { index: false, follow: false } };
 
@@ -21,7 +21,11 @@ export default async function StudioPage() {
   if (!member) redirect("/login?next=/studio");
   const travels = travelRecords ?? [];
   const today = todayInKorea();
-  const plans = travels.filter(({ travel, visibility }) => visibility === "PRIVATE" && travel.endDate > today);
+  const plans = travels
+    .filter(({ travel, visibility }) => visibility === "PRIVATE" && travel.endDate > today)
+    .sort((left, right) => Date.parse(right.updatedAt) - Date.parse(left.updatedAt));
+  const recentPlan = plans[0] ?? null;
+  const otherPlans = plans.slice(1);
   const readyToRemember = travels.filter(({ travel, visibility }) => visibility === "PRIVATE" && travel.endDate <= today);
   const records = travels.filter(({ visibility }) => visibility === "PUBLIC");
   const profileReady = Boolean(member.profileImageUrl && member.bio?.trim());
@@ -44,39 +48,38 @@ export default async function StudioPage() {
             </div>
           </header>
 
-          <section className="studio-plan-launch" aria-labelledby="studio-plan-launch-heading">
-            <div>
-              <p className="eyebrow">One-click planner</p>
-              <h2 id="studio-plan-launch-heading">템플릿을 찾지 말고, 선택만 하세요.</h2>
-              <p>나라·날짜·여행 취향을 고르면 일차별 뼈대가 만들어집니다. 여행이 끝나면 사진과 메모만 더해 기록으로 바꿀 수 있어요.</p>
-            </div>
-            <ol aria-label="여행 계획 흐름">
-              <li><span>01</span>나라와 날짜</li>
-              <li><span>02</span>취향과 속도</li>
-              <li><span>03</span>일정 자동 생성</li>
-            </ol>
-            <Link href="/studio/plans/new">3분 만에 계획 만들기 <span aria-hidden="true">→</span></Link>
-          </section>
-
-          {plans.length > 0 ? (
+          {recentPlan ? (
             <section className="studio-plans" aria-labelledby="studio-plans-heading">
               <div className="studio-section-heading">
-                <div><p className="eyebrow">Upcoming</p><h2 id="studio-plans-heading">다가오는 여행</h2></div>
-                <span>{plans.length}개</span>
+                <div>
+                  <p className="eyebrow">Continue planning</p>
+                  <h2 id="studio-plans-heading">작성 중인 여행 계획</h2>
+                  <small>최근 수정한 계획부터 이어서 작성할 수 있어요.</small>
+                </div>
+                <Link href="/studio/plans/new" className="studio-section-heading__action">＋ 새 계획</Link>
               </div>
-              <ol className="studio-plan-list">
-                {plans.map(({ travel }) => (
-                  <li key={travel.id}>
-                    <Link href={`/studio/travels/${travel.id}/edit?plan=1`}>
-                      <div className="studio-plan-list__date"><strong>{countdownLabel(today, travel.startDate)}</strong><span>{formatDateRange(travel.startDate, travel.endDate)}</span></div>
-                      <div><span>{travel.primaryCountry?.nameKo ?? "다음 여행"}</span><h3>{travel.title}</h3><p>일정 {travel.durationDays}일 · 장소 {travel.placeCount}곳</p></div>
-                      <span className="studio-plan-list__action">계획 열기 →</span>
-                    </Link>
-                  </li>
-                ))}
-              </ol>
+              <RecentPlanCard plan={recentPlan} today={today} />
+              {otherPlans.length > 0 ? (
+                <ol className="studio-plan-list" aria-label="나머지 작성 중인 계획">
+                  {otherPlans.map((plan) => <PlanListItem key={plan.travel.id} plan={plan} today={today} />)}
+                </ol>
+              ) : null}
             </section>
-          ) : null}
+          ) : (
+            <section className="studio-plan-launch" aria-labelledby="studio-plan-launch-heading">
+              <div>
+                <p className="eyebrow">One-click planner</p>
+                <h2 id="studio-plan-launch-heading">템플릿을 찾지 말고, 선택만 하세요.</h2>
+                <p>나라·날짜·여행 취향을 고르면 일차별 뼈대가 만들어집니다. 여행이 끝나면 사진과 메모만 더해 기록으로 바꿀 수 있어요.</p>
+              </div>
+              <ol aria-label="여행 계획 흐름">
+                <li><span>01</span>나라와 날짜</li>
+                <li><span>02</span>취향과 속도</li>
+                <li><span>03</span>일정 자동 생성</li>
+              </ol>
+              <Link href="/studio/plans/new">3분 만에 계획 만들기 <span aria-hidden="true">→</span></Link>
+            </section>
+          )}
 
           {readyToRemember.length > 0 ? (
             <section className="studio-memory-ready" aria-labelledby="studio-memory-ready-heading">
@@ -167,6 +170,66 @@ function countdownLabel(today: string, startDate: string): string {
   if (difference === 0) return "D-DAY";
   if (difference < 0) return "여행 중";
   return `D-${difference}`;
+}
+
+function RecentPlanCard({ plan, today }: { plan: OwnedTravelSummary; today: string }) {
+  const progress = planProgress(plan.travel);
+  return (
+    <Link href={`/studio/travels/${plan.travel.id}/edit?plan=1`} className="studio-resume-card">
+      <div className="studio-resume-card__topline">
+        <span>최근 작업</span>
+        <time dateTime={plan.updatedAt}>{formatUpdatedAt(plan.updatedAt)}</time>
+      </div>
+      <div className="studio-resume-card__content">
+        <div className="studio-resume-card__country" aria-hidden="true">
+          <strong>{plan.travel.primaryCountry?.iso2Code ?? "TR"}</strong>
+          <span>{countdownLabel(today, plan.travel.startDate)}</span>
+        </div>
+        <div>
+          <small>{plan.travel.primaryCountry?.nameKo ?? "다음 여행"} · {formatDateRange(plan.travel.startDate, plan.travel.endDate)}</small>
+          <h3>{plan.travel.title}</h3>
+          <p>일정 {plan.travel.durationDays}일 · 장소 {plan.travel.placeCount}곳</p>
+        </div>
+      </div>
+      <div className="studio-plan-progress">
+        <div><span>장소 채우기</span><strong>{progress.completed} / {progress.total}</strong></div>
+        <span className="studio-plan-progress__track" role="progressbar" aria-label={`${plan.travel.title} 장소 작성 진행률`} aria-valuemin={0} aria-valuemax={100} aria-valuenow={progress.percentage}>
+          <i style={{ width: `${progress.percentage}%` }} />
+        </span>
+      </div>
+      <span className="studio-resume-card__action">이어서 작성하기 <b aria-hidden="true">→</b></span>
+    </Link>
+  );
+}
+
+function PlanListItem({ plan, today }: { plan: OwnedTravelSummary; today: string }) {
+  const progress = planProgress(plan.travel);
+  return (
+    <li>
+      <Link href={`/studio/travels/${plan.travel.id}/edit?plan=1`}>
+        <div className="studio-plan-list__date"><strong>{countdownLabel(today, plan.travel.startDate)}</strong><span>{formatDateRange(plan.travel.startDate, plan.travel.endDate)}</span></div>
+        <div><span>{plan.travel.primaryCountry?.nameKo ?? "다음 여행"}</span><h3>{plan.travel.title}</h3><p>장소 {progress.completed}/{progress.total} · {formatUpdatedAt(plan.updatedAt)}</p></div>
+        <span className="studio-plan-list__action">계속 작성하기 →</span>
+      </Link>
+    </li>
+  );
+}
+
+function planProgress(travel: TravelSummary) {
+  const total = Math.max(1, travel.placeCount);
+  const completed = Math.min(total, travel.routePoints.filter((place) => !place.label.includes("장소를 골라주세요")).length);
+  return { completed, total, percentage: Math.round((completed / total) * 100) };
+}
+
+function formatUpdatedAt(value: string) {
+  const elapsedMinutes = Math.max(0, Math.floor((Date.now() - Date.parse(value)) / 60_000));
+  if (elapsedMinutes < 1) return "방금 수정";
+  if (elapsedMinutes < 60) return `${elapsedMinutes}분 전 수정`;
+  const elapsedHours = Math.floor(elapsedMinutes / 60);
+  if (elapsedHours < 24) return `${elapsedHours}시간 전 수정`;
+  const elapsedDays = Math.floor(elapsedHours / 24);
+  if (elapsedDays < 7) return `${elapsedDays}일 전 수정`;
+  return `${new Intl.DateTimeFormat("ko-KR", { month: "short", day: "numeric" }).format(new Date(value))} 수정`;
 }
 
 function OnboardingStep({

@@ -109,8 +109,10 @@ test("몇 번의 선택으로 여행 계획을 만들고 일차별 일정으로 
   await expect(page.getByRole("button", { name: "계획 저장" })).toBeVisible();
 
   await page.goto("/studio");
-  await expect(page.getByRole("heading", { name: "다가오는 여행" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "작성 중인 여행 계획" })).toBeVisible();
   await expect(page.getByRole("heading", { name: "일본 3일 여행" })).toBeVisible();
+  await expect(page.getByRole("link", { name: /이어서 작성하기/ })).toBeVisible();
+  await expect(page.getByRole("navigation", { name: "모바일 주요 메뉴" }).getByRole("link", { name: "여행" })).toHaveAttribute("href", "/studio");
   await expect(page.getByRole("heading", { name: "최근 활동" })).toBeVisible();
 
   const layout = await page.evaluate(() => ({

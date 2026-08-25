@@ -107,8 +107,8 @@ export function AccountNavigation({
   return mobile ? (
     <>
       <Link href={`/${member.username}`} onClick={onNavigate}><span>내 프로필</span><span aria-hidden="true">→</span></Link>
-      <Link href="/studio/plans/new" onClick={onNavigate}><span>새 여행 계획</span><span aria-hidden="true">→</span></Link>
-      <Link href="/studio" onClick={onNavigate}><span>계획과 기록</span><span aria-hidden="true">→</span></Link>
+      <Link href="/studio" onClick={onNavigate}><span>내 여행</span><span aria-hidden="true">→</span></Link>
+      <Link href="/studio/plans/new" onClick={onNavigate}><span>새 여행 계획</span><span aria-hidden="true">＋</span></Link>
       <Link href="/studio#activity" onClick={onNavigate}><span>최근 활동</span><span aria-hidden="true">→</span></Link>
       <Link href="/settings#profile" onClick={onNavigate}><span>설정</span><span aria-hidden="true">→</span></Link>
       <button type="button" className="site-mobile-menu__button is-logout" onClick={logout} disabled={logoutPending}>
@@ -144,8 +144,8 @@ export function AccountNavigation({
         {menuOpen ? (
           <div className="site-account-popover" role="menu">
             <Link href={`/${member.username}`} role="menuitem" onClick={() => setMenuOpen(false)}><span>내 프로필</span><span aria-hidden="true">↗</span></Link>
+            <Link href="/studio" role="menuitem" onClick={() => setMenuOpen(false)}><span>내 여행</span><span aria-hidden="true">→</span></Link>
             <Link href="/studio/plans/new" role="menuitem" onClick={() => setMenuOpen(false)}><span>새 여행 계획</span><span aria-hidden="true">＋</span></Link>
-            <Link href="/studio" role="menuitem" onClick={() => setMenuOpen(false)}><span>계획과 기록</span><span aria-hidden="true">→</span></Link>
             <Link href="/studio#activity" role="menuitem" onClick={() => setMenuOpen(false)}><span>최근 활동</span><span aria-hidden="true">→</span></Link>
             <Link href="/settings#profile" role="menuitem" onClick={() => setMenuOpen(false)}><span>설정</span><span aria-hidden="true">→</span></Link>
             <button type="button" className="site-account-popover__logout" role="menuitem" onClick={logout} disabled={logoutPending}>
