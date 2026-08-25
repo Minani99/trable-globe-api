@@ -21,8 +21,9 @@ export default async function StudioPage() {
   if (!member) redirect("/login?next=/studio");
   const travels = travelRecords ?? [];
   const today = todayInKorea();
-  const plans = travels.filter(({ travel, visibility }) => visibility === "PRIVATE" && travel.endDate >= today);
-  const records = travels.filter((item) => !plans.includes(item));
+  const plans = travels.filter(({ travel, visibility }) => visibility === "PRIVATE" && travel.endDate > today);
+  const readyToRemember = travels.filter(({ travel, visibility }) => visibility === "PRIVATE" && travel.endDate <= today);
+  const records = travels.filter(({ visibility }) => visibility === "PUBLIC");
   const profileReady = Boolean(member.profileImageUrl && member.bio?.trim());
 
   return (
@@ -77,6 +78,25 @@ export default async function StudioPage() {
             </section>
           ) : null}
 
+          {readyToRemember.length > 0 ? (
+            <section className="studio-memory-ready" aria-labelledby="studio-memory-ready-heading">
+              <div className="studio-section-heading">
+                <div><p className="eyebrow">Ready to remember</p><h2 id="studio-memory-ready-heading">기록으로 완성할 여행</h2></div>
+                <span>{readyToRemember.length}개</span>
+              </div>
+              <p className="studio-memory-ready__intro">여행이 끝난 계획입니다. 실제로 다녀온 장소와 사진을 확인하면 같은 여행이 지구본의 기록이 됩니다.</p>
+              <ol>
+                {readyToRemember.map(({ travel }) => (
+                  <li key={travel.id}>
+                    <div className="studio-memory-ready__country"><span>{travel.primaryCountry?.iso2Code ?? "TR"}</span><small>{travel.primaryCountry?.nameKo ?? "지난 여행"}</small></div>
+                    <div><h3>{travel.title}</h3><p>{formatDateRange(travel.startDate, travel.endDate)} · 장소 {travel.placeCount}곳 · 사진 {travel.photoCount}장</p></div>
+                    <Link href={`/studio/travels/${travel.id}/edit?plan=1`}>기록 완성하기 <span aria-hidden="true">→</span></Link>
+                  </li>
+                ))}
+              </ol>
+            </section>
+          ) : null}
+
           {travels.length === 0 ? (
             <section aria-labelledby="getting-started-heading" className="studio-onboarding">
               <header>
@@ -117,7 +137,7 @@ export default async function StudioPage() {
             <div className="studio-layout studio-layout--records">
               <section aria-labelledby="studio-travels-heading" className="studio-travels">
                 <div className="studio-section-heading">
-                  <div><p className="eyebrow">Archive</p><h2 id="studio-travels-heading">다녀온 여행</h2></div>
+                  <div><p className="eyebrow">Archive</p><h2 id="studio-travels-heading">공개한 여행</h2></div>
                   <span>{records.length}개</span>
                 </div>
                 <ol className="studio-travel-list">

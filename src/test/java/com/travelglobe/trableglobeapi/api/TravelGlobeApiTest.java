@@ -326,6 +326,37 @@ class TravelGlobeApiTest {
     }
 
     @Test
+    @DisplayName("끝나지 않은 여행이나 미정 장소가 있는 계획은 공개 기록으로 전환할 수 없다")
+    void publicRecordsRequireFinishedTravelAndRealPlaces() throws Exception {
+        String registerResponse = mockMvc.perform(post("/api/auth/register")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {
+                                  "username":"record_guard",
+                                  "displayName":"기록 점검자",
+                                  "email":"record-guard@example.com",
+                                  "password":"record-guard-password-42"
+                                }
+                                """))
+                .andExpect(status().isOk())
+                .andReturn().getResponse().getContentAsString();
+        String token = stringValue(registerResponse, "token");
+
+        mockMvc.perform(post("/api/private/travels")
+                        .header("Authorization", "Bearer " + token)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(futureTravelPayload("아직 떠나지 않은 여행", "PUBLIC")))
+                .andExpect(status().isBadRequest());
+
+        mockMvc.perform(post("/api/private/travels")
+                        .header("Authorization", "Bearer " + token)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(travelPayload("미완성 계획", "PUBLIC")
+                                .replace("서울숲", "1일차 · 장소를 골라주세요")))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
     @DisplayName("여행 계획에는 체크리스트와 예산·예약 보드가 생기고 소셜 반응은 최근 활동으로 모인다")
     void planningTasksAndActivityFeed() throws Exception {
         String ownerResponse = mockMvc.perform(post("/api/auth/register")
@@ -410,6 +441,15 @@ class TravelGlobeApiTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.data.paidAmount").value(450000))
                 .andExpect(jsonPath("$.data.expenses[0].paid").value(true));
+
+        mockMvc.perform(post("/api/private/travels/" + planId + "/planning/reservations")
+                        .header("Authorization", "Bearer " + ownerToken)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {"title":"기간 밖 예약","category":"STAY","reservationDate":"2099-07-31",
+                                 "memo":null,"confirmed":false}
+                                """))
+                .andExpect(status().isBadRequest());
 
         String reservationResponse = mockMvc.perform(post("/api/private/travels/" + planId + "/planning/reservations")
                         .header("Authorization", "Bearer " + ownerToken)

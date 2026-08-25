@@ -94,6 +94,7 @@ public class TravelPlanningService {
     public TravelPlanningResponse createReservation(MemberPrincipal principal, Long travelId,
                                                     TravelReservationWriteRequest request) {
         Travel travel = requireOwnedTravel(principal, travelId);
+        validateReservationDate(travel, request);
         long count = reservationRepository.countByTravelId(travelId);
         if (count >= MAX_RESERVATIONS) {
             throw new InvalidRequestException("여행 예약은 최대 50개까지 만들 수 있습니다.");
@@ -113,6 +114,7 @@ public class TravelPlanningService {
     public TravelPlanningResponse updateReservation(MemberPrincipal principal, Long travelId, Long reservationId,
                                                     TravelReservationWriteRequest request) {
         TravelReservation reservation = ownedReservation(principal, travelId, reservationId);
+        validateReservationDate(reservation.getTravel(), request);
         reservation.update(request.title().trim(), request.category(), request.reservationDate(),
                 textOrNull(request.memo()), Boolean.TRUE.equals(request.confirmed()));
         reservationRepository.flush();
@@ -151,5 +153,12 @@ public class TravelPlanningService {
 
     private static String textOrNull(String value) {
         return StringUtils.hasText(value) ? value.trim() : null;
+    }
+
+    private static void validateReservationDate(Travel travel, TravelReservationWriteRequest request) {
+        if (request.reservationDate().isBefore(travel.getStartDate())
+                || request.reservationDate().isAfter(travel.getEndDate())) {
+            throw new InvalidRequestException("예약 이용 날짜는 여행 기간 안에서 선택해 주세요.");
+        }
     }
 }

@@ -48,6 +48,7 @@ interface TravelEditorProps {
   initialTravel?: TravelDetail;
   initialCountryCode?: string;
   planningMode?: boolean;
+  today?: string;
 }
 
 interface StoredTravelDraft {
@@ -72,6 +73,7 @@ export function TravelEditor({
   initialTravel,
   initialCountryCode = "KR",
   planningMode = false,
+  today = "",
 }: TravelEditorProps) {
   const router = useRouter();
   const editing = Boolean(initialTravel);
@@ -139,6 +141,9 @@ export function TravelEditor({
   const completedPlanDays = planDays.filter((day) =>
     places.some((place) => place.visitedAt === day && !isPlanningPlaceholder(place)),
   ).length;
+  const placeholderCount = places.filter(isPlanningPlaceholder).length;
+  const tripFinished = Boolean(today && endDate && endDate <= today);
+  const conversionReady = planningMode && tripFinished && placeholderCount === 0;
 
   useEffect(() => {
     if (!planningMode || planDays.length === 0) return;
@@ -531,6 +536,9 @@ export function TravelEditor({
       if (planningMode && visibility === "PUBLIC" && places.some(isPlanningPlaceholder)) {
         throw new ApiError(400, "아직 장소를 고르지 않은 일정이 있어요. 모든 장소를 정한 뒤 기록으로 바꿔 주세요.");
       }
+      if (planningMode && visibility === "PUBLIC" && !tripFinished) {
+        throw new ApiError(400, "여행이 끝난 뒤 계획을 기록으로 전환할 수 있어요.");
+      }
       const payload: TravelWriteInput = {
         title: String(formData.get("title") ?? ""),
         description: nullable(String(formData.get("description") ?? "")),
@@ -579,6 +587,23 @@ export function TravelEditor({
 
   return (
     <form className={`travel-editor${draftHydrated ? "" : " is-restoring"}`} onSubmit={handleSubmit} onChange={() => setDirty(true)} aria-busy={!draftHydrated}>
+      {planningMode ? (
+        <section className={`travel-conversion${conversionReady ? " is-ready" : ""}`} aria-labelledby="travel-conversion-heading">
+          <div>
+            <p className="eyebrow">Plan to memory</p>
+            <h2 id="travel-conversion-heading">{tripFinished ? "이 계획을 여행 기록으로 완성하세요." : "다녀온 뒤, 같은 여행이 기록이 됩니다."}</h2>
+            <p>{tripFinished ? "실제로 다녀온 장소와 사진을 확인한 뒤 한 번에 지구본에 남길 수 있습니다." : `${formatPlanDay(endDate)}까지는 나만 보는 계획으로 안전하게 보관됩니다.`}</p>
+          </div>
+          <ul aria-label="기록 전환 준비 상태">
+            <li className={tripFinished ? "is-complete" : undefined}><span>{tripFinished ? "✓" : "1"}</span><div><strong>여행 완료</strong><small>{tripFinished ? "여행 기간이 지났습니다." : `${formatPlanDay(endDate)} 이후 열립니다.`}</small></div></li>
+            <li className={placeholderCount === 0 ? "is-complete" : undefined}><span>{placeholderCount === 0 ? "✓" : "2"}</span><div><strong>실제 장소 확인</strong><small>{placeholderCount === 0 ? `${places.length}곳 확인 완료` : `${placeholderCount}개 일정의 장소가 미정입니다.`}</small></div></li>
+            <li className={photos.length > 0 ? "is-complete" : undefined}><span>{photos.length > 0 ? "✓" : "3"}</span><div><strong>사진과 메모</strong><small>{photos.length > 0 ? `${photos.length}장의 장면을 담았습니다.` : "선택 사항 · 나중에 추가해도 됩니다."}</small></div></li>
+          </ul>
+          <button type="button" disabled={!conversionReady || pending} onClick={() => { setVisibility("PUBLIC"); setDirty(true); }}>
+            {visibility === "PUBLIC" ? "기록 공개 선택됨 ✓" : conversionReady ? "기록으로 전환 준비" : tripFinished ? `미정 장소 ${placeholderCount}개 남음` : "여행 종료 후 전환 가능"}
+          </button>
+        </section>
+      ) : null}
       <section className="travel-editor__section">
         <div className="travel-editor__section-heading"><span>01</span><div><p className="eyebrow">Journey</p><h2>{planningMode ? "계획 기본 정보" : "여행 기본 정보"}</h2></div></div>
         <div className="travel-editor__fields">
@@ -606,7 +631,7 @@ export function TravelEditor({
           <fieldset className="travel-editor__visibility is-wide">
             <legend>{planningMode ? "여행 상태" : "공개 범위"}</legend>
             <button type="button" className={visibility === "PRIVATE" ? "is-active" : ""} onClick={() => { setVisibility("PRIVATE"); setDirty(true); }}><strong>{planningMode ? "계획 중" : "비공개"}</strong><span>{planningMode ? "나만 보며 일정을 계속 다듬어요." : "작성 중인 기록은 나만 볼 수 있어요."}</span></button>
-            <button type="button" className={visibility === "PUBLIC" ? "is-active" : ""} onClick={() => { setVisibility("PUBLIC"); setDirty(true); }}><strong>{planningMode ? "다녀왔어요 · 기록 공개" : "공개"}</strong><span>{planningMode ? "계획을 완료된 여행 기록으로 바꿔 지구본에 남겨요." : "내 지구본과 공개 프로필에 바로 반영됩니다."}</span></button>
+            <button type="button" className={visibility === "PUBLIC" ? "is-active" : ""} disabled={planningMode && !conversionReady} onClick={() => { setVisibility("PUBLIC"); setDirty(true); }}><strong>{planningMode ? "다녀왔어요 · 기록 공개" : "공개"}</strong><span>{planningMode ? (conversionReady ? "저장하면 내 지구본과 공개 프로필에 바로 반영됩니다." : "여행 완료와 실제 장소 확인 후 선택할 수 있어요.") : "내 지구본과 공개 프로필에 바로 반영됩니다."}</span></button>
           </fieldset>
         </div>
       </section>

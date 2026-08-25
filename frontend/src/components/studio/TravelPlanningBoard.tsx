@@ -33,10 +33,12 @@ const CURRENCIES: TravelCurrency[] = ["KRW", "USD", "JPY", "EUR"];
 export function TravelPlanningBoard({
   travelId,
   startDate,
+  endDate,
   initialPlanning,
 }: {
   travelId: number;
   startDate: string;
+  endDate: string;
   initialPlanning: TravelPlanning;
 }) {
   const [planning, setPlanning] = useState(initialPlanning);
@@ -44,6 +46,8 @@ export function TravelPlanningBoard({
   const [currency, setCurrency] = useState<TravelCurrency>(initialPlanning.currency);
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [editingExpenseId, setEditingExpenseId] = useState<number | null>(null);
+  const [editingReservationId, setEditingReservationId] = useState<number | null>(null);
   const basePath = `/api/private/travels/${travelId}/planning`;
   const progress = planning.targetAmount > 0
     ? Math.min(100, Math.round((planning.estimatedAmount / planning.targetAmount) * 100))
@@ -99,6 +103,23 @@ export function TravelPlanningBoard({
     await mutate(`${basePath}/expenses/${expense.id}`, "PATCH", { ...expense, paid: !expense.paid });
   }
 
+  async function updateExpense(event: FormEvent<HTMLFormElement>, expense: TravelExpense) {
+    event.preventDefault();
+    const data = new FormData(event.currentTarget);
+    const amount = Number(data.get("amount"));
+    if (!Number.isFinite(amount) || amount < 0) {
+      setError("예상 비용을 0 이상의 숫자로 입력해 주세요.");
+      return;
+    }
+    const saved = await mutate(`${basePath}/expenses/${expense.id}`, "PATCH", {
+      title: String(data.get("title") ?? ""),
+      category: String(data.get("category")),
+      amount,
+      paid: expense.paid,
+    });
+    if (saved) setEditingExpenseId(null);
+  }
+
   async function addReservation(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const form = event.currentTarget;
@@ -118,6 +139,19 @@ export function TravelPlanningBoard({
       ...reservation,
       confirmed: !reservation.confirmed,
     });
+  }
+
+  async function updateReservation(event: FormEvent<HTMLFormElement>, reservation: TravelReservation) {
+    event.preventDefault();
+    const data = new FormData(event.currentTarget);
+    const saved = await mutate(`${basePath}/reservations/${reservation.id}`, "PATCH", {
+      title: String(data.get("title") ?? ""),
+      category: String(data.get("category")),
+      reservationDate: String(data.get("reservationDate") ?? startDate),
+      memo: String(data.get("memo") ?? ""),
+      confirmed: reservation.confirmed,
+    });
+    if (saved) setEditingReservationId(null);
   }
 
   return (
@@ -145,12 +179,21 @@ export function TravelPlanningBoard({
       <div className="travel-planning-grid">
         <PlanningPanel title="예상 비용" count={planning.expenses.length} description="결제 전 비용도 먼저 적어두세요.">
           {planning.expenses.length ? <ul className="travel-expense-list">{planning.expenses.map((expense) => (
-            <li key={expense.id} className={expense.paid ? "is-complete" : undefined}>
-              <button type="button" className="travel-plan-toggle" disabled={pending} onClick={() => toggleExpense(expense)} aria-label={`${expense.title} ${expense.paid ? "미결제로 변경" : "결제 완료로 변경"}`}><span aria-hidden="true">{expense.paid ? "✓" : ""}</span></button>
-              <div><small>{categoryLabel(EXPENSE_CATEGORIES, expense.category)}</small><strong>{expense.title}</strong></div>
-              <b>{formatMoney(expense.amount, planning.currency)}</b>
-              <button type="button" className="travel-plan-delete" disabled={pending} onClick={() => mutate(`${basePath}/expenses/${expense.id}`, "DELETE")} aria-label={`${expense.title} 삭제`}>×</button>
-            </li>
+            editingExpenseId === expense.id ? (
+              <li key={expense.id} className="is-editing"><form className="travel-plan-inline-edit" onSubmit={(event) => updateExpense(event, expense)}>
+                <input name="title" aria-label="비용 이름 수정" defaultValue={expense.title} maxLength={120} required />
+                <input name="amount" aria-label="비용 금액 수정" type="number" min="0" step="0.01" defaultValue={expense.amount} required />
+                <select name="category" aria-label="비용 분류 수정" defaultValue={expense.category}>{EXPENSE_CATEGORIES.map((item) => <option key={item.value} value={item.value}>{item.label}</option>)}</select>
+                <div><button type="button" onClick={() => setEditingExpenseId(null)}>취소</button><button type="submit" disabled={pending}>변경 저장</button></div>
+              </form></li>
+            ) : (
+              <li key={expense.id} className={expense.paid ? "is-complete" : undefined}>
+                <button type="button" className="travel-plan-toggle" disabled={pending} onClick={() => toggleExpense(expense)} aria-label={`${expense.title} ${expense.paid ? "미결제로 변경" : "결제 완료로 변경"}`}><span aria-hidden="true">{expense.paid ? "✓" : ""}</span></button>
+                <div><small>{categoryLabel(EXPENSE_CATEGORIES, expense.category)}</small><strong>{expense.title}</strong></div>
+                <b>{formatMoney(expense.amount, planning.currency)}</b>
+                <div className="travel-plan-row-actions"><button type="button" disabled={pending} onClick={() => setEditingExpenseId(expense.id)} aria-label={`${expense.title} 수정`}>수정</button><button type="button" className="travel-plan-delete" disabled={pending} onClick={() => mutate(`${basePath}/expenses/${expense.id}`, "DELETE")} aria-label={`${expense.title} 삭제`}>×</button></div>
+              </li>
+            )
           ))}</ul> : <p className="travel-plan-empty">항공권이나 숙소처럼 큰 비용부터 추가해 보세요.</p>}
           <details className="travel-plan-composer"><summary>＋ 비용 추가</summary><form onSubmit={addExpense}>
             <input name="title" aria-label="새 비용 이름" placeholder="예: 왕복 항공권" maxLength={120} required />
@@ -162,15 +205,25 @@ export function TravelPlanningBoard({
 
         <PlanningPanel title="예약 일정" count={planning.reservations.length} description="확정된 예약은 체크해 두세요.">
           {planning.reservations.length ? <ul className="travel-reservation-list">{planning.reservations.map((reservation) => (
-            <li key={reservation.id} className={reservation.confirmed ? "is-complete" : undefined}>
-              <button type="button" className="travel-plan-toggle" disabled={pending} onClick={() => toggleReservation(reservation)} aria-label={`${reservation.title} ${reservation.confirmed ? "미확정으로 변경" : "예약 확정으로 변경"}`}><span aria-hidden="true">{reservation.confirmed ? "✓" : ""}</span></button>
-              <div><small>{formatShortDate(reservation.reservationDate)} · {categoryLabel(RESERVATION_CATEGORIES, reservation.category)}</small><strong>{reservation.title}</strong>{reservation.memo ? <p>{reservation.memo}</p> : null}</div>
-              <button type="button" className="travel-plan-delete" disabled={pending} onClick={() => mutate(`${basePath}/reservations/${reservation.id}`, "DELETE")} aria-label={`${reservation.title} 삭제`}>×</button>
-            </li>
+            editingReservationId === reservation.id ? (
+              <li key={reservation.id} className="is-editing"><form className="travel-plan-inline-edit is-reservation" onSubmit={(event) => updateReservation(event, reservation)}>
+                <input name="title" aria-label="예약 이름 수정" defaultValue={reservation.title} maxLength={120} required />
+                <input name="reservationDate" aria-label="예약 이용 날짜 수정" type="date" min={startDate} max={endDate} defaultValue={reservation.reservationDate} required />
+                <select name="category" aria-label="예약 분류 수정" defaultValue={reservation.category}>{RESERVATION_CATEGORIES.map((item) => <option key={item.value} value={item.value}>{item.label}</option>)}</select>
+                <input name="memo" aria-label="예약 메모 수정" defaultValue={reservation.memo ?? ""} maxLength={500} placeholder="시간이나 준비물 (선택)" />
+                <div><button type="button" onClick={() => setEditingReservationId(null)}>취소</button><button type="submit" disabled={pending}>변경 저장</button></div>
+              </form></li>
+            ) : (
+              <li key={reservation.id} className={reservation.confirmed ? "is-complete" : undefined}>
+                <button type="button" className="travel-plan-toggle" disabled={pending} onClick={() => toggleReservation(reservation)} aria-label={`${reservation.title} ${reservation.confirmed ? "미확정으로 변경" : "예약 확정으로 변경"}`}><span aria-hidden="true">{reservation.confirmed ? "✓" : ""}</span></button>
+                <div><small>{formatShortDate(reservation.reservationDate)} · {categoryLabel(RESERVATION_CATEGORIES, reservation.category)}</small><strong>{reservation.title}</strong>{reservation.memo ? <p>{reservation.memo}</p> : null}</div>
+                <div className="travel-plan-row-actions"><button type="button" disabled={pending} onClick={() => setEditingReservationId(reservation.id)} aria-label={`${reservation.title} 수정`}>수정</button><button type="button" className="travel-plan-delete" disabled={pending} onClick={() => mutate(`${basePath}/reservations/${reservation.id}`, "DELETE")} aria-label={`${reservation.title} 삭제`}>×</button></div>
+              </li>
+            )
           ))}</ul> : <p className="travel-plan-empty">항공·숙소 예약 날짜를 먼저 모아보세요.</p>}
           <details className="travel-plan-composer"><summary>＋ 예약 추가</summary><form onSubmit={addReservation}>
             <input name="title" aria-label="새 예약 이름" placeholder="예: 시부야 호텔 체크인" maxLength={120} required />
-            <input name="reservationDate" aria-label="예약 이용 날짜" type="date" defaultValue={startDate} required />
+            <input name="reservationDate" aria-label="예약 이용 날짜" type="date" min={startDate} max={endDate} defaultValue={startDate} required />
             <select name="category" aria-label="예약 분류">{RESERVATION_CATEGORIES.map((item) => <option key={item.value} value={item.value}>{item.label}</option>)}</select>
             <input name="memo" aria-label="예약 메모" placeholder="시간이나 준비물 (선택)" maxLength={500} />
             <button type="submit" disabled={pending}>추가</button>

@@ -14,6 +14,7 @@ import com.travelglobe.trableglobeapi.travel.domain.Travel;
 import com.travelglobe.trableglobeapi.travel.domain.TravelPhoto;
 import com.travelglobe.trableglobeapi.travel.domain.TravelPlace;
 import com.travelglobe.trableglobeapi.travel.domain.TravelTask;
+import com.travelglobe.trableglobeapi.travel.domain.Visibility;
 import com.travelglobe.trableglobeapi.travel.dto.OwnedTravelSummaryResponse;
 import com.travelglobe.trableglobeapi.travel.dto.TravelDetailResponse;
 import com.travelglobe.trableglobeapi.travel.dto.write.TravelPhotoWriteRequest;
@@ -200,6 +201,18 @@ public class TravelCommandService {
                 throw new InvalidRequestException("방문일은 여행 기간 안에 있어야 합니다.");
             }
         }
+        if (request.visibility() == Visibility.PUBLIC) {
+            if (request.endDate().isAfter(LocalDate.now(ZoneId.of("Asia/Seoul")))) {
+                throw new InvalidRequestException("여행이 끝난 뒤 기록을 공개할 수 있습니다.");
+            }
+            if (request.places().stream().anyMatch(TravelCommandService::isPlanningPlaceholder)) {
+                throw new InvalidRequestException("미정인 장소를 실제 방문 장소로 바꾼 뒤 기록을 공개해 주세요.");
+            }
+        }
+    }
+
+    private static boolean isPlanningPlaceholder(TravelPlaceWriteRequest place) {
+        return place.placeName().contains("장소를 골라주세요");
     }
 
     private static String emptyToNull(String value) {

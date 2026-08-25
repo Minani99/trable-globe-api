@@ -10676,3 +10676,314 @@ a.profile-panel__identity:focus-visible {
     grid-column: 1 / -1;
   }
 }
+
+/* Complete the planning loop: edit every booking and turn finished plans into memories. */
+.travel-plan-row-actions {
+  display: flex !important;
+  align-items: center;
+  gap: 0.1rem !important;
+}
+
+.travel-plan-row-actions > button:not(.travel-plan-delete) {
+  min-width: 2.75rem;
+  min-height: 2.75rem;
+  padding: 0.4rem;
+  border: 0;
+  border-radius: 0.65rem;
+  background: transparent;
+  color: var(--text-tertiary);
+  font-size: 0.56rem;
+  font-weight: 700;
+}
+
+.travel-plan-row-actions > button:hover,
+.travel-plan-row-actions > button:focus-visible {
+  background: color-mix(in srgb, var(--accent) 8%, transparent);
+  color: var(--accent-strong);
+}
+
+.travel-expense-list li.is-editing,
+.travel-reservation-list li.is-editing {
+  display: block;
+  padding: 0.8rem;
+  border-color: color-mix(in srgb, var(--accent) 35%, var(--border));
+  background: color-mix(in srgb, var(--accent) 4%, var(--surface));
+}
+
+.travel-plan-inline-edit {
+  display: grid;
+  grid-template-columns: minmax(0, 1.3fr) minmax(6.5rem, 0.7fr) minmax(5.5rem, 0.55fr);
+  gap: 0.5rem;
+}
+
+.travel-plan-inline-edit.is-reservation {
+  grid-template-columns: minmax(0, 1.2fr) minmax(8.5rem, 0.75fr) minmax(5.5rem, 0.55fr);
+}
+
+.travel-plan-inline-edit.is-reservation > input[name="memo"] {
+  grid-column: 1 / -1;
+}
+
+.travel-plan-inline-edit input,
+.travel-plan-inline-edit select {
+  width: 100%;
+  min-height: 2.75rem;
+  padding: 0.65rem 0.72rem;
+  border: 1px solid var(--border);
+  border-radius: 0.65rem;
+  background: var(--surface);
+  color: var(--text-primary);
+  font: inherit;
+  font-size: 0.64rem;
+}
+
+.travel-plan-inline-edit > div {
+  display: flex;
+  grid-column: 1 / -1;
+  justify-content: flex-end;
+  gap: 0.45rem;
+}
+
+.travel-plan-inline-edit button {
+  min-height: 2.75rem;
+  padding: 0.65rem 0.85rem;
+  border: 1px solid var(--border-strong);
+  border-radius: 0.65rem;
+  background: var(--surface);
+  color: var(--text-secondary);
+  font-size: 0.61rem;
+  font-weight: 700;
+}
+
+.travel-plan-inline-edit button[type="submit"] {
+  border-color: var(--text-primary);
+  background: var(--text-primary);
+  color: var(--background);
+}
+
+.travel-conversion {
+  display: grid;
+  grid-template-columns: minmax(0, 1.1fr) minmax(21rem, 0.9fr) auto;
+  align-items: center;
+  gap: clamp(1rem, 3vw, 2.5rem);
+  margin-bottom: 1.25rem;
+  padding: clamp(1.2rem, 3vw, 2rem);
+  border: 1px solid color-mix(in srgb, var(--accent) 24%, var(--border));
+  border-radius: 1.25rem;
+  background:
+    radial-gradient(circle at 100% 0, color-mix(in srgb, var(--accent) 11%, transparent), transparent 34%),
+    var(--surface);
+}
+
+.travel-conversion.is-ready {
+  border-color: color-mix(in srgb, var(--accent) 48%, var(--border));
+  box-shadow: 0 1rem 3rem color-mix(in srgb, var(--accent) 8%, transparent);
+}
+
+.travel-conversion h2 {
+  margin-top: 0.42rem;
+  font-size: clamp(1.25rem, 2.2vw, 1.8rem);
+  font-weight: 620;
+  letter-spacing: -0.045em;
+}
+
+.travel-conversion > div > p:last-child {
+  max-width: 36rem;
+  margin-top: 0.55rem;
+  color: var(--text-secondary);
+  font-size: 0.7rem;
+  line-height: 1.65;
+}
+
+.travel-conversion ul {
+  display: grid;
+  gap: 0.4rem;
+}
+
+.travel-conversion li {
+  display: grid;
+  grid-template-columns: 1.65rem minmax(0, 1fr);
+  align-items: center;
+  gap: 0.55rem;
+  min-height: 2.85rem;
+  padding: 0.45rem 0.6rem;
+  border-radius: 0.7rem;
+  background: var(--surface-soft);
+}
+
+.travel-conversion li > span {
+  display: grid;
+  width: 1.65rem;
+  height: 1.65rem;
+  place-items: center;
+  border: 1px solid var(--border-strong);
+  border-radius: 999px;
+  color: var(--text-tertiary);
+  font-family: var(--font-mono);
+  font-size: 0.52rem;
+}
+
+.travel-conversion li.is-complete > span {
+  border-color: var(--accent);
+  background: var(--accent);
+  color: white;
+}
+
+.travel-conversion li div {
+  display: grid;
+  gap: 0.12rem;
+}
+
+.travel-conversion li strong {
+  font-size: 0.64rem;
+}
+
+.travel-conversion li small {
+  color: var(--text-tertiary);
+  font-size: 0.52rem;
+}
+
+.travel-conversion > button {
+  min-width: 9.5rem;
+  min-height: 3rem;
+  padding: 0.7rem 0.9rem;
+  border: 0;
+  border-radius: 0.8rem;
+  background: var(--text-primary);
+  color: var(--background);
+  font-size: 0.65rem;
+  font-weight: 750;
+}
+
+.travel-conversion > button:disabled {
+  background: color-mix(in srgb, var(--text-primary) 9%, var(--surface));
+  color: var(--text-tertiary);
+  cursor: not-allowed;
+}
+
+.travel-editor__visibility button:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+.studio-memory-ready {
+  padding-top: clamp(2.75rem, 6vw, 5rem);
+}
+
+.studio-memory-ready__intro {
+  max-width: 46rem;
+  margin-top: 1rem;
+  color: var(--text-secondary);
+  font-size: 0.72rem;
+  line-height: 1.7;
+}
+
+.studio-memory-ready ol {
+  display: grid;
+  gap: 0.7rem;
+  margin-top: 1rem;
+}
+
+.studio-memory-ready li {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem;
+  border: 1px solid color-mix(in srgb, var(--accent) 24%, var(--border));
+  border-radius: 1rem;
+  background: color-mix(in srgb, var(--accent) 4%, var(--surface));
+}
+
+.studio-memory-ready__country {
+  display: grid;
+  width: 4.25rem;
+  height: 4.25rem;
+  place-content: center;
+  gap: 0.15rem;
+  border-radius: 0.85rem;
+  background: var(--surface);
+  text-align: center;
+}
+
+.studio-memory-ready__country span {
+  color: var(--accent-strong);
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+}
+
+.studio-memory-ready__country small,
+.studio-memory-ready li p {
+  color: var(--text-tertiary);
+  font-size: 0.55rem;
+}
+
+.studio-memory-ready li h3 {
+  font-size: 0.9rem;
+  letter-spacing: -0.025em;
+}
+
+.studio-memory-ready li p {
+  margin-top: 0.35rem;
+}
+
+.studio-memory-ready li > a {
+  display: flex;
+  min-height: 2.75rem;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.7rem 0.9rem;
+  border-radius: 0.75rem;
+  background: var(--text-primary);
+  color: var(--background);
+  font-size: 0.64rem;
+  font-weight: 700;
+}
+
+@media (max-width: 980px) {
+  .travel-conversion {
+    grid-template-columns: minmax(0, 1fr) minmax(18rem, 0.8fr);
+  }
+
+  .travel-conversion > button {
+    grid-column: 1 / -1;
+    width: 100%;
+  }
+}
+
+@media (max-width: 700px) {
+  .travel-plan-inline-edit,
+  .travel-plan-inline-edit.is-reservation {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .travel-plan-inline-edit.is-reservation > input[name="memo"],
+  .travel-plan-inline-edit > div {
+    grid-column: 1;
+  }
+
+  .travel-plan-inline-edit > div button {
+    flex: 1;
+  }
+
+  .travel-conversion {
+    grid-template-columns: minmax(0, 1fr);
+    margin-inline: -0.15rem;
+    padding: 1rem;
+    border-radius: 1rem;
+  }
+
+  .travel-conversion > button {
+    grid-column: 1;
+    min-height: 2.75rem;
+  }
+
+  .studio-memory-ready li {
+    grid-template-columns: auto minmax(0, 1fr);
+  }
+
+  .studio-memory-ready li > a {
+    grid-column: 1 / -1;
+    justify-content: space-between;
+  }
+}

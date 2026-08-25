@@ -27,9 +27,10 @@ export default async function EditTravelPage(props: PageProps<"/studio/travels/[
   if (!member) redirect("/login?next=/studio");
   if (!travel) notFound();
   const today = todayInKorea();
-  const planningMode = travel.visibility === "PRIVATE" && travel.endDate >= today;
+  const hasPlanningData = Boolean(tasks?.length || planning?.targetAmount || planning?.expenses.length || planning?.reservations.length);
+  const planningMode = travel.visibility === "PRIVATE" && (travel.endDate > today || hasPlanningData);
   return (
-    <><SiteHeader username={member.username} member={member} /><main id="main" className="studio-page flex-1"><div className="site-shell travel-editor-shell"><nav className="studio-breadcrumb"><Link href="/studio">← 여행 허브</Link></nav><header className={`travel-editor-hero${planningMode ? " is-planning" : ""}`}><p className="eyebrow">{planningMode ? "Upcoming journey" : "Edit journey"}</p><h1>{travel.title}</h1><p>{planningMode ? "준비할 일과 예산, 예약을 확인하고 일차별 장소만 골라 계획을 완성하세요. 다녀온 뒤에는 그대로 기록으로 바꿀 수 있습니다." : "저장하는 순간 공개 지구본과 상세 페이지에도 반영됩니다."}</p></header>{planningMode ? <><TravelChecklist travelId={travel.id} initialTasks={tasks ?? []} /><TravelPlanningBoard travelId={travel.id} startDate={travel.startDate} initialPlanning={planning ?? emptyPlanning()} /></> : null}<TravelEditor username={member.username} countries={countryOptions} initialTravel={travel} planningMode={planningMode} /></div></main><SiteFooter /></>
+    <><SiteHeader username={member.username} member={member} /><main id="main" className="studio-page flex-1"><div className="site-shell travel-editor-shell"><nav className="studio-breadcrumb"><Link href="/studio">← 여행 허브</Link></nav><header className={`travel-editor-hero${planningMode ? " is-planning" : ""}`}><p className="eyebrow">{planningMode ? (travel.endDate <= today ? "Ready to remember" : "Upcoming journey") : "Edit journey"}</p><h1>{travel.title}</h1><p>{planningMode ? (travel.endDate <= today ? "여행이 끝났습니다. 실제 장소와 사진을 확인한 뒤 계획을 나의 여행 기록으로 완성하세요." : "준비할 일과 예산, 예약을 확인하고 일차별 장소만 골라 계획을 완성하세요. 다녀온 뒤에는 그대로 기록으로 바꿀 수 있습니다.") : "저장하는 순간 공개 지구본과 상세 페이지에도 반영됩니다."}</p></header>{planningMode ? <><TravelChecklist travelId={travel.id} initialTasks={tasks ?? []} /><TravelPlanningBoard travelId={travel.id} startDate={travel.startDate} endDate={travel.endDate} initialPlanning={planning ?? emptyPlanning()} /></> : null}<TravelEditor username={member.username} countries={countryOptions} initialTravel={travel} planningMode={planningMode} today={today} /></div></main><SiteFooter /></>
   );
 }
 
