@@ -425,9 +425,22 @@ Base URL: `http://localhost:8080` (개발). Next.js 서버와 동일 출처 `/ap
 | POST | `/api/private/travels/{id}/tasks` | 준비 항목 추가 (최대 30개) |
 | PATCH | `/api/private/travels/{id}/tasks/{taskId}` | 준비 항목 완료 상태 변경 |
 | DELETE | `/api/private/travels/{id}/tasks/{taskId}` | 준비 항목 삭제 |
+| GET | `/api/private/travels/{id}/planning` | 총예산·비용·예약을 합친 계획 보드 조회 |
+| PATCH | `/api/private/travels/{id}/planning/budget` | 총예산과 통화 변경 |
+| POST | `/api/private/travels/{id}/planning/expenses` | 비용 추가 (최대 50개) |
+| PATCH | `/api/private/travels/{id}/planning/expenses/{expenseId}` | 비용·결제 상태 변경 |
+| DELETE | `/api/private/travels/{id}/planning/expenses/{expenseId}` | 비용 삭제 |
+| POST | `/api/private/travels/{id}/planning/reservations` | 날짜가 있는 예약 추가 (최대 50개) |
+| PATCH | `/api/private/travels/{id}/planning/reservations/{reservationId}` | 예약·확정 상태 변경 |
+| DELETE | `/api/private/travels/{id}/planning/reservations/{reservationId}` | 예약 삭제 |
 
 미래 날짜의 비공개 여행 계획을 만들면 예약·서류·결제·짐 준비에 필요한 기본 항목
 6개를 자동으로 생성합니다. 체크리스트는 여행 소유자만 조회하고 수정할 수 있습니다.
+
+계획 보드는 총예산에서 등록한 비용을 빼 남은 금액을 계산하고, 비용의 결제 여부와
+예약의 확정 여부를 각각 추적합니다. 통화는 `KRW`, `USD`, `JPY`, `EUR`를 지원하며
+금액은 0 이상이어야 합니다. 예약 확인번호 같은 민감한 정보는 수집하지 않습니다.
+계획 데이터도 여행 소유자만 접근할 수 있고, 다른 회원의 식별자를 사용하면 404를 반환합니다.
 
 ### Location search BFF
 

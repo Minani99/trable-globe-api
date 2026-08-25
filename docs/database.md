@@ -4,7 +4,8 @@
 
 `src/main/resources/db/migration/` 아래의 순차 Flyway 마이그레이션이 정답입니다.
 `V1`은 여행 스키마, `V2`는 계정 자격 증명과 로그인 세션, `V3`는 이메일 인증과
-비밀번호 재설정용 일회성 토큰을 추가합니다.
+비밀번호 재설정용 일회성 토큰을 추가합니다. 최신 `V8`은 여행별 총예산, 비용과
+결제 상태, 날짜별 예약과 확정 상태를 추가합니다.
 
 | 프로필 | DB | 스키마를 만드는 주체 | Hibernate |
 | --- | --- | --- | --- |
@@ -105,6 +106,9 @@ H2 호환 버전을 따로 유지하면 두 스키마가 서서히 어긋나므�
 | member_credentials → account_action_tokens | 1 : N | 필수 | `ON DELETE CASCADE` |
 | travels → travel_places | 1 : N | 필수 | `ON DELETE CASCADE` |
 | travels → travel_photos | 1 : N | 필수 | `ON DELETE CASCADE` |
+| travels → travel_budgets | 1 : 0..1 | 선택 | `ON DELETE CASCADE` |
+| travels → travel_expenses | 1 : N | 필수 | `ON DELETE CASCADE` |
+| travels → travel_reservations | 1 : N | 필수 | `ON DELETE CASCADE` |
 | travel_places → countries | N : 1 | **필수** | 제한 |
 | travel_places → cities | N : 1 | **선택** | 제한 |
 | travel_photos → travel_places | N : 1 | **선택** | `ON DELETE SET NULL` |
@@ -127,6 +131,8 @@ H2 호환 버전을 따로 유지하면 두 스키마가 서서히 어긋나므�
 | `idx_travel_places_country` | `travel_places(country_id)` | 방문 국가 집계 GROUP BY |
 | `idx_travel_places_city` | `travel_places(city_id)` | 방문 도시 집계 |
 | `idx_travel_photos_travel` | `travel_photos(travel_id, sort_order)` | 상세 화면 사진 조회 |
+| `idx_travel_expenses_travel` | `travel_expenses(travel_id, sort_order)` | 계획 보드 비용 순서 조회 |
+| `idx_travel_reservations_travel` | `travel_reservations(travel_id, reservation_date, sort_order)` | 예약 날짜·순서 조회 |
 | `uk_member_credentials_email` | `member_credentials(email)` | 로그인 식별자 및 중복 가입 방지 |
 | `uk_auth_sessions_token_hash` | `auth_sessions(token_hash)` | 원문 토큰을 저장하지 않는 세션 조회 |
 | `idx_auth_sessions_expiry` | `auth_sessions(revoked_at, expires_at)` | 만료·폐기 세션 정리 |

@@ -8,11 +8,16 @@ import com.travelglobe.trableglobeapi.social.dto.TravelSocialResponse;
 import com.travelglobe.trableglobeapi.social.service.TravelSocialService;
 import com.travelglobe.trableglobeapi.travel.dto.OwnedTravelSummaryResponse;
 import com.travelglobe.trableglobeapi.travel.dto.TravelDetailResponse;
+import com.travelglobe.trableglobeapi.travel.dto.TravelPlanningResponse;
 import com.travelglobe.trableglobeapi.travel.dto.TravelTaskResponse;
 import com.travelglobe.trableglobeapi.travel.dto.write.CreateTravelTaskRequest;
+import com.travelglobe.trableglobeapi.travel.dto.write.TravelExpenseWriteRequest;
+import com.travelglobe.trableglobeapi.travel.dto.write.TravelReservationWriteRequest;
 import com.travelglobe.trableglobeapi.travel.dto.write.TravelWriteRequest;
 import com.travelglobe.trableglobeapi.travel.dto.write.UpdateTravelTaskRequest;
+import com.travelglobe.trableglobeapi.travel.dto.write.UpdateTravelBudgetRequest;
 import com.travelglobe.trableglobeapi.travel.service.TravelCommandService;
+import com.travelglobe.trableglobeapi.travel.service.TravelPlanningService;
 import com.travelglobe.trableglobeapi.travel.service.TravelTaskService;
 import jakarta.validation.Valid;
 import jakarta.servlet.http.HttpServletRequest;
@@ -36,13 +41,16 @@ public class PrivateTravelController {
     private final TravelCommandService travelCommandService;
     private final TravelSocialService travelSocialService;
     private final TravelTaskService travelTaskService;
+    private final TravelPlanningService travelPlanningService;
 
     public PrivateTravelController(TravelCommandService travelCommandService,
                                    TravelSocialService travelSocialService,
-                                   TravelTaskService travelTaskService) {
+                                   TravelTaskService travelTaskService,
+                                   TravelPlanningService travelPlanningService) {
         this.travelCommandService = travelCommandService;
         this.travelSocialService = travelSocialService;
         this.travelTaskService = travelTaskService;
+        this.travelPlanningService = travelPlanningService;
     }
 
     @GetMapping
@@ -121,6 +129,80 @@ public class PrivateTravelController {
             @PathVariable Long taskId) {
         return ApiResponse.ok(travelTaskService.delete(
                 AuthenticatedRequest.principal(request), travelId, taskId), "준비 항목을 삭제했습니다.");
+    }
+
+    @GetMapping("/{travelId}/planning")
+    public ApiResponse<TravelPlanningResponse> planning(
+            HttpServletRequest request, @PathVariable Long travelId) {
+        return ApiResponse.ok(travelPlanningService.findMine(
+                AuthenticatedRequest.principal(request), travelId));
+    }
+
+    @PatchMapping("/{travelId}/planning/budget")
+    public ApiResponse<TravelPlanningResponse> updateBudget(
+            HttpServletRequest request,
+            @PathVariable Long travelId,
+            @Valid @RequestBody UpdateTravelBudgetRequest body) {
+        return ApiResponse.ok(travelPlanningService.updateBudget(
+                AuthenticatedRequest.principal(request), travelId, body), "총예산을 저장했습니다.");
+    }
+
+    @PostMapping("/{travelId}/planning/expenses")
+    @ResponseStatus(HttpStatus.CREATED)
+    public ApiResponse<TravelPlanningResponse> createExpense(
+            HttpServletRequest request,
+            @PathVariable Long travelId,
+            @Valid @RequestBody TravelExpenseWriteRequest body) {
+        return ApiResponse.ok(travelPlanningService.createExpense(
+                AuthenticatedRequest.principal(request), travelId, body), "비용을 추가했습니다.");
+    }
+
+    @PatchMapping("/{travelId}/planning/expenses/{expenseId}")
+    public ApiResponse<TravelPlanningResponse> updateExpense(
+            HttpServletRequest request,
+            @PathVariable Long travelId,
+            @PathVariable Long expenseId,
+            @Valid @RequestBody TravelExpenseWriteRequest body) {
+        return ApiResponse.ok(travelPlanningService.updateExpense(
+                AuthenticatedRequest.principal(request), travelId, expenseId, body));
+    }
+
+    @DeleteMapping("/{travelId}/planning/expenses/{expenseId}")
+    public ApiResponse<TravelPlanningResponse> deleteExpense(
+            HttpServletRequest request,
+            @PathVariable Long travelId,
+            @PathVariable Long expenseId) {
+        return ApiResponse.ok(travelPlanningService.deleteExpense(
+                AuthenticatedRequest.principal(request), travelId, expenseId), "비용을 삭제했습니다.");
+    }
+
+    @PostMapping("/{travelId}/planning/reservations")
+    @ResponseStatus(HttpStatus.CREATED)
+    public ApiResponse<TravelPlanningResponse> createReservation(
+            HttpServletRequest request,
+            @PathVariable Long travelId,
+            @Valid @RequestBody TravelReservationWriteRequest body) {
+        return ApiResponse.ok(travelPlanningService.createReservation(
+                AuthenticatedRequest.principal(request), travelId, body), "예약을 추가했습니다.");
+    }
+
+    @PatchMapping("/{travelId}/planning/reservations/{reservationId}")
+    public ApiResponse<TravelPlanningResponse> updateReservation(
+            HttpServletRequest request,
+            @PathVariable Long travelId,
+            @PathVariable Long reservationId,
+            @Valid @RequestBody TravelReservationWriteRequest body) {
+        return ApiResponse.ok(travelPlanningService.updateReservation(
+                AuthenticatedRequest.principal(request), travelId, reservationId, body));
+    }
+
+    @DeleteMapping("/{travelId}/planning/reservations/{reservationId}")
+    public ApiResponse<TravelPlanningResponse> deleteReservation(
+            HttpServletRequest request,
+            @PathVariable Long travelId,
+            @PathVariable Long reservationId) {
+        return ApiResponse.ok(travelPlanningService.deleteReservation(
+                AuthenticatedRequest.principal(request), travelId, reservationId), "예약을 삭제했습니다.");
     }
 
     @GetMapping("/{travelId}/social")

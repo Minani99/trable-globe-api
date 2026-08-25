@@ -240,6 +240,37 @@ export interface TravelTask {
   updatedAt: string;
 }
 
+export type TravelCurrency = "KRW" | "USD" | "JPY" | "EUR";
+export type TravelExpenseCategory = "TRANSPORT" | "STAY" | "FOOD" | "ACTIVITY" | "SHOPPING" | "OTHER";
+export type TravelReservationCategory = "FLIGHT" | "STAY" | "TRANSPORT" | "ACTIVITY" | "RESTAURANT" | "OTHER";
+
+export interface TravelExpense {
+  id: number;
+  title: string;
+  category: TravelExpenseCategory;
+  amount: number;
+  paid: boolean;
+}
+
+export interface TravelReservation {
+  id: number;
+  title: string;
+  category: TravelReservationCategory;
+  reservationDate: string;
+  memo: string | null;
+  confirmed: boolean;
+}
+
+export interface TravelPlanning {
+  targetAmount: number;
+  currency: TravelCurrency;
+  estimatedAmount: number;
+  paidAmount: number;
+  remainingAmount: number;
+  expenses: TravelExpense[];
+  reservations: TravelReservation[];
+}
+
 export type ActivityEventType = "FOLLOW" | "LIKE" | "COMMENT";
 
 export interface ActivityEvent {

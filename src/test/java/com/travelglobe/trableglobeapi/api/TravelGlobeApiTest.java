@@ -326,7 +326,7 @@ class TravelGlobeApiTest {
     }
 
     @Test
-    @DisplayName("여행 계획에는 준비 체크리스트가 생기고 소셜 반응은 최근 활동으로 모인다")
+    @DisplayName("여행 계획에는 체크리스트와 예산·예약 보드가 생기고 소셜 반응은 최근 활동으로 모인다")
     void planningTasksAndActivityFeed() throws Exception {
         String ownerResponse = mockMvc.perform(post("/api/auth/register")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -372,6 +372,66 @@ class TravelGlobeApiTest {
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.data.length()").value(7))
                 .andExpect(jsonPath("$.data[6].title").value("공항철도 예약"));
+
+        mockMvc.perform(get("/api/private/travels/" + planId + "/planning")
+                        .header("Authorization", "Bearer " + ownerToken))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.targetAmount").value(0))
+                .andExpect(jsonPath("$.data.currency").value("KRW"))
+                .andExpect(jsonPath("$.data.expenses.length()").value(0))
+                .andExpect(jsonPath("$.data.reservations.length()").value(0));
+
+        mockMvc.perform(patch("/api/private/travels/" + planId + "/planning/budget")
+                        .header("Authorization", "Bearer " + ownerToken)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"targetAmount\":1500000,\"currency\":\"KRW\"}"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.targetAmount").value(1500000))
+                .andExpect(jsonPath("$.data.remainingAmount").value(1500000));
+
+        String expenseResponse = mockMvc.perform(post("/api/private/travels/" + planId + "/planning/expenses")
+                        .header("Authorization", "Bearer " + ownerToken)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {"title":"왕복 항공권","category":"TRANSPORT","amount":450000,"paid":false}
+                                """))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.data.estimatedAmount").value(450000))
+                .andExpect(jsonPath("$.data.remainingAmount").value(1050000))
+                .andReturn().getResponse().getContentAsString();
+        long expenseId = Long.parseLong(numberValue(expenseResponse, "id"));
+
+        mockMvc.perform(patch("/api/private/travels/" + planId + "/planning/expenses/" + expenseId)
+                        .header("Authorization", "Bearer " + ownerToken)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {"title":"왕복 항공권","category":"TRANSPORT","amount":450000,"paid":true}
+                                """))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.paidAmount").value(450000))
+                .andExpect(jsonPath("$.data.expenses[0].paid").value(true));
+
+        String reservationResponse = mockMvc.perform(post("/api/private/travels/" + planId + "/planning/reservations")
+                        .header("Authorization", "Bearer " + ownerToken)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {"title":"도쿄 호텔 체크인","category":"STAY","reservationDate":"2099-08-01",
+                                 "memo":"오후 3시","confirmed":false}
+                                """))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.data.reservations[0].title").value("도쿄 호텔 체크인"))
+                .andReturn().getResponse().getContentAsString();
+        long reservationId = Long.parseLong(numberValue(reservationResponse, "id"));
+
+        mockMvc.perform(patch("/api/private/travels/" + planId + "/planning/reservations/" + reservationId)
+                        .header("Authorization", "Bearer " + ownerToken)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {"title":"도쿄 호텔 체크인","category":"STAY","reservationDate":"2099-08-01",
+                                 "memo":"오후 3시","confirmed":true}
+                                """))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.reservations[0].confirmed").value(true));
 
         String publicTravelResponse = mockMvc.perform(post("/api/private/travels")
                         .header("Authorization", "Bearer " + ownerToken)

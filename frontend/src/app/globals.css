@@ -10037,6 +10037,438 @@ a.profile-panel__identity:focus-visible {
   }
 }
 
+/* One compact board for trip money and bookings. */
+.travel-planning-board {
+  display: grid;
+  gap: 1rem;
+  margin-bottom: 1.15rem;
+  padding: 1.25rem;
+  border: 1px solid var(--border);
+  border-radius: 1.2rem;
+  background:
+    radial-gradient(circle at 100% 0, color-mix(in srgb, var(--accent) 8%, transparent), transparent 32%),
+    var(--surface);
+}
+
+.travel-planning-board > header {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: end;
+  gap: 1.2rem;
+}
+
+.travel-planning-board h2 {
+  margin-top: 0.25rem;
+  color: var(--text-primary);
+  font-size: clamp(1.25rem, 2.5vw, 1.8rem);
+  letter-spacing: -0.045em;
+}
+
+.travel-planning-board > header > div > p:last-child {
+  margin-top: 0.35rem;
+  color: var(--text-secondary);
+  font-size: 0.65rem;
+}
+
+.travel-budget-form {
+  display: grid;
+  grid-template-columns: minmax(8rem, 11rem) 5.2rem auto;
+  align-items: end;
+  gap: 0.45rem;
+}
+
+.travel-budget-form label {
+  display: grid;
+  gap: 0.3rem;
+}
+
+.travel-budget-form label > span {
+  color: var(--text-tertiary);
+  font-size: 0.54rem;
+  font-weight: 700;
+}
+
+.travel-budget-form input,
+.travel-budget-form select,
+.travel-budget-form button,
+.travel-plan-composer input,
+.travel-plan-composer select,
+.travel-plan-composer button {
+  min-height: 2.55rem;
+  border: 1px solid var(--border-strong);
+  border-radius: 0.72rem;
+  background: var(--surface);
+  color: var(--text-primary);
+  font-size: 0.62rem;
+}
+
+.travel-budget-form input,
+.travel-budget-form select,
+.travel-plan-composer input,
+.travel-plan-composer select {
+  width: 100%;
+  padding: 0.62rem 0.72rem;
+}
+
+.travel-budget-form button,
+.travel-plan-composer button {
+  padding: 0.62rem 0.85rem;
+  border-color: var(--text-primary);
+  background: var(--text-primary);
+  color: var(--surface);
+  font-weight: 800;
+}
+
+.travel-budget-form button:disabled,
+.travel-plan-composer button:disabled,
+.travel-plan-toggle:disabled,
+.travel-plan-delete:disabled {
+  cursor: wait;
+  opacity: 0.55;
+}
+
+.travel-budget-summary {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr)) minmax(10rem, 1.35fr);
+  overflow: hidden;
+  border: 1px solid var(--border);
+  border-radius: 0.95rem;
+  background: var(--surface-soft);
+}
+
+.travel-budget-summary > div {
+  display: grid;
+  gap: 0.3rem;
+  min-width: 0;
+  padding: 0.9rem 1rem;
+  border-right: 1px solid var(--border);
+}
+
+.travel-budget-summary > div:last-child {
+  border-right: 0;
+}
+
+.travel-budget-summary small {
+  color: var(--text-tertiary);
+  font-size: 0.52rem;
+}
+
+.travel-budget-summary strong {
+  overflow: hidden;
+  color: var(--text-primary);
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.travel-budget-summary .is-danger strong {
+  color: #d75330;
+}
+
+.travel-budget-summary__progress {
+  align-content: center;
+}
+
+.travel-budget-summary__progress > span {
+  position: relative;
+  display: block;
+  height: 0.35rem;
+  overflow: hidden;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--text-primary) 9%, transparent);
+}
+
+.travel-budget-summary__progress i {
+  position: absolute;
+  inset: 0 auto 0 0;
+  border-radius: inherit;
+  background: var(--accent);
+  transition: width 220ms ease;
+}
+
+.travel-planning-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.8rem;
+}
+
+.travel-planning-panel {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  padding: 1rem;
+  border: 1px solid var(--border);
+  border-radius: 1rem;
+  background: color-mix(in srgb, var(--surface-soft) 76%, transparent);
+}
+
+.travel-planning-panel > header {
+  display: flex;
+  align-items: start;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 0.8rem;
+}
+
+.travel-planning-panel h3 {
+  color: var(--text-primary);
+  font-size: 0.82rem;
+}
+
+.travel-planning-panel header p {
+  margin-top: 0.22rem;
+  color: var(--text-tertiary);
+  font-size: 0.56rem;
+}
+
+.travel-planning-panel > header > span {
+  display: grid;
+  place-items: center;
+  min-width: 1.75rem;
+  height: 1.75rem;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--accent) 12%, var(--surface));
+  color: var(--accent-strong);
+  font-family: var(--font-mono);
+  font-size: 0.58rem;
+}
+
+.travel-expense-list,
+.travel-reservation-list {
+  display: grid;
+  gap: 0.45rem;
+  margin: 0 0 0.75rem;
+  padding: 0;
+  list-style: none;
+}
+
+.travel-expense-list li,
+.travel-reservation-list li {
+  display: grid;
+  align-items: center;
+  gap: 0.62rem;
+  min-height: 3.4rem;
+  padding: 0.62rem;
+  border: 1px solid var(--border);
+  border-radius: 0.78rem;
+  background: var(--surface);
+}
+
+.travel-expense-list li {
+  grid-template-columns: auto minmax(0, 1fr) auto auto;
+}
+
+.travel-reservation-list li {
+  grid-template-columns: auto minmax(0, 1fr) auto;
+}
+
+.travel-expense-list li.is-complete,
+.travel-reservation-list li.is-complete {
+  border-color: color-mix(in srgb, var(--accent) 28%, var(--border));
+  background: color-mix(in srgb, var(--accent) 5%, var(--surface));
+}
+
+.travel-plan-toggle {
+  display: grid;
+  place-items: center;
+  width: 2.75rem;
+  height: 2.75rem;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: transparent;
+}
+
+.travel-plan-toggle span {
+  display: grid;
+  place-items: center;
+  width: 1.55rem;
+  height: 1.55rem;
+  border: 1px solid var(--border-strong);
+  border-radius: inherit;
+}
+
+.is-complete .travel-plan-toggle span {
+  border-color: var(--accent);
+  background: var(--accent);
+  color: var(--surface);
+}
+
+.travel-expense-list li > div,
+.travel-reservation-list li > div {
+  display: grid;
+  min-width: 0;
+  gap: 0.18rem;
+}
+
+.travel-expense-list small,
+.travel-reservation-list small {
+  color: var(--text-tertiary);
+  font-size: 0.5rem;
+}
+
+.travel-expense-list strong,
+.travel-reservation-list strong {
+  overflow: hidden;
+  color: var(--text-primary);
+  font-size: 0.64rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.travel-expense-list b {
+  color: var(--text-secondary);
+  font-family: var(--font-mono);
+  font-size: 0.58rem;
+  white-space: nowrap;
+}
+
+.travel-reservation-list p {
+  overflow: hidden;
+  color: var(--text-tertiary);
+  font-size: 0.53rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.travel-plan-delete {
+  display: grid;
+  place-items: center;
+  width: 2.75rem;
+  height: 2.75rem;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--text-tertiary);
+  font-size: 0.85rem;
+}
+
+.travel-plan-delete:hover,
+.travel-plan-delete:focus-visible {
+  background: color-mix(in srgb, #d75330 10%, transparent);
+  color: #d75330;
+}
+
+.travel-plan-empty {
+  flex: 1;
+  min-height: 3.5rem;
+  margin-bottom: 0.75rem;
+  padding: 0.9rem;
+  border: 1px dashed var(--border-strong);
+  border-radius: 0.78rem;
+  color: var(--text-tertiary);
+  font-size: 0.58rem;
+  line-height: 1.55;
+}
+
+.travel-plan-composer {
+  margin-top: auto;
+}
+
+.travel-plan-composer summary {
+  width: fit-content;
+  padding: 0.35rem 0;
+  color: var(--accent-strong);
+  cursor: pointer;
+  font-size: 0.6rem;
+  font-weight: 800;
+  list-style: none;
+}
+
+.travel-plan-composer summary::-webkit-details-marker {
+  display: none;
+}
+
+.travel-plan-composer form {
+  display: grid;
+  grid-template-columns: minmax(0, 1.3fr) minmax(5.5rem, 0.7fr) 5.2rem auto;
+  gap: 0.4rem;
+  padding-top: 0.5rem;
+}
+
+.travel-reservation-list + .travel-plan-composer form,
+.travel-plan-empty + .travel-plan-composer form {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.travel-reservation-list + .travel-plan-composer form button,
+.travel-plan-empty + .travel-plan-composer form button {
+  grid-column: 2;
+}
+
+.travel-planning-board__error {
+  padding: 0.72rem 0.85rem;
+  border-radius: 0.75rem;
+  background: color-mix(in srgb, #d75330 8%, transparent);
+  color: #b94224;
+  font-size: 0.6rem;
+}
+
+@media (max-width: 900px) {
+  .travel-planning-board > header,
+  .travel-planning-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .travel-budget-form {
+    justify-self: stretch;
+  }
+
+  .travel-budget-summary {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .travel-budget-summary__progress {
+    grid-column: 1 / -1;
+    border-top: 1px solid var(--border);
+  }
+}
+
+@media (max-width: 600px) {
+  .travel-planning-board {
+    padding: 0.85rem;
+  }
+
+  .travel-budget-form {
+    grid-template-columns: minmax(0, 1fr) 5rem;
+  }
+
+  .travel-budget-form button {
+    grid-column: 1 / -1;
+    min-height: 2.75rem;
+  }
+
+  .travel-budget-summary {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .travel-budget-summary > div {
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: center;
+    border-right: 0;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .travel-budget-summary__progress {
+    grid-template-columns: minmax(0, 1fr);
+    border-bottom: 0 !important;
+  }
+
+  .travel-plan-composer form,
+  .travel-reservation-list + .travel-plan-composer form,
+  .travel-plan-empty + .travel-plan-composer form {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .travel-plan-composer form button,
+  .travel-reservation-list + .travel-plan-composer form button,
+  .travel-plan-empty + .travel-plan-composer form button {
+    grid-column: 1;
+    min-height: 2.75rem;
+  }
+}
+
 /* Planning mode: keep long itineraries focused on one day at a time. */
 .travel-editor__itinerary-content {
   min-width: 0;

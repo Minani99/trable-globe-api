@@ -20,7 +20,10 @@ import com.travelglobe.trableglobeapi.travel.dto.write.TravelPhotoWriteRequest;
 import com.travelglobe.trableglobeapi.travel.dto.write.TravelPlaceWriteRequest;
 import com.travelglobe.trableglobeapi.travel.dto.write.TravelWriteRequest;
 import com.travelglobe.trableglobeapi.travel.repository.TravelPhotoRepository;
+import com.travelglobe.trableglobeapi.travel.repository.TravelBudgetRepository;
+import com.travelglobe.trableglobeapi.travel.repository.TravelExpenseRepository;
 import com.travelglobe.trableglobeapi.travel.repository.TravelRepository;
+import com.travelglobe.trableglobeapi.travel.repository.TravelReservationRepository;
 import com.travelglobe.trableglobeapi.travel.repository.TravelTaskRepository;
 import java.time.LocalDate;
 import java.time.ZoneId;
@@ -42,6 +45,9 @@ public class TravelCommandService {
     private final TravelLikeRepository travelLikeRepository;
     private final TravelCommentRepository travelCommentRepository;
     private final TravelTaskRepository travelTaskRepository;
+    private final TravelBudgetRepository travelBudgetRepository;
+    private final TravelExpenseRepository travelExpenseRepository;
+    private final TravelReservationRepository travelReservationRepository;
     private final LocationResolverService locationResolverService;
 
     public TravelCommandService(MemberRepository memberRepository,
@@ -50,6 +56,9 @@ public class TravelCommandService {
                                 TravelLikeRepository travelLikeRepository,
                                 TravelCommentRepository travelCommentRepository,
                                 TravelTaskRepository travelTaskRepository,
+                                TravelBudgetRepository travelBudgetRepository,
+                                TravelExpenseRepository travelExpenseRepository,
+                                TravelReservationRepository travelReservationRepository,
                                 LocationResolverService locationResolverService) {
         this.memberRepository = memberRepository;
         this.travelRepository = travelRepository;
@@ -57,6 +66,9 @@ public class TravelCommandService {
         this.travelLikeRepository = travelLikeRepository;
         this.travelCommentRepository = travelCommentRepository;
         this.travelTaskRepository = travelTaskRepository;
+        this.travelBudgetRepository = travelBudgetRepository;
+        this.travelExpenseRepository = travelExpenseRepository;
+        this.travelReservationRepository = travelReservationRepository;
         this.locationResolverService = locationResolverService;
     }
 
@@ -129,6 +141,9 @@ public class TravelCommandService {
         travelLikeRepository.deleteAllByTravelId(travelId);
         travelCommentRepository.deleteAllByTravelId(travelId);
         travelTaskRepository.deleteAllByTravelId(travelId);
+        travelExpenseRepository.deleteAllByTravelId(travelId);
+        travelReservationRepository.deleteAllByTravelId(travelId);
+        travelBudgetRepository.deleteAllByTravelId(travelId);
         travelRepository.delete(travel);
     }
 
