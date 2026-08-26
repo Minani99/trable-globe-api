@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { ChangeEvent, DragEvent, FormEvent, useEffect, useMemo, useRef, useState } from "react";
+import { ChangeEvent, DragEvent, FormEvent, useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import { ApiError, apiMutation } from "@/lib/api/client";
 import { travelPath } from "@/lib/config";
@@ -99,6 +99,7 @@ export function TravelEditor({
   const editing = Boolean(initialTravel);
   const draftStorageKey = `travel-globe:draft:${username}:${initialTravel?.id ?? "new"}`;
   const draftReady = useRef(false);
+  const weatherAutoCheckKey = useRef<string | null>(null);
   const [title, setTitle] = useState(initialTravel?.title ?? "");
   const [description, setDescription] = useState(initialTravel?.description ?? "");
   const [startDate, setStartDate] = useState(initialTravel?.startDate ?? "");
@@ -414,11 +415,13 @@ export function TravelEditor({
     setDirty(true);
   }
 
-  async function buildWeatherReplanProposal() {
+  const buildWeatherReplanProposal = useCallback(async ({ silent = false }: { silent?: boolean } = {}) => {
     const anchor = places.find((place) => coordinate(place.latitude) !== null && coordinate(place.longitude) !== null);
     if (!anchor || !startDate || !endDate) {
-      setWeatherPlannerState("message");
-      setWeatherPlannerMessage("장소 위치와 여행 날짜를 먼저 확인해 주세요.");
+      if (!silent) {
+        setWeatherPlannerState("message");
+        setWeatherPlannerMessage("장소 위치와 여행 날짜를 먼저 확인해 주세요.");
+      }
       return;
     }
 
@@ -440,10 +443,14 @@ export function TravelEditor({
       };
       if (!response.ok || !body.success || !body.data) throw new Error(body.message ?? "forecast failed");
       if (!body.data.available) {
-        setWeatherPlannerState("message");
-        setWeatherPlannerMessage(body.data.availableFrom
-          ? `${formatPlanDay(body.data.availableFrom)}부터 실제 예보로 변경안을 만들 수 있어요.`
-          : "출발 16일 전부터 실제 예보로 변경안을 만들 수 있어요.");
+        if (silent) {
+          setWeatherPlannerState("idle");
+        } else {
+          setWeatherPlannerState("message");
+          setWeatherPlannerMessage(body.data.availableFrom
+            ? `${formatPlanDay(body.data.availableFrom)}부터 실제 예보로 변경안을 만들 수 있어요.`
+            : "출발 16일 전부터 실제 예보로 변경안을 만들 수 있어요.");
+        }
         return;
       }
 
@@ -451,25 +458,56 @@ export function TravelEditor({
         planDays.includes(day.date) && (day.precipitationProbability >= 60 || isRainWeatherCode(day.weatherCode)),
       );
       if (!rainyDay) {
-        setWeatherPlannerState("message");
-        setWeatherPlannerMessage("현재 예보에는 일정을 바꿀 만큼 큰 비 소식이 없어요.");
+        if (silent) {
+          setWeatherPlannerState("idle");
+        } else {
+          setWeatherPlannerState("message");
+          setWeatherPlannerMessage("현재 예보에는 일정을 바꿀 만큼 큰 비 소식이 없어요.");
+        }
         return;
       }
 
       const proposal = createWeatherReplanProposal(places, rainyDay, body.data.days);
       if (!proposal) {
-        setWeatherPlannerState("message");
-        setWeatherPlannerMessage("비 예보 날짜가 이미 실내 일정 중심이에요. 현재 계획을 유지해도 좋아요.");
+        if (silent) {
+          setWeatherPlannerState("idle");
+        } else {
+          setWeatherPlannerState("message");
+          setWeatherPlannerMessage("비 예보 날짜가 이미 실내 일정 중심이에요. 현재 계획을 유지해도 좋아요.");
+        }
         return;
       }
       setWeatherProposal(proposal);
       setWeatherPlannerState("idle");
       setActivePlanDate(rainyDay.date);
     } catch {
-      setWeatherPlannerState("message");
-      setWeatherPlannerMessage("예보를 불러오지 못했어요. 잠시 후 다시 시도해 주세요.");
+      if (silent) {
+        setWeatherPlannerState("idle");
+      } else {
+        setWeatherPlannerState("message");
+        setWeatherPlannerMessage("예보를 불러오지 못했어요. 잠시 후 다시 시도해 주세요.");
+      }
     }
-  }
+  }, [endDate, planDays, places, startDate]);
+
+  useEffect(() => {
+    if (!planningMode || !draftHydrated || planDays.length === 0) return;
+    const anchor = places.find((place) => coordinate(place.latitude) !== null && coordinate(place.longitude) !== null);
+    if (!anchor || !startDate || !endDate) return;
+    const checkKey = `${startDate}:${endDate}:${anchor.latitude}:${anchor.longitude}`;
+    if (weatherAutoCheckKey.current === checkKey) return;
+    weatherAutoCheckKey.current = checkKey;
+    const timer = window.setTimeout(() => {
+      void buildWeatherReplanProposal({ silent: true });
+    }, 600);
+    return () => window.clearTimeout(timer);
+  }, [buildWeatherReplanProposal, draftHydrated, endDate, planDays.length, places, planningMode, startDate]);
+
+  useEffect(() => {
+    if (weatherProposal && placeListSignature(places) !== weatherProposal.sourceSignature) {
+      setWeatherProposal(null);
+    }
+  }, [places, weatherProposal]);
 
   function applyWeatherProposal() {
     if (!weatherProposal) return;
@@ -765,8 +803,8 @@ export function TravelEditor({
             <section className="weather-replan" aria-labelledby="weather-replan-heading">
               <div className="weather-replan__intro">
                 <span className="weather-replan__icon" aria-hidden="true">☂</span>
-                <div><small>Weather replan · beta</small><h3 id="weather-replan-heading">비가 오면, 일정부터 다시 맞춰보세요</h3><p>현재 계획 안에서 실내·야외 후보를 비교해 안전한 변경안을 만듭니다.</p></div>
-                <button type="button" onClick={buildWeatherReplanProposal} disabled={weatherPlannerState === "loading" || pending}>{weatherPlannerState === "loading" ? "예보 확인 중…" : "날씨 변경안 만들기"}</button>
+                <div><small>Weather replan · automatic preview</small><h3 id="weather-replan-heading">비가 오면, 변경안을 먼저 준비해요</h3><p>계획을 열 때 예보를 자동 확인하고, 적용 전에는 항상 직접 비교할 수 있습니다.</p></div>
+                <button type="button" onClick={() => void buildWeatherReplanProposal()} disabled={weatherPlannerState === "loading" || pending}>{weatherPlannerState === "loading" ? "예보 확인 중…" : "예보 다시 확인"}</button>
               </div>
               {weatherPlannerMessage ? <div className="weather-replan__message" role="status"><span>{weatherPlannerMessage}</span>{weatherUndo ? <button type="button" onClick={undoWeatherProposal}>변경 전으로 되돌리기</button> : null}</div> : null}
               {weatherProposal ? <div className="weather-replan__proposal">

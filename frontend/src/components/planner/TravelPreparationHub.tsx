@@ -9,6 +9,7 @@ import {
   inferAirportCode,
   normalizeAirportCode,
   searchAirports,
+  type AirportOption,
 } from "@/lib/airports";
 import type { TravelPlace } from "@/types";
 
@@ -94,7 +95,7 @@ export function TravelPreparationHub({
             <AirportSearchField label="도착" value={destination} onChange={setDestination} placeholder="예: 도쿄, 나리타" />
           </div>
           {flightReady ? <a className="trip-action-card__button" href={buildSkyscannerFlightUrl({ origin, destination, outboundDate: startDate, inboundDate: endDate })} target="_blank" rel="noreferrer">이 일정으로 항공권 찾기 <span aria-hidden="true">↗</span></a> : <p className="trip-action-card__notice">출발·도착 공항의 영문 코드 3자리를 입력해 주세요.</p>}
-          <small>검색은 버튼을 누를 때만 실행되며 예약은 스카이스캐너에서 진행됩니다.</small>
+          <small>검색은 버튼을 누를 때만 실행되며 예약은 스카이스캐너에서 진행됩니다. 공항 데이터: <a href="https://ourairports.com/data/" target="_blank" rel="noreferrer">OurAirports</a></small>
         </article>
 
         <article className={`trip-action-card is-weather${rainyDays.length ? " has-alert" : ""}`}>
@@ -137,15 +138,45 @@ function AirportSearchField({
   const selectedLabel = selectedAirport ? formatAirportLabel(selectedAirport) : value;
   const [query, setQuery] = useState(selectedLabel);
   const [open, setOpen] = useState(false);
-  const results = useMemo(() => searchAirports(query === selectedLabel && value ? value : query), [query, selectedLabel, value]);
+  const [catalogResults, setCatalogResults] = useState<AirportOption[]>([]);
+  const localResults = useMemo(() => searchAirports(query === selectedLabel && value ? value : query), [query, selectedLabel, value]);
+  const results = useMemo(() => {
+    const unique = new Map<string, AirportOption>();
+    [...localResults, ...catalogResults].forEach((airport) => unique.set(airport.code, airport));
+    return [...unique.values()].slice(0, 8);
+  }, [catalogResults, localResults]);
   const directCode = normalizeAirportCode(query);
-  const canUseDirectCode = directCode.length === 3 && !findAirportByCode(directCode);
+  const canUseDirectCode = directCode.length === 3 && !results.some((airport) => airport.code === directCode);
   const listId = `airport-${label === "출발" ? "origin" : "destination"}-results`;
 
-  function selectAirport(code: string) {
-    const airport = findAirportByCode(code);
+  useEffect(() => {
+    const trimmed = query.trim();
+    if (value || trimmed.length < 2) {
+      return;
+    }
+    const controller = new AbortController();
+    const timer = window.setTimeout(() => {
+      const params = new URLSearchParams({ q: trimmed, limit: "8" });
+      fetch(`/api/airports/search?${params}`, { signal: controller.signal })
+        .then(async (response) => {
+          const body = await response.json() as { success: boolean; data: AirportOption[] | null };
+          setCatalogResults(response.ok && body.success && body.data ? body.data : []);
+        })
+        .catch((error) => {
+          if (!(error instanceof Error && error.name === "AbortError")) setCatalogResults([]);
+        });
+    }, 180);
+    return () => {
+      window.clearTimeout(timer);
+      controller.abort();
+    };
+  }, [query, value]);
+
+  function selectAirport(code: string, option?: AirportOption) {
+    const airport = option ?? findAirportByCode(code);
     onChange(code);
     setQuery(airport ? formatAirportLabel(airport) : code);
+    setCatalogResults([]);
     setOpen(false);
   }
 
@@ -164,6 +195,7 @@ function AirportSearchField({
             onFocus={() => setOpen(true)}
             onChange={(event) => {
               setQuery(event.target.value);
+              setCatalogResults([]);
               onChange("");
               setOpen(true);
             }}
@@ -180,7 +212,7 @@ function AirportSearchField({
       </label>
       {open ? <div className="airport-search__popover" id={listId} role="listbox" aria-label={`${label} 공항 검색 결과`}>
         {results.length ? <ul>{results.map((airport) => <li key={airport.code}>
-          <button type="button" role="option" aria-selected={value === airport.code} onMouseDown={(event) => event.preventDefault()} onClick={() => selectAirport(airport.code)}>
+          <button type="button" role="option" aria-selected={value === airport.code} onMouseDown={(event) => event.preventDefault()} onClick={() => selectAirport(airport.code, airport)}>
             <span><strong>{airport.cityKo}</strong><small>{airport.airportKo} · {airport.countryKo}</small></span><b>{airport.code}</b>
           </button>
         </li>)}</ul> : null}

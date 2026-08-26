@@ -149,21 +149,38 @@ export function formatAirportLabel(airport: AirportOption): string {
 }
 
 export function searchAirports(query: string, limit = 7): AirportOption[] {
-  const normalized = query.trim().toLowerCase().replace(/\s+/g, " ");
-  if (!normalized) return AIRPORT_OPTIONS.filter((airport) => airport.popular).slice(0, limit);
-  return AIRPORT_OPTIONS
+  return searchAirportOptions(AIRPORT_OPTIONS, query, limit);
+}
+
+export function searchAirportOptions(catalog: AirportOption[], query: string, limit = 7): AirportOption[] {
+  const normalized = normalizeSearchTerm(query);
+  if (!normalized) return catalog.filter((airport) => airport.popular).slice(0, limit);
+  const tokens = normalized.split(" ");
+  return catalog
     .map((airport) => {
       const fields = [airport.code, airport.cityKo, airport.cityEn, airport.airportKo, airport.countryKo]
-        .map((value) => value.toLowerCase());
+        .map(normalizeSearchTerm);
       const exactCode = airport.code.toLowerCase() === normalized;
+      const exactCity = fields[1] === normalized || fields[2] === normalized;
       const startsWith = fields.some((value) => value.startsWith(normalized));
-      const includes = fields.some((value) => value.includes(normalized));
-      return { airport, score: exactCode ? 0 : startsWith ? 1 : includes ? 2 : 99 };
+      const tokenMatch = tokens.every((token) => fields.some((value) => value.includes(token)));
+      return { airport, score: exactCode ? 0 : exactCity ? 1 : startsWith ? 2 : tokenMatch ? 3 : 99 };
     })
     .filter(({ score }) => score < 99)
     .sort((a, b) => a.score - b.score || Number(Boolean(b.airport.popular)) - Number(Boolean(a.airport.popular)) || a.airport.cityKo.localeCompare(b.airport.cityKo, "ko"))
     .slice(0, limit)
     .map(({ airport }) => airport);
+}
+
+function normalizeSearchTerm(value: string): string {
+  return value
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .normalize("NFC")
+    .toLowerCase()
+    .replace(/[^a-z0-9가-힣]+/g, " ")
+    .trim()
+    .replace(/\s+/g, " ");
 }
 
 export function buildSkyscannerFlightUrl({

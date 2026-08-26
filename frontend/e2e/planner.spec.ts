@@ -67,6 +67,7 @@ test("몇 번의 선택으로 여행 계획을 만들고 일차별 일정으로 
   expect(travelId).toBeGreaterThan(0);
   await expect(page.getByRole("heading", { name: "일본 3일 여행" })).toBeVisible();
   await expect(page.getByRole("heading", { name: "예약부터 변수 대응까지, 한곳에서" })).toBeVisible();
+  await expect(page.getByRole("button", { name: "이 변경안 적용" })).toBeVisible();
   await expect(page.getByRole("combobox", { name: "출발 공항 검색" })).toHaveValue("서울 · 서울 모든 공항");
   const destinationAirport = page.getByRole("combobox", { name: "도착 공항 검색" });
   await expect(destinationAirport).toHaveValue("도쿄 · 도쿄 모든 공항");
@@ -74,6 +75,10 @@ test("몇 번의 선택으로 여행 계획을 만들고 일차별 일정으로 
   await page.getByRole("option", { name: /나리타국제공항.*NRT/ }).click();
   await expect(destinationAirport).toHaveValue("도쿄 · 나리타국제공항");
   await expect(page.getByRole("link", { name: /이 일정으로 항공권 찾기/ })).toHaveAttribute("href", /skyscanner\.co\.kr\/transport\/flights\/sel\/nrt\//);
+  await destinationAirport.fill("Cairo");
+  await page.getByRole("option", { name: /Cairo International Airport.*CAI/ }).click();
+  await expect(destinationAirport).toHaveValue("Cairo · Cairo International Airport");
+  await expect(page.getByRole("link", { name: /이 일정으로 항공권 찾기/ })).toHaveAttribute("href", /skyscanner\.co\.kr\/transport\/flights\/sel\/cai\//);
   await expect(page.getByText(/예보는 출발 16일 전부터 제공/)).toBeVisible();
   await expect(page.getByRole("heading", { name: "여행 준비 체크리스트" })).toBeVisible();
   await expect(page.locator(".travel-checklist__items li")).toHaveCount(6);
@@ -138,7 +143,7 @@ test("몇 번의 선택으로 여행 계획을 만들고 일차별 일정으로 
   await expect(page.getByRole("textbox", { name: "장소 이름" })).toHaveCount(1);
   await expect(page.getByRole("textbox", { name: "장소 이름" })).toHaveValue("도쿄역");
   await page.getByRole("textbox", { name: "장소 이름" }).fill("도쿄 국립박물관");
-  await page.getByRole("button", { name: "날씨 변경안 만들기" }).click();
+  await page.getByRole("button", { name: "예보 다시 확인" }).click();
   await expect(page.getByText("실내 일정과 야외 일정을 맞바꿨어요")).toBeVisible();
   await page.getByRole("button", { name: "이 변경안 적용" }).click();
   await expect(page.getByRole("textbox", { name: "장소 이름" }).first()).toHaveValue("도쿄 국립박물관");

@@ -37,6 +37,7 @@
 | Frontend | Next.js 16 (App Router), React 19, TypeScript, Tailwind CSS 4 | Turbopack 기본 |
 | Globe | react-globe.gl (three.js / WebGL) | MIT, API 키 불필요 |
 | Geo data | Natural Earth 110m (world-atlas) + world-countries | 빌드 시 생성, 런타임 외부 호출 없음 |
+| Airport data | OurAirports scheduled-service catalog | Public domain, 생성 파일을 커밋해 런타임 외부 호출 없음 |
 
 Spring Boot 4는 Jackson 3(`tools.jackson`)과 `spring-boot-starter-webmvc`를 사용합니다.
 Spring Boot 3 기준 문서와 패키지 경로가 다른 부분이 있으니 주의하세요

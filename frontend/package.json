@@ -10,6 +10,7 @@
     "typecheck": "next typegen && tsc --noEmit",
     "test:e2e": "playwright test",
     "geo:build": "node scripts/build-geo-data.mjs",
+    "airports:build": "node scripts/build-airport-data.mjs",
     "placeholders:build": "node scripts/build-placeholders.mjs"
   },
   "dependencies": {
