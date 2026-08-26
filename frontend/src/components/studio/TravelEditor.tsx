@@ -64,6 +64,26 @@ interface StoredTravelDraft {
   photos: Array<Omit<PhotoDraft, "previewUrl" | "file" | "progress" | "uploadState" | "uploadError">>;
 }
 
+interface WeatherForecastDay {
+  date: string;
+  weatherCode: number;
+  precipitationProbability: number;
+}
+
+interface WeatherReplanProposal {
+  rainyDate: string;
+  sourceSignature: string;
+  afterPlaces: PlaceDraft[];
+  title: string;
+  reason: string;
+  changes: Array<{ date: string; before: string; after: string }>;
+}
+
+interface WeatherUndoSnapshot {
+  places: PlaceDraft[];
+  appliedSignature: string;
+}
+
 const draftKey = () => `${Date.now()}-${Math.random().toString(36).slice(2)}`;
 const PLAN_SLOT_PRESETS = ["관광", "식사", "카페", "숙소"] as const;
 
@@ -128,6 +148,10 @@ export function TravelEditor({
   const [draftHydrated, setDraftHydrated] = useState(false);
   const [draftStatus, setDraftStatus] = useState("변경 내용은 이 브라우저에 자동 저장됩니다.");
   const [draftRestored, setDraftRestored] = useState(false);
+  const [weatherProposal, setWeatherProposal] = useState<WeatherReplanProposal | null>(null);
+  const [weatherUndo, setWeatherUndo] = useState<WeatherUndoSnapshot | null>(null);
+  const [weatherPlannerState, setWeatherPlannerState] = useState<"idle" | "loading" | "message">("idle");
+  const [weatherPlannerMessage, setWeatherPlannerMessage] = useState<string | null>(null);
   const countryMap = useMemo(() => new Map(countries.map((country) => [country.iso2Code, country])), [countries]);
   const planDays = useMemo(() => {
     if (!planningMode) return [];
@@ -390,6 +414,99 @@ export function TravelEditor({
     setDirty(true);
   }
 
+  async function buildWeatherReplanProposal() {
+    const anchor = places.find((place) => coordinate(place.latitude) !== null && coordinate(place.longitude) !== null);
+    if (!anchor || !startDate || !endDate) {
+      setWeatherPlannerState("message");
+      setWeatherPlannerMessage("장소 위치와 여행 날짜를 먼저 확인해 주세요.");
+      return;
+    }
+
+    setWeatherPlannerState("loading");
+    setWeatherPlannerMessage(null);
+    setWeatherProposal(null);
+    try {
+      const params = new URLSearchParams({
+        latitude: anchor.latitude,
+        longitude: anchor.longitude,
+        startDate,
+        endDate,
+      });
+      const response = await fetch(`/api/weather/forecast?${params}`);
+      const body = await response.json() as {
+        success: boolean;
+        data: { available: boolean; availableFrom: string | null; days: WeatherForecastDay[] } | null;
+        message: string | null;
+      };
+      if (!response.ok || !body.success || !body.data) throw new Error(body.message ?? "forecast failed");
+      if (!body.data.available) {
+        setWeatherPlannerState("message");
+        setWeatherPlannerMessage(body.data.availableFrom
+          ? `${formatPlanDay(body.data.availableFrom)}부터 실제 예보로 변경안을 만들 수 있어요.`
+          : "출발 16일 전부터 실제 예보로 변경안을 만들 수 있어요.");
+        return;
+      }
+
+      const rainyDay = body.data.days.find((day) =>
+        planDays.includes(day.date) && (day.precipitationProbability >= 60 || isRainWeatherCode(day.weatherCode)),
+      );
+      if (!rainyDay) {
+        setWeatherPlannerState("message");
+        setWeatherPlannerMessage("현재 예보에는 일정을 바꿀 만큼 큰 비 소식이 없어요.");
+        return;
+      }
+
+      const proposal = createWeatherReplanProposal(places, rainyDay, body.data.days);
+      if (!proposal) {
+        setWeatherPlannerState("message");
+        setWeatherPlannerMessage("비 예보 날짜가 이미 실내 일정 중심이에요. 현재 계획을 유지해도 좋아요.");
+        return;
+      }
+      setWeatherProposal(proposal);
+      setWeatherPlannerState("idle");
+      setActivePlanDate(rainyDay.date);
+    } catch {
+      setWeatherPlannerState("message");
+      setWeatherPlannerMessage("예보를 불러오지 못했어요. 잠시 후 다시 시도해 주세요.");
+    }
+  }
+
+  function applyWeatherProposal() {
+    if (!weatherProposal) return;
+    if (placeListSignature(places) !== weatherProposal.sourceSignature) {
+      setWeatherProposal(null);
+      setWeatherPlannerState("message");
+      setWeatherPlannerMessage("추천안을 만든 뒤 일정이 수정됐어요. 최신 일정으로 다시 만들어 주세요.");
+      return;
+    }
+    setWeatherUndo({
+      places: places.map((place) => ({ ...place })),
+      appliedSignature: placeListSignature(weatherProposal.afterPlaces),
+    });
+    setPlaces(weatherProposal.afterPlaces.map((place) => ({ ...place })));
+    setActivePlanDate(weatherProposal.rainyDate);
+    setWeatherProposal(null);
+    setWeatherPlannerState("message");
+    setWeatherPlannerMessage("추천안을 적용했습니다. 계획을 저장하기 전까지 언제든 되돌릴 수 있어요.");
+    setDirty(true);
+  }
+
+  function undoWeatherProposal() {
+    if (!weatherUndo) return;
+    if (placeListSignature(places) !== weatherUndo.appliedSignature) {
+      setWeatherUndo(null);
+      setWeatherPlannerState("message");
+      setWeatherPlannerMessage("추천안 적용 후 직접 수정한 내용이 있어 자동으로 되돌리지 않았어요.");
+      return;
+    }
+    setPlaces(weatherUndo.places.map((place) => ({ ...place })));
+    setWeatherUndo(null);
+    setWeatherProposal(null);
+    setWeatherPlannerState("message");
+    setWeatherPlannerMessage("날씨 변경 전 일정으로 되돌렸습니다.");
+    setDirty(true);
+  }
+
   function removePlace(index: number) {
     setPlaces((current) => current.filter((_, placeIndex) => placeIndex !== index));
     setPhotos((current) => current.map((photo) => {
@@ -645,6 +762,19 @@ export function TravelEditor({
               <div><strong>{completedPlanDays} / {planDays.length}일</strong><span>장소를 정한 날</span></div>
               <span aria-hidden="true"><i style={{ width: `${Math.round((completedPlanDays / planDays.length) * 100)}%` }} /></span>
             </header>
+            <section className="weather-replan" aria-labelledby="weather-replan-heading">
+              <div className="weather-replan__intro">
+                <span className="weather-replan__icon" aria-hidden="true">☂</span>
+                <div><small>Weather replan · beta</small><h3 id="weather-replan-heading">비가 오면, 일정부터 다시 맞춰보세요</h3><p>현재 계획 안에서 실내·야외 후보를 비교해 안전한 변경안을 만듭니다.</p></div>
+                <button type="button" onClick={buildWeatherReplanProposal} disabled={weatherPlannerState === "loading" || pending}>{weatherPlannerState === "loading" ? "예보 확인 중…" : "날씨 변경안 만들기"}</button>
+              </div>
+              {weatherPlannerMessage ? <div className="weather-replan__message" role="status"><span>{weatherPlannerMessage}</span>{weatherUndo ? <button type="button" onClick={undoWeatherProposal}>변경 전으로 되돌리기</button> : null}</div> : null}
+              {weatherProposal ? <div className="weather-replan__proposal">
+                <header><div><small>{formatPlanDay(weatherProposal.rainyDate)} 추천</small><strong>{weatherProposal.title}</strong><p>{weatherProposal.reason}</p></div><button type="button" onClick={() => setWeatherProposal(null)} aria-label="날씨 변경안 닫기">×</button></header>
+                <div className="weather-replan__diff" aria-label="일정 변경 전후 비교">{weatherProposal.changes.map((change) => <div key={`${change.date}-${change.before}`}><time>{formatPlanDay(change.date)}</time><span><small>현재</small><b>{change.before}</b></span><i aria-hidden="true">→</i><span className="is-after"><small>변경 후</small><b>{change.after}</b></span></div>)}</div>
+                <footer><p>자동 저장 전에 직접 확인할 수 있으며 예약 정보는 변경하지 않습니다.</p><button type="button" onClick={applyWeatherProposal}>이 변경안 적용</button></footer>
+              </div> : null}
+            </section>
             <div className="plan-itinerary__days" role="tablist" aria-label="여행 날짜 선택">
               {planDays.map((day, dayIndex) => {
                 const dayPlaces = places.filter((place) => place.visitedAt === day);
@@ -843,6 +973,125 @@ function planDayInsertionIndex(places: PlaceDraft[], day: string): number {
   if (lastSameDay >= 0) return lastSameDay + 1;
   const firstLaterDay = places.findIndex((place) => Boolean(place.visitedAt) && place.visitedAt > day);
   return firstLaterDay >= 0 ? firstLaterDay : places.length;
+}
+
+function createWeatherReplanProposal(
+  places: PlaceDraft[],
+  rainyDay: WeatherForecastDay,
+  forecastDays: WeatherForecastDay[],
+): WeatherReplanProposal | null {
+  const sourceSignature = placeListSignature(places);
+  const rainyPlaces = places.filter((place) => place.visitedAt === rainyDay.date);
+  const filledRainyPlaces = rainyPlaces.filter((place) => !isPlanningPlaceholder(place));
+  const outdoorCandidate = filledRainyPlaces.find((place) => !isIndoorPlace(place));
+
+  if (filledRainyPlaces.length > 0 && !outdoorCandidate) return null;
+
+  const dryDates = new Set(forecastDays
+    .filter((day) => day.date !== rainyDay.date
+      && day.precipitationProbability < 40
+      && !isRainWeatherCode(day.weatherCode))
+    .map((day) => day.date));
+  const indoorCandidate = places.find((place) =>
+    dryDates.has(place.visitedAt) && !isPlanningPlaceholder(place) && isIndoorPlace(place),
+  );
+
+  if (outdoorCandidate && indoorCandidate) {
+    const alternativeDate = indoorCandidate.visitedAt;
+    const afterPlaces = places.map((place) => {
+      if (place.key === outdoorCandidate.key) return { ...place, visitedAt: alternativeDate };
+      if (place.key === indoorCandidate.key) return { ...place, visitedAt: rainyDay.date };
+      return { ...place };
+    });
+    return {
+      rainyDate: rainyDay.date,
+      sourceSignature,
+      afterPlaces,
+      title: "실내 일정과 야외 일정을 맞바꿨어요",
+      reason: `${rainyDay.precipitationProbability}% 비 예보를 기준으로 실내 후보를 비 오는 날로 옮겼습니다. 이동시간과 예약 여부를 확인한 뒤 적용해 주세요.`,
+      changes: [
+        {
+          date: rainyDay.date,
+          before: summarizeDay(places, rainyDay.date),
+          after: summarizeDay(afterPlaces, rainyDay.date),
+        },
+        {
+          date: alternativeDate,
+          before: summarizeDay(places, alternativeDate),
+          after: summarizeDay(afterPlaces, alternativeDate),
+        },
+      ],
+    };
+  }
+
+  const placeholder = rainyPlaces.find(isPlanningPlaceholder);
+  let afterPlaces: PlaceDraft[];
+  if (placeholder) {
+    afterPlaces = places.map((place) => place.key === placeholder.key
+      ? { ...place, placeName: "실내 대안 · 장소를 골라주세요", memo: "비 예보에 대비할 실내 장소를 하나 정해두세요." }
+      : { ...place });
+  } else {
+    const anchor = rainyPlaces[0] ?? places[0];
+    afterPlaces = [...places.map((place) => ({ ...place })), {
+      ...emptyPlace(anchor?.countryCode ?? "KR"),
+      countryCode: anchor?.countryCode ?? "KR",
+      cityName: anchor?.cityName ?? "",
+      cityNameEn: anchor?.cityNameEn ?? "",
+      latitude: anchor?.latitude ?? "",
+      longitude: anchor?.longitude ?? "",
+      visitedAt: rainyDay.date,
+      placeName: "실내 대안 · 장소를 골라주세요",
+      memo: "비 예보에 대비할 실내 장소를 하나 정해두세요.",
+    }];
+  }
+
+  return {
+    rainyDate: rainyDay.date,
+    sourceSignature,
+    afterPlaces,
+    title: "비 오는 날에 실내 대안 자리를 만들었어요",
+    reason: `${rainyDay.precipitationProbability}% 비 예보가 있지만 교환할 실내 일정이 없어, 기존 일정을 지우지 않고 대체 장소 슬롯만 추가합니다.`,
+    changes: [{
+      date: rainyDay.date,
+      before: summarizeDay(places, rainyDay.date),
+      after: summarizeDay(afterPlaces, rainyDay.date),
+    }],
+  };
+}
+
+function placeListSignature(places: PlaceDraft[]): string {
+  return JSON.stringify(places.map((place) => [
+    place.key,
+    place.countryCode,
+    place.cityName,
+    place.placeName,
+    place.visitedAt,
+    place.latitude,
+    place.longitude,
+    place.memo,
+  ]));
+}
+
+function summarizeDay(places: PlaceDraft[], date: string): string {
+  const names = places
+    .filter((place) => place.visitedAt === date)
+    .map((place) => place.placeName.trim())
+    .filter(Boolean);
+  if (names.length === 0) return "일정 없음";
+  return names.length <= 2 ? names.join(" · ") : `${names.slice(0, 2).join(" · ")} 외 ${names.length - 2}곳`;
+}
+
+function isIndoorPlace(place: PlaceDraft): boolean {
+  const text = `${place.placeName} ${place.memo}`.toLowerCase();
+  return [
+    "박물관", "미술관", "전시", "갤러리", "카페", "커피", "식당", "레스토랑", "백화점",
+    "쇼핑몰", "아쿠아리움", "수족관", "실내", "공연", "극장", "스파", "museum", "gallery",
+    "cafe", "coffee", "restaurant", "mall", "aquarium", "indoor", "theater", "theatre",
+  ].some((keyword) => text.includes(keyword));
+}
+
+function isRainWeatherCode(code: number): boolean {
+  return (code >= 51 && code <= 67) || (code >= 80 && code <= 82) || code >= 95;
 }
 
 function nullable(value: string): string | null {

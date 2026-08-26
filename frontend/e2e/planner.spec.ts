@@ -3,6 +3,7 @@ import { expect, test } from "@playwright/test";
 test("몇 번의 선택으로 여행 계획을 만들고 일차별 일정으로 이어간다", async ({ page }) => {
   const suffix = Date.now().toString(36);
   const username = `planner_${suffix}`;
+  const koreaToday = new Date().toLocaleDateString("en-CA", { timeZone: "Asia/Seoul" });
   const registerResponse = await page.request.post("/api/auth/register", {
     data: {
       username,
@@ -27,6 +28,25 @@ test("몇 번의 선택으로 여행 계획을 만들고 일차별 일정으로 
           latitude: 35.681236,
           longitude: 139.767125,
         }],
+        message: null,
+      }),
+    });
+  });
+  await page.route("**/api/weather/forecast?**", async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      body: JSON.stringify({
+        success: true,
+        data: {
+          available: true,
+          availableFrom: null,
+          days: [
+            { date: koreaToday, weatherCode: 61, precipitationProbability: 80, temperatureMax: 24, temperatureMin: 19 },
+            { date: addDays(koreaToday, 1), weatherCode: 1, precipitationProbability: 10, temperatureMax: 26, temperatureMin: 18 },
+            { date: addDays(koreaToday, 2), weatherCode: 2, precipitationProbability: 20, temperatureMax: 25, temperatureMin: 18 },
+          ],
+        },
         message: null,
       }),
     });
@@ -111,6 +131,13 @@ test("몇 번의 선택으로 여행 계획을 만들고 일차별 일정으로 
   await page.getByRole("button", { name: "전날 일정 복사" }).click();
   await expect(page.getByRole("textbox", { name: "장소 이름" })).toHaveCount(1);
   await expect(page.getByRole("textbox", { name: "장소 이름" })).toHaveValue("도쿄역");
+  await page.getByRole("textbox", { name: "장소 이름" }).fill("도쿄 국립박물관");
+  await page.getByRole("button", { name: "날씨 변경안 만들기" }).click();
+  await expect(page.getByText("실내 일정과 야외 일정을 맞바꿨어요")).toBeVisible();
+  await page.getByRole("button", { name: "이 변경안 적용" }).click();
+  await expect(page.getByRole("textbox", { name: "장소 이름" }).first()).toHaveValue("도쿄 국립박물관");
+  await page.getByRole("button", { name: "변경 전으로 되돌리기" }).click();
+  await expect(page.getByRole("textbox", { name: "장소 이름" }).first()).toHaveValue("도쿄역");
   await expect(page.getByRole("button", { name: "계획 저장" })).toBeVisible();
 
   await page.goto("/studio");
@@ -126,13 +153,12 @@ test("몇 번의 선택으로 여행 계획을 만들고 일차별 일정으로 
   }));
   expect(layout.documentWidth).toBeLessThanOrEqual(layout.viewportWidth + 1);
 
-  const today = new Date().toLocaleDateString("en-CA", { timeZone: "Asia/Seoul" });
   const finishResponse = await page.request.put(`/api/private/travels/${travelId}`, {
     data: {
       title: "다녀온 일본 여행",
       description: "계획대로 걷고 돌아온 여행",
-      startDate: today,
-      endDate: today,
+      startDate: koreaToday,
+      endDate: koreaToday,
       coverImageUrl: null,
       visibility: "PRIVATE",
       places: [{
@@ -141,7 +167,7 @@ test("몇 번의 선택으로 여행 계획을 만들고 일차별 일정으로 
         placeName: "도쿄역",
         latitude: 35.681236,
         longitude: 139.767125,
-        visitedAt: today,
+        visitedAt: koreaToday,
         memo: "실제로 다녀온 첫 장소",
       }],
       photos: [],
@@ -159,3 +185,9 @@ test("몇 번의 선택으로 여행 계획을 만들고 일차별 일정으로 
   await expect(page).toHaveURL(new RegExp(`/${username}/travel/${travelId}$`), { timeout: 30_000 });
   await expect(page.getByRole("heading", { name: "다녀온 일본 여행" })).toBeVisible();
 });
+
+function addDays(value: string, amount: number): string {
+  const date = new Date(`${value}T00:00:00Z`);
+  date.setUTCDate(date.getUTCDate() + amount);
+  return date.toISOString().slice(0, 10);
+}
