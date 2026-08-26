@@ -14,10 +14,23 @@ interface NominatimResult {
 export async function GET(request: NextRequest) {
   const query = request.nextUrl.searchParams.get("q")?.trim() ?? "";
   const country = request.nextUrl.searchParams.get("country")?.trim().toLowerCase() ?? "";
+  const latitudeRaw = request.nextUrl.searchParams.get("lat");
+  const longitudeRaw = request.nextUrl.searchParams.get("lng");
+  const latitude = latitudeRaw === null ? null : Number(latitudeRaw);
+  const longitude = longitudeRaw === null ? null : Number(longitudeRaw);
+  const hasProximity = latitude !== null && longitude !== null;
 
   if (query.length < 2 || query.length > 120 || (country && !/^[a-z]{2}$/.test(country))) {
     return NextResponse.json(
       { success: false, data: null, message: "장소 이름을 두 글자 이상 입력해 주세요." },
+      { status: 400 },
+    );
+  }
+  if ((latitudeRaw === null) !== (longitudeRaw === null)
+    || (hasProximity && (!Number.isFinite(latitude) || !Number.isFinite(longitude)
+      || latitude < -90 || latitude > 90 || longitude < -180 || longitude > 180))) {
+    return NextResponse.json(
+      { success: false, data: null, message: "추천 기준 위치를 확인해 주세요." },
       { status: 400 },
     );
   }
@@ -30,6 +43,12 @@ export async function GET(request: NextRequest) {
     "accept-language": "ko,en",
   });
   if (country) params.set("countrycodes", country);
+  if (hasProximity && latitude !== null && longitude !== null) {
+    const latitudeDelta = 0.45;
+    const longitudeDelta = Math.min(1.2, 0.45 / Math.max(0.35, Math.cos((latitude * Math.PI) / 180)));
+    params.set("viewbox", `${longitude - longitudeDelta},${latitude - latitudeDelta},${longitude + longitudeDelta},${latitude + latitudeDelta}`);
+    params.set("bounded", "0");
+  }
 
   try {
     await waitForNominatimSlot();

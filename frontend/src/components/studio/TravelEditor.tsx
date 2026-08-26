@@ -868,6 +868,7 @@ export function TravelEditor({
                   fallbackLongitude={countryMap.get(place.countryCode)?.longitude ?? 127.8}
                   latitude={coordinate(place.latitude)}
                   longitude={coordinate(place.longitude)}
+                  routeAnchor={findRouteAnchor(places, index)}
                   onSelect={(location) => updateLocation(index, location)}
                 />
                 <label><span>도시</span><input value={place.cityName} onChange={(event) => updateCityName(index, event.target.value)} maxLength={100} placeholder="예: 서울" /></label>
@@ -1140,6 +1141,22 @@ function nullable(value: string): string | null {
 function coordinate(value: string): number | null {
   const parsed = Number(value);
   return value.trim() && Number.isFinite(parsed) ? parsed : null;
+}
+
+function findRouteAnchor(places: PlaceDraft[], currentIndex: number): { latitude: number; longitude: number } | null {
+  const currentDate = places[currentIndex]?.visitedAt;
+  const earlierPlaces = places.slice(0, currentIndex).reverse();
+  const candidates = [
+    ...earlierPlaces.filter((place) => place.visitedAt === currentDate),
+    ...earlierPlaces.filter((place) => place.visitedAt !== currentDate),
+  ];
+  for (const place of candidates) {
+    if (isPlanningPlaceholder(place)) continue;
+    const latitude = coordinate(place.latitude);
+    const longitude = coordinate(place.longitude);
+    if (latitude !== null && longitude !== null) return { latitude, longitude };
+  }
+  return null;
 }
 
 function toPlaceInput(place: PlaceDraft, countries: Map<string, CountryOption>): TravelPlaceWriteInput {

@@ -12581,9 +12581,15 @@ a.profile-panel__identity:focus-visible {
 }
 
 .place-picker__ideas button:hover,
-.place-picker__ideas button:focus-visible {
+.place-picker__ideas button:focus-visible,
+.place-picker__ideas button.is-active {
   border-color: var(--accent-border);
+  background: var(--accent-soft);
   color: var(--accent-strong);
+}
+
+.place-picker__ideas button span {
+  margin-right: 0.22rem;
 }
 
 .place-picker__ideas button:disabled {
@@ -12628,6 +12634,33 @@ a.profile-panel__identity:focus-visible {
   box-shadow: 0 16px 36px rgb(25 47 56 / 10%);
 }
 
+.place-picker__result-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.65rem 0.75rem;
+  border-bottom: 1px solid var(--border);
+  background: color-mix(in srgb, var(--globe-ocean) 5%, var(--surface));
+}
+
+.place-picker__result-heading span {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  color: var(--text-primary);
+  font-size: 0.67rem;
+}
+
+.place-picker__result-heading span b {
+  color: var(--accent-strong);
+}
+
+.place-picker__result-heading small {
+  color: var(--text-tertiary);
+  font-size: 0.56rem;
+}
+
 .place-picker__results {
   max-height: 17rem;
   margin: 0;
@@ -12656,6 +12689,13 @@ a.profile-panel__identity:focus-visible {
   line-height: 1.35;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+.place-picker__results em {
+  color: var(--accent-strong);
+  font-size: 0.58rem;
+  font-style: normal;
+  font-weight: 650;
 }
 
 .place-picker__result-pin {

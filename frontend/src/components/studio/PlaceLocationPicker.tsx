@@ -36,11 +36,13 @@ interface PlaceLocationPickerProps {
   fallbackLongitude: number;
   latitude: number | null;
   longitude: number | null;
+  routeAnchor?: Coordinate | null;
   onSelect: (location: LocationSelection) => void;
 }
 
 interface SearchSuggestion extends LocationSelection {
   id: string;
+  distanceKm?: number;
 }
 
 interface Coordinate {
@@ -57,10 +59,10 @@ const TILE_SIZE = 256;
 const MAP_HEIGHT = 540;
 const PLACEHOLDER_TEXT = "장소를 골라주세요";
 const PLACE_IDEA_QUERIES = [
-  { label: "할거리", query: "명소" },
-  { label: "맛집", query: "맛집" },
-  { label: "카페", query: "카페" },
-  { label: "숙소", query: "호텔" },
+  { label: "할거리", query: "명소", icon: "◎" },
+  { label: "맛집", query: "맛집", icon: "♨" },
+  { label: "카페", query: "카페", icon: "◌" },
+  { label: "숙소", query: "호텔", icon: "⌂" },
 ] as const;
 
 let mapsConfigPromise: Promise<MapsConfig> | null = null;
@@ -74,6 +76,7 @@ export function PlaceLocationPicker({
   fallbackLongitude,
   latitude,
   longitude,
+  routeAnchor = null,
   onSelect,
 }: PlaceLocationPickerProps) {
   const initialName = placeName.includes(PLACEHOLDER_TEXT) ? "" : placeName;
@@ -83,6 +86,7 @@ export function PlaceLocationPicker({
   const [searching, setSearching] = useState(false);
   const [selecting, setSelecting] = useState(false);
   const [queryTouched, setQueryTouched] = useState(false);
+  const [activeIdea, setActiveIdea] = useState<string | null>(null);
   const [provider, setProvider] = useState<"checking" | "maptiler" | "fallback">("checking");
   const [apiKey, setApiKey] = useState<string | null>(null);
   const [mapOpen, setMapOpen] = useState(false);
@@ -97,6 +101,7 @@ export function PlaceLocationPicker({
   );
   const requestIdRef = useRef(0);
   const hasSelection = latitude !== null && longitude !== null && Boolean(initialName);
+  const searchOrigin = routeAnchor ?? { latitude: fallbackLatitude, longitude: fallbackLongitude };
   const handleMapUnavailable = useCallback(() => {
     setProvider("fallback");
     setApiKey(null);
@@ -143,7 +148,12 @@ export function PlaceLocationPicker({
     setSearching(true);
     setStatus(null);
     const searchWithFallback = async () => {
-      const params = new URLSearchParams({ q: trimmed, country: countryCode });
+      const params = new URLSearchParams({
+        q: trimmed,
+        country: countryCode,
+        lat: String(searchOrigin.latitude),
+        lng: String(searchOrigin.longitude),
+      });
       const response = await fetch(`/api/locations/search?${params}`, {
         headers: { Accept: "application/json" },
         cache: "no-store",
@@ -155,7 +165,7 @@ export function PlaceLocationPicker({
       };
       if (!response.ok || !body.success) throw new Error(body.message ?? "장소를 검색하지 못했습니다.");
       if (requestId !== requestIdRef.current) return;
-      setResults(body.data ?? []);
+      setResults(rankByRoute(body.data ?? [], routeAnchor));
       if (!body.data?.length) setStatus("검색 결과가 없습니다. 더 구체적인 장소명을 입력해 주세요.");
     };
 
@@ -168,10 +178,10 @@ export function PlaceLocationPicker({
             country: [countryCode.toLowerCase()],
             language: [Language.KOREAN, Language.ENGLISH],
             limit: 5,
-            proximity: [fallbackLongitude, fallbackLatitude],
+            proximity: [searchOrigin.longitude, searchOrigin.latitude],
           });
           if (requestId !== requestIdRef.current) return;
-          const nextResults = response.features.map(toSearchSuggestion);
+          const nextResults = rankByRoute(response.features.map(toSearchSuggestion), routeAnchor);
           if (nextResults.length) {
             setResults(nextResults);
           } else {
@@ -199,7 +209,7 @@ export function PlaceLocationPicker({
     } finally {
       if (requestId === requestIdRef.current) setSearching(false);
     }
-  }, [apiKey, countryCode, fallbackLatitude, fallbackLongitude, provider, queryTouched]);
+  }, [apiKey, countryCode, provider, queryTouched, routeAnchor, searchOrigin.latitude, searchOrigin.longitude]);
 
   useEffect(() => {
     if (provider !== "maptiler" || !queryTouched) return;
@@ -228,9 +238,10 @@ export function PlaceLocationPicker({
     }
   }
 
-  function searchPlaceIdea(queryTerm: string) {
+  function searchPlaceIdea(idea: (typeof PLACE_IDEA_QUERIES)[number]) {
     const area = cityName.trim() || countryName;
-    const nextQuery = `${area} ${queryTerm}`;
+    const nextQuery = `${area} ${idea.query}`;
+    setActiveIdea(idea.label);
     setQuery(nextQuery);
     setQueryTouched(true);
     void searchPlaces(nextQuery);
@@ -295,7 +306,7 @@ export function PlaceLocationPicker({
 
       <div className="place-picker__ideas" aria-label="여행 장소 종류별 추천 검색">
         <span><b aria-hidden="true">✦</b> {cityName.trim() || countryName}에서 뭐 할까요?</span>
-        <div>{PLACE_IDEA_QUERIES.map((idea) => <button key={idea.label} type="button" onClick={() => searchPlaceIdea(idea.query)} disabled={searching || provider === "checking"}>{idea.label}</button>)}</div>
+        <div>{PLACE_IDEA_QUERIES.map((idea) => <button key={idea.label} type="button" className={activeIdea === idea.label ? "is-active" : undefined} aria-pressed={activeIdea === idea.label} onClick={() => searchPlaceIdea(idea)} disabled={searching || provider === "checking"}><span aria-hidden="true">{idea.icon}</span>{idea.label}</button>)}</div>
       </div>
 
       <div className="place-picker__search">
@@ -304,6 +315,7 @@ export function PlaceLocationPicker({
           value={query}
           onChange={(event) => {
             setQuery(event.target.value);
+            setActiveIdea(null);
             setQueryTouched(true);
             if (event.target.value.trim().length < 2) setResults([]);
           }}
@@ -323,13 +335,14 @@ export function PlaceLocationPicker({
 
       {results.length ? (
         <div className="place-picker__result-shell">
+          <header className="place-picker__result-heading"><span><b aria-hidden="true">✦</b><strong>{activeIdea ? `${activeIdea} 실제 장소 후보` : "실제 장소 검색 결과"}</strong></span><small>{routeAnchor ? "이전 일정과 가까운 순" : "검색 관련도순"}</small></header>
           <ul className="place-picker__results" aria-label="장소 검색 결과">
             {results.map((result) => (
               <li key={result.id}>
                 <button type="button" onClick={() => void choose(result)} disabled={selecting}>
                   <span className="place-picker__result-pin" aria-hidden="true">●</span>
-                  <span><strong>{result.name}</strong><small>{result.label}</small></span>
-                  <span className="place-picker__result-action">선택</span>
+                  <span><strong>{result.name}</strong><small>{result.label}</small>{result.distanceKm !== undefined ? <em>{formatDistance(result.distanceKm)} · 이전 일정에서 이동</em> : null}</span>
+                  <span className="place-picker__result-action">일정에 담기</span>
                 </button>
               </li>
             ))}
@@ -508,6 +521,33 @@ function getMapsConfig() {
     return body.data;
   }).catch(() => ({ provider: "fallback" as const, maptilerApiKey: null }));
   return mapsConfigPromise;
+}
+
+function rankByRoute(results: SearchSuggestion[], anchor: Coordinate | null): SearchSuggestion[] {
+  if (!anchor) return results;
+  return results
+    .map((result) => ({
+      ...result,
+      distanceKm: haversineDistance(anchor, result),
+    }))
+    .sort((a, b) => (a.distanceKm ?? Number.POSITIVE_INFINITY) - (b.distanceKm ?? Number.POSITIVE_INFINITY));
+}
+
+function haversineDistance(from: Coordinate, to: Coordinate): number {
+  const radians = (degrees: number) => degrees * Math.PI / 180;
+  const earthRadiusKm = 6371;
+  const latitudeDelta = radians(to.latitude - from.latitude);
+  const longitudeDelta = radians(to.longitude - from.longitude);
+  const startLatitude = radians(from.latitude);
+  const endLatitude = radians(to.latitude);
+  const value = Math.sin(latitudeDelta / 2) ** 2
+    + Math.cos(startLatitude) * Math.cos(endLatitude) * Math.sin(longitudeDelta / 2) ** 2;
+  return earthRadiusKm * 2 * Math.atan2(Math.sqrt(value), Math.sqrt(1 - value));
+}
+
+function formatDistance(distanceKm: number): string {
+  if (distanceKm < 1) return `${Math.max(10, Math.round(distanceKm * 1000 / 10) * 10)}m`;
+  return `${distanceKm < 10 ? distanceKm.toFixed(1) : Math.round(distanceKm)}km`;
 }
 
 function toSearchSuggestion(feature: GeocodingFeature): SearchSuggestion {

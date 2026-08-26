@@ -32,6 +32,13 @@ test("몇 번의 선택으로 여행 계획을 만들고 일차별 일정으로 
       }),
     });
   });
+  await page.route("**/api/maps/config", async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      body: JSON.stringify({ success: true, data: { provider: "fallback", maptilerApiKey: null }, message: null }),
+    });
+  });
   await page.route("**/api/weather/forecast?**", async (route) => {
     await route.fulfill({
       status: 200,
@@ -137,6 +144,9 @@ test("몇 번의 선택으로 여행 계획을 만들고 일차별 일정으로 
   await expect(page.getByText("1 / 3일", { exact: true })).toBeVisible();
   await page.getByRole("button", { name: "＋ 식사" }).click();
   await expect(page.getByRole("textbox", { name: "장소 이름" })).toHaveCount(2);
+  await page.getByRole("button", { name: "맛집", exact: true }).nth(1).click();
+  await expect(page.getByText("이전 일정과 가까운 순", { exact: true })).toBeVisible();
+  await expect(page.getByText(/이전 일정에서 이동/)).toBeVisible();
   await page.getByRole("tab", { name: /DAY 2/ }).click();
   await expect(page.getByRole("button", { name: "전날 일정 복사" })).toBeVisible();
   await page.getByRole("button", { name: "전날 일정 복사" }).click();
