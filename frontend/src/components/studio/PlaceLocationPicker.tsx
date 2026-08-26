@@ -8,6 +8,9 @@ import {
   MapStyle,
   NavigationControl,
 } from "@maptiler/sdk";
+// Loaded here rather than in the root layout: this is the only screen that renders a
+// map, and from the layout every page paid for the stylesheet.
+import "@maptiler/sdk/style.css";
 import {
   KeyboardEvent,
   PointerEvent,
