@@ -39,6 +39,30 @@ test("몇 번의 선택으로 여행 계획을 만들고 일차별 일정으로 
       body: JSON.stringify({ success: true, data: { provider: "fallback", maptilerApiKey: null }, message: null }),
     });
   });
+  await page.route("**/api/places/recommend?**", async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      body: JSON.stringify({
+        success: true,
+        data: [{
+          id: "osm-node-1",
+          name: "마루노우치 식당",
+          city: "도쿄",
+          label: "음식점 · 마루노우치",
+          latitude: 35.682,
+          longitude: 139.768,
+          distanceKm: 0.8,
+          categoryLabel: "음식점",
+          recommendationReason: "현재 일정에서 800m · 맛집 취향과 잘 맞음 · 영업시간 정보 있음",
+          openingHours: "Mo-Su 11:00-22:00",
+          cuisine: "일식",
+          stars: null,
+        }],
+        message: null,
+      }),
+    });
+  });
   await page.route("**/api/weather/forecast?**", async (route) => {
     await route.fulfill({
       status: 200,
@@ -145,8 +169,9 @@ test("몇 번의 선택으로 여행 계획을 만들고 일차별 일정으로 
   await page.getByRole("button", { name: "＋ 식사" }).click();
   await expect(page.getByRole("textbox", { name: "장소 이름" })).toHaveCount(2);
   await page.getByRole("button", { name: "맛집", exact: true }).nth(1).click();
-  await expect(page.getByText("이전 일정과 가까운 순", { exact: true })).toBeVisible();
-  await expect(page.getByText(/이전 일정에서 이동/)).toBeVisible();
+  await expect(page.getByText("취향·동선 추천순", { exact: true })).toBeVisible();
+  await expect(page.getByText(/맛집 취향과 잘 맞음/)).toBeVisible();
+  await expect(page.getByText(/영업시간 Mo-Su 11:00-22:00/)).toBeVisible();
   await page.getByRole("tab", { name: /DAY 2/ }).click();
   await expect(page.getByRole("button", { name: "전날 일정 복사" })).toBeVisible();
   await page.getByRole("button", { name: "전날 일정 복사" }).click();

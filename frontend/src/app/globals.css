@@ -12698,6 +12698,25 @@ a.profile-panel__identity:focus-visible {
   font-weight: 650;
 }
 
+.place-picker__result-meta {
+  display: flex !important;
+  gap: 0.28rem !important;
+  flex-wrap: wrap;
+}
+
+.place-picker__result-meta i {
+  max-width: 100%;
+  overflow: hidden;
+  padding: 0.18rem 0.34rem;
+  border-radius: 999px;
+  background: var(--surface-muted);
+  color: var(--text-secondary);
+  font-size: 0.52rem;
+  font-style: normal;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 .place-picker__result-pin {
   display: grid;
   width: 1.85rem;

@@ -19,6 +19,11 @@ import {
 } from "react";
 import { createPortal } from "react-dom";
 
+import type {
+  PlaceRecommendation,
+  PlaceRecommendationCategory,
+} from "@/lib/place-recommendations";
+
 interface LocationSelection {
   name: string;
   city: string;
@@ -37,12 +42,18 @@ interface PlaceLocationPickerProps {
   latitude: number | null;
   longitude: number | null;
   routeAnchor?: Coordinate | null;
+  travelPreferences?: string[];
   onSelect: (location: LocationSelection) => void;
 }
 
 interface SearchSuggestion extends LocationSelection {
   id: string;
   distanceKm?: number;
+  categoryLabel?: string;
+  recommendationReason?: string;
+  openingHours?: string | null;
+  cuisine?: string | null;
+  stars?: string | null;
 }
 
 interface Coordinate {
@@ -59,10 +70,10 @@ const TILE_SIZE = 256;
 const MAP_HEIGHT = 540;
 const PLACEHOLDER_TEXT = "장소를 골라주세요";
 const PLACE_IDEA_QUERIES = [
-  { label: "할거리", query: "명소", icon: "◎" },
-  { label: "맛집", query: "맛집", icon: "♨" },
-  { label: "카페", query: "카페", icon: "◌" },
-  { label: "숙소", query: "호텔", icon: "⌂" },
+  { label: "할거리", query: "명소", icon: "◎", category: "activity" },
+  { label: "맛집", query: "맛집", icon: "♨", category: "food" },
+  { label: "카페", query: "카페", icon: "◌", category: "cafe" },
+  { label: "숙소", query: "호텔", icon: "⌂", category: "stay" },
 ] as const;
 
 let mapsConfigPromise: Promise<MapsConfig> | null = null;
@@ -77,6 +88,7 @@ export function PlaceLocationPicker({
   latitude,
   longitude,
   routeAnchor = null,
+  travelPreferences = [],
   onSelect,
 }: PlaceLocationPickerProps) {
   const initialName = placeName.includes(PLACEHOLDER_TEXT) ? "" : placeName;
@@ -87,6 +99,7 @@ export function PlaceLocationPicker({
   const [selecting, setSelecting] = useState(false);
   const [queryTouched, setQueryTouched] = useState(false);
   const [activeIdea, setActiveIdea] = useState<string | null>(null);
+  const [resultSource, setResultSource] = useState<"maptiler" | "openstreetmap" | "smart">("openstreetmap");
   const [provider, setProvider] = useState<"checking" | "maptiler" | "fallback">("checking");
   const [apiKey, setApiKey] = useState<string | null>(null);
   const [mapOpen, setMapOpen] = useState(false);
@@ -102,6 +115,9 @@ export function PlaceLocationPicker({
   const requestIdRef = useRef(0);
   const hasSelection = latitude !== null && longitude !== null && Boolean(initialName);
   const searchOrigin = routeAnchor ?? { latitude: fallbackLatitude, longitude: fallbackLongitude };
+  const recommendationOrigin = routeAnchor ?? (hasSelection && latitude !== null && longitude !== null
+    ? { latitude, longitude }
+    : null);
   const handleMapUnavailable = useCallback(() => {
     setProvider("fallback");
     setApiKey(null);
@@ -166,6 +182,7 @@ export function PlaceLocationPicker({
       if (!response.ok || !body.success) throw new Error(body.message ?? "장소를 검색하지 못했습니다.");
       if (requestId !== requestIdRef.current) return;
       setResults(rankByRoute(body.data ?? [], routeAnchor));
+      setResultSource("openstreetmap");
       if (!body.data?.length) setStatus("검색 결과가 없습니다. 더 구체적인 장소명을 입력해 주세요.");
     };
 
@@ -184,6 +201,7 @@ export function PlaceLocationPicker({
           const nextResults = rankByRoute(response.features.map(toSearchSuggestion), routeAnchor);
           if (nextResults.length) {
             setResults(nextResults);
+            setResultSource("maptiler");
           } else {
             // MapTiler's Korean basemap is consistent, but some overseas POIs are
             // indexed only under their local name. Keep the map provider and use
@@ -238,13 +256,47 @@ export function PlaceLocationPicker({
     }
   }
 
-  function searchPlaceIdea(idea: (typeof PLACE_IDEA_QUERIES)[number]) {
+  async function searchPlaceIdea(idea: (typeof PLACE_IDEA_QUERIES)[number]) {
     const area = cityName.trim() || countryName;
     const nextQuery = `${area} ${idea.query}`;
     setActiveIdea(idea.label);
     setQuery(nextQuery);
-    setQueryTouched(true);
-    void searchPlaces(nextQuery);
+    setQueryTouched(false);
+    setStatus(null);
+    if (!recommendationOrigin) {
+      await searchPlaces(nextQuery);
+      return;
+    }
+
+    const requestId = ++requestIdRef.current;
+    setSearching(true);
+    try {
+      const params = new URLSearchParams({
+        category: idea.category satisfies PlaceRecommendationCategory,
+        lat: String(recommendationOrigin.latitude),
+        lng: String(recommendationOrigin.longitude),
+      });
+      if (travelPreferences.length) params.set("preferences", travelPreferences.join(","));
+      const response = await fetch(`/api/places/recommend?${params}`, { cache: "no-store" });
+      const body = await response.json() as {
+        success: boolean;
+        data: PlaceRecommendation[] | null;
+        message: string | null;
+      };
+      if (requestId !== requestIdRef.current) return;
+      if (!response.ok || !body.success || !body.data?.length) {
+        await searchPlaces(nextQuery);
+        return;
+      }
+      setResults(body.data);
+      setResultSource("smart");
+      setStatus(`${idea.label} 후보를 실제 주변 장소와 현재 동선으로 정리했습니다.`);
+    } catch {
+      if (requestId !== requestIdRef.current) return;
+      await searchPlaces(nextQuery);
+    } finally {
+      if (requestId === requestIdRef.current) setSearching(false);
+    }
   }
 
   function openMap() {
@@ -335,19 +387,33 @@ export function PlaceLocationPicker({
 
       {results.length ? (
         <div className="place-picker__result-shell">
-          <header className="place-picker__result-heading"><span><b aria-hidden="true">✦</b><strong>{activeIdea ? `${activeIdea} 실제 장소 후보` : "실제 장소 검색 결과"}</strong></span><small>{routeAnchor ? "이전 일정과 가까운 순" : "검색 관련도순"}</small></header>
+          <header className="place-picker__result-heading"><span><b aria-hidden="true">✦</b><strong>{activeIdea ? `${activeIdea} ${resultSource === "smart" ? "맞춤 후보" : "실제 장소 후보"}` : "실제 장소 검색 결과"}</strong></span><small>{resultSource === "smart" ? "취향·동선 추천순" : routeAnchor ? "이전 일정과 가까운 순" : "검색 관련도순"}</small></header>
           <ul className="place-picker__results" aria-label="장소 검색 결과">
             {results.map((result) => (
               <li key={result.id}>
                 <button type="button" onClick={() => void choose(result)} disabled={selecting}>
                   <span className="place-picker__result-pin" aria-hidden="true">●</span>
-                  <span><strong>{result.name}</strong><small>{result.label}</small>{result.distanceKm !== undefined ? <em>{formatDistance(result.distanceKm)} · 이전 일정에서 이동</em> : null}</span>
+                  <span>
+                    <strong>{result.name}</strong>
+                    <small>{result.label || result.categoryLabel}</small>
+                    {result.recommendationReason
+                      ? <em>{result.recommendationReason}</em>
+                      : result.distanceKm !== undefined ? <em>{formatDistance(result.distanceKm)} · 이전 일정에서 이동</em> : null}
+                    {result.openingHours || result.cuisine || result.stars ? <span className="place-picker__result-meta">
+                      {result.openingHours ? <i>영업시간 {result.openingHours}</i> : null}
+                      {result.cuisine ? <i>{result.cuisine}</i> : null}
+                      {result.stars ? <i>{result.stars}성급</i> : null}
+                    </span> : null}
+                  </span>
                   <span className="place-picker__result-action">일정에 담기</span>
                 </button>
               </li>
             ))}
           </ul>
-          {provider === "maptiler" ? <p className="place-picker__provider-attribution" translate="no">MapTiler · OpenStreetMap</p> : null}
+          <p className="place-picker__provider-attribution" translate="no">
+            {resultSource === "maptiler" ? "MapTiler · " : "Data © "}
+            <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noreferrer">OpenStreetMap contributors</a>
+          </p>
         </div>
       ) : null}
 

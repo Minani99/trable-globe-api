@@ -154,6 +154,7 @@ export function TravelEditor({
   const [weatherPlannerState, setWeatherPlannerState] = useState<"idle" | "loading" | "message">("idle");
   const [weatherPlannerMessage, setWeatherPlannerMessage] = useState<string | null>(null);
   const countryMap = useMemo(() => new Map(countries.map((country) => [country.iso2Code, country])), [countries]);
+  const travelPreferences = useMemo(() => recommendationPreferences(`${title} ${description}`), [description, title]);
   const planDays = useMemo(() => {
     if (!planningMode) return [];
     const scheduledDays = datesBetween(startDate, endDate);
@@ -869,6 +870,7 @@ export function TravelEditor({
                   latitude={coordinate(place.latitude)}
                   longitude={coordinate(place.longitude)}
                   routeAnchor={findRouteAnchor(places, index)}
+                  travelPreferences={travelPreferences}
                   onSelect={(location) => updateLocation(index, location)}
                 />
                 <label><span>도시</span><input value={place.cityName} onChange={(event) => updateCityName(index, event.target.value)} maxLength={100} placeholder="예: 서울" /></label>
@@ -1157,6 +1159,19 @@ function findRouteAnchor(places: PlaceDraft[], currentIndex: number): { latitude
     if (latitude !== null && longitude !== null) return { latitude, longitude };
   }
   return null;
+}
+
+function recommendationPreferences(source: string): string[] {
+  const text = source.toLowerCase();
+  const keywords: Array<[string, string[]]> = [
+    ["food", ["맛집", "미식", "음식", "먹방", "카페", "food", "gourmet"]],
+    ["culture", ["문화", "박물관", "미술관", "전시", "역사", "공연", "culture", "museum"]],
+    ["nature", ["자연", "공원", "산", "바다", "정원", "풍경", "nature", "hiking"]],
+    ["shopping", ["쇼핑", "시장", "백화점", "기념품", "shopping", "market"]],
+    ["relax", ["여유", "휴식", "힐링", "느긋", "relax", "slow"]],
+    ["family", ["가족", "아이", "부모님", "family", "kids"]],
+  ];
+  return keywords.filter(([, values]) => values.some((keyword) => text.includes(keyword))).map(([key]) => key);
 }
 
 function toPlaceInput(place: PlaceDraft, countries: Map<string, CountryOption>): TravelPlaceWriteInput {
