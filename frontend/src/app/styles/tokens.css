@@ -1,0 +1,198 @@
+/* Design tokens and the Tailwind theme bridge
+ *
+ * Part of the ordered stylesheet - see globals.css. Later files override this one.
+ */
+/*
+ * Travel Globe design tokens.
+ *
+ * Light is the first-visit default, with a dark archive mode kept one tap away. Both
+ * palettes share the same warm accent so visited places remain the strongest signal.
+ */
+:root {
+  --background: #f7f8f5;
+  --background-elevated: #eef4f5;
+  --surface: #ffffff;
+  --surface-raised: #f5f7f4;
+  --surface-hover: #eaf1f1;
+
+  --border: #dce4e3;
+  --border-strong: #bdccca;
+
+  --text-primary: #13252d;
+  --text-secondary: #5f7075;
+  --text-tertiary: #89979a;
+
+  --accent: #e8703a;
+  --accent-strong: #c94f20;
+  --accent-soft: rgba(232, 112, 58, 0.12);
+  --accent-border: rgba(201, 79, 32, 0.34);
+
+  --globe-ocean: #78c4e2;
+  --globe-land: #e3eadb;
+  --globe-land-hover: #f1b091;
+  --globe-atmosphere: #80d5f3;
+
+  --map-ocean: #dfeff2;
+  --map-grid: rgba(47, 103, 116, 0.1);
+  --map-land: #eef0df;
+  --map-land-stroke: #9eb8b1;
+  --map-marker: #fffaf4;
+  --map-marker-border: #c94f20;
+
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 16px;
+  --font-editorial: var(--font-geist-sans), var(--font-noto-sans-kr), "Pretendard",
+    "Apple SD Gothic Neo", "Malgun Gothic", system-ui, sans-serif;
+}
+
+:root[data-theme="dark"] {
+  --background: #05070a;
+  --background-elevated: #080b11;
+  --surface: #0b1017;
+  --surface-raised: #111823;
+  --surface-hover: #16202d;
+
+  --border: #1b2431;
+  --border-strong: #2a3746;
+
+  --text-primary: #f4f6f8;
+  --text-secondary: #929caa;
+  --text-tertiary: #626d7c;
+
+  /* Warm amber against the cold ocean sphere - a visited country reads instantly. */
+  --accent: #e8703a;
+  --accent-strong: #ff8a52;
+  --accent-soft: rgba(232, 112, 58, 0.14);
+  --accent-border: rgba(232, 112, 58, 0.38);
+
+  /* Globe body colours, shared between the WebGL scene and its CSS surroundings. */
+  --globe-ocean: #102838;
+  --globe-land: #2a3d47;
+  --globe-land-hover: #3b5662;
+  --globe-atmosphere: #4a93b5;
+
+  --map-ocean: #0a1620;
+  --map-grid: rgba(127, 170, 190, 0.09);
+  --map-land: #182630;
+  --map-land-stroke: #38505e;
+  --map-marker: #111b24;
+  --map-marker-border: #ff8a52;
+
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-background-elevated: var(--background-elevated);
+  --color-surface: var(--surface);
+  --color-surface-raised: var(--surface-raised);
+  --color-surface-hover: var(--surface-hover);
+  --color-border-subtle: var(--border);
+  --color-border-strong: var(--border-strong);
+  --color-content: var(--text-primary);
+  --color-content-muted: var(--text-secondary);
+  --color-content-faint: var(--text-tertiary);
+  --color-accent: var(--accent);
+  --color-accent-strong: var(--accent-strong);
+  --color-accent-soft: var(--accent-soft);
+
+  --font-sans: var(--font-geist-sans), var(--font-noto-sans-kr), "Pretendard",
+    "Apple SD Gothic Neo", "Malgun Gothic", system-ui, -apple-system, sans-serif;
+  --font-mono: var(--font-geist-mono), var(--font-noto-sans-kr), ui-monospace, monospace;
+}
+
+html {
+  color-scheme: light;
+}
+
+html[data-theme="dark"] {
+  color-scheme: dark;
+}
+
+body {
+  background: var(--background);
+  color: var(--text-primary);
+  font-family: var(--font-sans);
+  letter-spacing: -0.012em;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+  transition:
+    background-color 0.35s ease,
+    color 0.35s ease;
+}
+
+.app-feedback-region {
+  position: fixed;
+  right: clamp(1rem, 3vw, 2rem);
+  bottom: clamp(1rem, 3vw, 2rem);
+  z-index: 120;
+  pointer-events: none;
+}
+
+.app-feedback {
+  display: grid;
+  min-width: min(22rem, calc(100vw - 2rem));
+  max-width: 27rem;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 0.7rem;
+  padding: 0.75rem 0.8rem;
+  border: 1px solid var(--border-strong);
+  border-radius: 0.9rem;
+  background: color-mix(in srgb, var(--surface) 96%, transparent);
+  box-shadow: 0 1rem 3rem rgba(20, 42, 49, 0.18);
+  color: var(--text-primary);
+  font-size: 0.78rem;
+  line-height: 1.5;
+  pointer-events: auto;
+  backdrop-filter: blur(20px);
+  animation: feedback-enter 0.2s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.app-feedback__icon {
+  display: grid;
+  width: 1.65rem;
+  height: 1.65rem;
+  place-items: center;
+  border-radius: 50%;
+  background: var(--accent-soft);
+  color: var(--accent-strong);
+  font-size: 0.72rem;
+  font-weight: 750;
+}
+
+.app-feedback.is-error {
+  border-color: var(--accent-border);
+}
+
+.app-feedback > button {
+  display: grid;
+  width: 1.8rem;
+  height: 1.8rem;
+  place-items: center;
+  border-radius: 50%;
+  color: var(--text-tertiary);
+  font-size: 1rem;
+}
+
+.app-feedback > button:hover,
+.app-feedback > button:focus-visible {
+  background: var(--surface-hover);
+  color: var(--text-primary);
+}
+
+@keyframes feedback-enter {
+  from { opacity: 0; transform: translateY(0.6rem) scale(0.98); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.site-shell {
+  width: 100%;
+  max-width: 1400px;
+  margin-inline: auto;
+  padding-inline: clamp(1.25rem, 3vw, 2.5rem);
+}
+
+.site-footer--compact {
+  margin-top: 2rem;
+}
