@@ -67,9 +67,13 @@ test("몇 번의 선택으로 여행 계획을 만들고 일차별 일정으로 
   expect(travelId).toBeGreaterThan(0);
   await expect(page.getByRole("heading", { name: "일본 3일 여행" })).toBeVisible();
   await expect(page.getByRole("heading", { name: "예약부터 변수 대응까지, 한곳에서" })).toBeVisible();
-  await expect(page.getByRole("textbox", { name: "출발 공항 코드" })).toHaveValue("SEL");
-  await expect(page.getByRole("textbox", { name: "도착 공항 코드" })).toHaveValue("TYO");
-  await expect(page.getByRole("link", { name: /이 일정으로 항공권 찾기/ })).toHaveAttribute("href", /skyscanner\.co\.kr\/transport\/flights\/sel\/tyo\//);
+  await expect(page.getByRole("combobox", { name: "출발 공항 검색" })).toHaveValue("서울 · 서울 모든 공항");
+  const destinationAirport = page.getByRole("combobox", { name: "도착 공항 검색" });
+  await expect(destinationAirport).toHaveValue("도쿄 · 도쿄 모든 공항");
+  await destinationAirport.fill("나리타");
+  await page.getByRole("option", { name: /나리타국제공항.*NRT/ }).click();
+  await expect(destinationAirport).toHaveValue("도쿄 · 나리타국제공항");
+  await expect(page.getByRole("link", { name: /이 일정으로 항공권 찾기/ })).toHaveAttribute("href", /skyscanner\.co\.kr\/transport\/flights\/sel\/nrt\//);
   await expect(page.getByText(/예보는 출발 16일 전부터 제공/)).toBeVisible();
   await expect(page.getByRole("heading", { name: "여행 준비 체크리스트" })).toBeVisible();
   await expect(page.locator(".travel-checklist__items li")).toHaveCount(6);
@@ -109,6 +113,8 @@ test("몇 번의 선택으로 여행 계획을 만들고 일차별 일정으로 
   await expect(page.getByText("0 / 3일", { exact: true })).toBeVisible();
   await expect(page.getByRole("textbox", { name: "장소 이름" }).first()).toHaveValue("1일차 · 장소를 골라주세요");
   await expect(page.getByText("선택 완료", { exact: true })).toHaveCount(0);
+  await expect(page.getByRole("button", { name: "맛집", exact: true })).toBeVisible();
+  await expect(page.getByRole("button", { name: "숙소", exact: true })).toBeVisible();
   await expect(page.getByRole("button", { name: /지도에서 직접 찾기/ }).first()).toBeVisible();
   await page.getByRole("textbox", { name: "방문할 장소 검색" }).first().fill("도쿄역");
   await page.getByRole("button", { name: "검색", exact: true }).first().click();

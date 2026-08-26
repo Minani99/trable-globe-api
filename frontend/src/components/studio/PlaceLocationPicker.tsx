@@ -56,6 +56,12 @@ interface MapsConfig {
 const TILE_SIZE = 256;
 const MAP_HEIGHT = 540;
 const PLACEHOLDER_TEXT = "장소를 골라주세요";
+const PLACE_IDEA_QUERIES = [
+  { label: "할거리", query: "명소" },
+  { label: "맛집", query: "맛집" },
+  { label: "카페", query: "카페" },
+  { label: "숙소", query: "호텔" },
+] as const;
 
 let mapsConfigPromise: Promise<MapsConfig> | null = null;
 
@@ -222,6 +228,14 @@ export function PlaceLocationPicker({
     }
   }
 
+  function searchPlaceIdea(queryTerm: string) {
+    const area = cityName.trim() || countryName;
+    const nextQuery = `${area} ${queryTerm}`;
+    setQuery(nextQuery);
+    setQueryTouched(true);
+    void searchPlaces(nextQuery);
+  }
+
   function openMap() {
     const center = {
       latitude: latitude ?? fallbackLatitude,
@@ -277,6 +291,11 @@ export function PlaceLocationPicker({
       <div className="place-picker__intro">
         <div><strong>어디로 갈까요?</strong><p>{countryName} 안의 장소명·역·호텔·주소를 한국어로 검색하세요.</p></div>
         {hasSelection ? <span className="place-picker__selected">선택 완료</span> : null}
+      </div>
+
+      <div className="place-picker__ideas" aria-label="여행 장소 종류별 추천 검색">
+        <span><b aria-hidden="true">✦</b> {cityName.trim() || countryName}에서 뭐 할까요?</span>
+        <div>{PLACE_IDEA_QUERIES.map((idea) => <button key={idea.label} type="button" onClick={() => searchPlaceIdea(idea.query)} disabled={searching || provider === "checking"}>{idea.label}</button>)}</div>
       </div>
 
       <div className="place-picker__search">

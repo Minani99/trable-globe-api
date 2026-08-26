@@ -2,7 +2,14 @@
 
 import { useEffect, useMemo, useState } from "react";
 
-import { buildSkyscannerFlightUrl, inferAirportCode, normalizeAirportCode } from "@/lib/airports";
+import {
+  buildSkyscannerFlightUrl,
+  findAirportByCode,
+  formatAirportLabel,
+  inferAirportCode,
+  normalizeAirportCode,
+  searchAirports,
+} from "@/lib/airports";
 import type { TravelPlace } from "@/types";
 
 type ForecastDay = {
@@ -70,11 +77,6 @@ export function TravelPreparationHub({
   const rainyDays = forecast?.days.filter((day) => day.precipitationProbability >= 60 || isRainCode(day.weatherCode)) ?? [];
   const flightReady = origin.length === 3 && destination.length === 3;
 
-  function updateOrigin(value: string) {
-    const next = normalizeAirportCode(value);
-    setOrigin(next);
-  }
-
   return (
     <section className="trip-preparation" aria-labelledby="trip-preparation-heading">
       <header className="trip-preparation__heading">
@@ -85,11 +87,11 @@ export function TravelPreparationHub({
       <div className="trip-preparation__grid">
         <article className="trip-action-card is-flight">
           <div className="trip-action-card__icon" aria-hidden="true">↗</div>
-          <div className="trip-action-card__copy"><span>항공권</span><h3>저장한 날짜로 바로 검색</h3><p>날짜를 다시 입력하지 않고 스카이스캐너에서 비교해 보세요.</p></div>
+          <div className="trip-action-card__copy"><span>항공권</span><h3>공항명만 찾으면 날짜까지 자동</h3><p>도시나 공항을 검색해 고르면 저장한 여행 날짜와 함께 스카이스캐너로 넘겨요.</p></div>
           <div className="trip-flight-route">
-            <label><span>출발</span><input value={origin} onChange={(event) => updateOrigin(event.target.value)} aria-label="출발 공항 코드" placeholder="SEL" /></label>
+            <AirportSearchField label="출발" value={origin} onChange={setOrigin} placeholder="예: 서울, 인천공항" />
             <span aria-hidden="true">→</span>
-            <label><span>도착</span><input value={destination} onChange={(event) => setDestination(normalizeAirportCode(event.target.value))} aria-label="도착 공항 코드" placeholder="TYO" /></label>
+            <AirportSearchField label="도착" value={destination} onChange={setDestination} placeholder="예: 도쿄, 나리타" />
           </div>
           {flightReady ? <a className="trip-action-card__button" href={buildSkyscannerFlightUrl({ origin, destination, outboundDate: startDate, inboundDate: endDate })} target="_blank" rel="noreferrer">이 일정으로 항공권 찾기 <span aria-hidden="true">↗</span></a> : <p className="trip-action-card__notice">출발·도착 공항의 영문 코드 3자리를 입력해 주세요.</p>}
           <small>검색은 버튼을 누를 때만 실행되며 예약은 스카이스캐너에서 진행됩니다.</small>
@@ -117,6 +119,75 @@ export function TravelPreparationHub({
         </article>
       </div>
     </section>
+  );
+}
+
+function AirportSearchField({
+  label,
+  value,
+  onChange,
+  placeholder,
+}: {
+  label: "출발" | "도착";
+  value: string;
+  onChange: (code: string) => void;
+  placeholder: string;
+}) {
+  const selectedAirport = findAirportByCode(value);
+  const selectedLabel = selectedAirport ? formatAirportLabel(selectedAirport) : value;
+  const [query, setQuery] = useState(selectedLabel);
+  const [open, setOpen] = useState(false);
+  const results = useMemo(() => searchAirports(query === selectedLabel && value ? value : query), [query, selectedLabel, value]);
+  const directCode = normalizeAirportCode(query);
+  const canUseDirectCode = directCode.length === 3 && !findAirportByCode(directCode);
+  const listId = `airport-${label === "출발" ? "origin" : "destination"}-results`;
+
+  function selectAirport(code: string) {
+    const airport = findAirportByCode(code);
+    onChange(code);
+    setQuery(airport ? formatAirportLabel(airport) : code);
+    setOpen(false);
+  }
+
+  return (
+    <div
+      className="airport-search"
+      onBlur={(event) => {
+        if (!event.currentTarget.contains(event.relatedTarget as Node | null)) setOpen(false);
+      }}
+    >
+      <label>
+        <span>{label}</span>
+        <span className="airport-search__input-wrap">
+          <input
+            value={query}
+            onFocus={() => setOpen(true)}
+            onChange={(event) => {
+              setQuery(event.target.value);
+              onChange("");
+              setOpen(true);
+            }}
+            role="combobox"
+            aria-label={`${label} 공항 검색`}
+            aria-expanded={open}
+            aria-controls={listId}
+            aria-autocomplete="list"
+            placeholder={placeholder}
+            autoComplete="off"
+          />
+          {value ? <b>{value}</b> : <span aria-hidden="true">⌕</span>}
+        </span>
+      </label>
+      {open ? <div className="airport-search__popover" id={listId} role="listbox" aria-label={`${label} 공항 검색 결과`}>
+        {results.length ? <ul>{results.map((airport) => <li key={airport.code}>
+          <button type="button" role="option" aria-selected={value === airport.code} onMouseDown={(event) => event.preventDefault()} onClick={() => selectAirport(airport.code)}>
+            <span><strong>{airport.cityKo}</strong><small>{airport.airportKo} · {airport.countryKo}</small></span><b>{airport.code}</b>
+          </button>
+        </li>)}</ul> : null}
+        {canUseDirectCode ? <button type="button" className="airport-search__direct" onMouseDown={(event) => event.preventDefault()} onClick={() => selectAirport(directCode)}><span>목록에 없는 공항 코드 사용</span><b>{directCode}</b></button> : null}
+        {!results.length && !canUseDirectCode ? <p>도시, 공항명 또는 영문 코드로 검색해 주세요.</p> : null}
+      </div> : null}
+    </div>
   );
 }
 
