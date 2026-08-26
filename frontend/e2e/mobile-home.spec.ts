@@ -21,6 +21,14 @@ test("모바일 메인은 한 화면 안에서 탐색과 국가 선택을 제공
   await expect(page.getByRole("button", { name: "메뉴 열기" })).toBeHidden();
   await expect(page.locator(".landing-experience")).toBeHidden();
 
+  const guideTrigger = page.getByRole("button", { name: /30초 안내|이용 방법/ });
+  await expect(guideTrigger).toBeVisible();
+  await guideTrigger.click();
+  const guide = page.getByRole("dialog", { name: "여행 하나가 지구본의 기억이 되기까지" });
+  await expect(guide).toBeVisible();
+  await expect(guide.getByRole("listitem")).toHaveCount(3);
+  await guide.getByRole("button", { name: "알겠어요, 시작할게요" }).click();
+
   const canvas = page.locator(".landing-globe-live canvas");
   await expect(canvas).toBeVisible();
   const bounds = await canvas.boundingBox();

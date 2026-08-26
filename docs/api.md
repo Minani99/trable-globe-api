@@ -101,7 +101,7 @@ Base URL: `http://localhost:8080` (개발). Next.js 서버와 동일 출처 `/ap
   "success": true,
   "data": {
     "username": "traveler",
-    "displayName": "민아",
+    "displayName": "샘플 여행자",
     "bio": "기록으로 남기는 나의 여행 지도",
     "profileImageUrl": "/placeholders/avatar.svg",
     "joinedAt": "2026-08-11T00:43:12.886822Z",
@@ -291,7 +291,7 @@ Base URL: `http://localhost:8080` (개발). Next.js 서버와 동일 출처 `/ap
     "visibility": "PUBLIC",
     "owner": {
       "username": "traveler",
-      "displayName": "민아",
+      "displayName": "샘플 여행자",
       "profileImageUrl": "/placeholders/avatar.svg"
     },
     "countries": [

@@ -56,6 +56,21 @@ test("프로필 정보와 모바일 타임라인을 작은 도크에서 펼쳐 �
 
   await page.goto("/traveler");
   await expect(page.locator(".profile-globe-card canvas")).toBeVisible({ timeout: 30_000 });
+  await expect(page.getByRole("heading", { name: "샘플 여행자의 여행 세계" })).toBeVisible();
+
+  const viewSwitch = page.getByRole("navigation", { name: "여행 세계 보기 방식" });
+  await viewSwitch.getByRole("button", { name: "목록" }).click();
+  await expect(page.getByRole("region", { name: "나라와 여행 목록" })).toBeVisible();
+  await expect(page.locator(".profile-globe-card canvas")).toHaveCount(0);
+  await viewSwitch.getByRole("button", { name: "지구본" }).click();
+  await expect(page.locator(".profile-globe-card canvas")).toBeVisible({ timeout: 30_000 });
+
+  const countryIndex = page.getByRole("navigation", { name: "방문한 국가 목록" });
+  await countryIndex.getByRole("button", { name: /일본/ }).click();
+  const countryDetail = page.getByRole("complementary", { name: "일본 여행 요약" });
+  await expect(countryDetail).toBeVisible();
+  expect(await countryDetail.evaluate((element) => element.getBoundingClientRect().height)).toBeLessThan(205);
+  await countryDetail.getByRole("button", { name: "국가 선택 해제" }).click();
 
   const controls = page.getByRole("region", { name: "여행 시간 탐색" });
   const profileDock = page.getByRole("region", { name: "여행자 정보" });

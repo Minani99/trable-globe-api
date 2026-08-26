@@ -42,10 +42,10 @@ class ProfileServiceTest {
         ProfileResponse profile = profileService.getProfile(DEMO_USERNAME);
 
         assertThat(profile.username()).isEqualTo(DEMO_USERNAME);
-        assertThat(profile.displayName()).isEqualTo("민아");
-        assertThat(profile.statistics().countryCount()).isEqualTo(4);
-        assertThat(profile.statistics().cityCount()).isEqualTo(7);
-        assertThat(profile.statistics().travelCount()).isEqualTo(5);
+        assertThat(profile.displayName()).isEqualTo("샘플 여행자");
+        assertThat(profile.statistics().countryCount()).isEqualTo(6);
+        assertThat(profile.statistics().cityCount()).isEqualTo(9);
+        assertThat(profile.statistics().travelCount()).isEqualTo(7);
     }
 
     @Test
@@ -59,8 +59,8 @@ class ProfileServiceTest {
         seedDataLoader.run(null);
 
         ProfileResponse refreshedProfile = profileService.getProfile(DEMO_USERNAME);
-        assertThat(refreshedProfile.displayName()).isEqualTo("민아");
-        assertThat(refreshedProfile.bio()).isEqualTo("다녀온 세계를 천천히 모으는 여행 기록");
+        assertThat(refreshedProfile.displayName()).isEqualTo("샘플 여행자");
+        assertThat(refreshedProfile.bio()).isEqualTo("여러 나라의 계획과 기록을 미리 둘러보는 공개 샘플");
         assertThat(profileService.getTravels(DEMO_USERNAME)).hasSize(travelCountBeforeRefresh);
     }
 
@@ -82,9 +82,9 @@ class ProfileServiceTest {
     void returnsVisitedCountriesForTheGlobe() {
         List<VisitedCountryResponse> countries = profileService.getVisitedCountries(DEMO_USERNAME);
 
-        assertThat(countries).hasSize(4);
+        assertThat(countries).hasSize(6);
         assertThat(countries).extracting(VisitedCountryResponse::iso2Code)
-                .containsExactlyInAnyOrder("KR", "JP", "TW", "US");
+                .containsExactlyInAnyOrder("KR", "JP", "TW", "US", "FR", "TH");
         assertThat(countries).allSatisfy(country -> {
             assertThat(country.latitude()).isNotNull();
             assertThat(country.longitude()).isNotNull();
@@ -112,7 +112,7 @@ class ProfileServiceTest {
     void returnsTravelsNewestFirst() {
         List<TravelSummaryResponse> travels = profileService.getTravels(DEMO_USERNAME);
 
-        assertThat(travels).hasSize(5);
+        assertThat(travels).hasSize(7);
         assertThat(travels.get(0).title()).isEqualTo("Taipei, again.");
         assertThat(travels.get(0).primaryCountry().iso2Code()).isEqualTo("TW");
         assertThat(travels.get(0).primaryCity().nameEn()).isEqualTo("Taipei");
@@ -159,7 +159,7 @@ class ProfileServiceTest {
     void statisticsEndpointMatchesProfile() {
         TravelStatisticsResponse statistics = profileService.getStatistics(DEMO_USERNAME);
 
-        assertThat(statistics.placeCount()).isEqualTo(13);
+        assertThat(statistics.placeCount()).isEqualTo(17);
         assertThat(statistics.firstTravelDate()).isNotNull();
         assertThat(statistics.latestTravelDate()).isNotNull();
     }

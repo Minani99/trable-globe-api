@@ -10,6 +10,7 @@ import { ApiError } from "@/lib/api/client";
 import { authenticatedBackendGet, getCurrentMember } from "@/lib/api/server-session";
 import { fetchProfile, fetchTravels, fetchVisitedCountries } from "@/lib/api/profile";
 import { profilePath, profileRecapImagePath, siteConfig } from "@/lib/config";
+import { presentDemoProfile } from "@/lib/demo-profile";
 import type { FollowStatus, MemberSafetyStatus } from "@/types";
 
 /**
@@ -24,10 +25,11 @@ export async function generateMetadata(props: PageProps<"/[username]">): Promise
   const year = parseYearParam(searchParams.year);
 
   try {
-    const [profile, travels] = await Promise.all([
+    const [loadedProfile, travels] = await Promise.all([
       loadProfile(username),
       year === null ? Promise.resolve(null) : loadTravels(username),
     ]);
+    const profile = presentDemoProfile(loadedProfile);
     const sharedYear = year !== null && travels?.some((travel) => travel.startDate.startsWith(`${year}-`))
       ? year
       : null;
@@ -147,12 +149,12 @@ function parseYearParam(value: string | string[] | undefined): number | null {
  * waterfalling. A 404 on any of them means the handle does not exist.
  */
 async function loadProfileBundle(username: string) {
-  const [profile, countries, travels] = await Promise.all([
+  const [loadedProfile, countries, travels] = await Promise.all([
     loadProfile(username),
     fetchVisitedCountries(username),
     loadTravels(username),
   ]);
-  return { profile, countries, travels };
+  return { profile: presentDemoProfile(loadedProfile), countries, travels };
 }
 
 /**

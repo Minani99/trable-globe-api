@@ -1,4 +1,5 @@
 import { LandingGlobePreview } from "@/components/landing/LandingGlobePreview";
+import { LandingOrientationGuide } from "@/components/landing/LandingOrientationGuide";
 import { LandingStartAction } from "@/components/landing/LandingStartAction";
 import { SiteFooter } from "@/components/layout/SiteFooter";
 import { SiteHeader } from "@/components/layout/SiteHeader";
@@ -12,19 +13,21 @@ export default function LandingPage() {
         <section className="landing-hero site-shell relative grid min-h-[calc(100svh-3.5rem)] flex-1 items-center gap-12 py-14 sm:py-20 lg:grid-cols-[minmax(0,0.82fr)_minmax(520px,1.18fr)] lg:gap-4 lg:py-14">
           <div className="landing-copy relative z-10">
             <h1 className="landing-title text-content max-w-[13ch]">
-              <span className="landing-title-line landing-title-line--one">다음 여행부터</span>{" "}
-              <span className="landing-title-line landing-title-line--two">다녀온 세계까지.</span>
+              <span className="landing-title-line landing-title-line--one">계획한 여행이</span>{" "}
+              <span className="landing-title-line landing-title-line--two">나의 세계가 됩니다.</span>
             </h1>
 
             <p className="text-body landing-intro landing-reveal landing-reveal--body mt-7 max-w-[40ch]">
-              나라와 날짜, 취향만 고르면 계획이 시작됩니다. 다녀온 뒤에는 그 일정을
-              그대로 나만의 여행 지구본에 남기세요.
+              여행을 계획하고, 여행 중에는 가볍게 체크하세요. 다녀온 뒤에는 같은 일정을
+              다시 쓰지 않고 나만의 지구본 기록으로 완성할 수 있습니다.
             </p>
 
             <div className="landing-reveal landing-reveal--actions mt-10 flex flex-wrap items-center gap-3">
               <LandingStartAction />
-              <a href="#experience-heading" className="landing-secondary-cta">어떻게 이어지나요?</a>
+              <LandingOrientationGuide />
             </div>
+
+            <p className="landing-start-hint">처음이라면 여행 계획부터 시작하면 됩니다.</p>
 
           </div>
 

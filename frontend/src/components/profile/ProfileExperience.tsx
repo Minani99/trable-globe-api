@@ -10,12 +10,14 @@ import { GlobeMemorySpotlight } from "@/components/globe/GlobeMemorySpotlight";
 import { GlobeTimelineControls } from "@/components/globe/GlobeTimelineControls";
 import { TravelGlobe } from "@/components/globe/TravelGlobe";
 import { ProfileGlobeDock } from "@/components/profile/ProfileGlobeDock";
+import { ProfileWorldList } from "@/components/profile/ProfileWorldList";
 import { ShareProfileButton } from "@/components/profile/ShareProfileButton";
 import { TravelYearFilter } from "@/components/profile/TravelYearFilter";
 import { TravelYearRecap } from "@/components/profile/TravelYearRecap";
 import { TravelCard } from "@/components/travel/TravelCard";
 import { TravelTimeline } from "@/components/travel/TravelTimeline";
 import { fetchTravelsByCountry } from "@/lib/api/profile";
+import { isDemoProfile } from "@/lib/demo-profile";
 import { arcsAtMoment, buildGlobeTimeline, countriesAtMoment, countriesForTravels } from "@/lib/globeTimeline";
 import { buildTravelRecap, buildTravelYearComparison, travelsForYear, travelYears } from "@/lib/travelInsights";
 import type { AuthMember, FollowStatus, MemberSafetyStatus, TravelSummary, UserProfile, VisitedCountry } from "@/types";
@@ -31,6 +33,7 @@ interface ProfileExperienceProps {
 }
 
 type MobileArchiveView = "travels" | "countries" | "timeline";
+type WorldView = "globe" | "list";
 
 /**
  * Owns the shared exploration state for the profile: selected year, moment and country.
@@ -77,6 +80,7 @@ export function ProfileExperience({
   const [timelinePlaying, setTimelinePlaying] = useState(false);
   const [timelineControlsExpanded, setTimelineControlsExpanded] = useState(false);
   const [mobileArchiveView, setMobileArchiveView] = useState<MobileArchiveView>("travels");
+  const [worldView, setWorldView] = useState<WorldView>("globe");
   // Keyed by the country it was fetched for, so a result arriving after the visitor moved
   // on is simply ignored instead of briefly showing the wrong country's trips.
   const [countryTravels, setCountryTravels] = useState<{
@@ -84,6 +88,11 @@ export function ProfileExperience({
     travels: TravelSummary[];
   } | null>(null);
   const isOwnProfile = viewer?.username === profile.username;
+  const demoProfile = isDemoProfile(profile.username);
+
+  const changeWorldView = useCallback((view: WorldView) => {
+    setWorldView(view);
+  }, []);
 
   useEffect(() => {
     if (!timelinePlaying) return;
@@ -237,28 +246,63 @@ export function ProfileExperience({
   const showTravelTimeline = scopedTravels.length > 1;
   const mobileArchivePanelCount = 1 + Number(showCountryIndex) + Number(showTravelTimeline);
 
+  const handleListCountrySelect = useCallback((iso2Code: string) => {
+    handleSelect(iso2Code);
+    setMobileArchiveView("travels");
+    window.setTimeout(() => {
+      document.getElementById("profile-travel-archive")?.scrollIntoView({ behavior: "smooth", block: "start" });
+    }, 50);
+  }, [handleSelect]);
+
   return (
     <>
       <section aria-labelledby="globe-heading" className="profile-world">
         <div className="site-shell profile-world__intro">
           <div>
-            <p className="eyebrow">Personal world · @{profile.username}</p>
+            <p className="eyebrow">
+              {demoProfile ? "Public sample · 여러 나라 데모" : `Personal world · @${profile.username}`}
+            </p>
             <h1 id="globe-heading">{profile.displayName}의 여행 세계</h1>
           </div>
           <div className="profile-world__summary">
             <p>
-              {selectedYear
+              {demoProfile
+                ? "여러 나라의 여행이 계획에서 기록으로 바뀌어 지구본에 쌓이는 모습을 체험해 보세요."
+                : selectedYear
                 ? `${selectedYear}년에 다녀온 ${recap.countryCount}개 나라와 ${recap.travelCount}번의 여행입니다.`
                 : `${countries.length}개 나라, ${travels.length}번의 여행이 하나의 지구본 위에 이어집니다.`}
-              {" "}재생 버튼으로 세계가 확장된 시간을 따라가거나 나라를 선택해
-              그곳에 쌓인 기억을 살펴보세요.
+              {" "}{demoProfile ? "" : "재생하거나 나라를 선택해 그곳에 쌓인 기억을 살펴보세요."}
             </p>
             <ShareProfileButton displayName={profile.displayName} selectedYear={selectedYear} />
           </div>
         </div>
 
         <div className="site-shell">
-          <TravelYearFilter years={years} selectedYear={selectedYear} onChange={handleYearChange} />
+          <div className="profile-world-toolbar">
+            <TravelYearFilter years={years} selectedYear={selectedYear} onChange={handleYearChange} />
+            <nav className="profile-world-view-switch" aria-label="여행 세계 보기 방식">
+              <button
+                type="button"
+                className={worldView === "globe" ? "is-active" : undefined}
+                aria-pressed={worldView === "globe"}
+                onClick={() => changeWorldView("globe")}
+              >
+                <svg aria-hidden="true" viewBox="0 0 20 20"><circle cx="10" cy="10" r="7" /><path d="M3.4 10h13.2M10 3c1.8 1.9 2.7 4.2 2.7 7S11.8 15.1 10 17M10 3C8.2 4.9 7.3 7.2 7.3 10s.9 5.1 2.7 7" /></svg>
+                지구본
+              </button>
+              <button
+                type="button"
+                className={worldView === "list" ? "is-active" : undefined}
+                aria-pressed={worldView === "list"}
+                onClick={() => changeWorldView("list")}
+              >
+                <svg aria-hidden="true" viewBox="0 0 20 20"><path d="M6.5 5h10M6.5 10h10M6.5 15h10" /><circle cx="3.5" cy="5" r=".7" /><circle cx="3.5" cy="10" r=".7" /><circle cx="3.5" cy="15" r=".7" /></svg>
+                목록
+              </button>
+            </nav>
+          </div>
+
+          {worldView === "globe" ? (
           <div className={`profile-globe-card${timelineControlsExpanded ? " has-expanded-timeline" : ""}`}>
             <div className="profile-globe-card__meta" aria-hidden="true">
               <span>TRAVEL GLOBE · LIVE ARCHIVE</span>
@@ -347,6 +391,14 @@ export function ProfileExperience({
               </p>
             )}
           </div>
+          ) : (
+            <ProfileWorldList
+              countries={scopedCountries}
+              travels={scopedTravels}
+              username={profile.username}
+              onCountrySelect={handleListCountrySelect}
+            />
+          )}
         </div>
       </section>
 

@@ -4,6 +4,7 @@ import Link from "next/link";
 
 import { travelPath } from "@/lib/config";
 import { formatDate, formatDateRange } from "@/lib/utils/format";
+import { countryFlag } from "@/lib/worldLandmarks";
 import type { TravelSummary, VisitedCountry } from "@/types";
 
 interface CountryDetailPanelProps {
@@ -32,78 +33,57 @@ export function CountryDetailPanel({
   return (
     <aside
       aria-label={`${country.nameKo} 여행 요약`}
-      className="panel animate-fade-up z-20 w-full p-5 lg:w-[320px]"
+      className="country-detail panel animate-fade-up z-20 w-full"
     >
-      <div className="mb-4 flex items-start justify-between gap-3">
-        <div>
-          <h3 className="text-content text-[1.35rem] leading-tight font-light tracking-tight">
-            {country.nameKo}
-          </h3>
-          <p className="eyebrow mt-1">{country.nameEn}</p>
+      <div className="country-detail__header">
+        <span className="country-detail__flag" aria-hidden="true">{countryFlag(country.iso2Code)}</span>
+        <div className="min-w-0 flex-1">
+          <h3>{country.nameKo}</h3>
+          <p>{country.nameEn}</p>
         </div>
         <button
           type="button"
           onClick={onClear}
           aria-label="국가 선택 해제"
-          className="text-content-faint hover:text-content -mt-1 -mr-1 flex h-7 w-7 items-center justify-center rounded-md text-lg leading-none transition-colors"
+          className="country-detail__close"
         >
           ×
         </button>
       </div>
 
-      <dl className="country-detail__memory-stats border-border-subtle mb-4 grid grid-cols-3 gap-3 border-y py-3">
+      <dl className="country-detail__memory-stats">
         <div>
-          <dt className="eyebrow">여행</dt>
-          <dd className="text-content mt-1 font-mono text-[1.05rem]">{country.travelCount}</dd>
+          <dt>여행</dt>
+          <dd>{country.travelCount}</dd>
         </div>
         <div>
-          <dt className="eyebrow">도시</dt>
-          <dd className="text-content mt-1 font-mono text-[1.05rem]">{country.cityCount}</dd>
+          <dt>도시</dt>
+          <dd>{country.cityCount}</dd>
         </div>
         <div>
-          <dt className="eyebrow">첫 기억</dt>
-          <dd className="text-content mt-1 font-mono text-[0.72rem]">
+          <dt>첫 기억</dt>
+          <dd>
             {firstTravel ? formatDate(firstTravel.startDate).slice(0, 7) : "—"}
           </dd>
         </div>
       </dl>
 
       {latestTravel ? (
-        <div className="country-detail__latest">
-          <small>가장 최근의 기억 · {formatDate(latestTravel.startDate)}</small>
-          <strong>{latestTravel.title}</strong>
-        </div>
+        <Link href={travelPath(username, latestTravel.id)} className="country-detail__latest">
+          <span>
+            <small>최근 기억 · {formatDateRange(latestTravel.startDate, latestTravel.endDate)}</small>
+            <strong>{latestTravel.title}</strong>
+          </span>
+          <span aria-hidden="true">↗</span>
+        </Link>
       ) : null}
-
-      {travels.length > 0 ? (
-        <ul className="flex flex-col gap-1">
-          {orderedTravels.slice(0, 3).map((travel) => (
-            <li key={travel.id}>
-              <Link
-                href={travelPath(username, travel.id)}
-                className="hover:bg-surface-hover -mx-2 flex flex-col gap-0.5 rounded-md px-2 py-2 transition-colors"
-              >
-                <span className="text-content text-[0.88rem] leading-snug">{travel.title}</span>
-                <span className="text-content-faint font-mono text-[0.7rem]">
-                  {formatDateRange(travel.startDate, travel.endDate)}
-                </span>
-              </Link>
-            </li>
-          ))}
-          {orderedTravels.length > 3 ? (
-            <li className="country-detail__more">외 {orderedTravels.length - 3}개의 여행</li>
-          ) : null}
-        </ul>
-      ) : (
-        <p className="text-caption">이 국가에 공개된 여행 기록이 없습니다.</p>
-      )}
 
       <button
         type="button"
         onClick={onClear}
-        className="border-border-subtle text-content-muted mt-4 w-full rounded-md border py-2 text-[0.76rem] transition-colors hover:border-[var(--accent-border)] hover:text-[var(--accent-strong)]"
+        className="country-detail__all"
       >
-        전체 여행 보기
+        전체 세계로 돌아가기
       </button>
     </aside>
   );

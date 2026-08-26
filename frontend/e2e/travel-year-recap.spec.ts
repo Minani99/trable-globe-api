@@ -27,7 +27,9 @@ test("연도 링크를 열고 바꾸면 지구본, 기록, 리캡과 공유 주�
   await expect(page.getByRole("heading", { name: "그해의 여행 리듬" })).toBeVisible();
   await expect(page.locator(".travel-recap__month-chart .is-active")).toHaveCount(3);
   await expect(page.locator(".travel-recap__cities li")).toHaveCount(3);
-  await expect(page.locator(".travel-recap__comparison")).toHaveCount(0);
+  await expect(
+    page.locator(".travel-recap__comparison").getByRole("heading", { name: "2024년과 2025년 비교" }),
+  ).toBeVisible();
   await expect(page.locator(".travel-recap__memories a")).toHaveCount(3);
   await expect(page.locator(".travel-card")).toHaveCount(3);
 
@@ -51,7 +53,7 @@ test("연도 링크를 열고 바꾸면 지구본, 기록, 리캡과 공유 주�
   await yearFilter.getByRole("button", { name: "전체" }).click();
   await expect(page).toHaveURL(/\/traveler$/);
   await expect(page.getByRole("heading", { name: "지금까지, 내가 만든 여행 세계" })).toBeVisible();
-  await expect(page.locator(".travel-card")).toHaveCount(5);
+  await expect(page.locator(".travel-card")).toHaveCount(7);
 
   await page.setViewportSize({ width: 390, height: 844 });
   const layout = await page.evaluate(() => ({

@@ -44,8 +44,8 @@ public class SeedDataLoader implements ApplicationRunner {
     private static final Logger log = LoggerFactory.getLogger(SeedDataLoader.class);
 
     private static final String DEMO_USERNAME = "traveler";
-    private static final String DEMO_DISPLAY_NAME = "민아";
-    private static final String DEMO_BIO = "다녀온 세계를 천천히 모으는 여행 기록";
+    private static final String DEMO_DISPLAY_NAME = "샘플 여행자";
+    private static final String DEMO_BIO = "여러 나라의 계획과 기록을 미리 둘러보는 공개 샘플";
     private static final String DEMO_PROFILE_IMAGE_URL = "/placeholders/avatar.svg";
 
     private final MemberRepository memberRepository;
@@ -87,6 +87,8 @@ public class SeedDataLoader implements ApplicationRunner {
         Country japan = country("JP", "JPN", "Japan", "일본", "36.204824", "138.252924");
         Country taiwan = country("TW", "TWN", "Taiwan", "대만", "23.697810", "120.960515");
         Country usa = country("US", "USA", "United States", "미국", "39.828175", "-98.579500");
+        Country france = country("FR", "FRA", "France", "프랑스", "46.227638", "2.213749");
+        Country thailand = country("TH", "THA", "Thailand", "태국", "15.870032", "100.992541");
 
         City seoul = city(korea, "Seoul", "서울", "37.566535", "126.977969");
         City busan = city(korea, "Busan", "부산", "35.179554", "129.075642");
@@ -95,12 +97,16 @@ public class SeedDataLoader implements ApplicationRunner {
         City taipei = city(taiwan, "Taipei", "타이베이", "25.032969", "121.565418");
         City miami = city(usa, "Miami", "마이애미", "25.761681", "-80.191788");
         City keyWest = city(usa, "Key West", "키웨스트", "24.555059", "-81.779984");
+        City paris = city(france, "Paris", "파리", "48.856613", "2.352222");
+        City bangkok = city(thailand, "Bangkok", "방콕", "13.756331", "100.501762");
 
         seedTaipei(traveler, taiwan, taipei);
         seedFukuoka(traveler, japan, fukuoka);
         seedFlorida(traveler, usa, miami, keyWest);
         seedOkinawa(traveler, japan, naha);
         seedKorea(traveler, korea, seoul, busan);
+        seedParis(traveler, france, paris);
+        seedBangkok(traveler, thailand, bangkok);
 
         log.info("Seeded demo profile '{}' with {} travels", DEMO_USERNAME, travelRepository.count());
     }
@@ -220,6 +226,44 @@ public class SeedDataLoader implements ApplicationRunner {
                 photo(0, "/placeholders/photo-11.svg", "을지로의 골목", LocalDate.of(2025, 4, 4)),
                 photo(1, "/placeholders/photo-12.svg", "감천문화마을", LocalDate.of(2025, 4, 6)),
                 photo(2, "/placeholders/photo-13.svg", "광안리의 밤", LocalDate.of(2025, 4, 7))));
+    }
+
+    private void seedParis(Member owner, Country france, City paris) {
+        Travel travel = Travel.create(owner,
+                "파리의 긴 주말",
+                "미술관과 센강 사이를 천천히 걸었던 사흘.",
+                LocalDate.of(2024, 10, 4),
+                LocalDate.of(2024, 10, 6),
+                "/placeholders/cover-02.svg",
+                Visibility.PUBLIC);
+
+        travel.addPlace(TravelPlace.create(france, paris, "오르세 미술관",
+                bd("48.860000"), bd("2.326600"), LocalDate.of(2024, 10, 4),
+                "오후 빛이 들어오는 시계탑 아래에서.", 0));
+        travel.addPlace(TravelPlace.create(france, paris, "몽마르트르",
+                bd("48.886700"), bd("2.343100"), LocalDate.of(2024, 10, 5),
+                "언덕 위에서 도시의 저녁을 기다렸다.", 1));
+
+        persist(travel, List.of());
+    }
+
+    private void seedBangkok(Member owner, Country thailand, City bangkok) {
+        Travel travel = Travel.create(owner,
+                "방콕, 골목과 강 사이",
+                "시장과 사원, 강변을 오가며 보낸 나흘.",
+                LocalDate.of(2024, 2, 8),
+                LocalDate.of(2024, 2, 11),
+                "/placeholders/cover-04.svg",
+                Visibility.PUBLIC);
+
+        travel.addPlace(TravelPlace.create(thailand, bangkok, "왓 아룬",
+                bd("13.743700"), bd("100.488900"), LocalDate.of(2024, 2, 9),
+                "강 건너에서 해가 기울 때까지 바라봤다.", 0));
+        travel.addPlace(TravelPlace.create(thailand, bangkok, "짜뚜짝 시장",
+                bd("13.799900"), bd("100.550100"), LocalDate.of(2024, 2, 10),
+                "길을 잃는 것까지 일정이 된 오후.", 1));
+
+        persist(travel, List.of());
     }
 
     /**
