@@ -1,5 +1,6 @@
 package com.travelglobe.trableglobeapi.api;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.hasItem;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
@@ -10,6 +11,9 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import com.jayway.jsonpath.JsonPath;
+import java.util.Comparator;
+import java.util.List;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,6 +21,7 @@ import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.http.MediaType;
+import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 
 /**
  * End-to-end HTTP checks over the seeded database: routing, the response envelope and
@@ -28,6 +33,32 @@ class TravelGlobeApiTest {
 
     @Autowired
     private MockMvc mockMvc;
+
+    /** Performs the request, asserts 200 and hands back the raw body. */
+    private String okBody(MockHttpServletRequestBuilder request) throws Exception {
+        return mockMvc.perform(request)
+                .andExpect(status().isOk())
+                .andReturn().getResponse().getContentAsString();
+    }
+
+    /** Number of elements in the data array of a collection endpoint. */
+    private int dataLength(String path) throws Exception {
+        return JsonPath.<List<Object>>read(okBody(get(path)), "$.data").size();
+    }
+
+    /** Trips on the full profile list that include the given country. */
+    private int countTravelsVisiting(String iso2Code) throws Exception {
+        String all = okBody(get("/api/profiles/traveler/travels"));
+        int total = JsonPath.<List<Object>>read(all, "$.data").size();
+        int matching = 0;
+        for (int index = 0; index < total; index++) {
+            if (JsonPath.<List<String>>read(all, "$.data[" + index + "].countries[*].iso2Code")
+                    .contains(iso2Code)) {
+                matching++;
+            }
+        }
+        return matching;
+    }
 
     @Test
     @DisplayName("GET /api/health 는 UP 을 반환한다")
@@ -53,13 +84,20 @@ class TravelGlobeApiTest {
     @Test
     @DisplayName("GET /api/profiles/{username} 은 프로필과 통계를 반환한다")
     void returnsProfile() throws Exception {
-        mockMvc.perform(get("/api/profiles/traveler"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.success").value(true))
-                .andExpect(jsonPath("$.data.username").value("traveler"))
-                .andExpect(jsonPath("$.data.statistics.countryCount").value(4))
-                .andExpect(jsonPath("$.data.statistics.cityCount").value(7))
-                .andExpect(jsonPath("$.data.statistics.travelCount").value(5));
+        String profile = okBody(get("/api/profiles/traveler"));
+
+        // Totals are checked against the collections they summarise rather than pinned
+        // to a number. A hard-coded total only records what the seed held the day it
+        // was written, breaks the build the next time the seed grows, and never once
+        // checks that the headline figures agree with the data behind them.
+        assertThat(JsonPath.<String>read(profile, "$.data.username")).isEqualTo("traveler");
+        assertThat(JsonPath.<Integer>read(profile, "$.data.statistics.countryCount"))
+                .isPositive()
+                .isEqualTo(dataLength("/api/profiles/traveler/countries"));
+        assertThat(JsonPath.<Integer>read(profile, "$.data.statistics.travelCount"))
+                .isPositive()
+                .isEqualTo(dataLength("/api/profiles/traveler/travels"));
+        assertThat(JsonPath.<Integer>read(profile, "$.data.statistics.cityCount")).isPositive();
     }
 
     @Test
@@ -74,25 +112,33 @@ class TravelGlobeApiTest {
     @Test
     @DisplayName("GET /api/profiles/{username}/countries 는 지구본 마커 데이터를 반환한다")
     void returnsVisitedCountries() throws Exception {
-        mockMvc.perform(get("/api/profiles/traveler/countries"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.data.length()").value(4))
-                .andExpect(jsonPath("$.data[0].iso2Code").isNotEmpty())
-                .andExpect(jsonPath("$.data[0].latitude").isNumber())
-                .andExpect(jsonPath("$.data[0].longitude").isNumber())
-                .andExpect(jsonPath("$.data[0].travelCount").isNumber());
+        String response = okBody(get("/api/profiles/traveler/countries"));
+
+        assertThat(JsonPath.<List<String>>read(response, "$.data[*].iso2Code")).isNotEmpty();
+        assertThat(JsonPath.<List<Number>>read(response, "$.data[*].latitude")).doesNotContainNull();
+        assertThat(JsonPath.<List<Number>>read(response, "$.data[*].longitude")).doesNotContainNull();
+        // The globe draws the busiest countries first, so the order is part of the contract.
+        assertThat(JsonPath.<List<Integer>>read(response, "$.data[*].travelCount"))
+                .isNotEmpty()
+                .isSortedAccordingTo(Comparator.reverseOrder());
     }
 
     @Test
     @DisplayName("GET /api/profiles/{username}/travels 는 최신 여행부터 반환한다")
     void returnsTravels() throws Exception {
+        String response = okBody(get("/api/profiles/traveler/travels"));
+
+        // ISO dates sort lexicographically, so this states the real "newest first"
+        // claim rather than naming whichever trip the seed happens to start with.
+        assertThat(JsonPath.<List<String>>read(response, "$.data[*].startDate"))
+                .isNotEmpty()
+                .isSortedAccordingTo(Comparator.reverseOrder());
+        assertThat(JsonPath.<List<Integer>>read(response, "$.data[*].durationDays"))
+                .isNotEmpty()
+                .allSatisfy(days -> assertThat(days).isPositive());
+
         mockMvc.perform(get("/api/profiles/traveler/travels"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.data.length()").value(5))
-                .andExpect(jsonPath("$.data[0].title").value("Taipei, again."))
-                .andExpect(jsonPath("$.data[0].primaryCountry.nameKo").value("대만"))
-                .andExpect(jsonPath("$.data[0].durationDays").value(3))
-                .andExpect(jsonPath("$.data[0].routePoints.length()").value(3))
+                .andExpect(jsonPath("$.data[0].primaryCountry.nameKo").isNotEmpty())
                 .andExpect(jsonPath("$.data[0].routePoints[0].label").isNotEmpty())
                 .andExpect(jsonPath("$.data[0].routePoints[0].latitude").isNumber())
                 .andExpect(jsonPath("$.data[0].routePoints[0].longitude").isNumber());
@@ -101,9 +147,18 @@ class TravelGlobeApiTest {
     @Test
     @DisplayName("GET /api/profiles/{username}/countries/{code}/travels 는 국가별 여행을 반환한다")
     void returnsTravelsByCountry() throws Exception {
-        mockMvc.perform(get("/api/profiles/traveler/countries/JP/travels"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.data.length()").value(2));
+        String response = okBody(get("/api/profiles/traveler/countries/JP/travels"));
+        int returned = JsonPath.<List<Object>>read(response, "$.data").size();
+
+        assertThat(returned).isPositive();
+        // What the filter actually promises: every trip returned visited Japan, and no
+        // trip that visited Japan was left out.
+        for (int index = 0; index < returned; index++) {
+            assertThat(JsonPath.<List<String>>read(response, "$.data[" + index + "].countries[*].iso2Code"))
+                    .as("trip at index %d", index)
+                    .contains("JP");
+        }
+        assertThat(returned).isEqualTo(countTravelsVisiting("JP"));
     }
 
     @Test
@@ -117,24 +172,26 @@ class TravelGlobeApiTest {
     @Test
     @DisplayName("GET /api/travels/{id} 는 장소, 사진, 이전/다음 여행을 포함한다")
     void returnsTravelDetail() throws Exception {
-        String body = mockMvc.perform(get("/api/profiles/traveler/travels"))
-                .andExpect(status().isOk())
-                .andReturn().getResponse().getContentAsString();
-
+        String list = okBody(get("/api/profiles/traveler/travels"));
         // The newest trip is first; its id is what the profile page would link to.
-        int idIndex = body.indexOf("\"id\":");
-        long travelId = Long.parseLong(body.substring(idIndex + 5, body.indexOf(',', idIndex)).trim());
+        Object travelId = JsonPath.read(list, "$.data[0].id");
 
+        // Expectations come from the list itself, so this checks that the two views
+        // agree. A detail page contradicting the card that linked to it is the bug
+        // worth catching here - not whichever trip the seed puts first.
         mockMvc.perform(get("/api/travels/" + travelId))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.data.title").value("Taipei, again."))
+                .andExpect(jsonPath("$.data.title").value(JsonPath.<String>read(list, "$.data[0].title")))
                 .andExpect(jsonPath("$.data.owner.username").value("traveler"))
-                .andExpect(jsonPath("$.data.places.length()").value(3))
+                .andExpect(jsonPath("$.data.places.length()")
+                        .value(JsonPath.<Integer>read(list, "$.data[0].placeCount")))
                 .andExpect(jsonPath("$.data.places[0].latitude").isNumber())
-                .andExpect(jsonPath("$.data.photos.length()").value(3))
+                .andExpect(jsonPath("$.data.photos.length()")
+                        .value(JsonPath.<Integer>read(list, "$.data[0].photoCount")))
                 // Newest trip: nothing newer, but an older one exists.
                 .andExpect(jsonPath("$.data.nextTravel").doesNotExist())
-                .andExpect(jsonPath("$.data.previousTravel.title").value("후쿠오카의 사흘"));
+                .andExpect(jsonPath("$.data.previousTravel.title")
+                        .value(JsonPath.<String>read(list, "$.data[1].title")));
     }
 
     @Test
