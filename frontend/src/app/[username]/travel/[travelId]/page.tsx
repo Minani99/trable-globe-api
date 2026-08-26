@@ -9,12 +9,14 @@ import { SiteFooter } from "@/components/layout/SiteFooter";
 import { SiteHeader } from "@/components/layout/SiteHeader";
 import { PhotoGallery } from "@/components/travel/PhotoGallery";
 import { TravelRouteMap } from "@/components/travel/TravelRouteMap";
+import { SaveSharedItinerary } from "@/components/travel/SaveSharedItinerary";
 import { TravelSocialPanel } from "@/components/travel/TravelSocialPanel";
 import { ApiError } from "@/lib/api/client";
 import { authenticatedBackendGet, getCurrentMember } from "@/lib/api/server-session";
 import { fetchTravelDetail, fetchTravelSocial } from "@/lib/api/travel";
 import { profilePath, travelPath } from "@/lib/config";
 import { formatDate, formatDateRange, formatDuration } from "@/lib/utils/format";
+import { todayInKorea } from "@/lib/utils/date";
 import type { TravelDetail, TravelNavigationLink, TravelSocial } from "@/types";
 
 const loadTravel = cache((travelId: number) => fetchTravelDetail(travelId));
@@ -174,6 +176,7 @@ export default async function TravelDetailPage(
                 경로와 일정 보기
                 <span aria-hidden="true">↓</span>
               </a>
+              <SaveSharedItinerary travel={travel} signedIn={Boolean(currentMember)} isOwner={currentMember?.username === travel.owner.username} today={todayInKorea()} />
             </div>
           </header>
 

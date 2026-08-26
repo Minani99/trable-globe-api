@@ -4484,6 +4484,401 @@ body {
   font-size: 0.68rem;
 }
 
+/* Trip preparation hub: one calm layer between the plan overview and detailed editing. */
+.trip-preparation {
+  display: grid;
+  gap: 1rem;
+  margin: 0 0 1rem;
+  padding: clamp(1rem, 2.5vw, 1.5rem);
+  border: 1px solid var(--border);
+  border-radius: 1.35rem;
+  background:
+    radial-gradient(circle at 0 0, color-mix(in srgb, var(--globe-ocean) 10%, transparent), transparent 28rem),
+    var(--surface);
+  box-shadow: 0 1.2rem 3.8rem rgba(28, 56, 64, 0.06);
+}
+
+.trip-preparation__heading {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.trip-preparation__heading h2 {
+  margin-top: 0.3rem;
+  font-size: clamp(1.35rem, 2.7vw, 2rem);
+  font-weight: 600;
+  letter-spacing: -0.05em;
+}
+
+.trip-preparation__heading > p {
+  color: var(--text-secondary);
+  font-family: var(--font-mono);
+  font-size: 0.62rem;
+  white-space: nowrap;
+}
+
+.trip-preparation__grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.65rem;
+}
+
+.trip-action-card {
+  display: flex;
+  min-width: 0;
+  min-height: 20.5rem;
+  flex-direction: column;
+  gap: 0.85rem;
+  padding: 1.05rem;
+  border: 1px solid var(--border);
+  border-radius: 1.05rem;
+  background: color-mix(in srgb, var(--surface-raised) 68%, var(--surface));
+}
+
+.trip-action-card.has-alert {
+  border-color: var(--accent-border);
+  background: color-mix(in srgb, var(--accent-soft) 30%, var(--surface));
+}
+
+.trip-action-card__icon {
+  display: grid;
+  width: 2rem;
+  height: 2rem;
+  place-items: center;
+  border: 1px solid var(--border-strong);
+  border-radius: 50%;
+  color: var(--accent-strong);
+  font-size: 0.8rem;
+}
+
+.trip-action-card__copy > span {
+  color: var(--accent-strong);
+  font-size: 0.58rem;
+  font-weight: 750;
+  letter-spacing: 0.1em;
+}
+
+.trip-action-card__copy h3 {
+  margin-top: 0.3rem;
+  font-size: 1rem;
+  font-weight: 680;
+  letter-spacing: -0.035em;
+  word-break: keep-all;
+}
+
+.trip-action-card__copy p,
+.trip-action-card__notice {
+  margin-top: 0.42rem;
+  color: var(--text-secondary);
+  font-size: 0.66rem;
+  line-height: 1.55;
+  word-break: keep-all;
+}
+
+.trip-action-card > small {
+  margin-top: auto;
+  color: var(--text-tertiary);
+  font-size: 0.55rem;
+  line-height: 1.5;
+}
+
+.trip-action-card > small a {
+  color: inherit;
+  text-decoration: underline;
+  text-underline-offset: 0.15em;
+}
+
+.trip-flight-route {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  align-items: end;
+  gap: 0.45rem;
+  padding: 0.7rem;
+  border: 1px solid var(--border);
+  border-radius: 0.85rem;
+  background: var(--surface);
+}
+
+.trip-flight-route label {
+  display: grid;
+  gap: 0.28rem;
+}
+
+.trip-flight-route label > span {
+  color: var(--text-tertiary);
+  font-size: 0.52rem;
+}
+
+.trip-flight-route input {
+  width: 100%;
+  min-height: 2.2rem;
+  border: 0;
+  border-bottom: 1px solid var(--border-strong);
+  background: transparent;
+  color: var(--text-primary);
+  font-family: var(--font-mono);
+  font-size: 0.85rem;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.trip-flight-route > span {
+  padding-bottom: 0.65rem;
+  color: var(--text-tertiary);
+  font-size: 0.7rem;
+}
+
+.trip-action-card__button {
+  display: flex;
+  min-height: 2.75rem;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.7rem;
+  padding: 0.7rem 0.8rem;
+  border-radius: 0.78rem;
+  background: var(--text-primary);
+  color: var(--surface);
+  font-size: 0.64rem;
+  font-weight: 720;
+  transition: transform 0.18s ease, opacity 0.18s ease;
+}
+
+:root[data-theme="dark"] .trip-action-card__button {
+  color: var(--background);
+}
+
+.trip-action-card__button.is-secondary {
+  border: 1px solid var(--border-strong);
+  background: var(--surface);
+  color: var(--text-primary);
+}
+
+.trip-action-card__button:hover,
+.trip-action-card__button:focus-visible {
+  transform: translateY(-1px);
+  opacity: 0.9;
+}
+
+.trip-weather-skeleton {
+  height: 4.4rem;
+  border-radius: 0.8rem;
+  background: linear-gradient(90deg, var(--surface-hover), var(--surface), var(--surface-hover));
+  background-size: 200% 100%;
+  animation: trip-weather-loading 1.5s ease infinite;
+}
+
+@keyframes trip-weather-loading {
+  to { background-position: -200% 0; }
+}
+
+.trip-weather-days {
+  display: grid;
+  gap: 0.35rem;
+}
+
+.trip-weather-days li {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  gap: 0.65rem;
+  padding: 0.55rem 0.6rem;
+  border: 1px solid color-mix(in srgb, var(--accent) 25%, var(--border));
+  border-radius: 0.72rem;
+  background: var(--surface);
+}
+
+.trip-weather-days li > span {
+  display: grid;
+  gap: 0.1rem;
+}
+
+.trip-weather-days b {
+  font-family: var(--font-mono);
+  font-size: 0.62rem;
+}
+
+.trip-weather-days small,
+.trip-weather-days p {
+  overflow: hidden;
+  color: var(--text-secondary);
+  font-size: 0.55rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.trip-flow {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr auto 1fr;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.8rem 0.6rem;
+  border-radius: 0.85rem;
+  background: var(--surface);
+  color: var(--text-secondary);
+  font-size: 0.58rem;
+  text-align: center;
+}
+
+.trip-flow span {
+  padding: 0.42rem 0.25rem;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+}
+
+.trip-flow i {
+  color: var(--accent-strong);
+  font-style: normal;
+}
+
+#itinerary-editor {
+  scroll-margin-top: 5.5rem;
+}
+
+/* A public journal can become a private plan without crowding the main hero. */
+.shared-itinerary-save {
+  position: relative;
+  display: grid;
+  gap: 0.65rem;
+}
+
+.shared-itinerary-cta {
+  display: inline-flex;
+  min-height: 2.9rem;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  align-self: flex-start;
+  min-width: 13rem;
+  padding: 0.78rem 0.95rem;
+  border: 1px solid var(--accent-border);
+  border-radius: 999px;
+  background: var(--accent-soft);
+  color: var(--accent-strong);
+  font-size: 0.75rem;
+  font-weight: 720;
+}
+
+.shared-itinerary-cta.is-owner {
+  border-color: var(--border-strong);
+  background: var(--surface-raised);
+  color: var(--text-primary);
+}
+
+.shared-itinerary-save__panel {
+  display: grid;
+  gap: 0.75rem;
+  padding: 0.9rem;
+  border: 1px solid var(--border);
+  border-radius: 0.95rem;
+  background: var(--surface-raised);
+}
+
+.shared-itinerary-save__panel strong {
+  font-size: 0.75rem;
+}
+
+.shared-itinerary-save__panel p,
+.shared-itinerary-save__panel small {
+  margin-top: 0.22rem;
+  color: var(--text-secondary);
+  font-size: 0.58rem;
+  line-height: 1.55;
+  word-break: keep-all;
+}
+
+.shared-itinerary-save__panel label {
+  display: grid;
+  gap: 0.3rem;
+}
+
+.shared-itinerary-save__panel label > span {
+  color: var(--text-tertiary);
+  font-size: 0.55rem;
+}
+
+.shared-itinerary-save__panel input {
+  min-height: 2.7rem;
+  padding-inline: 0.75rem;
+  border: 1px solid var(--border-strong);
+  border-radius: 0.72rem;
+  background: var(--surface);
+  color: var(--text-primary);
+  font-size: 0.68rem;
+}
+
+.shared-itinerary-save__panel > button {
+  min-height: 2.75rem;
+  border-radius: 0.72rem;
+  background: var(--text-primary);
+  color: var(--surface);
+  font-size: 0.65rem;
+  font-weight: 720;
+}
+
+.shared-itinerary-save__panel > button:disabled {
+  cursor: wait;
+  opacity: 0.55;
+}
+
+.shared-itinerary-save__error {
+  color: var(--accent-strong) !important;
+}
+
+@media (max-width: 980px) {
+  .trip-preparation__grid {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  }
+
+  .trip-action-card.is-share {
+    min-height: auto;
+    grid-column: 1 / -1;
+  }
+}
+
+@media (max-width: 700px) {
+  .trip-preparation {
+    padding: 0.8rem;
+    border-radius: 1.1rem;
+  }
+
+  .trip-preparation__heading {
+    display: grid;
+    align-items: start;
+  }
+
+  .trip-preparation__heading > p {
+    white-space: normal;
+  }
+
+  .trip-preparation__grid {
+    display: flex;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    scrollbar-width: none;
+    margin-inline: -0.8rem;
+    padding: 0 0.8rem 0.2rem;
+  }
+
+  .trip-preparation__grid::-webkit-scrollbar {
+    display: none;
+  }
+
+  .trip-action-card,
+  .trip-action-card.is-share {
+    flex: 0 0 min(84vw, 20rem);
+    min-height: 19.5rem;
+    grid-column: auto;
+    scroll-snap-align: start;
+  }
+
+  .shared-itinerary-cta {
+    width: 100%;
+    align-self: stretch;
+  }
+}
+
 .travel-year-filter {
   display: flex;
   min-height: 3.2rem;

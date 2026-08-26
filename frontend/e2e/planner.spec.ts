@@ -46,6 +46,11 @@ test("몇 번의 선택으로 여행 계획을 만들고 일차별 일정으로 
   const travelId = Number(page.url().match(/\/travels\/(\d+)\/edit/)?.[1]);
   expect(travelId).toBeGreaterThan(0);
   await expect(page.getByRole("heading", { name: "일본 3일 여행" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "예약부터 변수 대응까지, 한곳에서" })).toBeVisible();
+  await expect(page.getByRole("textbox", { name: "출발 공항 코드" })).toHaveValue("SEL");
+  await expect(page.getByRole("textbox", { name: "도착 공항 코드" })).toHaveValue("TYO");
+  await expect(page.getByRole("link", { name: /이 일정으로 항공권 찾기/ })).toHaveAttribute("href", /skyscanner\.co\.kr\/transport\/flights\/sel\/tyo\//);
+  await expect(page.getByText(/예보는 출발 16일 전부터 제공/)).toBeVisible();
   await expect(page.getByRole("heading", { name: "여행 준비 체크리스트" })).toBeVisible();
   await expect(page.locator(".travel-checklist__items li")).toHaveCount(6);
   await page.getByRole("button", { name: "항공·교통편 확인 완료로 변경" }).click();
