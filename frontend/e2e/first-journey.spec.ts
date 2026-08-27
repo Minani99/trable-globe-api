@@ -11,7 +11,7 @@ test("회원가입부터 프로필 완성, 첫 여행 공개와 공유까지 이
 
   await page.goto("/register?next=%2Fstudio%2Ftravels%2Fnew%3Fcountry%3DJP");
   await waitForInteractivePage(page);
-  await page.getByLabel("이름", { exact: true }).fill("첫 여행자");
+  await page.getByLabel("보여질 이름", { exact: true }).fill("첫 여행자");
   await page.getByLabel("사용자명", { exact: true }).fill(username);
   await page.getByLabel("이메일", { exact: true }).fill(email);
   await page.locator('input[name="password"]').fill("journey-password-42");
@@ -23,7 +23,7 @@ test("회원가입부터 프로필 완성, 첫 여행 공개와 공유까지 이
 
   await page.goto("/settings#profile");
   await waitForInteractivePage(page);
-  await page.getByLabel("이름", { exact: true }).fill("도쿄 산책가");
+  await page.getByLabel("보여질 이름", { exact: true }).fill("도쿄 산책가");
   await page.getByLabel("소개", { exact: true }).fill("낯선 도시를 천천히 걷고 기록합니다.");
   await page.getByRole("button", { name: "변경사항 저장" }).click();
   await expect(page.getByText("프로필을 저장했습니다.", { exact: true })).toBeVisible();
@@ -67,6 +67,13 @@ test("회원가입부터 프로필 완성, 첫 여행 공개와 공유까지 이
   await expect(page.getByRole("heading", { name: "도쿄에서 시작한 첫 여행", level: 3 })).toBeVisible();
   await page.getByRole("button", { name: "지구본 공유" }).click();
   await expect(page.getByText("링크를 복사했습니다.", { exact: true })).toBeVisible();
+
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto("/settings");
+  await expect(page.getByRole("button", { name: "로그아웃", exact: true })).toBeVisible();
+  await page.getByRole("button", { name: "로그아웃", exact: true }).click();
+  await expect(page).toHaveURL(/\/login$/);
+  await expect(page.getByRole("heading", { name: "내 여행으로 돌아가기" })).toBeVisible();
 });
 
 async function waitForInteractivePage(page: import("@playwright/test").Page) {

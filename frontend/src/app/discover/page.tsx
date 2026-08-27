@@ -9,7 +9,7 @@ import type { MemberDiscovery } from "@/types";
 
 export const metadata: Metadata = {
   title: "사람 찾기",
-  description: "이름과 사용자명으로 여행자를 찾고, 공통 여행지가 있는 사람을 만나보세요.",
+  description: "보여질 이름과 사용자명으로 여행자를 찾고, 공통 여행지가 있는 사람을 만나보세요.",
   robots: { index: false, follow: false },
 };
 

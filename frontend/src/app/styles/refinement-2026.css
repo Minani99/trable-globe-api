@@ -129,6 +129,43 @@
   border-left: 1px solid var(--border);
 }
 
+.auth-form__identity-fields {
+  display: grid;
+  gap: 0.95rem;
+}
+
+.auth-form label > span {
+  font-size: 0.76rem;
+  font-weight: 620;
+}
+
+.auth-form label small {
+  font-size: 0.72rem;
+  line-height: 1.55;
+  word-break: keep-all;
+}
+
+.auth-form__username-preview {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.58rem 0.7rem;
+  border-radius: 0.65rem;
+  background: var(--surface-muted);
+}
+
+.auth-form__username-preview strong {
+  min-width: 0;
+  overflow: hidden;
+  color: var(--text-secondary);
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  font-weight: 560;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 .auth-form input {
   min-height: 3rem;
   border-radius: 0.7rem;
@@ -360,6 +397,46 @@
   height: 5.75rem;
 }
 
+.settings-field-help {
+  color: var(--text-tertiary);
+  font-size: 0.72rem;
+  line-height: 1.6;
+  word-break: keep-all;
+}
+
+.settings-hero__actions {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+}
+
+.settings-hero__actions .studio-secondary-action {
+  order: 0;
+  gap: 0.45rem;
+}
+
+.settings-session-logout {
+  min-height: 3.1rem;
+  padding-inline: 1.1rem;
+  border: 1px solid var(--border-strong);
+  border-radius: 999px;
+  color: var(--text-tertiary);
+  font-size: 0.76rem;
+  font-weight: 560;
+  transition: border-color 0.2s ease, color 0.2s ease, background-color 0.2s ease;
+}
+
+.settings-session-logout:hover {
+  border-color: color-mix(in srgb, #a63b2c 36%, var(--border));
+  background: color-mix(in srgb, #a63b2c 6%, var(--surface));
+  color: #a63b2c;
+}
+
+.settings-session-logout:disabled {
+  cursor: wait;
+  opacity: 0.55;
+}
+
 .studio-section-heading h2,
 .studio-profile__heading h2 {
   font-size: 1.75rem;
@@ -462,6 +539,17 @@
   .auth-form {
     gap: 0.72rem;
     margin-top: 1.4rem;
+  }
+
+  .auth-form input,
+  .studio-profile input,
+  .studio-account input {
+    font-size: 1rem;
+  }
+
+  .auth-form label small,
+  .settings-field-help {
+    font-size: 0.75rem;
   }
 
   .about-hero {
@@ -655,6 +743,14 @@
     padding-bottom: 2.25rem;
   }
 
+  .settings-hero__actions {
+    width: 100%;
+  }
+
+  .settings-hero__actions > * {
+    flex: 1;
+  }
+
   .studio-onboarding,
   .settings-layout .studio-profile,
   .settings-layout .studio-account {
@@ -670,6 +766,19 @@
     height: 4.75rem;
   }
 
+  .settings-avatar__actions p,
+  .settings-avatar__actions small,
+  .studio-account__email span,
+  .studio-account__delete label > span,
+  .studio-account__verification p,
+  .studio-account__safe,
+  .studio-account__verification small,
+  .studio-account__delete small,
+  .studio-account__links,
+  .studio-form-actions span {
+    font-size: 0.72rem;
+  }
+
   .travel-editor__section {
     gap: 1.5rem;
     padding-block: 2.75rem;
@@ -680,6 +789,20 @@
   .auth-card,
   .auth-card--wide {
     padding: 1.25rem;
+  }
+
+  .settings-hero__actions {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .settings-hero__actions .studio-secondary-action {
+    order: 0;
+  }
+
+  .settings-hero__actions > * {
+    width: 100%;
+    min-height: 2.9rem;
   }
 
   .globe-time-controls__player output strong {

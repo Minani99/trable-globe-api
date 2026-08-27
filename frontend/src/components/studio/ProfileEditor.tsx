@@ -156,8 +156,19 @@ export function ProfileEditor({ member }: { member: AuthMember }) {
       </div>
 
       <label>
-        <span>이름</span>
-        <input name="displayName" defaultValue={savedMember.displayName} minLength={2} maxLength={60} required />
+        <span>보여질 이름</span>
+        <input
+          name="displayName"
+          defaultValue={savedMember.displayName}
+          minLength={2}
+          maxLength={60}
+          aria-label="보여질 이름"
+          aria-describedby="settings-display-name-help"
+          required
+        />
+        <small id="settings-display-name-help" className="settings-field-help">
+          프로필과 공개한 여행 기록에 표시됩니다. 사용자명 @{savedMember.username}은 프로필 주소와 검색에 사용돼요.
+        </small>
       </label>
       <label>
         <span>소개</span>

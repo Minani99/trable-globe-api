@@ -14,6 +14,7 @@ export function AuthForm({ mode, nextPath }: { mode: "login" | "register"; nextP
   const [error, setError] = useState<string | null>(null);
   const [pending, setPending] = useState(false);
   const [completed, setCompleted] = useState(false);
+  const [username, setUsername] = useState("");
   const isRegister = mode === "register";
   const destination = nextPath ?? "/studio";
   const switchHref = `${isRegister ? "/login" : "/register"}${
@@ -63,20 +64,46 @@ export function AuthForm({ mode, nextPath }: { mode: "login" | "register"; nextP
   return (
     <form className="auth-form" method="post" onSubmit={handleSubmit}>
       {isRegister ? (
-        <div className="auth-form__row">
+        <div className="auth-form__identity-fields">
           <label>
-            <span>이름</span>
-            <input name="displayName" autoComplete="name" minLength={2} maxLength={60} required />
+            <span>보여질 이름</span>
+            <input
+              name="displayName"
+              autoComplete="name"
+              minLength={2}
+              maxLength={60}
+              placeholder="예: 민아의 여행"
+              aria-label="보여질 이름"
+              aria-describedby="display-name-help"
+              required
+            />
+            <small id="display-name-help">프로필과 여행 기록에 공개되는 이름이에요. 가입 후 언제든 바꿀 수 있어요.</small>
           </label>
           <label>
             <span>사용자명</span>
             <input
               name="username"
               autoComplete="username"
+              autoCapitalize="none"
+              inputMode="text"
+              spellCheck={false}
               pattern={"[A-Za-z0-9][A-Za-z0-9._\\-]{2,29}"}
+              maxLength={30}
               placeholder="travel_note"
+              value={username}
+              onChange={(event) => setUsername(event.target.value.toLowerCase())}
+              aria-label="사용자명"
+              aria-describedby="username-help username-preview"
+              title="영문 또는 숫자로 시작하는 3~30자 사용자명을 입력해 주세요."
               required
             />
+            <small id="username-help">
+              프로필 주소와 @검색에 쓰이는 고유 ID예요. 영문 또는 숫자로 시작해 3~30자,
+              영문·숫자·점(.)·밑줄(_)·하이픈(-)만 사용할 수 있으며 가입 후에는 바꿀 수 없어요.
+            </small>
+            <small id="username-preview" className="auth-form__username-preview" aria-live="polite">
+              프로필 주소 <strong>/{username || "travel_note"}</strong>
+            </small>
           </label>
         </div>
       ) : null}

@@ -83,7 +83,7 @@ export function DiscoverExperience({
             type="search"
             value={query}
             onChange={(event) => changeQuery(event.target.value)}
-            placeholder="이름 또는 @사용자명"
+            placeholder="보여질 이름 또는 @사용자명"
             autoComplete="off"
             maxLength={60}
           />
@@ -105,7 +105,7 @@ export function DiscoverExperience({
         {!error && !loading && visible.length === 0 ? (
           <div className="discover-empty">
             <strong>{searching ? "일치하는 여행자가 없습니다" : "추천할 여행자를 찾고 있습니다"}</strong>
-            <p>{searching ? "사용자명 일부나 표시 이름으로 다시 검색해 보세요." : "다른 회원이 여행을 기록하면 이곳에 추천됩니다."}</p>
+            <p>{searching ? "사용자명 일부나 보여질 이름으로 다시 검색해 보세요." : "다른 회원이 여행을 기록하면 이곳에 추천됩니다."}</p>
           </div>
         ) : null}
         {!error && visible.length > 0 ? (

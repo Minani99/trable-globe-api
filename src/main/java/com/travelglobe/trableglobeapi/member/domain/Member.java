@@ -15,7 +15,7 @@ import lombok.NoArgsConstructor;
 /**
  * A person who owns a travel globe.
  *
- * <p>{@code username} is the public handle used in the profile URL ({@code /@traveler}),
+ * <p>{@code username} is the public handle used in the profile URL ({@code /traveler}),
  * which is why it is unique and immutable after creation. Authentication credentials are
  * intentionally absent: sign-up arrives in a later phase and will be modelled as a
  * separate credential entity so that this one stays a profile.
@@ -56,7 +56,7 @@ public class Member extends BaseTimeEntity {
     /**
      * Creates a profile.
      *
-     * <p>The handle is stored lower cased so that {@code /@Traveler} and {@code /@traveler}
+     * <p>The handle is stored lower cased so that {@code /Traveler} and {@code /traveler}
      * resolve to one profile while lookups stay a plain indexed equality match.
      */
     public static Member create(String username, String displayName, String bio, String profileImageUrl) {

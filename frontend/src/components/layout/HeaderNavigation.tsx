@@ -99,7 +99,7 @@ function MobileBottomNavigation({
   member: AuthMember | null | undefined;
 }) {
   const travelHref = member ? "/studio" : "/register?next=%2Fstudio";
-  const profileHref = member ? "/settings#profile" : "/login";
+  const profileHref = member ? "/settings" : "/login";
   const profileActive = member
     ? pathname === `/${member.username}` || pathname === "/settings"
     : pathname === "/login" || pathname === "/register";
