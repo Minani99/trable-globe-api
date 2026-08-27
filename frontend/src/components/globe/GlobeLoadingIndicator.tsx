@@ -1,3 +1,7 @@
+"use client";
+
+import { useEffect, useState } from "react";
+
 interface GlobeLoadingIndicatorProps {
   className?: string;
   description?: string;
@@ -7,6 +11,15 @@ export function GlobeLoadingIndicator({
   className = "",
   description = "잠시만 기다려 주세요",
 }: GlobeLoadingIndicatorProps) {
+  const [detail, setDetail] = useState(description);
+
+  useEffect(() => {
+    const timer = window.setTimeout(() => {
+      setDetail("첫 연결이라면 서버를 깨우는 데 최대 1분이 걸릴 수 있어요");
+    }, 8_000);
+    return () => window.clearTimeout(timer);
+  }, [description]);
+
   return (
     <div
       className={`globe-loading-veil flex items-center justify-center ${className}`}
@@ -22,7 +35,7 @@ export function GlobeLoadingIndicator({
 
         <div>
           <p className="text-content text-[0.88rem] font-medium">여행 지구본을 불러오는 중</p>
-          <p className="text-content-faint mt-1 text-[0.72rem]">{description}</p>
+          <p className="text-content-faint mt-1 text-[0.72rem]">{detail}</p>
         </div>
       </div>
     </div>

@@ -55,7 +55,7 @@ export class ApiError extends Error {
 // A free Render instance can take tens of seconds to wake. Keep the route-level
 // loading UI visible during that first request instead of turning a healthy cold
 // start into an error that only succeeds after a manual refresh.
-const REQUEST_TIMEOUT_MS = 45_000;
+const REQUEST_TIMEOUT_MS = 55_000;
 
 /**
  * GETs a path from the API and unwraps the response envelope.

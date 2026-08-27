@@ -72,6 +72,8 @@ export function AuthForm({ mode, nextPath }: { mode: "login" | "register"; nextP
               autoComplete="name"
               minLength={2}
               maxLength={60}
+              pattern="[^<>]*"
+              title="꺾쇠괄호 없이 2~60자로 입력해 주세요."
               placeholder="예: 민아의 여행"
               aria-label="보여질 이름"
               aria-describedby="display-name-help"

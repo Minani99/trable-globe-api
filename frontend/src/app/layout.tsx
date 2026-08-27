@@ -2,9 +2,12 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono, Noto_Sans_KR } from "next/font/google";
 
 import { AppFeedback } from "@/components/common/AppFeedback";
+import { BackendWarmup } from "@/components/common/BackendWarmup";
 import { siteConfig } from "@/lib/config";
 import { getSiteUrl } from "@/lib/site-url";
 import "./globals.css";
+
+export const maxDuration = 60;
 
 const themeInitScript = `(() => {
   try {
@@ -67,6 +70,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         <a className="skip-link" href="#main">
           본문으로 건너뛰기
         </a>
+        <BackendWarmup />
         <AppFeedback />
         {children}
       </body>

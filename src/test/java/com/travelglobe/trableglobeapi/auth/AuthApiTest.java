@@ -92,6 +92,20 @@ class AuthApiTest {
                 .andExpect(jsonPath("$.error.fieldErrors[*].field").value(hasItem("password")));
     }
 
+    @Test
+    @DisplayName("HTML처럼 보이는 보여질 이름은 400으로 거절한다")
+    void rejectsMarkupInDisplayName() throws Exception {
+        String username = nextUsername();
+        String body = """
+                {"username":"%s","displayName":"<script>alert(1)</script>","email":"%s","password":"%s"}
+                """.formatted(username, email(username), PASSWORD);
+
+        postJson("/api/auth/register", body)
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.error.code").value("VALIDATION_FAILED"))
+                .andExpect(jsonPath("$.error.fieldErrors[*].field").value(hasItem("displayName")));
+    }
+
     // --- sign-in -----------------------------------------------------------
 
     @Test

@@ -162,6 +162,8 @@ export function ProfileEditor({ member }: { member: AuthMember }) {
           defaultValue={savedMember.displayName}
           minLength={2}
           maxLength={60}
+          pattern="[^<>]*"
+          title="꺾쇠괄호 없이 2~60자로 입력해 주세요."
           aria-label="보여질 이름"
           aria-describedby="settings-display-name-help"
           required

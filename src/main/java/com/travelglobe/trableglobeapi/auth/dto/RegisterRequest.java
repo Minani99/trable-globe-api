@@ -13,6 +13,8 @@ public record RegisterRequest(
 
         @NotBlank(message = "보여질 이름을 입력해 주세요.")
         @Size(min = 2, max = 60, message = "보여질 이름은 2~60자로 입력해 주세요.")
+        @Pattern(regexp = "^[^<>\\p{Cntrl}]+$",
+                message = "보여질 이름에는 꺾쇠괄호나 제어 문자를 사용할 수 없습니다.")
         String displayName,
 
         @NotBlank(message = "이메일을 입력해 주세요.")
