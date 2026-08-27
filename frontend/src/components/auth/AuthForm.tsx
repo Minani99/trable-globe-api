@@ -127,6 +127,12 @@ export function AuthForm({ mode, nextPath }: { mode: "login" | "register"; nextP
 
       {error ? <p className="auth-form__error" role="alert">{error}</p> : null}
       {!isRegister ? <Link className="auth-form__forgot" href="/forgot-password">비밀번호를 잊으셨나요?</Link> : null}
+      {isRegister ? (
+        <p className="auth-form__legal">
+          계정을 만들기 전에 <Link href="/terms" target="_blank">베타 이용 안내</Link>와{" "}
+          <Link href="/privacy" target="_blank">개인정보 안내</Link>를 확인해 주세요.
+        </p>
+      ) : null}
       <button type="submit" disabled={pending || completed} aria-busy={pending || completed}>
         <span className="auth-form__button-label">
           {completed ? "완료 · 이동 중" : pending ? "안전하게 확인 중…" : isRegister ? "여행 시작하기" : "로그인"}

@@ -16,6 +16,7 @@ export async function DELETE(request: NextRequest) {
 
   const owned = (await authenticatedBackendGet<OwnedTravelSummary[]>("/api/private/travels")) ?? [];
   const urls = new Set<string>();
+  if (member.profileImageUrl) urls.add(member.profileImageUrl);
   for (const item of owned) {
     const detail = await authenticatedBackendGet<TravelDetail>(`/api/private/travels/${item.travel.id}`);
     if (!detail) continue;

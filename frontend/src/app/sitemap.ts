@@ -9,6 +9,8 @@ export default function sitemap(): MetadataRoute.Sitemap {
   return [
     { url: origin, changeFrequency: "monthly", priority: 1 },
     { url: `${origin}/about`, changeFrequency: "monthly", priority: 0.6 },
+    { url: `${origin}/privacy`, changeFrequency: "monthly", priority: 0.3 },
+    { url: `${origin}/terms`, changeFrequency: "monthly", priority: 0.3 },
     {
       url: `${origin}${profilePath(siteConfig.demoUsername)}`,
       changeFrequency: "weekly",

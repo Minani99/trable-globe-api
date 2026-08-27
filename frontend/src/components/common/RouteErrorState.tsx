@@ -31,6 +31,7 @@ export function RouteErrorState({
           <button type="button" onClick={reset}>다시 시도</button>
           <Link href="/">홈으로</Link>
         </div>
+        <Link className="route-state-card__feedback" href="/feedback">계속 안 되면 오류 알려주기</Link>
         {error.digest ? <small>오류 번호 {error.digest}</small> : null}
       </section>
     </main>

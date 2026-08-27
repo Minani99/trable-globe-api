@@ -10,7 +10,7 @@ export default defineConfig({
   // The profile journeys generate share images while a WebGL globe is mounted.
   // GitHub's software-rendered browser can legitimately take longer than a local
   // GPU-backed run, so leave enough room for the complete user journey.
-  timeout: process.env.CI ? 120_000 : 60_000,
+  timeout: 120_000,
   fullyParallel: false,
   forbidOnly: Boolean(process.env.CI),
   retries: process.env.CI ? 1 : 0,

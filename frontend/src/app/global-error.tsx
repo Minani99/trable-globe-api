@@ -26,6 +26,7 @@ export default function GlobalError({
             <button type="button" className="profile-panel__primary-action" onClick={reset}>다시 시도</button>
             <Link href="/">홈으로 이동</Link>
           </div>
+          <Link href="/feedback">계속 안 되면 오류 알려주기</Link>
         </main>
       </body>
     </html>

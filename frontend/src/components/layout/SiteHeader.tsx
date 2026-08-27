@@ -24,15 +24,20 @@ export function SiteHeader({ username, member }: SiteHeaderProps) {
   return (
     <header className="site-header border-border-subtle/70 bg-background/76 sticky top-0 z-40 border-b backdrop-blur-xl">
       <div className="site-shell site-header__inner">
-        <Link
-          href="/"
-          className="site-wordmark text-content flex items-center"
-        >
-          <span className="site-wordmark__mark">
-            <BrandMark />
-          </span>
-          <span className="site-wordmark__text">{siteConfig.wordmark}</span>
-        </Link>
+        <div className="site-header__brand-group">
+          <Link
+            href="/"
+            className="site-wordmark text-content flex items-center"
+          >
+            <span className="site-wordmark__mark">
+              <BrandMark />
+            </span>
+            <span className="site-wordmark__text">{siteConfig.wordmark}</span>
+          </Link>
+          <Link className="site-header__beta-link" href="/feedback" aria-label="베타 의견 보내기">
+            BETA
+          </Link>
+        </div>
         <Suspense fallback={<HeaderNavigationFallback />}>
           <HeaderNavigation username={username} initialMember={member} />
         </Suspense>

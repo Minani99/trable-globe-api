@@ -154,7 +154,7 @@ test("몇 번의 선택으로 여행 계획을 만들고 일차별 일정으로 
   await expect(page.getByRole("button", { name: /지도에서 직접 찾기/ }).first()).toBeVisible();
   await page.getByRole("textbox", { name: "방문할 장소 검색" }).first().fill("도쿄역");
   await page.getByRole("button", { name: "검색", exact: true }).first().click();
-  await page.getByRole("button", { name: /도쿄역.*선택/ }).click();
+  await page.getByRole("button", { name: /도쿄역.*일정에 담기/ }).click();
   await expect(page.getByRole("textbox", { name: "장소 이름" }).first()).toHaveValue("도쿄역");
   await expect(page.getByText("일본 도쿄도 지요다구 마루노우치 1초메", { exact: true })).toBeVisible();
   await expect(page.locator(".place-picker__map")).toHaveCount(0);
@@ -181,7 +181,7 @@ test("몇 번의 선택으로 여행 계획을 만들고 일차별 일정으로 
   await page.getByRole("button", { name: "예보 다시 확인" }).click();
   await expect(page.getByText("실내 일정과 야외 일정을 맞바꿨어요")).toBeVisible();
   await page.getByRole("button", { name: "이 변경안 적용" }).click();
-  await expect(page.getByRole("textbox", { name: "장소 이름" }).first()).toHaveValue("도쿄 국립박물관");
+  await expect(page.getByRole("textbox", { name: "장소 이름" }).nth(1)).toHaveValue("도쿄 국립박물관");
   await page.getByRole("button", { name: "변경 전으로 되돌리기" }).click();
   await expect(page.getByRole("textbox", { name: "장소 이름" }).first()).toHaveValue("도쿄역");
   await expect(page.getByRole("button", { name: "계획 저장" })).toBeVisible();

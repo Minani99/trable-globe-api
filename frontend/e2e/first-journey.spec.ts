@@ -77,7 +77,8 @@ test("회원가입부터 프로필 완성, 첫 여행 공개와 공유까지 이
 });
 
 async function waitForInteractivePage(page: import("@playwright/test").Page) {
-  await page.waitForLoadState("networkidle");
+  await page.waitForLoadState("domcontentloaded");
+  await page.locator("#main").waitFor({ state: "visible" });
   // The HTML can be visible a fraction before React attaches delegated form handlers.
   await page.waitForTimeout(250);
 }

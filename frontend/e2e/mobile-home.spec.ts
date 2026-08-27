@@ -5,8 +5,8 @@ test("모바일 메인은 한 화면 안에서 탐색과 국가 선택을 제공
   page.on("pageerror", (error) => pageErrors.push(error.message));
 
   await page.setViewportSize({ width: 390, height: 844 });
-  await page.goto("/");
-  await page.waitForLoadState("networkidle");
+  await page.goto("/", { waitUntil: "domcontentloaded" });
+  await expect(page.locator(".landing-globe-live")).toBeVisible();
   await page.waitForTimeout(800);
 
   const layout = await page.evaluate(() => ({
