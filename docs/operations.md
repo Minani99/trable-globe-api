@@ -84,6 +84,11 @@ next visitor pays a 50-second wake-up. An external uptime monitor requesting
 `/api/health` is the right target: it reports database connectivity, so a monitor
 that keeps the service awake also tells us when the database link breaks.
 
+For the production beta, prefer the Cloudflare Cron Worker in
+`ops/render-keepalive-worker`. It runs every ten minutes without consuming private
+GitHub Actions minutes. Keep `.github/workflows/keep-awake.yml` only as a temporary
+fallback and disable it after the Worker's scheduled invocations are confirmed.
+
 ### Settings
 
 | Setting | Value |
