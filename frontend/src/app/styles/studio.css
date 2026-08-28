@@ -140,33 +140,35 @@
 
 .site-account-loading {
   position: relative;
-  display: inline-block;
-  width: 7.2rem;
+  display: inline-grid;
+  width: 2.45rem;
   height: 2.45rem;
-  overflow: hidden;
+  place-items: center;
   border-radius: 999px;
-  background: var(--surface-raised);
+  background: transparent;
 }
 
 .site-account-loading::after {
-  position: absolute;
-  inset: 0;
+  width: 0.9rem;
+  height: 0.9rem;
+  border: 1.5px solid var(--border-strong);
+  border-top-color: var(--accent);
+  border-radius: 50%;
   content: "";
-  background: linear-gradient(100deg, transparent 15%, rgba(255, 255, 255, 0.48) 45%, transparent 75%);
-  transform: translateX(-100%);
-  animation: account-shimmer 1.05s ease-in-out infinite;
+  animation: account-loading-spin 0.75s linear infinite;
 }
 
 .site-account-loading.is-compact {
-  width: 4.9rem;
+  width: 2.25rem;
   height: 2.25rem;
 }
 
 .site-account-loading.is-mobile {
-  display: block;
+  display: grid;
   width: 100%;
   height: 3rem;
-  border-radius: 0.8rem;
+  place-items: center start;
+  padding: 1rem;
 }
 
 .site-mobile-menu__button {
@@ -188,8 +190,8 @@
   font-weight: 600;
 }
 
-@keyframes account-shimmer {
-  to { transform: translateX(100%); }
+@keyframes account-loading-spin {
+  to { transform: rotate(360deg); }
 }
 
 .auth-page {

@@ -455,11 +455,14 @@
   }
 
   .plan-hero {
-    padding-block: 1.8rem 2.2rem;
+    padding-block: 1.25rem 1.8rem;
   }
 
   .plan-hero h1 {
-    font-size: clamp(2.45rem, 13vw, 4.2rem);
+    max-width: 15ch;
+    font-size: clamp(2.15rem, 10vw, 2.75rem);
+    line-height: 1.04;
+    letter-spacing: -0.055em;
   }
 
   .plan-builder__main,
@@ -526,7 +529,7 @@
 
   .plan-builder__mobile-submit small {
     color: var(--text-tertiary);
-    font-size: 0.58rem;
+    font-size: 0.66rem;
   }
 
   .plan-builder__mobile-submit strong {

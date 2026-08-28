@@ -28,11 +28,17 @@ export function HeaderNavigation({ username, initialMember }: HeaderNavigationPr
     getCachedAuthMember,
     () => undefined,
   );
-  const member = initialMember !== undefined ? initialMember : cachedMember;
+  // Once the client cache has a value it is the freshest source. In particular,
+  // logout writes `null` immediately; preferring the server prop would keep the
+  // old avatar visible until a full page reload completed.
+  const member = cachedMember !== undefined ? cachedMember : initialMember;
 
   useEffect(() => {
     if (initialMember !== undefined) setCachedAuthMember(initialMember);
-    else if (cachedMember === undefined) void loadAuthMember();
+  }, [initialMember]);
+
+  useEffect(() => {
+    if (initialMember === undefined && cachedMember === undefined) void loadAuthMember();
   }, [cachedMember, initialMember]);
 
   const samplePath = profilePath(siteConfig.demoUsername);
