@@ -5,11 +5,13 @@ import { useEffect, useState } from "react";
 interface GlobeLoadingIndicatorProps {
   className?: string;
   description?: string;
+  minimal?: boolean;
 }
 
 export function GlobeLoadingIndicator({
   className = "",
   description = "잠시만 기다려 주세요",
+  minimal = false,
 }: GlobeLoadingIndicatorProps) {
   const [detail, setDetail] = useState(description);
 
@@ -22,7 +24,7 @@ export function GlobeLoadingIndicator({
 
   return (
     <div
-      className={`globe-loading-veil flex items-center justify-center ${className}`}
+      className={`globe-loading-veil${minimal ? " globe-loading-veil--minimal" : ""} flex items-center justify-center ${className}`}
       role="status"
       aria-live="polite"
     >
@@ -33,10 +35,14 @@ export function GlobeLoadingIndicator({
           <span className="globe-loader__marker" />
         </div>
 
-        <div>
-          <p className="text-content text-[0.88rem] font-medium">여행 지구본을 불러오는 중</p>
-          <p className="text-content-faint mt-1 text-[0.72rem]">{detail}</p>
-        </div>
+        {minimal ? (
+          <span className="sr-only">여행 지구본을 불러오는 중. {detail}</span>
+        ) : (
+          <div>
+            <p className="text-content text-[0.88rem] font-medium">여행 지구본을 불러오는 중</p>
+            <p className="text-content-faint mt-1 text-[0.72rem]">{detail}</p>
+          </div>
+        )}
       </div>
     </div>
   );

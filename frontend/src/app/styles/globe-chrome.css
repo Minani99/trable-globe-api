@@ -10,6 +10,12 @@
   backdrop-filter: blur(2px);
 }
 
+.globe-loading-veil--minimal,
+:root:not([data-theme="dark"]) .globe-loading-veil--minimal {
+  background: transparent;
+  backdrop-filter: none;
+}
+
 .globe-loader {
   position: relative;
   width: 5.5rem;

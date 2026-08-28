@@ -824,7 +824,7 @@ export function TravelGlobe({
         ) : null}
       </div>
 
-      {!ready ? <GlobeLoadingIndicator className="absolute inset-0 z-20" /> : null}
+      {!ready ? <GlobeLoadingIndicator minimal className="absolute inset-0 z-20" /> : null}
 
       {ready ? (
         <GlobeViewControls

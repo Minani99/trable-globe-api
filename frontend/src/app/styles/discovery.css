@@ -1060,21 +1060,6 @@ a.profile-panel__identity:focus-visible {
   font-size: 0.75rem;
 }
 
-.discover-loading {
-  border-radius: 1.2rem;
-  background: linear-gradient(90deg, var(--surface-raised), var(--surface-hover), var(--surface-raised));
-  background-size: 200% 100%;
-  animation: discover-shimmer 1.3s linear infinite;
-}
-
-.discover-loading--hero { width: 55%; height: 12rem; }
-.discover-loading--search { height: 8rem; margin-block: 4rem; }
-.discover-loading--card { min-height: 23rem; }
-
-@keyframes discover-shimmer {
-  to { background-position: -200% 0; }
-}
-
 @media (max-width: 1180px) {
   .site-desktop-nav { gap: 1rem; }
   .site-member-profile small { display: none; }

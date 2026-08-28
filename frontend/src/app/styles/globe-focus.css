@@ -496,9 +496,7 @@
 @media (prefers-reduced-motion: reduce) {
   .profile-globe-dock__details,
   .globe-time-controls__details,
-  .travel-recap__details,
-  .route-loading-card__signal,
-  .route-loading-card i {
+  .travel-recap__details {
     animation: none;
   }
 }
