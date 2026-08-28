@@ -25,9 +25,13 @@ export function TravelYearRecap({ recap, comparison, username, displayName }: Tr
   if (!recap.latestTravel) return null;
 
   const scopeLabel = recap.year ? `${recap.year}년` : "지금까지";
-  const narrative = recap.topCountry
-    ? `${recap.topCountry.nameKo}을 ${recap.topCountryVisits}번 찾았고, ${numberFormatter.format(recap.distanceKm)}km의 선이 지구본에 이어졌습니다.`
-    : `${numberFormatter.format(recap.distanceKm)}km의 여정이 지구본 위에 이어졌습니다.`;
+  const narrative = recap.distanceKm > 0
+    ? recap.topCountry
+      ? `${recap.topCountry.nameKo}을 ${recap.topCountryVisits}번 찾았고, ${numberFormatter.format(recap.distanceKm)}km의 여정이 세계에 남았습니다.`
+      : `${numberFormatter.format(recap.distanceKm)}km의 여정이 세계에 남았습니다.`
+    : recap.travelCount === 1
+      ? "첫 Journey를 기록하며 나의 여행 세계를 시작했습니다."
+      : `${recap.travelCount}번의 Journey가 나의 여행 세계에 기록되었습니다.`;
   const busiestMonth = [...recap.monthSummaries].sort((left, right) => (
     right.travelCount - left.travelCount || right.travelDays - left.travelDays
   ))[0];
@@ -54,13 +58,6 @@ export function TravelYearRecap({ recap, comparison, username, displayName }: Tr
         </div>
       </div>
 
-      <dl className="travel-recap__stats">
-        <RecapStat label="여행" value={`${recap.travelCount}회`} />
-        <RecapStat label="나라" value={`${recap.countryCount}개`} />
-        <RecapStat label="여행한 날" value={`${numberFormatter.format(recap.travelDays)}일`} />
-        <RecapStat label="이어진 거리" value={`${numberFormatter.format(recap.distanceKm)}km`} />
-      </dl>
-
       <button
         type="button"
         className="travel-recap__details-toggle"
@@ -76,6 +73,15 @@ export function TravelYearRecap({ recap, comparison, username, displayName }: Tr
       </button>
 
       <div id={detailsId} className="travel-recap__details" hidden={!detailsExpanded}>
+        <dl className="travel-recap__stats">
+          <RecapStat label="여행" value={`${recap.travelCount}회`} />
+          <RecapStat label="나라" value={`${recap.countryCount}개`} />
+          <RecapStat label="여행한 날" value={`${numberFormatter.format(recap.travelDays)}일`} />
+          <RecapStat
+            label="이어진 거리"
+            value={recap.distanceKm > 0 ? `${numberFormatter.format(recap.distanceKm)}km` : "—"}
+          />
+        </dl>
         <div className="travel-recap__insights">
           <section aria-labelledby="travel-recap-months-heading" className="travel-recap__rhythm">
             <div className="travel-recap__insight-heading">

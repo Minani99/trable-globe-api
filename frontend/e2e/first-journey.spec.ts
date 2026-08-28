@@ -28,6 +28,12 @@ test("회원가입부터 프로필 완성, 첫 여행 공개와 공유까지 이
   await page.getByRole("button", { name: "변경사항 저장" }).click();
   await expect(page.getByText("프로필을 저장했습니다.", { exact: true })).toBeVisible();
 
+  await page.goto(`/${username}`);
+  await expect(page.locator(".profile-globe-card canvas")).toBeVisible({ timeout: 30_000 });
+  await expect(page.locator(".profile-world-summary")).toContainText("아직 기록된 여행이 없습니다.");
+  await expect(page.locator(".profile-world-summary")).not.toContainText("0km");
+  await expect(page.getByRole("link", { name: "첫 Journey 만들기" })).toBeVisible();
+
   const createResponse = await page.request.post("/api/private/travels", {
     data: {
       title: "도쿄에서 시작한 첫 여행",
@@ -64,6 +70,7 @@ test("회원가입부터 프로필 완성, 첫 여행 공개와 공유까지 이
 
   await page.goto(`/${username}`);
   await expect(page.getByRole("heading", { name: "도쿄 산책가의 여행 세계" })).toBeVisible();
+  await expect(page.locator(".profile-world-summary")).toContainText("첫 여행 기록을 시작했습니다.");
   await expect(page.getByRole("heading", { name: "도쿄에서 시작한 첫 여행", level: 3 })).toBeVisible();
   await page.getByRole("button", { name: "지구본 공유" }).click();
   await expect(page.getByText("링크를 복사했습니다.", { exact: true })).toBeVisible();

@@ -10,6 +10,7 @@ import { GlobeMemorySpotlight } from "@/components/globe/GlobeMemorySpotlight";
 import { GlobeTimelineControls } from "@/components/globe/GlobeTimelineControls";
 import { TravelGlobe } from "@/components/globe/TravelGlobe";
 import { ProfileGlobeDock } from "@/components/profile/ProfileGlobeDock";
+import { ProfileWorldSummary } from "@/components/profile/ProfileWorldSummary";
 import { ProfileWorldList } from "@/components/profile/ProfileWorldList";
 import { ShareProfileButton } from "@/components/profile/ShareProfileButton";
 import { TravelYearFilter } from "@/components/profile/TravelYearFilter";
@@ -256,9 +257,27 @@ export function ProfileExperience({
     }, 50);
   }, [handleSelect]);
 
+  const handleArchiveCountrySelect = useCallback((iso2Code: string | null) => {
+    handleSelect(iso2Code);
+    if (!iso2Code) return;
+    window.setTimeout(() => {
+      document.querySelector(".profile-globe-card")?.scrollIntoView({ behavior: "smooth", block: "center" });
+    }, 50);
+  }, [handleSelect]);
+
   return (
     <>
       <section aria-labelledby="globe-heading" className="profile-world">
+        <div className="site-shell profile-world__identity">
+          <ProfileGlobeDock
+            profile={profile}
+            isOwnProfile={isOwnProfile}
+            viewerAuthenticated={Boolean(viewer)}
+            initialFollowing={relationship?.following ?? false}
+            initialSafetyStatus={safetyStatus}
+          />
+        </div>
+
         <div className="site-shell profile-world__intro">
           <div>
             <p className="eyebrow">
@@ -317,29 +336,24 @@ export function ProfileExperience({
             </div>
 
             <div className="profile-globe-card__canvas">
-              {scopedCountries.length > 0 ? (
-                <TravelGlobe
-                  countries={globeCountries}
-                  selectedCode={selectedCode}
-                  focusCode={timelineFocusCode}
-                  recentCode={timelineFocusCode ?? latestCode}
-                  routeArcs={globeArcs}
-                  onSelect={handleSelect}
-                  onHover={handleHover}
-                  onCountryCenter={handleCountryCenter}
-                />
-              ) : (
-                <div className="flex h-full items-center justify-center px-6">
-                  <StateMessage
-                    eyebrow="기록 전"
-                    title="아직 여행 기록이 없습니다"
-                    description="첫 여행을 기록하면 이곳에 새로운 나라가 표시됩니다."
-                    action={isOwnProfile
-                      ? { href: "/studio/travels/new", label: "첫 여행 기록하기" }
-                      : undefined}
-                  />
+              <TravelGlobe
+                countries={globeCountries}
+                selectedCode={selectedCode}
+                focusCode={timelineFocusCode}
+                recentCode={timelineFocusCode ?? latestCode}
+                routeArcs={globeArcs}
+                onSelect={handleSelect}
+                onHover={handleHover}
+                onCountryCenter={handleCountryCenter}
+              />
+
+              {scopedCountries.length === 0 ? (
+                <div className="profile-globe-empty" role="status">
+                  <span>Empty world</span>
+                  <strong>아직 여행 기록이 없습니다</strong>
+                  <p>첫 Journey를 남기면 방문한 나라와 기억이 이 지구본에 쌓입니다.</p>
                 </div>
-              )}
+              ) : null}
 
               {scopedCountries.length > 0 && timeline.moments.length > 0 ? (
                 <GlobeTimelineControls
@@ -364,16 +378,6 @@ export function ProfileExperience({
                   onSelect={() => handleSelect(spotlightCountry.iso2Code)}
                 />
               ) : null}
-            </div>
-
-            <div className="profile-globe-card__profile">
-              <ProfileGlobeDock
-                profile={profile}
-                isOwnProfile={isOwnProfile}
-                viewerAuthenticated={Boolean(viewer)}
-                initialFollowing={relationship?.following ?? false}
-                initialSafetyStatus={safetyStatus}
-              />
             </div>
 
             {selectedCountry ? (
@@ -401,17 +405,16 @@ export function ProfileExperience({
               onCountrySelect={handleListCountrySelect}
             />
           )}
+
+          <ProfileWorldSummary
+            recap={recap}
+            isOwnProfile={isOwnProfile}
+            cityCount={selectedYear === null ? profile.statistics.cityCount : recap.cityCount}
+          />
         </div>
       </section>
 
       <div className="site-shell profile-archive">
-        <TravelYearRecap
-          recap={recap}
-          comparison={yearComparison}
-          username={profile.username}
-          displayName={displayName}
-        />
-
         {mobileArchivePanelCount > 1 ? (
           <nav className="profile-archive__mobile-nav" aria-label="프로필 기록 보기">
             <button
@@ -446,25 +449,6 @@ export function ProfileExperience({
               </button>
             ) : null}
           </nav>
-        ) : null}
-
-        {showCountryIndex ? (
-          <section
-            id="profile-country-index"
-            aria-labelledby="visited-heading"
-            className={`profile-country-filter profile-archive__panel${mobileArchiveView === "countries" ? " is-mobile-active" : ""}`}
-          >
-            <div>
-              <p className="eyebrow">Country index</p>
-              <h2 id="visited-heading">{selectedYear ? `${selectedYear}년에 방문한 나라` : "방문한 나라"}</h2>
-            </div>
-            <CountryKeyboardList
-              countries={scopedCountries}
-              selectedCode={selectedCode}
-              onSelect={handleSelect}
-              onHover={handleHover}
-            />
-          </section>
         ) : null}
 
         <section
@@ -542,6 +526,32 @@ export function ProfileExperience({
             <TravelTimeline travels={scopedTravels} username={profile.username} />
           </section>
         ) : null}
+
+        {showCountryIndex ? (
+          <section
+            id="profile-country-index"
+            aria-labelledby="visited-heading"
+            className={`profile-country-filter profile-archive__panel${mobileArchiveView === "countries" ? " is-mobile-active" : ""}`}
+          >
+            <div>
+              <p className="eyebrow">Country index</p>
+              <h2 id="visited-heading">{selectedYear ? `${selectedYear}년에 방문한 나라` : "방문한 나라"}</h2>
+            </div>
+            <CountryKeyboardList
+              countries={scopedCountries}
+              selectedCode={selectedCode}
+              onSelect={handleArchiveCountrySelect}
+              onHover={handleHover}
+            />
+          </section>
+        ) : null}
+
+        <TravelYearRecap
+          recap={recap}
+          comparison={yearComparison}
+          username={profile.username}
+          displayName={displayName}
+        />
       </div>
     </>
   );

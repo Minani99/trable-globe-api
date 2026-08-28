@@ -75,6 +75,14 @@ test("프로필 정보와 모바일 타임라인을 작은 도크에서 펼쳐 �
   const controls = page.getByRole("region", { name: "여행 시간 탐색" });
   const profileDock = page.getByRole("region", { name: "여행자 정보" });
   const profileDetails = profileDock.locator(".profile-globe-dock__details");
+  await expect(page.locator(".profile-globe-card .profile-globe-dock")).toHaveCount(0);
+  const contentOrder = await page.evaluate(() => ({
+    summary: document.querySelector(".profile-world-summary")?.getBoundingClientRect().top ?? 0,
+    journeys: document.querySelector("#profile-travel-archive")?.getBoundingClientRect().top ?? 0,
+    recap: document.querySelector(".travel-recap")?.getBoundingClientRect().top ?? 0,
+  }));
+  expect(contentOrder.summary).toBeLessThan(contentOrder.journeys);
+  expect(contentOrder.journeys).toBeLessThan(contentOrder.recap);
   await expect(profileDetails).toHaveAttribute("hidden", "");
   await profileDock.getByRole("button", { name: "프로필 정보 펼치기" }).click();
   await expect(profileDetails).not.toHaveAttribute("hidden", "");
