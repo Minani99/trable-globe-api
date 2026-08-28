@@ -11,6 +11,7 @@ import { authenticatedBackendGet, getCurrentMember } from "@/lib/api/server-sess
 import { fetchProfile, fetchTravels, fetchVisitedCountries } from "@/lib/api/profile";
 import { profilePath, profileRecapImagePath, siteConfig } from "@/lib/config";
 import { presentDemoProfile } from "@/lib/demo-profile";
+import { publicDisplayName } from "@/lib/utils/profile";
 import type { FollowStatus, MemberSafetyStatus } from "@/types";
 
 /**
@@ -33,20 +34,21 @@ export async function generateMetadata(props: PageProps<"/[username]">): Promise
     const sharedYear = year !== null && travels?.some((travel) => travel.startDate.startsWith(`${year}-`))
       ? year
       : null;
+    const displayName = publicDisplayName(profile.displayName);
     const title = sharedYear
-      ? `${sharedYear} 여행 세계 · ${profile.displayName} (@${profile.username})`
-      : `${profile.displayName} (@${profile.username})`;
+      ? `${sharedYear} 여행 세계 · ${displayName} (@${profile.username})`
+      : `${displayName} (@${profile.username})`;
     const description = sharedYear
-      ? `${profile.displayName}님이 ${sharedYear}년에 기록한 여행 동선과 기억을 지구본에서 만나보세요.`
+      ? `${displayName}님이 ${sharedYear}년에 기록한 여행 동선과 기억을 지구본에서 만나보세요.`
       : profile.bio ??
-        `${profile.displayName}님이 기록한 ${profile.statistics.countryCount}개 나라와 여행 이야기를 지구본에서 만나보세요.`;
+        `${displayName}님이 기록한 ${profile.statistics.countryCount}개 나라와 여행 이야기를 지구본에서 만나보세요.`;
     const image = {
       url: profileRecapImagePath(profile.username, sharedYear),
       width: 1200,
       height: 630,
       alt: sharedYear
-        ? `${profile.displayName}님의 ${sharedYear} 여행 세계 리캡`
-        : `${profile.displayName}님의 여행 세계 리캡`,
+        ? `${displayName}님의 ${sharedYear} 여행 세계 리캡`
+        : `${displayName}님의 여행 세계 리캡`,
     };
     return {
       title,

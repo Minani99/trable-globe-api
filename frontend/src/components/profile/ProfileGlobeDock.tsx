@@ -5,6 +5,7 @@ import { useId, useState } from "react";
 import { TravelImage } from "@/components/common/TravelImage";
 import { ProfilePanel } from "@/components/profile/ProfilePanel";
 import { formatStat } from "@/lib/utils/format";
+import { publicDisplayName } from "@/lib/utils/profile";
 import type { MemberSafetyStatus, UserProfile } from "@/types";
 
 interface ProfileGlobeDockProps {
@@ -25,6 +26,7 @@ export function ProfileGlobeDock({
   const [expanded, setExpanded] = useState(false);
   const detailsId = useId();
   const { statistics } = profile;
+  const displayName = publicDisplayName(profile.displayName);
 
   return (
     <section className={`profile-globe-dock${expanded ? " is-expanded" : ""}`} aria-label="여행자 정보">
@@ -36,7 +38,7 @@ export function ProfileGlobeDock({
           className="profile-globe-dock__avatar"
         />
         <span className="profile-globe-dock__identity">
-          <strong>{profile.displayName}</strong>
+          <strong>{displayName}</strong>
           <small>@{profile.username}</small>
         </span>
         <span

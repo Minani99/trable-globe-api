@@ -6,6 +6,7 @@ import { useState } from "react";
 
 import { showFeedback } from "@/components/common/AppFeedback";
 import { ApiError, apiMutation } from "@/lib/api/client";
+import { publicDisplayName } from "@/lib/utils/profile";
 import type { TravelDetail, TravelWriteInput } from "@/types";
 
 export function SaveSharedItinerary({ travel, signedIn, isOwner, today }: { travel: TravelDetail; signedIn: boolean; isOwner: boolean; today: string }) {
@@ -14,6 +15,7 @@ export function SaveSharedItinerary({ travel, signedIn, isOwner, today }: { trav
   const [startDate, setStartDate] = useState(today);
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const ownerName = publicDisplayName(travel.owner.displayName);
 
   if (isOwner) {
     return <Link href={`/studio/travels/${travel.id}/edit`} className="shared-itinerary-cta is-owner">내 여행 편집하기 <span aria-hidden="true">→</span></Link>;
@@ -29,7 +31,7 @@ export function SaveSharedItinerary({ travel, signedIn, isOwner, today }: { trav
     const durationOffset = daysBetween(travel.startDate, travel.endDate);
     const payload: TravelWriteInput = {
       title: `${travel.title.slice(0, 109)}에서 시작한 여행`,
-      description: `${travel.owner.displayName}님의 공개 일정에서 가져왔어요. 내 취향과 동선에 맞게 자유롭게 바꿔보세요.`,
+      description: `${ownerName}님의 공개 일정에서 가져왔어요. 내 취향과 동선에 맞게 자유롭게 바꿔보세요.`,
       startDate,
       endDate: addDays(startDate, durationOffset),
       coverImageUrl: null,
@@ -70,7 +72,7 @@ export function SaveSharedItinerary({ travel, signedIn, isOwner, today }: { trav
         <label><span>새 출발일</span><input type="date" min={today} value={startDate} onChange={(event) => setStartDate(event.target.value)} /></label>
         <button type="button" onClick={saveToMyPlans} disabled={pending || !startDate}>{pending ? "계획에 담는 중…" : `${travel.durationDays}일 일정 담기`}</button>
         {error ? <p className="shared-itinerary-save__error" role="alert">{error}</p> : null}
-        <small>{travel.owner.displayName}님의 일정에서 가져온 기록임을 계획에 표시합니다.</small>
+        <small>{ownerName}님의 일정에서 가져온 기록임을 계획에 표시합니다.</small>
       </div> : null}
     </div>
   );

@@ -1,6 +1,7 @@
 import Link from "next/link";
 
 import { TravelImage } from "@/components/common/TravelImage";
+import { publicDisplayName } from "@/lib/utils/profile";
 import type { ActivityEvent } from "@/types";
 
 export function ActivityFeed({ events }: { events: ActivityEvent[] }) {
@@ -17,7 +18,7 @@ export function ActivityFeed({ events }: { events: ActivityEvent[] }) {
               <Link href={event.type === "FOLLOW" ? `/${event.actor.username}` : `/studio/travels/${event.travelId}/edit`}>
                 <TravelImage src={event.actor.profileImageUrl} alt="" fallbackLabel={event.actor.username.slice(0, 2)} className="studio-activity__avatar" />
                 <span>
-                  <strong>{event.actor.displayName}</strong>
+                  <strong>{publicDisplayName(event.actor.displayName)}</strong>
                   <p>{activityCopy(event)}</p>
                   {event.preview ? <q>{event.preview}</q> : null}
                 </span>

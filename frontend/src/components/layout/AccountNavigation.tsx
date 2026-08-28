@@ -7,6 +7,7 @@ import { useEffect, useRef, useState } from "react";
 import { showFeedback } from "@/components/common/AppFeedback";
 import { TravelImage } from "@/components/common/TravelImage";
 import { ApiError, apiMutation } from "@/lib/api/client";
+import { publicDisplayName } from "@/lib/utils/profile";
 import type { AuthMember } from "@/types";
 
 export function AccountNavigation({
@@ -126,7 +127,7 @@ export function AccountNavigation({
             className="site-member-avatar"
           />
           <span>
-            <strong>{member.displayName}</strong>
+            <strong>{publicDisplayName(member.displayName)}</strong>
           </span>
         </Link>
         <button

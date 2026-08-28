@@ -17,6 +17,7 @@ import { fetchTravelDetail, fetchTravelSocial } from "@/lib/api/travel";
 import { profilePath, travelPath } from "@/lib/config";
 import { formatDate, formatDateRange, formatDuration } from "@/lib/utils/format";
 import { todayInKorea } from "@/lib/utils/date";
+import { publicDisplayName } from "@/lib/utils/profile";
 import type { TravelDetail, TravelNavigationLink, TravelSocial } from "@/types";
 
 const loadTravel = cache((travelId: number) => fetchTravelDetail(travelId));
@@ -108,6 +109,7 @@ export default async function TravelDetailPage(
     ? authenticatedBackendGet<TravelSocial>(`/api/private/travels/${id}/social`)
     : fetchTravelSocial(id)
   ).catch(() => null) ?? emptySocial;
+  const ownerName = publicDisplayName(travel.owner.displayName);
 
   return (
     <>
@@ -118,7 +120,7 @@ export default async function TravelDetailPage(
           <nav aria-label="현재 위치" className="travel-detail-breadcrumb">
             <Link href={profilePath(travel.owner.username)}>
               <span aria-hidden="true">←</span>
-              {travel.owner.displayName}의 지구본
+              {ownerName}의 지구본
             </Link>
             <span aria-hidden="true">/</span>
             <span>여행 기록</span>

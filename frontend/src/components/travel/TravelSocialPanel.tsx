@@ -6,6 +6,7 @@ import { FormEvent, useState } from "react";
 import { TravelImage } from "@/components/common/TravelImage";
 import { ApiError, apiMutation } from "@/lib/api/client";
 import { profilePath, travelPath } from "@/lib/config";
+import { publicDisplayName } from "@/lib/utils/profile";
 import type { AuthMember, TravelSocial } from "@/types";
 
 export function TravelSocialPanel({
@@ -108,7 +109,7 @@ export function TravelSocialPanel({
             <form className="travel-social__composer" onSubmit={addComment}>
               <TravelImage
                 src={currentMember.profileImageUrl}
-                alt={`${currentMember.displayName} 프로필 이미지`}
+                alt={`${publicDisplayName(currentMember.displayName)} 프로필 이미지`}
                 fallbackLabel={currentMember.username.slice(0, 2)}
                 className="travel-social__avatar"
               />
@@ -135,12 +136,14 @@ export function TravelSocialPanel({
             </div>
             {social.comments.length ? (
               <ol>
-                {social.comments.map((comment) => (
+                {social.comments.map((comment) => {
+                  const authorName = publicDisplayName(comment.author.displayName);
+                  return (
                   <li key={comment.id}>
-                    <Link href={profilePath(comment.author.username)} aria-label={`${comment.author.displayName} 프로필 보기`}>
+                    <Link href={profilePath(comment.author.username)} aria-label={`${authorName} 프로필 보기`}>
                       <TravelImage
                         src={comment.author.profileImageUrl}
-                        alt={`${comment.author.displayName} 프로필 이미지`}
+                        alt={`${authorName} 프로필 이미지`}
                         fallbackLabel={comment.author.username.slice(0, 2)}
                         className="travel-social__avatar"
                       />
@@ -148,7 +151,7 @@ export function TravelSocialPanel({
                     <div>
                       <div className="travel-social__comment-meta">
                         <Link href={profilePath(comment.author.username)}>
-                          <strong>{comment.author.displayName}</strong>
+                          <strong>{authorName}</strong>
                           <span>@{comment.author.username}</span>
                         </Link>
                         <time dateTime={comment.createdAt}>{formatCommentDate(comment.createdAt)}</time>
@@ -160,13 +163,14 @@ export function TravelSocialPanel({
                         type="button"
                         onClick={() => deleteComment(comment.id)}
                         disabled={pendingAction !== null}
-                        aria-label={`${comment.author.displayName}의 댓글 삭제`}
+                        aria-label={`${authorName}의 댓글 삭제`}
                       >
                         {pendingAction === `delete-${comment.id}` ? "삭제 중" : "삭제"}
                       </button>
                     ) : null}
                   </li>
-                ))}
+                  );
+                })}
               </ol>
             ) : (
               <p className="travel-social__empty">아직 댓글이 없습니다. 첫 이야기를 건네보세요.</p>

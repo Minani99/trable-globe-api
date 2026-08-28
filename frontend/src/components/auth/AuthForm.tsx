@@ -7,6 +7,7 @@ import { FormEvent, useEffect, useState } from "react";
 import { showFeedback } from "@/components/common/AppFeedback";
 import { setCachedAuthMember } from "@/lib/auth-state";
 import { apiMutation, ApiError } from "@/lib/api/client";
+import { publicDisplayName } from "@/lib/utils/profile";
 import type { AuthMember } from "@/types";
 
 export function AuthForm({ mode, nextPath }: { mode: "login" | "register"; nextPath?: string }) {
@@ -15,6 +16,7 @@ export function AuthForm({ mode, nextPath }: { mode: "login" | "register"; nextP
   const [pending, setPending] = useState(false);
   const [completed, setCompleted] = useState(false);
   const [username, setUsername] = useState("");
+  const [passwordVisible, setPasswordVisible] = useState(false);
   const isRegister = mode === "register";
   const destination = nextPath ?? "/studio";
   const switchHref = `${isRegister ? "/login" : "/register"}${
@@ -48,8 +50,8 @@ export function AuthForm({ mode, nextPath }: { mode: "login" | "register"; nextP
       setCompleted(true);
       showFeedback(
         isRegister
-          ? `${member.displayName}님의 첫 여행을 준비할 공간이 생겼어요.`
-          : `${member.displayName}님, 다시 만나 반가워요.`,
+          ? `${publicDisplayName(member.displayName)}님의 첫 여행을 준비할 공간이 생겼어요.`
+          : `${publicDisplayName(member.displayName)}님, 다시 만나 반가워요.`,
         "success",
       );
       router.replace(destination);
@@ -114,18 +116,31 @@ export function AuthForm({ mode, nextPath }: { mode: "login" | "register"; nextP
         <span>이메일</span>
         <input name="email" type="email" autoComplete="email" placeholder="you@example.com" required />
       </label>
-      <label>
-        <span>비밀번호</span>
-        <input
-          name="password"
-          type="password"
-          autoComplete={isRegister ? "new-password" : "current-password"}
-          minLength={isRegister ? 10 : undefined}
-          maxLength={72}
-          required
-        />
+      <div className="auth-form__field">
+        <label htmlFor="auth-password"><span>비밀번호</span></label>
+        <span className="auth-password-field">
+          <input
+            id="auth-password"
+            name="password"
+            type={passwordVisible ? "text" : "password"}
+            autoComplete={isRegister ? "new-password" : "current-password"}
+            minLength={isRegister ? 10 : undefined}
+            maxLength={72}
+            required
+          />
+          <button
+            type="button"
+            className="auth-password-field__toggle"
+            aria-label={passwordVisible ? "비밀번호 숨기기" : "비밀번호 표시"}
+            aria-pressed={passwordVisible}
+            aria-controls="auth-password"
+            onClick={() => setPasswordVisible((visible) => !visible)}
+          >
+            {passwordVisible ? "숨기기" : "보기"}
+          </button>
+        </span>
         {isRegister ? <small>10자 이상. 비밀번호는 암호화된 해시로만 저장됩니다.</small> : null}
-      </label>
+      </div>
 
       {error ? <p className="auth-form__error" role="alert">{error}</p> : null}
       {!isRegister ? <Link className="auth-form__forgot" href="/forgot-password">비밀번호를 잊으셨나요?</Link> : null}
@@ -137,7 +152,15 @@ export function AuthForm({ mode, nextPath }: { mode: "login" | "register"; nextP
       ) : null}
       <button type="submit" disabled={pending || completed} aria-busy={pending || completed}>
         <span className="auth-form__button-label">
-          {completed ? "완료 · 이동 중" : pending ? "안전하게 확인 중…" : isRegister ? "여행 시작하기" : "로그인"}
+          {completed
+            ? "완료 · 이동 중"
+            : pending
+              ? "안전하게 확인 중…"
+              : isRegister
+                ? "여행 시작하기"
+                : nextPath
+                  ? "로그인하고 계속"
+                  : "로그인"}
         </span>
         {(pending || completed) ? <span className={`action-spinner${completed ? " is-complete" : ""}`} aria-hidden="true">{completed ? "✓" : ""}</span> : null}
       </button>

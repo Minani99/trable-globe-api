@@ -5,20 +5,22 @@ import Link from "next/link";
 import { TravelImage } from "@/components/common/TravelImage";
 import { FollowButton } from "@/components/discovery/FollowButton";
 import { formatCount } from "@/lib/utils/format";
+import { publicDisplayName } from "@/lib/utils/profile";
 import type { MemberDiscovery } from "@/types";
 
 export function MemberCard({ member, viewerAuthenticated }: { member: MemberDiscovery; viewerAuthenticated: boolean }) {
+  const displayName = publicDisplayName(member.displayName);
   return (
     <article className="member-card">
-      <Link href={`/${member.username}`} className="member-card__identity" aria-label={`${member.displayName} 프로필 보기`}>
+      <Link href={`/${member.username}`} className="member-card__identity" aria-label={`${displayName} 프로필 보기`}>
         <TravelImage
           src={member.profileImageUrl}
-          alt={`${member.displayName} 프로필 이미지`}
+          alt={`${displayName} 프로필 이미지`}
           fallbackLabel={member.username.slice(0, 2)}
           className="member-card__avatar"
         />
         <span className="member-card__name">
-          <strong>{member.displayName}</strong>
+          <strong>{displayName}</strong>
           <small>@{member.username}</small>
         </span>
       </Link>

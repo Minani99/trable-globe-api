@@ -11,6 +11,7 @@ import {
   type ConnectionKind,
 } from "@/lib/api/discovery";
 import { formatCount } from "@/lib/utils/format";
+import { publicDisplayName } from "@/lib/utils/profile";
 import type { FollowStatus, MemberConnection } from "@/types";
 
 export function ProfileConnections({
@@ -123,7 +124,7 @@ export function ProfileConnections({
                       className="profile-connection__avatar"
                     />
                     <span>
-                      <strong>{connection.displayName}</strong>
+                      <strong>{publicDisplayName(connection.displayName)}</strong>
                       <small>@{connection.username} · 팔로워 {formatCount(connection.followerCount)}</small>
                     </span>
                   </Link>

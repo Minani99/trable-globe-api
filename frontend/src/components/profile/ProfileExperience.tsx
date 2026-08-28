@@ -20,6 +20,7 @@ import { fetchTravelsByCountry } from "@/lib/api/profile";
 import { isDemoProfile } from "@/lib/demo-profile";
 import { arcsAtMoment, buildGlobeTimeline, countriesAtMoment, countriesForTravels } from "@/lib/globeTimeline";
 import { buildTravelRecap, buildTravelYearComparison, travelsForYear, travelYears } from "@/lib/travelInsights";
+import { publicDisplayName } from "@/lib/utils/profile";
 import type { AuthMember, FollowStatus, MemberSafetyStatus, TravelSummary, UserProfile, VisitedCountry } from "@/types";
 
 interface ProfileExperienceProps {
@@ -89,6 +90,7 @@ export function ProfileExperience({
   } | null>(null);
   const isOwnProfile = viewer?.username === profile.username;
   const demoProfile = isDemoProfile(profile.username);
+  const displayName = publicDisplayName(profile.displayName);
 
   const changeWorldView = useCallback((view: WorldView) => {
     setWorldView(view);
@@ -262,7 +264,7 @@ export function ProfileExperience({
             <p className="eyebrow">
               {demoProfile ? "Public sample · 여러 나라 데모" : `Personal world · @${profile.username}`}
             </p>
-            <h1 id="globe-heading">{profile.displayName}의 여행 세계</h1>
+            <h1 id="globe-heading">{displayName}의 여행 세계</h1>
           </div>
           <div className="profile-world__summary">
             <p>
@@ -273,7 +275,7 @@ export function ProfileExperience({
                 : `${countries.length}개 나라, ${travels.length}번의 여행이 하나의 지구본 위에 이어집니다.`}
               {" "}{demoProfile ? "" : "재생하거나 나라를 선택해 그곳에 쌓인 기억을 살펴보세요."}
             </p>
-            <ShareProfileButton displayName={profile.displayName} selectedYear={selectedYear} />
+            <ShareProfileButton displayName={displayName} selectedYear={selectedYear} />
           </div>
         </div>
 
@@ -407,7 +409,7 @@ export function ProfileExperience({
           recap={recap}
           comparison={yearComparison}
           username={profile.username}
-          displayName={profile.displayName}
+          displayName={displayName}
         />
 
         {mobileArchivePanelCount > 1 ? (

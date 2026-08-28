@@ -4,6 +4,7 @@ import type { NextRequest } from "next/server";
 import { fetchProfile, fetchTravels } from "@/lib/api/profile";
 import { siteConfig } from "@/lib/config";
 import { buildTravelRecap, travelsForYear } from "@/lib/travelInsights";
+import { publicDisplayName } from "@/lib/utils/profile";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -26,7 +27,7 @@ export async function GET(request: NextRequest) {
       travel.startDate.startsWith(`${requestedYear}-`)
     )) ? requestedYear : null;
     const recap = buildTravelRecap(travelsForYear(travels, year), year);
-    const cardName = truncate(profile.displayName, 18);
+    const cardName = truncate(publicDisplayName(profile.displayName), 18);
     const scope = year ? `${year}년 여행 세계` : "나의 여행 세계";
     const topCountries = [...new Set(
       travelsForYear(travels, year).flatMap((travel) => travel.countries.map((country) => country.nameKo)),

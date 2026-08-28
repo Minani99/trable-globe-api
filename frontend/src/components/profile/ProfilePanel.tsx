@@ -8,6 +8,7 @@ import { FollowButton } from "@/components/discovery/FollowButton";
 import { ProfileConnections } from "@/components/profile/ProfileConnections";
 import { ProfileSafetyActions } from "@/components/profile/ProfileSafetyActions";
 import { formatStat } from "@/lib/utils/format";
+import { publicDisplayName } from "@/lib/utils/profile";
 import type { FollowStatus, MemberSafetyStatus, UserProfile } from "@/types";
 
 interface ProfilePanelProps {
@@ -31,6 +32,7 @@ export function ProfilePanel({
   const [followerCount, setFollowerCount] = useState(profile.followerCount);
   const [following, setFollowing] = useState(initialFollowing);
   const [safetyStatus, setSafetyStatus] = useState(initialSafetyStatus);
+  const displayName = publicDisplayName(profile.displayName);
 
   function updateFollowing(status: FollowStatus) {
     setFollowing(status.following);
@@ -49,13 +51,13 @@ export function ProfilePanel({
     <>
       <TravelImage
         src={profile.profileImageUrl}
-        alt={`${profile.displayName} 프로필 이미지`}
+        alt={`${displayName} 프로필 이미지`}
         fallbackLabel={profile.username.slice(0, 2)}
         className="border-border-subtle h-12 w-12 shrink-0 rounded-full border object-cover"
       />
       <span className="min-w-0 flex-1">
         <strong className="text-content block truncate text-[1.05rem] font-medium tracking-tight">
-          {profile.displayName}
+          {displayName}
         </strong>
         <small className="text-content-faint block truncate font-mono text-[0.76rem]">
           @{profile.username}
