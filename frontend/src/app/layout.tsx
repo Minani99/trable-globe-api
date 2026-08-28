@@ -43,7 +43,7 @@ export const metadata: Metadata = {
     template: `%s · ${siteConfig.name}`,
   },
   description: siteConfig.description,
-  keywords: ["여행 계획", "여행 일정", "여행 기록", "여행 지도", "여행 지구본"],
+  keywords: ["여행 지구본", "여행 기록", "여행 아카이브", "여행 지도", "여행 계획"],
   openGraph: {
     type: "website",
     locale: "ko_KR",

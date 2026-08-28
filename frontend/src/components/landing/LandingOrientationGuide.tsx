@@ -49,11 +49,11 @@ export function LandingOrientationGuide() {
           ×
         </button>
         <p className="eyebrow">How it works</p>
-        <h2 id="landing-guide-title">여행 하나가 지구본의 기억이 되기까지</h2>
+        <h2 id="landing-guide-title">여행 하나가 나의 세계가 되기까지</h2>
         <ol>
-          <GuideStep number="01" title="계획 만들기" description="나라와 날짜를 고르면 일차별 일정이 바로 만들어집니다." />
-          <GuideStep number="02" title="여행하며 체크하기" description="장소를 고르고 실제로 간 일정과 사진을 가볍게 더합니다." />
-          <GuideStep number="03" title="기록으로 남기기" description="다녀온 계획을 다시 쓰지 않고 지구본의 여행 기록으로 바꿉니다." />
+          <GuideStep number="01" title="Journey 시작하기" description="다녀온 여행을 바로 기록하거나 다음 여행의 나라와 날짜를 정합니다." />
+          <GuideStep number="02" title="장소와 기억 잇기" description="방문한 장소를 확인하고 그곳의 사진과 메모를 가볍게 더합니다." />
+          <GuideStep number="03" title="내 세계 채우기" description="완성된 Journey가 경로와 기억이 되어 나만의 지구본에 쌓입니다." />
         </ol>
         <button type="button" className="landing-guide-dialog__confirm" onClick={() => dialogRef.current?.close()}>
           알겠어요, 시작할게요

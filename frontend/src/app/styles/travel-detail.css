@@ -1160,6 +1160,8 @@
   }
 
   .landing-experience,
+  .landing-journey,
+  .landing-world-proof,
   .site-footer--compact {
     display: none;
   }

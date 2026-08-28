@@ -8,6 +8,7 @@ import {
   loadAuthMember,
   subscribeToAuthState,
 } from "@/lib/auth-state";
+import { profilePath } from "@/lib/config";
 
 export function LandingStartAction() {
   const member = useSyncExternalStore(
@@ -29,8 +30,11 @@ export function LandingStartAction() {
   }
 
   return (
-    <Link href={member ? "/studio" : "/register?next=%2Fstudio%2Fplans%2Fnew"} className="landing-primary-cta group">
-      <span>{member ? "내 여행 이어가기" : "첫 여행 계획 만들기"}</span>
+    <Link
+      href={member ? profilePath(member.username) : "/register?next=%2Fstudio"}
+      className="landing-primary-cta group"
+    >
+      <span>{member ? "내 세계 보기" : "내 지구본 만들기"}</span>
       <span className="landing-primary-cta__arrow" aria-hidden="true">↗</span>
     </Link>
   );

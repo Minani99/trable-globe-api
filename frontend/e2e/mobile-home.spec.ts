@@ -6,6 +6,7 @@ test("모바일 메인은 한 화면 안에서 탐색과 국가 선택을 제공
 
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto("/", { waitUntil: "domcontentloaded" });
+  await expect(page.getByRole("heading", { name: "여행할수록, 나만의 세계가 만들어집니다." })).toBeVisible();
   await expect(page.locator(".landing-globe-live")).toBeVisible();
   await page.waitForTimeout(800);
 
@@ -24,19 +25,16 @@ test("모바일 메인은 한 화면 안에서 탐색과 국가 선택을 제공
   const guideTrigger = page.getByRole("button", { name: /30초 안내|이용 방법/ });
   await expect(guideTrigger).toBeVisible();
   await guideTrigger.click();
-  const guide = page.getByRole("dialog", { name: "여행 하나가 지구본의 기억이 되기까지" });
+  const guide = page.getByRole("dialog", { name: "여행 하나가 나의 세계가 되기까지" });
   await expect(guide).toBeVisible();
   await expect(guide.getByRole("listitem")).toHaveCount(3);
   await guide.getByRole("button", { name: "알겠어요, 시작할게요" }).click();
 
-  const canvas = page.locator(".landing-globe-live canvas");
-  await expect(canvas).toBeVisible();
-  const bounds = await canvas.boundingBox();
-  expect(bounds).not.toBeNull();
-  if (bounds) {
-    await page.mouse.click(bounds.x + bounds.width / 2, bounds.y + bounds.height / 2);
-  }
-
+  const firstJourneyMarker = page.locator(".landing-globe-live .tg-marker").first();
+  await expect(firstJourneyMarker).toBeVisible();
+  // The marker moves with the ambient globe rotation; dispatch against the marker
+  // itself instead of asking Playwright to wait for a stationary screen coordinate.
+  await firstJourneyMarker.dispatchEvent("click");
   await expect(page.locator(".landing-landmark-card__action")).toBeVisible();
   expect(pageErrors).toEqual([]);
 });

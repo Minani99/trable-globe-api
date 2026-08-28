@@ -42,42 +42,48 @@ export function HeaderNavigation({ username, initialMember }: HeaderNavigationPr
   }, [cachedMember, initialMember]);
 
   const samplePath = profilePath(siteConfig.demoUsername);
-  const profileExact = Boolean(username && pathname === profilePath(username));
-  const exploreActive =
-    (pathname === samplePath || pathname.startsWith(`${samplePath}/`)) && !profileExact;
+  const ownProfilePath = member ? profilePath(member.username) : null;
+  const globeActive = pathname === globePath
+    || pathname === ownProfilePath
+    || (!member && (pathname === samplePath || pathname.startsWith(`${samplePath}/`)));
   const discoverActive = pathname === "/discover";
-  const travelActive = pathname.startsWith("/studio");
-  const travelHref = member ? "/studio" : "/studio/plans/new";
+  const journeysActive = pathname === "/studio" || pathname.startsWith("/studio/travels");
+  const planActive = pathname.startsWith("/studio/plans");
+  const aboutActive = pathname === "/about";
 
   return (
     <div className="site-header-actions">
       <nav aria-label="주요 메뉴" className="site-desktop-nav">
-        <Link
-          href={globePath}
-          className="site-nav-link"
-          aria-current={exploreActive ? "page" : undefined}
-        >
-          지구본
-        </Link>
-        <Link
-          href={travelHref}
-          className="site-nav-link"
-          aria-current={travelActive ? "page" : undefined}
-        >
-          {member ? "내 여행" : "여행 계획"}
-        </Link>
-        <Link
-          href="/discover"
-          className="site-nav-link"
-          aria-current={discoverActive ? "page" : undefined}
-        >
-          사람 찾기
-        </Link>
+        {member ? (
+          <>
+            <Link href={globePath} className="site-nav-link site-nav-link--globe" aria-current={globeActive ? "page" : undefined}>
+              내 지구본
+            </Link>
+            <Link href="/studio" className="site-nav-link" aria-current={journeysActive ? "page" : undefined}>
+              여행
+            </Link>
+            <Link href="/studio/plans/new" className="site-nav-link" aria-current={planActive ? "page" : undefined}>
+              계획
+            </Link>
+            <Link href="/discover" className="site-nav-link" aria-current={discoverActive ? "page" : undefined}>
+              둘러보기
+            </Link>
+          </>
+        ) : (
+          <>
+            <Link href="/discover" className="site-nav-link" aria-current={discoverActive ? "page" : undefined}>
+              둘러보기
+            </Link>
+            <Link href="/about" className="site-nav-link" aria-current={aboutActive ? "page" : undefined}>
+              서비스 소개
+            </Link>
+          </>
+        )}
         <AccountNavigation member={member} onLoggedOut={() => setCachedAuthMember(null)} />
       </nav>
 
       <ThemeToggle />
-      <MobileBottomNavigation pathname={pathname} member={member} />
+      <MobileBottomNavigation pathname={pathname} member={member} username={username} />
     </div>
   );
 }
@@ -86,9 +92,8 @@ export function HeaderNavigationFallback() {
   return (
     <div className="site-header-actions">
       <nav aria-label="주요 메뉴" className="site-desktop-nav">
-        <Link href={globePath} className="site-nav-link">지구본</Link>
-        <Link href="/studio" className="site-nav-link">내 여행</Link>
-        <Link href="/discover" className="site-nav-link">사람 찾기</Link>
+        <Link href="/discover" className="site-nav-link">둘러보기</Link>
+        <Link href="/about" className="site-nav-link">서비스 소개</Link>
         <span className="site-account-loading" aria-label="계정 정보 불러오는 중" />
       </nav>
       <ThemeToggle />
@@ -100,28 +105,34 @@ export function HeaderNavigationFallback() {
 function MobileBottomNavigation({
   pathname,
   member,
+  username,
 }: {
   pathname: string;
   member: AuthMember | null | undefined;
+  username?: string;
 }) {
-  const travelHref = member ? "/studio" : "/register?next=%2Fstudio";
-  const profileHref = member ? "/settings" : "/login";
+  const journeyHref = member ? "/studio" : "/login?next=%2Fstudio";
+  const planHref = member ? "/studio/plans/new" : "/register?next=%2Fstudio%2Fplans%2Fnew";
+  const profileHref = member ? profilePath(member.username) : "/login";
+  const samplePath = profilePath(siteConfig.demoUsername);
+  const globeActive = pathname === globePath
+    || pathname === (member ? profilePath(member.username) : samplePath)
+    || Boolean(!member && username === siteConfig.demoUsername);
   const profileActive = member
-    ? pathname === `/${member.username}` || pathname === "/settings"
+    ? pathname === profilePath(member.username) || pathname === "/settings"
     : pathname === "/login" || pathname === "/register";
 
   return (
     <nav className="site-mobile-bottom-nav" aria-label="모바일 주요 메뉴">
-      <MobileNavLink href="/" label="홈" icon="home" active={pathname === "/"} />
-      <MobileNavLink href={globePath} label="지구본" icon="globe" active={pathname === globePath} />
+      <MobileNavLink href={globePath} label="세계" icon="globe" active={globeActive} emphasized />
       <MobileNavLink
-        href={travelHref}
-        label="여행"
+        href={journeyHref}
+        label="기록"
         icon="trip"
-        active={pathname.startsWith("/studio")}
-        emphasized
+        active={pathname === "/studio" || pathname.startsWith("/studio/travels")}
       />
-      <MobileNavLink href="/discover" label="발견" icon="search" active={pathname === "/discover"} />
+      <MobileNavLink href={planHref} label="계획" icon="plan" active={pathname.startsWith("/studio/plans")} />
+      <MobileNavLink href="/discover" label="둘러보기" icon="search" active={pathname === "/discover"} />
       <MobileNavLink
         href={profileHref}
         label="프로필"
@@ -146,7 +157,7 @@ function MobileNavLink({
 }: {
   href: string;
   label: string;
-  icon: "home" | "globe" | "trip" | "search" | "profile";
+  icon: "globe" | "trip" | "plan" | "search" | "profile";
   active: boolean;
   emphasized?: boolean;
   avatar?: { src: string | null; fallbackLabel: string };
@@ -170,15 +181,15 @@ function MobileNavLink({
   );
 }
 
-function MobileNavIcon({ name }: { name: "home" | "globe" | "trip" | "search" | "profile" }) {
-  if (name === "home") {
-    return <svg aria-hidden="true" viewBox="0 0 24 24"><path d="m4 10 8-6 8 6v9h-5v-6H9v6H4Z" /></svg>;
-  }
+function MobileNavIcon({ name }: { name: "globe" | "trip" | "plan" | "search" | "profile" }) {
   if (name === "globe") {
     return <svg aria-hidden="true" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5" /><path d="M3.8 12h16.4M12 3.5c2.2 2.3 3.3 5.1 3.3 8.5S14.2 18.2 12 20.5M12 3.5C9.8 5.8 8.7 8.6 8.7 12s1.1 6.2 3.3 8.5" /></svg>;
   }
   if (name === "trip") {
     return <svg aria-hidden="true" viewBox="0 0 24 24"><path d="M6.5 7.5h11A2.5 2.5 0 0 1 20 10v7.5H4V10a2.5 2.5 0 0 1 2.5-2.5Z" /><path d="M9 7.5V6a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v1.5M4 12h16M8 17.5v1.5M16 17.5v1.5" /></svg>;
+  }
+  if (name === "plan") {
+    return <svg aria-hidden="true" viewBox="0 0 24 24"><rect x="4" y="5.5" width="16" height="14" rx="2" /><path d="M8 3.5v4M16 3.5v4M4 10h16M8 14h3M8 17h6" /></svg>;
   }
   if (name === "search") {
     return <svg aria-hidden="true" viewBox="0 0 24 24"><circle cx="10.5" cy="10.5" r="6.5" /><path d="m15.5 15.5 4 4" /></svg>;

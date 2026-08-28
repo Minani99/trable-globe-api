@@ -8,9 +8,9 @@ export const siteConfig = {
   name: "Travel Globe",
   /** Header lockup - rendered as-is, so keep the spacing intentional. */
   wordmark: "TRAVEL GLOBE",
-  tagline: "다음 여행부터 다녀온 세계까지",
+  tagline: "여행할수록, 나만의 세계가 만들어집니다",
   description:
-    "몇 번의 선택으로 여행을 계획하고, 다녀온 일정과 사진을 하나의 지구본에 이어 남기는 여행 플랫폼입니다.",
+    "방문한 국가와 도시, 이동한 길과 기억을 하나의 3D 지구본에 쌓아 나만의 여행 세계를 만드는 서비스입니다.",
   /** Profile the landing page links to until sign-up exists. */
   demoUsername: "traveler",
 } as const;

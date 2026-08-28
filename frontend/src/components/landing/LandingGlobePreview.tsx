@@ -1,35 +1,73 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState, useSyncExternalStore } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 import { TravelGlobe, type GlobeCountryHover } from "@/components/globe/TravelGlobe";
-import {
-  getCachedAuthMember,
-  loadAuthMember,
-  subscribeToAuthState,
-} from "@/lib/auth-state";
+import { fetchProfile, fetchTravels, fetchVisitedCountries } from "@/lib/api/profile";
+import { profilePath, siteConfig } from "@/lib/config";
+import { buildGlobeTimeline } from "@/lib/globeTimeline";
+import { buildTravelRecap } from "@/lib/travelInsights";
+import { formatStat } from "@/lib/utils/format";
 import { countryFlag, getWorldLandmarkPlace } from "@/lib/worldLandmarks";
+import type { TravelSummary, UserProfile, VisitedCountry } from "@/types";
+
+interface DemoWorldData {
+  profile: UserProfile;
+  countries: VisitedCountry[];
+  travels: TravelSummary[];
+}
 
 export function LandingGlobePreview() {
   const [selectedCode, setSelectedCode] = useState<string | null>(null);
   const [hoveredCountry, setHoveredCountry] = useState<GlobeCountryHover | null>(null);
   const [selectedCountry, setSelectedCountry] = useState<GlobeCountryHover | null>(null);
   const [centeredCountry, setCenteredCountry] = useState<GlobeCountryHover | null>(null);
-  const member = useSyncExternalStore(
-    subscribeToAuthState,
-    getCachedAuthMember,
-    () => undefined,
-  );
-  const activeCountry = selectedCountry ?? hoveredCountry ?? centeredCountry;
+  const [demoWorld, setDemoWorld] = useState<DemoWorldData | null>(null);
+  const selectedVisitedCountry = selectedCode
+    ? demoWorld?.countries.find((country) => country.iso2Code === selectedCode) ?? null
+    : null;
+  const resolvedSelectedCountry = selectedCountry?.code === selectedCode
+    ? selectedCountry
+    : selectedVisitedCountry ? {
+        code: selectedVisitedCountry.iso2Code,
+        nameKo: selectedVisitedCountry.nameKo,
+        nameEn: selectedVisitedCountry.nameEn,
+      } : null;
+  const activeCountry = resolvedSelectedCountry ?? hoveredCountry ?? centeredCountry;
   const activePlace = activeCountry ? getWorldLandmarkPlace(activeCountry.code) : null;
+  const routeArcs = useMemo(
+    () => buildGlobeTimeline(demoWorld?.travels ?? []).arcs,
+    [demoWorld?.travels],
+  );
+  const recap = useMemo(
+    () => demoWorld ? buildTravelRecap(demoWorld.travels, null) : null,
+    [demoWorld],
+  );
 
   useEffect(() => {
-    if (member === undefined) void loadAuthMember();
-  }, [member]);
+    let active = true;
+    const username = siteConfig.demoUsername;
+    Promise.all([
+      fetchProfile(username),
+      fetchVisitedCountries(username),
+      fetchTravels(username),
+    ])
+      .then(([profile, countries, travels]) => {
+        if (active) setDemoWorld({ profile, countries, travels });
+      })
+      // The interactive world explorer remains useful while the public sample wakes up.
+      .catch(() => undefined);
+    return () => {
+      active = false;
+    };
+  }, []);
 
   const handleSelect = (code: string | null) => {
     setSelectedCode(code);
+    if (!code) {
+      setSelectedCountry(null);
+    }
   };
 
   return (
@@ -38,8 +76,9 @@ export function LandingGlobePreview() {
         <div className="landing-globe-frame">
           <div className="landing-globe-live">
             <TravelGlobe
-              countries={[]}
+              countries={demoWorld?.countries ?? []}
               selectedCode={selectedCode}
+              routeArcs={routeArcs}
               onSelect={handleSelect}
               onHover={() => undefined}
               onCountryHover={setHoveredCountry}
@@ -49,6 +88,19 @@ export function LandingGlobePreview() {
             />
           </div>
           <span className="landing-globe-vignette" aria-hidden="true" />
+
+          <dl
+            className={`landing-globe-stats${demoWorld ? " is-ready" : ""}`}
+            aria-label={demoWorld ? "샘플 여행 세계 통계" : "샘플 여행 세계 불러오는 중"}
+          >
+            <GlobeStat label="Countries" value={demoWorld ? formatStat(demoWorld.profile.statistics.countryCount) : "—"} />
+            <GlobeStat label="Cities" value={demoWorld ? formatStat(demoWorld.profile.statistics.cityCount) : "—"} />
+            <GlobeStat label="Journeys" value={demoWorld ? formatStat(demoWorld.profile.statistics.travelCount) : "—"} />
+            <GlobeStat
+              label="Distance"
+              value={recap ? `${formatDistance(recap.distanceKm)} km` : "—"}
+            />
+          </dl>
 
           <div className="landing-landmark-card" aria-live="polite">
             {activeCountry && activePlace ? (
@@ -72,22 +124,14 @@ export function LandingGlobePreview() {
                     {activePlace.place}
                   </p>
                 </div>
-                {selectedCountry && member !== undefined ? (
+                {resolvedSelectedCountry ? (
                   <Link
-                    href={countryActionHref(selectedCountry.code, Boolean(member))}
+                    href={profilePath(siteConfig.demoUsername)}
                     className="landing-landmark-card__action"
                   >
-                    <span>
-                      {member
-                        ? `${selectedCountry.nameKo} 여행 계획하기`
-                        : "이 나라 여행 계획하기"}
-                    </span>
+                    <span>완성된 샘플 세계 둘러보기</span>
                     <span aria-hidden="true">→</span>
                   </Link>
-                ) : selectedCountry ? (
-                  <span className="landing-landmark-card__action is-loading" aria-label="계정 상태 확인 중">
-                    계정 상태 확인 중…
-                  </span>
                 ) : null}
               </>
             ) : (
@@ -109,8 +153,15 @@ export function LandingGlobePreview() {
   );
 }
 
-function countryActionHref(code: string, authenticated: boolean): string {
-  const editorCode = code === "Kosovo" ? "XK" : code === "N. Cyprus" ? "CY" : code === "Somaliland" ? "SO" : code;
-  const destination = `/studio/plans/new?country=${encodeURIComponent(editorCode)}`;
-  return authenticated ? destination : `/register?next=${encodeURIComponent(destination)}`;
+function GlobeStat({ label, value }: { label: string; value: string }) {
+  return (
+    <div>
+      <dt>{label}</dt>
+      <dd>{value}</dd>
+    </div>
+  );
+}
+
+function formatDistance(value: number): string {
+  return new Intl.NumberFormat("ko-KR").format(value);
 }

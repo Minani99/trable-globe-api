@@ -95,20 +95,20 @@ export function AccountNavigation({
   if (!member) {
     return mobile ? (
       <>
-        <Link href="/register?next=%2Fstudio%2Fplans%2Fnew" onClick={onNavigate}><span>첫 여행 계획하기</span><span aria-hidden="true">→</span></Link>
+        <Link href="/register?next=%2Fstudio" onClick={onNavigate}><span>내 지구본 만들기</span><span aria-hidden="true">→</span></Link>
         <Link href="/login" onClick={onNavigate}><span>로그인</span><span aria-hidden="true">→</span></Link>
       </>
     ) : (
       <div className="site-account-entry">
         <Link href="/login" className="site-account-login">로그인</Link>
-        <Link href="/register" className="site-profile-link site-profile-link--accent">계정 만들기</Link>
+        <Link href="/register?next=%2Fstudio" className="site-profile-link site-profile-link--accent">지구본 만들기</Link>
       </div>
     );
   }
   return mobile ? (
     <>
-      <Link href={`/${member.username}`} onClick={onNavigate}><span>내 프로필</span><span aria-hidden="true">→</span></Link>
-      <Link href="/studio" onClick={onNavigate}><span>내 여행</span><span aria-hidden="true">→</span></Link>
+      <Link href={`/${member.username}`} onClick={onNavigate}><span>내 지구본</span><span aria-hidden="true">→</span></Link>
+      <Link href="/studio" onClick={onNavigate}><span>여행 기록</span><span aria-hidden="true">→</span></Link>
       <Link href="/studio/plans/new" onClick={onNavigate}><span>새 여행 계획</span><span aria-hidden="true">＋</span></Link>
       <Link href="/studio#activity" onClick={onNavigate}><span>최근 활동</span><span aria-hidden="true">→</span></Link>
       <Link href="/settings#profile" onClick={onNavigate}><span>설정</span><span aria-hidden="true">→</span></Link>
@@ -144,8 +144,8 @@ export function AccountNavigation({
         </button>
         {menuOpen ? (
           <div className="site-account-popover" role="menu">
-            <Link href={`/${member.username}`} role="menuitem" onClick={() => setMenuOpen(false)}><span>내 프로필</span><span aria-hidden="true">↗</span></Link>
-            <Link href="/studio" role="menuitem" onClick={() => setMenuOpen(false)}><span>내 여행</span><span aria-hidden="true">→</span></Link>
+            <Link href={`/${member.username}`} role="menuitem" onClick={() => setMenuOpen(false)}><span>내 지구본</span><span aria-hidden="true">↗</span></Link>
+            <Link href="/studio" role="menuitem" onClick={() => setMenuOpen(false)}><span>여행 기록</span><span aria-hidden="true">→</span></Link>
             <Link href="/studio/plans/new" role="menuitem" onClick={() => setMenuOpen(false)}><span>새 여행 계획</span><span aria-hidden="true">＋</span></Link>
             <Link href="/studio#activity" role="menuitem" onClick={() => setMenuOpen(false)}><span>최근 활동</span><span aria-hidden="true">→</span></Link>
             <Link href="/settings#profile" role="menuitem" onClick={() => setMenuOpen(false)}><span>설정</span><span aria-hidden="true">→</span></Link>

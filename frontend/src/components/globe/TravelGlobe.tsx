@@ -780,7 +780,7 @@ export function TravelGlobe({
             atmosphereColor={globeTheme.atmosphere}
             atmosphereAltitude={0.17}
             onGlobeReady={handleReady}
-            arcsData={isWorldExplorer ? [] : routeArcs}
+            arcsData={routeArcs}
             arcStartLat={(d: object) => (d as GlobeRouteArc).startLat}
             arcStartLng={(d: object) => (d as GlobeRouteArc).startLng}
             arcEndLat={(d: object) => (d as GlobeRouteArc).endLat}
