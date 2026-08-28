@@ -26,6 +26,11 @@ export function TravelPlaceList({ places }: TravelPlaceListProps) {
             <p className="text-content-faint mt-1 text-[0.76rem]">
               {[place.city?.nameKo, place.country.nameKo].filter(Boolean).join(" · ")}
             </p>
+            {place.startTime ? (
+              <p className="text-content-secondary mt-1.5 font-mono text-[0.72rem]">
+                {place.startTime.slice(0, 5)}{place.durationMinutes ? ` · ${formatDuration(place.durationMinutes)}` : ""}
+              </p>
+            ) : null}
             {place.memo ? <p className="text-body mt-2.5 text-[0.86rem]">{place.memo}</p> : null}
           </div>
 
@@ -41,4 +46,11 @@ export function TravelPlaceList({ places }: TravelPlaceListProps) {
       ))}
     </ol>
   );
+}
+
+function formatDuration(minutes: number): string {
+  const hours = Math.floor(minutes / 60);
+  const remainder = minutes % 60;
+  if (!hours) return `${remainder}분`;
+  return remainder ? `${hours}시간 ${remainder}분` : `${hours}시간`;
 }

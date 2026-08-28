@@ -112,6 +112,8 @@ export function PlaceLocationPicker({
   const [provider, setProvider] = useState<"checking" | "maptiler" | "fallback">("checking");
   const [apiKey, setApiKey] = useState<string | null>(null);
   const [mapOpen, setMapOpen] = useState(false);
+  const [googleLink, setGoogleLink] = useState("");
+  const [importingGoogleLink, setImportingGoogleLink] = useState(false);
   const [mapStartCenter, setMapStartCenter] = useState<Coordinate>({
     latitude: latitude ?? fallbackLatitude,
     longitude: longitude ?? fallbackLongitude,
@@ -367,6 +369,58 @@ export function PlaceLocationPicker({
     }
   }
 
+  async function importGoogleMapsPlace() {
+    if (!googleLink.trim() || importingGoogleLink) return;
+    setImportingGoogleLink(true);
+    setStatus(null);
+    try {
+      const response = await fetch("/api/locations/import-google-map", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Accept: "application/json" },
+        body: JSON.stringify({ url: googleLink.trim() }),
+      });
+      const body = await response.json() as {
+        success: boolean;
+        data: { name: string | null; latitude: number | null; longitude: number | null } | null;
+        message: string | null;
+      };
+      if (!response.ok || !body.success || !body.data) throw new Error(body.message ?? "장소 링크를 읽지 못했습니다.");
+      if (body.data.latitude !== null && body.data.longitude !== null) {
+        let importedName = body.data.name || "선택한 위치";
+        let importedCity = cityName;
+        if (!body.data.name) {
+          const params = new URLSearchParams({ lat: String(body.data.latitude), lng: String(body.data.longitude) });
+          const reverseResponse = await fetch(`/api/locations/reverse?${params}`, { cache: "no-store" });
+          const reverseBody = await reverseResponse.json() as { success: boolean; data: LocationSelection | null };
+          if (reverseBody.success && reverseBody.data) {
+            importedName = reverseBody.data.name;
+            importedCity = reverseBody.data.city;
+          }
+        }
+        commitSelection({
+          name: importedName,
+          city: importedCity,
+          label: "Google 지도 공유 링크에서 가져옴",
+          latitude: body.data.latitude,
+          longitude: body.data.longitude,
+        });
+        setGoogleLink("");
+        setStatus("Google 지도 장소와 위치를 일정에 가져왔습니다.");
+      } else if (body.data.name) {
+        setQuery(body.data.name);
+        setQueryTouched(true);
+        await searchPlaces(body.data.name);
+        setStatus("링크의 장소명을 찾았습니다. 검색 결과에서 정확한 지점을 골라 주세요.");
+      } else {
+        throw new Error("링크에서 장소 위치를 확인하지 못했습니다.");
+      }
+    } catch (error) {
+      setStatus(error instanceof Error ? error.message : "Google 지도 장소를 가져오지 못했습니다.");
+    } finally {
+      setImportingGoogleLink(false);
+    }
+  }
+
   return (
     <div className="place-picker is-wide">
       <div className="place-picker__intro">
@@ -477,6 +531,20 @@ export function PlaceLocationPicker({
           <span aria-hidden="true">⌖</span><span><strong>지도에서 직접 찾기</strong><small>지도를 움직여 중앙 핀에 맞추세요</small></span><b aria-hidden="true">›</b>
         </button>
       )}
+
+      <div className="place-picker__google-tools">
+        <a href={googleMapsDiscoveryUrl(countryName, cityName, query)} target="_blank" rel="noreferrer">
+          <span aria-hidden="true">G</span><span><strong>Google 지도에서 직접 찾아보기</strong><small>사진·평점·후기를 비교한 뒤 공유 링크를 복사하세요</small></span><b aria-hidden="true">↗</b>
+        </a>
+        <details>
+          <summary>Google 지도 링크로 장소 가져오기</summary>
+          <div>
+            <input type="url" value={googleLink} onChange={(event) => setGoogleLink(event.target.value)} placeholder="https://maps.app.goo.gl/…" aria-label="Google 지도 장소 링크" />
+            <button type="button" onClick={() => void importGoogleMapsPlace()} disabled={importingGoogleLink || !googleLink.trim()}>{importingGoogleLink ? "가져오는 중…" : "장소 가져오기"}</button>
+          </div>
+          <p>Google 지도에서 장소를 연 뒤 ‘공유 → 링크 복사’를 선택하세요.</p>
+        </details>
+      </div>
 
       {status ? <p className="place-picker__status" role="status">{status}</p> : null}
       <p className="place-picker__help">{provider === "maptiler" ? "MapTiler의 한국어 지도·장소 검색을 사용합니다." : provider === "checking" ? "장소 검색을 준비하고 있습니다…" : "한국어 우선 기본 검색을 사용 중입니다."}</p>
@@ -670,6 +738,11 @@ function googleMapsSearchUrl(result: SearchSuggestion): string {
     .filter(Boolean)
     .join(" ");
   return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(query)}`;
+}
+
+function googleMapsDiscoveryUrl(countryName: string, cityName: string, query: string): string {
+  const search = [query.trim(), cityName.trim(), countryName].filter(Boolean).join(" ");
+  return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(search || countryName)}`;
 }
 
 function readableCuisine(value: string): string {

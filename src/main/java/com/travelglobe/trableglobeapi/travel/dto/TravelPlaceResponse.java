@@ -3,6 +3,7 @@ package com.travelglobe.trableglobeapi.travel.dto;
 import com.travelglobe.trableglobeapi.travel.domain.TravelPlace;
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.LocalTime;
 
 /**
  * A stop on the itinerary.
@@ -18,6 +19,8 @@ public record TravelPlaceResponse(
         BigDecimal latitude,
         BigDecimal longitude,
         LocalDate visitedAt,
+        LocalTime startTime,
+        Integer durationMinutes,
         String memo,
         int sortOrder) {
 
@@ -30,6 +33,8 @@ public record TravelPlaceResponse(
                 place.resolveLatitude(),
                 place.resolveLongitude(),
                 place.getVisitedAt(),
+                place.getStartTime(),
+                place.getDurationMinutes(),
                 place.getMemo(),
                 place.getSortOrder());
     }

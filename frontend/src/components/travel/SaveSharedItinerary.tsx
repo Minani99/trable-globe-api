@@ -48,6 +48,8 @@ export function SaveSharedItinerary({ travel, signedIn, isOwner, today }: { trav
         latitude: place.latitude,
         longitude: place.longitude,
         visitedAt: addDays(startDate, place.visitedAt ? daysBetween(travel.startDate, place.visitedAt) : 0),
+        startTime: place.startTime,
+        durationMinutes: place.durationMinutes,
         memo: place.memo,
       })),
       photos: [],

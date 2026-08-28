@@ -166,6 +166,8 @@ public class TravelCommandService {
                     request.latitude(),
                     request.longitude(),
                     request.visitedAt(),
+                    request.startTime(),
+                    request.durationMinutes(),
                     emptyToNull(request.memo()),
                     index));
         }

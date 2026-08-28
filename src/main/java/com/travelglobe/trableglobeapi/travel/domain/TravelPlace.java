@@ -14,6 +14,7 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.LocalTime;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -65,6 +66,12 @@ public class TravelPlace {
     @Column(name = "visited_at")
     private LocalDate visitedAt;
 
+    @Column(name = "start_time")
+    private LocalTime startTime;
+
+    @Column(name = "duration_minutes")
+    private Integer durationMinutes;
+
     @Column(name = "memo", length = 1000)
     private String memo;
 
@@ -72,23 +79,36 @@ public class TravelPlace {
     private int sortOrder;
 
     private TravelPlace(Country country, City city, String placeName, BigDecimal latitude,
-                        BigDecimal longitude, LocalDate visitedAt, String memo, int sortOrder) {
+                        BigDecimal longitude, LocalDate visitedAt, LocalTime startTime,
+                        Integer durationMinutes, String memo, int sortOrder) {
         this.country = country;
         this.city = city;
         this.placeName = placeName;
         this.latitude = latitude;
         this.longitude = longitude;
         this.visitedAt = visitedAt;
+        this.startTime = startTime;
+        this.durationMinutes = durationMinutes;
         this.memo = memo;
         this.sortOrder = sortOrder;
     }
 
     public static TravelPlace create(Country country, City city, String placeName, BigDecimal latitude,
                                      BigDecimal longitude, LocalDate visitedAt, String memo, int sortOrder) {
+        return create(country, city, placeName, latitude, longitude, visitedAt, null, null, memo, sortOrder);
+    }
+
+    public static TravelPlace create(Country country, City city, String placeName, BigDecimal latitude,
+                                     BigDecimal longitude, LocalDate visitedAt, LocalTime startTime,
+                                     Integer durationMinutes, String memo, int sortOrder) {
         if (city != null && !city.belongsTo(country)) {
             throw new IllegalArgumentException("방문 도시와 국가는 서로 일치해야 합니다.");
         }
-        return new TravelPlace(country, city, placeName, latitude, longitude, visitedAt, memo, sortOrder);
+        if (durationMinutes != null && (durationMinutes < 15 || durationMinutes > 1440)) {
+            throw new IllegalArgumentException("장소 체류 시간은 15분 이상 24시간 이하여야 합니다.");
+        }
+        return new TravelPlace(country, city, placeName, latitude, longitude, visitedAt,
+                startTime, durationMinutes, memo, sortOrder);
     }
 
     /** Called by {@link Travel#addPlace} - the owning side stays package internal. */

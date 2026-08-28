@@ -25,6 +25,8 @@ interface PlaceDraft {
   latitude: string;
   longitude: string;
   visitedAt: string;
+  startTime: string;
+  durationMinutes: string;
   memo: string;
 }
 
@@ -117,6 +119,8 @@ export function TravelEditor({
           latitude: String(place.latitude),
           longitude: String(place.longitude),
           visitedAt: place.visitedAt ?? "",
+          startTime: place.startTime?.slice(0, 5) ?? "",
+          durationMinutes: place.durationMinutes ? String(place.durationMinutes) : "",
           memo: place.memo ?? "",
         }))
       : [emptyPlace(initialCountryCode)],
@@ -153,6 +157,9 @@ export function TravelEditor({
   const [weatherUndo, setWeatherUndo] = useState<WeatherUndoSnapshot | null>(null);
   const [weatherPlannerState, setWeatherPlannerState] = useState<"idle" | "loading" | "message">("idle");
   const [weatherPlannerMessage, setWeatherPlannerMessage] = useState<string | null>(null);
+  const [scheduleView, setScheduleView] = useState<"simple" | "timeline">(
+    initialTravel?.places.some((place) => Boolean(place.startTime)) ? "timeline" : "simple",
+  );
   const countryMap = useMemo(() => new Map(countries.map((country) => [country.iso2Code, country])), [countries]);
   const travelPreferences = useMemo(() => recommendationPreferences(`${title} ${description}`), [description, title]);
   const planDays = useMemo(() => {
@@ -363,6 +370,8 @@ export function TravelEditor({
       latitude: country ? String(country.latitude) : "",
       longitude: country ? String(country.longitude) : "",
       visitedAt: activePlanDate,
+      startTime: nextPlanningTime(activeDayPlaces.map(({ place }) => place.startTime), slot),
+      durationMinutes: slot === "숙소" ? "60" : slot === "식사" ? "75" : "90",
     };
     setPlaces((current) => {
       const next = [...current];
@@ -793,7 +802,7 @@ export function TravelEditor({
       </section>
 
       <section className="travel-editor__section">
-        <div className="travel-editor__section-heading"><span>02</span><div><p className="eyebrow">Itinerary</p><h2>{planningMode ? "일차별 일정" : "방문 장소"}</h2><p>{planningMode ? "자동으로 만든 일차별 카드를 실제 가고 싶은 장소로 바꿔보세요." : "입력한 순서대로 상세 지도의 경로가 이어집니다."}</p></div></div>
+        <div className="travel-editor__section-heading"><span>02</span><div><p className="eyebrow">Itinerary</p><h2>{planningMode ? "일차별 일정" : "방문 장소"}</h2><p>{planningMode ? "자동 초안을 간단히 훑거나 시간표로 열어 장소와 체류 시간을 조정하세요." : "입력한 순서대로 상세 지도의 경로가 이어집니다."}</p></div></div>
         <div className="travel-editor__itinerary-content">
         {planningMode && planDays.length > 0 ? (
           <div className="plan-itinerary">
@@ -833,6 +842,13 @@ export function TravelEditor({
                 );
               })}
             </div>
+            <div className="plan-itinerary__view-switch" aria-label="일정 표시 방식">
+              <div><strong>일정 보기</strong><span>필요한 만큼만 자세히 보세요.</span></div>
+              <div>
+                <button type="button" className={scheduleView === "simple" ? "is-active" : undefined} onClick={() => setScheduleView("simple")} aria-pressed={scheduleView === "simple"}>간단히</button>
+                <button type="button" className={scheduleView === "timeline" ? "is-active" : undefined} onClick={() => setScheduleView("timeline")} aria-pressed={scheduleView === "timeline"}>시간표</button>
+              </div>
+            </div>
             <div className="plan-itinerary__toolbar">
               <div><strong>일정 빠르게 추가</strong><span>종류를 고른 뒤 장소만 검색하세요.</span></div>
               <div className="plan-itinerary__quick-actions">
@@ -846,11 +862,11 @@ export function TravelEditor({
             </div>
           </div>
         ) : null}
-        <ol className="travel-editor__places">
+        <ol className={`travel-editor__places${planningMode && scheduleView === "timeline" ? " is-timeline" : ""}`}>
           {places.map((place, index) => planningMode && activePlanDate && place.visitedAt !== activePlanDate ? null : (
             <li key={place.key}>
               <div className="travel-editor__item-head">
-                <strong>{planningMode ? `${String(activeDayPlaces.findIndex((item) => item.index === index) + 1).padStart(2, "0")}번째 일정` : `${String(index + 1).padStart(2, "0")}번째 장소`}</strong>
+                <strong>{planningMode ? `${String(activeDayPlaces.findIndex((item) => item.index === index) + 1).padStart(2, "0")}번째 일정` : `${String(index + 1).padStart(2, "0")}번째 장소`}{planningMode && place.startTime ? <time>{place.startTime}</time> : null}</strong>
                 <div className="travel-editor__order-actions">
                   <button type="button" onClick={() => planningMode ? movePlanningPlace(index, -1) : movePlace(index, -1)} disabled={(planningMode ? activeDayPlaces[0]?.index === index : index === 0) || pending} aria-label="장소를 앞으로 이동">↑</button>
                   <button type="button" onClick={() => planningMode ? movePlanningPlace(index, 1) : movePlace(index, 1)} disabled={(planningMode ? activeDayPlaces.at(-1)?.index === index : index === places.length - 1) || pending} aria-label="장소를 뒤로 이동">↓</button>
@@ -876,6 +892,11 @@ export function TravelEditor({
                 <label><span>도시</span><input value={place.cityName} onChange={(event) => updateCityName(index, event.target.value)} maxLength={100} placeholder="예: 서울" /></label>
                 <label className="is-wide"><span>장소 이름</span><input value={place.placeName} onChange={(event) => updatePlace(index, "placeName", event.target.value)} maxLength={150} placeholder="예: 서울숲" required /></label>
                 <label><span>방문일</span><input value={place.visitedAt} onChange={(event) => updatePlace(index, "visitedAt", event.target.value)} type="date" /></label>
+                {planningMode && scheduleView === "timeline" ? <div className="travel-editor__time-fields is-wide">
+                  <label><span>시작 시간</span><input value={place.startTime} onChange={(event) => updatePlace(index, "startTime", event.target.value)} type="time" step="900" /></label>
+                  <label><span>머무는 시간</span><select value={place.durationMinutes} onChange={(event) => updatePlace(index, "durationMinutes", event.target.value)}><option value="">미정</option><option value="30">30분</option><option value="45">45분</option><option value="60">1시간</option><option value="75">1시간 15분</option><option value="90">1시간 30분</option><option value="120">2시간</option><option value="180">3시간</option><option value="240">4시간</option></select></label>
+                  <output><span>예상 종료</span><strong>{estimatedEndTime(place.startTime, place.durationMinutes) || "시간을 정하면 계산돼요"}</strong></output>
+                </div> : null}
                 <label className="is-wide"><span>메모</span><textarea value={place.memo} onChange={(event) => updatePlace(index, "memo", event.target.value)} maxLength={1000} rows={3} placeholder={planningMode ? "예약, 먹고 싶은 메뉴, 이동 팁" : "그 장소에서 기억하고 싶은 장면"} /></label>
               </div>
             </li>
@@ -961,7 +982,7 @@ export function TravelEditor({
 }
 
 function emptyPlace(countryCode: string): PlaceDraft {
-  return { key: draftKey(), countryCode, cityNameEn: "", cityName: "", placeName: "", latitude: "", longitude: "", visitedAt: "", memo: "" };
+  return { key: draftKey(), countryCode, cityNameEn: "", cityName: "", placeName: "", latitude: "", longitude: "", visitedAt: "", startTime: "", durationMinutes: "", memo: "" };
 }
 
 function emptyPhoto(): PhotoDraft {
@@ -1000,6 +1021,28 @@ function datesBetween(startDate: string, endDate: string): string[] {
 function formatPlanDay(value: string): string {
   const [, month, day] = value.split("-");
   return `${Number(month)}.${String(day).padStart(2, "0")}`;
+}
+
+function nextPlanningTime(existingTimes: string[], slot: (typeof PLAN_SLOT_PRESETS)[number]): string {
+  const fallback: Record<(typeof PLAN_SLOT_PRESETS)[number], string> = {
+    관광: "10:00", 식사: "12:30", 카페: "15:00", 숙소: "20:00",
+  };
+  const latest = existingTimes.filter(Boolean).sort().at(-1);
+  if (!latest) return fallback[slot];
+  const [hour, minute] = latest.split(":").map(Number);
+  const nextMinutes = Math.min(23 * 60 + 45, hour * 60 + minute + 120);
+  return `${String(Math.floor(nextMinutes / 60)).padStart(2, "0")}:${String(nextMinutes % 60).padStart(2, "0")}`;
+}
+
+function estimatedEndTime(startTime: string, duration: string): string {
+  if (!startTime || !duration) return "";
+  const [hour, minute] = startTime.split(":").map(Number);
+  const total = hour * 60 + minute + Number(duration);
+  if (!Number.isFinite(total)) return "";
+  const dayOffset = Math.floor(total / 1440);
+  const withinDay = total % 1440;
+  const formatted = `${String(Math.floor(withinDay / 60)).padStart(2, "0")}:${String(withinDay % 60).padStart(2, "0")}`;
+  return dayOffset ? `${formatted} · 다음 날` : formatted;
 }
 
 function isPlanningPlaceholder(place: PlaceDraft): boolean {
@@ -1194,6 +1237,8 @@ function toPlaceInput(place: PlaceDraft, countries: Map<string, CountryOption>):
     city: cityNameKo ? { nameEn: cityNameEn!, nameKo: cityNameKo, latitude, longitude } : null,
     placeName: place.placeName.trim(), latitude, longitude,
     visitedAt: nullable(place.visitedAt), memo: nullable(place.memo),
+    startTime: nullable(place.startTime),
+    durationMinutes: place.durationMinutes ? Number(place.durationMinutes) : null,
   };
 }
 

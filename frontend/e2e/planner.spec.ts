@@ -89,13 +89,23 @@ test("몇 번의 선택으로 여행 계획을 만들고 일차별 일정으로 
 
   await page.goto("/studio/plans/new");
   await page.setViewportSize({ width: 390, height: 844 });
+  const googleImportResponse = await page.request.post("/api/locations/import-google-map", {
+    data: { url: "https://www.google.com/maps/place/Tokyo+Station/@35.681236,139.767125,17z" },
+  });
+  expect(googleImportResponse.status()).toBe(200);
+  expect(await googleImportResponse.json()).toMatchObject({
+    success: true,
+    data: { name: "Tokyo Station", latitude: 35.681236, longitude: 139.767125 },
+  });
   await expect(page.getByRole("heading", { name: /빈 페이지 없이/ })).toBeVisible();
   await page.getByRole("button", { name: "일본", exact: true }).click();
   await page.getByRole("button", { name: "2박 3일" }).click();
   await page.getByRole("button", { name: "혼자" }).click();
   await page.getByRole("button", { name: "문화" }).click();
-  await expect(page.getByRole("button", { name: "계획 만들기", exact: true })).toBeVisible();
-  await page.getByRole("button", { name: "계획 만들기", exact: true }).click();
+  await expect(page.getByRole("button", { name: /자동으로 전부 짜기/ })).toBeVisible();
+  await page.getByRole("button", { name: /일차만 만들기/ }).click();
+  await expect(page.getByRole("button", { name: "일정 만들기", exact: true })).toBeVisible();
+  await page.getByRole("button", { name: "일정 만들기", exact: true }).click();
 
   await expect(page).toHaveURL(/\/studio\/travels\/\d+\/edit\?plan=1$/, { timeout: 30_000 });
   const travelId = Number(page.url().match(/\/travels\/(\d+)\/edit/)?.[1]);
@@ -156,6 +166,11 @@ test("몇 번의 선택으로 여행 계획을 만들고 일차별 일정으로 
   await expect(page.getByRole("button", { name: "맛집", exact: true })).toBeVisible();
   await expect(page.getByRole("button", { name: "숙소", exact: true })).toBeVisible();
   await expect(page.getByRole("button", { name: /지도에서 직접 찾기/ }).first()).toBeVisible();
+  await expect(page.getByRole("link", { name: /Google 지도에서 직접 찾아보기/ }).first()).toHaveAttribute("href", /google\.com\/maps\/search/);
+  await page.getByRole("button", { name: "시간표", exact: true }).click();
+  await page.getByLabel("시작 시간").first().fill("09:30");
+  await page.getByLabel("머무는 시간").first().selectOption("120");
+  await expect(page.getByText("11:30", { exact: true })).toBeVisible();
   await page.getByRole("textbox", { name: "방문할 장소 검색" }).first().fill("도쿄역");
   await page.getByRole("button", { name: "검색", exact: true }).first().click();
   await page.getByRole("button", { name: /도쿄역.*일정에 담기/ }).click();

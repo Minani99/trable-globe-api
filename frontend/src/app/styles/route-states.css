@@ -483,6 +483,14 @@
     min-height: 4.2rem;
   }
 
+  .plan-anchor__input-row {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .plan-anchor__input-row > a {
+    justify-content: center;
+  }
+
   .plan-summary {
     grid-template-columns: minmax(0, 1fr);
   }
@@ -606,6 +614,24 @@
 
   .plan-choice-row.is-compact button:last-child {
     grid-column: 1 / -1;
+  }
+
+  .plan-build-mode {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .plan-build-mode button {
+    min-height: 5.35rem;
+  }
+
+  .plan-anchor .plan-choice-row {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .plan-anchor .plan-choice-row button {
+    min-width: 0;
+    padding-inline: 0.45rem;
   }
 
   .studio-hero__actions {

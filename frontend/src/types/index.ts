@@ -90,6 +90,8 @@ export interface TravelPlace {
   latitude: number;
   longitude: number;
   visitedAt: string | null;
+  startTime: string | null;
+  durationMinutes: number | null;
   memo: string | null;
   sortOrder: number;
 }
@@ -306,6 +308,8 @@ export interface TravelPlaceWriteInput {
   latitude: number | null;
   longitude: number | null;
   visitedAt: string | null;
+  startTime: string | null;
+  durationMinutes: number | null;
   memo: string | null;
 }
 
