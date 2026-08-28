@@ -48,8 +48,11 @@ test("몇 번의 선택으로 여행 계획을 만들고 일차별 일정으로 
         data: [{
           id: "osm-node-1",
           name: "마루노우치 식당",
+          nameLocale: "ko",
+          localName: "丸の内食堂",
           city: "도쿄",
           label: "음식점 · 마루노우치",
+          description: "일식 메뉴를 주로 제공하는 음식점입니다.",
           latitude: 35.682,
           longitude: 139.768,
           distanceKm: 0.8,
@@ -58,6 +61,7 @@ test("몇 번의 선택으로 여행 계획을 만들고 일차별 일정으로 
           openingHours: "Mo-Su 11:00-22:00",
           cuisine: "일식",
           stars: null,
+          features: ["예약 가능"],
         }],
         message: null,
       }),
@@ -169,9 +173,20 @@ test("몇 번의 선택으로 여행 계획을 만들고 일차별 일정으로 
   await page.getByRole("button", { name: "＋ 식사" }).click();
   await expect(page.getByRole("textbox", { name: "장소 이름" })).toHaveCount(2);
   await page.getByRole("button", { name: "맛집", exact: true }).nth(1).click();
+  await expect(page.getByRole("button", { name: "현지 음식", exact: true })).toBeVisible();
+  const detailedRecommendation = page.waitForRequest((request) => request.url().includes("/api/places/recommend?") && request.url().includes("detail=japanese"));
+  await page.getByRole("button", { name: "일식", exact: true }).click();
+  await detailedRecommendation;
   await expect(page.getByText("취향·동선 추천순", { exact: true })).toBeVisible();
   await expect(page.getByText(/맛집 취향과 잘 맞음/)).toBeVisible();
+  await expect(page.getByText("현지명 · 丸の内食堂", { exact: true })).toBeVisible();
+  await expect(page.getByText("일식 메뉴를 주로 제공하는 음식점입니다.", { exact: true })).toBeVisible();
   await expect(page.getByText(/영업시간 Mo-Su 11:00-22:00/)).toBeVisible();
+  await expect(page.getByText("음식 종류 일식", { exact: true })).toBeVisible();
+  await expect(page.getByRole("link", { name: /Google 지도에서 사진·후기 보기/ })).toHaveAttribute("href", /google\.com\/maps\/search/);
+  const recommendationCard = await page.locator(".place-picker__result-card").first().boundingBox();
+  expect(recommendationCard?.x).toBeGreaterThanOrEqual(0);
+  expect((recommendationCard?.x ?? 0) + (recommendationCard?.width ?? 0)).toBeLessThanOrEqual(390);
   await page.getByRole("tab", { name: /DAY 2/ }).click();
   await expect(page.getByRole("button", { name: "전날 일정 복사" })).toBeVisible();
   await page.getByRole("button", { name: "전날 일정 복사" }).click();
