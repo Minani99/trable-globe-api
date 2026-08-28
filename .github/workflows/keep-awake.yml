@@ -1,22 +1,11 @@
-# Keeps the free Render instance from sleeping during Korean waking hours.
+# Manual fallback for the Cloudflare Cron Worker used in production.
 #
-# A free web service sleeps after ~15 minutes of silence and the next visitor pays
-# a 50-second wake-up. This pings the health endpoint often enough that the timer
-# never expires. See docs/operations.md for the hour budget this spends.
-#
-# Delete this workflow once the service is on a paid plan - it stops sleeping then,
-# and this only burns the free hour budget.
-name: keep-awake
+# The scheduled keep-alive moved to Cloudflare so a private repository does not
+# consume GitHub Actions minutes every ten minutes. Run this workflow manually
+# only when diagnosing the Worker or waking Render after an incident.
+name: keep-awake-fallback
 
 on:
-  schedule:
-    # Every 5 minutes, but only 22:00-15:59 UTC = 07:00-00:59 KST.
-    # The gap (16:00-21:59 UTC = 01:00-06:59 KST) lets the instance sleep overnight,
-    # which is what keeps the monthly hour budget comfortable rather than marginal.
-    #
-    # Five minutes, not ten: GitHub's scheduler is best-effort and routinely runs
-    # late under load, so the interval has to stay well under the 15-minute timer.
-    - cron: "*/5 0-15,22,23 * * *"
   workflow_dispatch:
 
 # A late run must never pile up behind the next one.
