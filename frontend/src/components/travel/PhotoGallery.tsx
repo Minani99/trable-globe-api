@@ -9,7 +9,15 @@ interface PhotoGalleryProps {
 
 export function PhotoGallery({ photos, travelTitle }: PhotoGalleryProps) {
   if (photos.length === 0) {
-    return <div className="travel-detail-empty">아직 기록된 사진이 없습니다.</div>;
+    return (
+      <div className="travel-photo-empty">
+        <span aria-hidden="true"><i /><i /><i /></span>
+        <div>
+          <strong>아직 사진이 없습니다</strong>
+          <p>경로와 장소 기록은 그대로 볼 수 있고, 사진이 추가되면 이곳에 Journey의 장면이 이어집니다.</p>
+        </div>
+      </div>
+    );
   }
 
   return (

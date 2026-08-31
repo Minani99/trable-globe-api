@@ -72,6 +72,8 @@ test("회원가입부터 프로필 완성, 첫 여행 공개와 공유까지 이
   await expect(page.getByRole("heading", { name: "도쿄 산책가의 여행 세계" })).toBeVisible();
   await expect(page.locator(".profile-world-summary")).toContainText("첫 여행 기록을 시작했습니다.");
   await expect(page.getByRole("heading", { name: "도쿄에서 시작한 첫 여행", level: 3 })).toBeVisible();
+  await expect(page.locator(".travel-card__facts")).toContainText("장소01");
+  await expect(page.locator(".travel-card__facts")).toContainText("사진—");
   await page.getByRole("button", { name: "지구본 공유" }).click();
   await expect(page.getByText("링크를 복사했습니다.", { exact: true })).toBeVisible();
 

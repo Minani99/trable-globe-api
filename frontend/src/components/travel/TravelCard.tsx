@@ -43,19 +43,16 @@ export function TravelCard({ travel, username, priority }: TravelCardProps) {
         </div>
 
         <div className="travel-card__body">
+          <p className="travel-card__date">{formatDateRange(travel.startDate, travel.endDate)}</p>
           <h3 className="text-title text-content transition-colors group-hover:text-[var(--accent-strong)]">
             {travel.title}
           </h3>
-          <p className="text-content-faint mt-1.5 font-mono text-[0.72rem]">
-            {formatDateRange(travel.startDate, travel.endDate)}
-            <span className="mx-1.5">
-              ·
-            </span>
-            {formatDuration(travel.durationDays)}
-          </p>
-          {travel.description ? (
-            <p className="text-body mt-2.5 line-clamp-2 text-[0.85rem]">{travel.description}</p>
-          ) : null}
+          <dl className="travel-card__facts" aria-label={`${travel.title} 여행 요약`}>
+            <div><dt>기간</dt><dd>{formatDuration(travel.durationDays)}</dd></div>
+            <div><dt>장소</dt><dd>{String(travel.placeCount).padStart(2, "0")}</dd></div>
+            <div><dt>사진</dt><dd>{travel.photoCount > 0 ? String(travel.photoCount).padStart(2, "0") : "—"}</dd></div>
+          </dl>
+          <span className="travel-card__open" aria-hidden="true">Journey 열기 <i>→</i></span>
         </div>
       </Link>
     </article>

@@ -95,6 +95,9 @@ export function TravelRouteMap({ places }: TravelRouteMapProps) {
   );
   const selectedIndex = Math.max(0, places.findIndex((place) => place.id === selectedId));
   const selectedPlace = places[selectedIndex] ?? places[0];
+  const travelDays = [...new Set(
+    places.map((place) => place.visitedAt).filter((date): date is string => Boolean(date)),
+  )];
 
   if (!selectedPlace || places.length === 0) {
     return <p className="text-body">지도에 표시할 방문 장소가 없습니다.</p>;
@@ -326,7 +329,7 @@ export function TravelRouteMap({ places }: TravelRouteMapProps) {
         <div className="travel-itinerary__header">
           <div>
             <p className="eyebrow">Itinerary</p>
-            <h3>방문 기록</h3>
+            <h3>일차별 Journey</h3>
           </div>
           <span>{String(places.length).padStart(2, "0")}곳</span>
         </div>
@@ -334,6 +337,7 @@ export function TravelRouteMap({ places }: TravelRouteMapProps) {
         <ol className="travel-itinerary__list">
           {places.map((place, index) => {
             const active = place.id === selectedPlace.id;
+            const dayIndex = place.visitedAt ? travelDays.indexOf(place.visitedAt) : -1;
             return (
               <li key={place.id}>
                 <button
@@ -345,12 +349,18 @@ export function TravelRouteMap({ places }: TravelRouteMapProps) {
                   <span className="travel-itinerary__number">{String(index + 1).padStart(2, "0")}</span>
                   <span className="travel-itinerary__content">
                     <span className="travel-itinerary__meta">
-                      {place.visitedAt ? formatDate(place.visitedAt) : `장소 ${index + 1}`}
+                      {dayIndex >= 0 ? `DAY ${String(dayIndex + 1).padStart(2, "0")} · ${formatDate(place.visitedAt)}` : `장소 ${index + 1}`}
                     </span>
                     <strong>{place.placeName}</strong>
                     <span className="travel-itinerary__location">
                       {[place.city?.nameKo, place.country.nameKo].filter(Boolean).join(" · ")}
                     </span>
+                    {place.startTime ? (
+                      <span className="travel-itinerary__schedule">
+                        {place.startTime.slice(0, 5)}
+                        {place.durationMinutes ? ` · ${formatMinutes(place.durationMinutes)}` : ""}
+                      </span>
+                    ) : null}
                     {place.memo ? <span className="travel-itinerary__memo">{place.memo}</span> : null}
                   </span>
                   <span className="travel-itinerary__arrow" aria-hidden="true">↗</span>
@@ -499,4 +509,11 @@ function worldToLngLat(x: number, y: number, zoom: number) {
 
 function clamp(value: number, min: number, max: number) {
   return Math.min(max, Math.max(min, value));
+}
+
+function formatMinutes(minutes: number): string {
+  const hours = Math.floor(minutes / 60);
+  const remainder = minutes % 60;
+  if (!hours) return `${remainder}분`;
+  return remainder ? `${hours}시간 ${remainder}분` : `${hours}시간`;
 }

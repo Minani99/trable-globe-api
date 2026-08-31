@@ -8,6 +8,7 @@ import { TravelImage } from "@/components/common/TravelImage";
 import { SiteFooter } from "@/components/layout/SiteFooter";
 import { SiteHeader } from "@/components/layout/SiteHeader";
 import { PhotoGallery } from "@/components/travel/PhotoGallery";
+import { JourneySummary } from "@/components/travel/JourneySummary";
 import { TravelRouteMap } from "@/components/travel/TravelRouteMap";
 import { SaveSharedItinerary } from "@/components/travel/SaveSharedItinerary";
 import { TravelSocialPanel } from "@/components/travel/TravelSocialPanel";
@@ -37,9 +38,11 @@ export async function generateMetadata(
     if (travel.owner.username !== username.toLowerCase()) {
       return { title: "여행" };
     }
+    const countryLabel = travel.countries.map((country) => country.nameKo).join(" · ");
     return {
-      title: travel.title,
-      description: travel.description ?? `${travel.title} 여행 기록`,
+      title: countryLabel ? `${travel.title} · ${countryLabel}` : travel.title,
+      description: travel.description
+        ?? `${countryLabel || "여행지"}에서 보낸 ${formatDuration(travel.durationDays)} Journey`,
     };
   } catch {
     return { title: "여행" };
@@ -123,7 +126,7 @@ export default async function TravelDetailPage(
               {ownerName}의 지구본
             </Link>
             <span aria-hidden="true">/</span>
-            <span>여행 기록</span>
+            <span>Journey</span>
           </nav>
 
           <header className="travel-detail-hero">
@@ -144,7 +147,7 @@ export default async function TravelDetailPage(
 
             <div className="travel-detail-hero__content">
               <div>
-                <p className="eyebrow">Travel journal · {countryNames.join(" / ")}</p>
+                <p className="eyebrow">Journey · {countryNames.join(" / ")}</p>
                 <h1>{travel.title}</h1>
                 <p className="travel-detail-hero__date">
                   {formatDateRange(travel.startDate, travel.endDate)}
@@ -185,8 +188,8 @@ export default async function TravelDetailPage(
           <section id="route" aria-labelledby="route-heading" className="travel-detail-section">
             <div className="travel-detail-section__heading">
               <div>
-                <p className="eyebrow">Route &amp; itinerary</p>
-                <h2 id="route-heading">지도로 다시 걷는 여정</h2>
+                <p className="eyebrow">Route &amp; daily itinerary</p>
+                <h2 id="route-heading">경로와 하루의 흐름</h2>
               </div>
               <p>
                 지도에서 방문 지점을 선택하고, 확대하거나 이동해 보세요. 장소별 날짜와 메모는
@@ -204,13 +207,15 @@ export default async function TravelDetailPage(
           <section aria-labelledby="photos-heading" className="travel-detail-section">
             <div className="travel-detail-section__heading">
               <div>
-                <p className="eyebrow">Scenes</p>
-                <h2 id="photos-heading">기억해 둔 장면</h2>
+                <p className="eyebrow">Memories</p>
+                <h2 id="photos-heading">Journey의 장면</h2>
               </div>
               <p>경로의 순서에서 잠시 벗어나, 오래 남기고 싶은 순간만 모았습니다.</p>
             </div>
             <PhotoGallery photos={travel.photos} travelTitle={travel.title} />
           </section>
+
+          <JourneySummary travel={travel} ownerName={ownerName} locationLabel={locationLabel} />
 
           <TravelSocialPanel
             travelId={travel.id}
