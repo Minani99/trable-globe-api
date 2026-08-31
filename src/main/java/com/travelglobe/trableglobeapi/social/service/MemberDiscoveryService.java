@@ -282,7 +282,12 @@ public class MemberDiscoveryService {
     }
 
     private static boolean hasPublicTravelWorld(MemberDiscoveryResponse member) {
-        return member.travelCount() > 0 && member.countryCount() > 0 && !member.worldCountries().isEmpty();
+        boolean hasPublicIdentity = StringUtils.hasText(member.bio())
+                || StringUtils.hasText(member.profileImageUrl());
+        return hasPublicIdentity
+                && member.travelCount() > 0
+                && member.countryCount() > 0
+                && !member.worldCountries().isEmpty();
     }
 
     private List<MemberConnectionResponse> connections(

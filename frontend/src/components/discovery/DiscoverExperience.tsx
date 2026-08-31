@@ -69,7 +69,9 @@ export function DiscoverExperience({
 
   const searching = Boolean(query.trim());
   const eligibleRecommendations = recommendations.filter(
-    (member) => member.travelCount > 0 && member.countryCount > 0,
+    (member) => member.travelCount > 0
+      && member.countryCount > 0
+      && Boolean(member.bio?.trim() || member.profileImageUrl),
   );
   const visible = searching ? results : eligibleRecommendations;
 
@@ -92,7 +94,7 @@ export function DiscoverExperience({
           />
           {query ? <button type="button" onClick={() => changeQuery("")} aria-label="검색어 지우기">×</button> : null}
         </div>
-        <p>추천에는 공개 Journey가 있는 여행자만 표시됩니다. 검색에서는 새로 가입한 친구도 찾을 수 있어요.</p>
+        <p>추천에는 공개 Journey와 프로필 소개가 있는 여행자만 표시됩니다. 검색에서는 새로 가입한 친구도 찾을 수 있어요.</p>
       </form>
 
       <section className="discover-results" aria-labelledby="discover-results-heading" aria-busy={loading}>
@@ -102,7 +104,7 @@ export function DiscoverExperience({
             <h2 id="discover-results-heading">
               {searching ? `“${submittedQuery || query.trim()}” 검색 결과` : "기록이 있는 여행자"}
             </h2>
-            {!searching ? <p>방문한 나라와 최근 Journey가 있는 Travel World만 모았습니다.</p> : null}
+            {!searching ? <p>프로필과 최근 Journey가 갖춰진 Travel World만 모았습니다.</p> : null}
           </div>
           <span aria-live="polite">{loading ? "찾는 중…" : `${visible.length}명`}</span>
         </header>

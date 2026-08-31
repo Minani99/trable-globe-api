@@ -7,6 +7,14 @@ test("Discover는 공개 Journey가 있는 Travel World만 추천하고 새 친�
   const viewerUsername = `viewer_${suffix}`;
 
   await register(page, activeUsername, "세계가 있는 여행자");
+  const profileResponse = await page.request.patch("/api/private/profile", {
+    data: {
+      displayName: "세계가 있는 여행자",
+      bio: "도쿄와 타이베이를 오가며 도시의 장면을 기록합니다.",
+      profileImageUrl: null,
+    },
+  });
+  expect(profileResponse.status()).toBe(200);
   const travelResponse = await page.request.post("/api/private/travels", {
     data: {
       title: "도쿄와 타이베이 사이",

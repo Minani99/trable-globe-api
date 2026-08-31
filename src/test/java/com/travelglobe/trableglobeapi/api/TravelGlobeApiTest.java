@@ -596,6 +596,15 @@ class TravelGlobeApiTest {
                 .andReturn().getResponse().getContentAsString();
         String targetToken = stringValue(targetResponse, "token");
 
+        mockMvc.perform(patch("/api/auth/profile")
+                        .header("Authorization", "Bearer " + targetToken)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {"displayName":"서울 산책가","bio":"서울의 골목과 공원을 기록합니다.",
+                                 "profileImageUrl":null}
+                                """))
+                .andExpect(status().isOk());
+
         mockMvc.perform(post("/api/private/travels")
                         .header("Authorization", "Bearer " + seekerToken)
                         .contentType(MediaType.APPLICATION_JSON)
