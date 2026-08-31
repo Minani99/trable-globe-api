@@ -9,6 +9,7 @@ test("모바일 메인은 한 화면 안에서 탐색과 국가 선택을 제공
   await expect(page.getByRole("heading", { name: "여행할수록, 나만의 세계가 만들어집니다." })).toBeVisible();
   await expect(page.locator(".landing-globe-live")).toBeVisible();
   await page.waitForTimeout(800);
+  await expect(page.locator(".landing-globe-live [data-render-quality='mobile']")).toHaveAttribute("data-pixel-ratio-limit", "1.25");
 
   const layout = await page.evaluate(() => ({
     viewportHeight: window.innerHeight,

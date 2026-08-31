@@ -101,6 +101,7 @@ export function TravelEditor({
   const editing = Boolean(initialTravel);
   const draftStorageKey = `travel-globe:draft:${username}:${initialTravel?.id ?? "new"}`;
   const draftReady = useRef(false);
+  const photoInputRef = useRef<HTMLInputElement>(null);
   const weatherAutoCheckKey = useRef<string | null>(null);
   const [title, setTitle] = useState(initialTravel?.title ?? "");
   const [description, setDescription] = useState(initialTravel?.description ?? "");
@@ -125,9 +126,13 @@ export function TravelEditor({
         }))
       : [emptyPlace(initialCountryCode)],
   );
-  const [activePlanDate, setActivePlanDate] = useState(
-    initialTravel?.places.find((place) => place.visitedAt)?.visitedAt ?? initialTravel?.startDate ?? "",
-  );
+  const [activePlanDate, setActivePlanDate] = useState(() => {
+    if (planningMode && today && initialTravel?.startDate && initialTravel.endDate
+      && initialTravel.startDate <= today && today <= initialTravel.endDate) {
+      return today;
+    }
+    return initialTravel?.places.find((place) => place.visitedAt)?.visitedAt ?? initialTravel?.startDate ?? "";
+  });
   const [photos, setPhotos] = useState<PhotoDraft[]>(() =>
     initialTravel?.photos.map((photo) => ({
       key: draftKey(),
@@ -171,6 +176,7 @@ export function TravelEditor({
   const activeDayPlaces = planningMode
     ? places.map((place, index) => ({ place, index })).filter(({ place }) => place.visitedAt === activePlanDate)
     : [];
+  const quickNoteIndex = planningMode ? (activeDayPlaces[0]?.index ?? 0) : 0;
   const completedPlanDays = planDays.filter((day) =>
     places.some((place) => place.visitedAt === day && !isPlanningPlaceholder(place)),
   ).length;
@@ -750,6 +756,24 @@ export function TravelEditor({
     }
   }
 
+  function openQuickCapture(target: "place" | "photo" | "note") {
+    if (target === "photo") {
+      document.getElementById("travel-photo-editor")?.scrollIntoView({ behavior: "smooth", block: "start" });
+      if (uploadConfig?.configured) photoInputRef.current?.click();
+      return;
+    }
+
+    const targetId = target === "note" ? "travel-note-editor" : "travel-place-editor";
+    document.getElementById(targetId)?.scrollIntoView({ behavior: "smooth", block: "start" });
+    window.setTimeout(() => {
+      if (target === "note") {
+        document.getElementById("travel-note-editor")?.focus();
+      } else {
+        document.querySelector<HTMLInputElement>("#travel-place-editor input[aria-label='방문할 장소 검색']")?.focus();
+      }
+    }, 350);
+  }
+
   return (
     <form className={`travel-editor${draftHydrated ? "" : " is-restoring"}`} onSubmit={handleSubmit} onChange={() => setDirty(true)} aria-busy={!draftHydrated}>
       {planningMode ? (
@@ -769,6 +793,18 @@ export function TravelEditor({
           </button>
         </section>
       ) : null}
+      <nav id="travel-quick-actions" className="mobile-travel-quick-nav" aria-label="여행 중 빠른 입력">
+        <div>
+          <small>Quick capture</small>
+          <strong>{planningMode && activePlanDate ? `${formatPlanDay(activePlanDate)} 일정` : "여행 기록"}</strong>
+        </div>
+        <div>
+          <button type="button" onClick={() => openQuickCapture("place")}><span aria-hidden="true">⌖</span>장소</button>
+          <button type="button" onClick={() => openQuickCapture("photo")}><span aria-hidden="true">▧</span>사진</button>
+          <button type="button" onClick={() => openQuickCapture("note")}><span aria-hidden="true">≡</span>메모</button>
+          <button type="submit" className="is-save" aria-label="여행 저장" disabled={pending}><span aria-hidden="true">✓</span>저장</button>
+        </div>
+      </nav>
       <section className="travel-editor__section">
         <div className="travel-editor__section-heading"><span>01</span><div><p className="eyebrow">Journey</p><h2>{planningMode ? "계획 기본 정보" : "여행 기본 정보"}</h2></div></div>
         <div className="travel-editor__fields">
@@ -801,7 +837,7 @@ export function TravelEditor({
         </div>
       </section>
 
-      <section className="travel-editor__section">
+      <section id="travel-place-editor" className="travel-editor__section">
         <div className="travel-editor__section-heading"><span>02</span><div><p className="eyebrow">Itinerary</p><h2>{planningMode ? "일차별 일정" : "방문 장소"}</h2><p>{planningMode ? "자동 초안을 간단히 훑거나 시간표로 열어 장소와 체류 시간을 조정하세요." : "입력한 순서대로 상세 지도의 경로가 이어집니다."}</p></div></div>
         <div className="travel-editor__itinerary-content">
         {planningMode && planDays.length > 0 ? (
@@ -897,7 +933,7 @@ export function TravelEditor({
                   <label><span>머무는 시간</span><select value={place.durationMinutes} onChange={(event) => updatePlace(index, "durationMinutes", event.target.value)}><option value="">미정</option><option value="30">30분</option><option value="45">45분</option><option value="60">1시간</option><option value="75">1시간 15분</option><option value="90">1시간 30분</option><option value="120">2시간</option><option value="180">3시간</option><option value="240">4시간</option></select></label>
                   <output><span>예상 종료</span><strong>{estimatedEndTime(place.startTime, place.durationMinutes) || "시간을 정하면 계산돼요"}</strong></output>
                 </div> : null}
-                <label className="is-wide"><span>메모</span><textarea value={place.memo} onChange={(event) => updatePlace(index, "memo", event.target.value)} maxLength={1000} rows={3} placeholder={planningMode ? "예약, 먹고 싶은 메뉴, 이동 팁" : "그 장소에서 기억하고 싶은 장면"} /></label>
+                <label className="is-wide"><span>메모</span><textarea id={index === quickNoteIndex ? "travel-note-editor" : undefined} value={place.memo} onChange={(event) => updatePlace(index, "memo", event.target.value)} maxLength={1000} rows={3} placeholder={planningMode ? "예약, 먹고 싶은 메뉴, 이동 팁" : "그 장소에서 기억하고 싶은 장면"} /></label>
               </div>
             </li>
           ))}
@@ -906,7 +942,7 @@ export function TravelEditor({
         </div>
       </section>
 
-      <section className="travel-editor__section">
+      <section id="travel-photo-editor" className="travel-editor__section">
         <div className="travel-editor__section-heading"><span>03</span><div><p className="eyebrow">Scenes</p><h2>여행 사진</h2><p>사진을 바로 올리고, 순서를 정하고, 방문 장소와 연결해 보세요.</p></div></div>
         <label
           className={`travel-editor__dropzone${uploadConfig?.configured ? " is-ready" : ""}`}
@@ -914,6 +950,7 @@ export function TravelEditor({
           onDrop={handlePhotoDrop}
         >
           <input
+            ref={photoInputRef}
             type="file"
             accept="image/jpeg,image/png,image/webp"
             multiple

@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import { cache } from "react";
 
 import { StateMessage } from "@/components/common/StateMessage";
+import { JsonLd } from "@/components/common/JsonLd";
 import { TravelImage } from "@/components/common/TravelImage";
 import { SiteFooter } from "@/components/layout/SiteFooter";
 import { SiteHeader } from "@/components/layout/SiteHeader";
@@ -11,11 +12,13 @@ import { PhotoGallery } from "@/components/travel/PhotoGallery";
 import { JourneySummary } from "@/components/travel/JourneySummary";
 import { TravelRouteMap } from "@/components/travel/TravelRouteMap";
 import { SaveSharedItinerary } from "@/components/travel/SaveSharedItinerary";
+import { ShareJourneyButton } from "@/components/travel/ShareJourneyButton";
 import { TravelSocialPanel } from "@/components/travel/TravelSocialPanel";
 import { ApiError } from "@/lib/api/client";
 import { authenticatedBackendGet, getCurrentMember } from "@/lib/api/server-session";
 import { fetchTravelDetail, fetchTravelSocial } from "@/lib/api/travel";
-import { profilePath, travelPath } from "@/lib/config";
+import { profilePath, siteConfig, travelPath } from "@/lib/config";
+import { getSiteUrl } from "@/lib/site-url";
 import { formatDate, formatDateRange, formatDuration } from "@/lib/utils/format";
 import { todayInKorea } from "@/lib/utils/date";
 import { publicDisplayName } from "@/lib/utils/profile";
@@ -39,10 +42,32 @@ export async function generateMetadata(
       return { title: "여행" };
     }
     const countryLabel = travel.countries.map((country) => country.nameKo).join(" · ");
+    const title = countryLabel ? `${travel.title} · ${countryLabel}` : travel.title;
+    const description = travel.description
+      ?? `${countryLabel || "여행지"}에서 보낸 ${formatDuration(travel.durationDays)} Journey`;
+    const canonical = travelPath(travel.owner.username, travel.id);
+    const image = travel.coverImageUrl || "/opengraph-image.png";
     return {
-      title: countryLabel ? `${travel.title} · ${countryLabel}` : travel.title,
-      description: travel.description
-        ?? `${countryLabel || "여행지"}에서 보낸 ${formatDuration(travel.durationDays)} Journey`,
+      title,
+      description,
+      alternates: { canonical },
+      openGraph: {
+        type: "article",
+        locale: "ko_KR",
+        siteName: siteConfig.name,
+        title: `${title} | ${siteConfig.name}`,
+        description,
+        url: canonical,
+        publishedTime: travel.startDate,
+        modifiedTime: travel.endDate,
+        images: [{ url: image, alt: `${travel.title} Journey 대표 장면` }],
+      },
+      twitter: {
+        card: "summary_large_image",
+        title: `${title} | ${siteConfig.name}`,
+        description,
+        images: [image],
+      },
     };
   } catch {
     return { title: "여행" };
@@ -113,9 +138,29 @@ export default async function TravelDetailPage(
     : fetchTravelSocial(id)
   ).catch(() => null) ?? emptySocial;
   const ownerName = publicDisplayName(travel.owner.displayName);
+  const journeyUrl = new URL(travelPath(travel.owner.username, travel.id), getSiteUrl()).toString();
+  const ownerUrl = new URL(profilePath(travel.owner.username), getSiteUrl()).toString();
 
   return (
     <>
+      <JsonLd
+        data={{
+          "@context": "https://schema.org",
+          "@type": "Article",
+          headline: travel.title,
+          description: travel.description ?? undefined,
+          datePublished: travel.startDate,
+          dateModified: travel.endDate,
+          image: travel.coverImageUrl ? [travel.coverImageUrl] : undefined,
+          author: {
+            "@type": "Person",
+            name: ownerName,
+            identifier: travel.owner.username,
+            url: ownerUrl,
+          },
+          mainEntityOfPage: journeyUrl,
+        }}
+      />
       <SiteHeader username={travel.owner.username} member={currentMember} />
 
       <main id="main" className="travel-detail-page flex-1">
@@ -177,11 +222,14 @@ export default async function TravelDetailPage(
                 </div>
               </dl>
 
-              <a href="#route" className="travel-detail-hero__jump">
-                경로와 일정 보기
-                <span aria-hidden="true">↓</span>
-              </a>
-              <SaveSharedItinerary travel={travel} signedIn={Boolean(currentMember)} isOwner={currentMember?.username === travel.owner.username} today={todayInKorea()} />
+              <div className="travel-detail-hero__actions">
+                <a href="#route" className="travel-detail-hero__jump">
+                  경로와 일정 보기
+                  <span aria-hidden="true">↓</span>
+                </a>
+                <ShareJourneyButton title={travel.title} ownerName={ownerName} />
+                <SaveSharedItinerary travel={travel} signedIn={Boolean(currentMember)} isOwner={currentMember?.username === travel.owner.username} today={todayInKorea()} />
+              </div>
             </div>
           </header>
 

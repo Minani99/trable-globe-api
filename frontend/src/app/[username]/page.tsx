@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { cache } from "react";
 
 import { StateMessage } from "@/components/common/StateMessage";
+import { JsonLd } from "@/components/common/JsonLd";
 import { SiteFooter } from "@/components/layout/SiteFooter";
 import { SiteHeader } from "@/components/layout/SiteHeader";
 import { ProfileExperience } from "@/components/profile/ProfileExperience";
@@ -11,6 +12,7 @@ import { authenticatedBackendGet, getCurrentMember } from "@/lib/api/server-sess
 import { fetchProfile, fetchTravels, fetchVisitedCountries } from "@/lib/api/profile";
 import { profilePath, profileRecapImagePath, siteConfig } from "@/lib/config";
 import { presentDemoProfile } from "@/lib/demo-profile";
+import { getSiteUrl } from "@/lib/site-url";
 import { publicDisplayName } from "@/lib/utils/profile";
 import type { FollowStatus, MemberSafetyStatus } from "@/types";
 
@@ -38,10 +40,10 @@ export async function generateMetadata(props: PageProps<"/[username]">): Promise
     const title = sharedYear
       ? `${sharedYear} 여행 세계 · ${displayName} (@${profile.username})`
       : `${displayName} (@${profile.username})`;
+    const identitySummary = `${profile.statistics.countryCount}개 나라 · ${profile.statistics.cityCount}개 도시 · ${profile.statistics.travelCount}개 Journey`;
     const description = sharedYear
       ? `${displayName}님이 ${sharedYear}년에 기록한 여행 동선과 기억을 지구본에서 만나보세요.`
-      : profile.bio ??
-        `${displayName}님이 기록한 ${profile.statistics.countryCount}개 나라와 여행 이야기를 지구본에서 만나보세요.`;
+      : `${identitySummary}. ${profile.bio ?? `${displayName}님의 여행 동선과 기억을 지구본에서 만나보세요.`}`;
     const image = {
       url: profileRecapImagePath(profile.username, sharedYear),
       width: 1200,
@@ -53,6 +55,11 @@ export async function generateMetadata(props: PageProps<"/[username]">): Promise
     return {
       title,
       description,
+      alternates: {
+        canonical: sharedYear
+          ? `${profilePath(profile.username)}?year=${sharedYear}`
+          : profilePath(profile.username),
+      },
       openGraph: {
         type: "website",
         locale: "ko_KR",
@@ -110,6 +117,7 @@ export default async function ProfilePage(props: PageProps<"/[username]">) {
   }
 
   const { profile, countries, travels } = data;
+  const profileUrl = new URL(profilePath(profile.username), getSiteUrl()).toString();
   const [relationship, safetyStatus] = viewer && viewer.username !== profile.username
     ? await Promise.all([
         authenticatedBackendGet<FollowStatus>(
@@ -123,6 +131,22 @@ export default async function ProfilePage(props: PageProps<"/[username]">) {
 
   return (
     <>
+      <JsonLd
+        data={{
+          "@context": "https://schema.org",
+          "@type": "ProfilePage",
+          name: `${publicDisplayName(profile.displayName)}의 여행 세계`,
+          url: profileUrl,
+          mainEntity: {
+            "@type": "Person",
+            name: publicDisplayName(profile.displayName),
+            identifier: profile.username,
+            description: profile.bio
+              ?? `${profile.statistics.countryCount}개 나라와 ${profile.statistics.travelCount}개 Journey가 기록된 여행 세계`,
+            image: profile.profileImageUrl ?? undefined,
+          },
+        }}
+      />
       <SiteHeader username={profile.username} member={viewer} />
       <main id="main" className="flex-1">
         <ProfileExperience

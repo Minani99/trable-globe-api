@@ -193,6 +193,7 @@ export function TravelRouteMap({ places }: TravelRouteMapProps) {
           className={`travel-route-map-canvas${isDragging ? " is-dragging" : ""}`}
           role="application"
           aria-label={`${places.map((place) => place.placeName).join(", ")} 방문 순서를 보여주는 실제 도시 지도`}
+          aria-describedby="travel-route-map-help"
           onWheel={handleWheel}
           onPointerDown={handlePointerDown}
           onPointerMove={handlePointerMove}
@@ -323,6 +324,9 @@ export function TravelRouteMap({ places }: TravelRouteMapProps) {
             © <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noreferrer">OpenStreetMap contributors</a>
           </p>
         </div>
+        <p id="travel-route-map-help" className="travel-route-map-help">
+          지도 조작이 어렵다면 오른쪽의 일차별 장소 목록을 이용하세요. 모든 방문지는 같은 순서로 제공됩니다.
+        </p>
       </div>
 
       <aside className="travel-itinerary" aria-label="방문 장소 일정">

@@ -1,7 +1,7 @@
 "use client";
 
 import dynamic from "next/dynamic";
-import { useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
+import { memo, useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
 import * as THREE from "three";
 import type { GlobeMethods } from "react-globe.gl";
 
@@ -61,14 +61,19 @@ const ALTITUDE_FOCUSED = 1.5;
 const ALTITUDE_MIN = 0.6;
 const ALTITUDE_MAX = 4;
 const INITIAL_VIEW = { lat: 24, lng: 127, altitude: ALTITUDE_DEFAULT } as const;
+const MOBILE_INITIAL_VIEW = { lat: 24, lng: 127, altitude: 2.75 } as const;
+const MOBILE_ALTITUDE_FOCUSED = 1.82;
+const MOBILE_MAX_PIXEL_RATIO = 1.25;
+const DESKTOP_MAX_PIXEL_RATIO = 1.75;
 const LOADING_INDICATOR_MINIMUM_MS = 650;
 const AUTO_ROTATE_RESUME_DELAY_MS = 6_000;
 const CENTER_HIGHLIGHT_INTERVAL_MS = 180;
+const CENTER_HIGHLIGHT_INTERVAL_MOBILE_MS = 300;
 const CENTER_HIGHLIGHT_MAX_DISTANCE_DEGREES = 24;
 /** Makes small countries tappable without turning broad ocean taps into selections. */
 const WORLD_SURFACE_SNAP_DISTANCE_DEGREES = 11;
 
-export function TravelGlobe({
+export const TravelGlobe = memo(function TravelGlobe({
   countries,
   selectedCode,
   focusCode = null,
@@ -89,6 +94,7 @@ export function TravelGlobe({
   const autoRotateTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const autoRotateFrame = useRef<number | null>(null);
   const lastRotationAt = useRef<number | null>(null);
+  const compactRef = useRef(false);
 
   const [size, setSize] = useState({ width: 0, height: 0 });
   const [features, setFeatures] = useState<CountryFeature[]>([]);
@@ -101,6 +107,13 @@ export function TravelGlobe({
   const colorTheme = useColorTheme();
   const globeTheme = globeThemes[colorTheme];
   const isWorldExplorer = mode === "world";
+  const compact = size.width > 0 && size.width <= 700;
+  const overviewView = compact ? MOBILE_INITIAL_VIEW : INITIAL_VIEW;
+  const focusedAltitude = compact ? MOBILE_ALTITUDE_FOCUSED : ALTITUDE_FOCUSED;
+
+  useEffect(() => {
+    compactRef.current = compact;
+  }, [compact]);
 
   // globe.gl callbacks (marker click handlers, control listeners) are registered once
   // against imperative DOM, so they read the latest values through refs rather than
@@ -148,7 +161,7 @@ export function TravelGlobe({
       if (lastRotationAt.current !== null) {
         const elapsed = Math.min(50, time - lastRotationAt.current);
         const view = globe.pointOfView();
-        globe.pointOfView({ ...view, lng: view.lng - elapsed * 0.002 }, 0);
+        globe.pointOfView({ ...view, lng: view.lng - elapsed * (compactRef.current ? 0.00135 : 0.002) }, 0);
       }
       lastRotationAt.current = time;
       autoRotateFrame.current = requestAnimationFrame(rotate);
@@ -243,7 +256,8 @@ export function TravelGlobe({
     }
 
     const measure = () => {
-      setSize({ width: element.clientWidth, height: element.clientHeight });
+      const next = { width: element.clientWidth, height: element.clientHeight };
+      setSize((current) => current.width === next.width && current.height === next.height ? current : next);
     };
     measure();
 
@@ -293,7 +307,9 @@ export function TravelGlobe({
 
     // A Korean archive should introduce the world from East Asia, not the library's
     // default Greenwich-facing camera.
-    globeRef.current?.pointOfView(INITIAL_VIEW, 0);
+    const globe = globeRef.current;
+    globe?.renderer().setPixelRatio(Math.min(window.devicePixelRatio || 1, compact ? MOBILE_MAX_PIXEL_RATIO : DESKTOP_MAX_PIXEL_RATIO));
+    globe?.pointOfView(overviewView, 0);
     const shouldRotate = !reduceMotion && selectedRef.current === null;
     if (shouldRotate) startAmbientRotation();
 
@@ -306,7 +322,14 @@ export function TravelGlobe({
     controls.enablePan = false;
     controls.minDistance = 100 * (1 + ALTITUDE_MIN);
     controls.maxDistance = 100 * (1 + ALTITUDE_MAX);
-  }, [reduceMotion, startAmbientRotation]);
+  }, [compact, overviewView, reduceMotion, startAmbientRotation]);
+
+  useEffect(() => {
+    if (!ready) return;
+    globeRef.current?.renderer().setPixelRatio(
+      Math.min(window.devicePixelRatio || 1, compact ? MOBILE_MAX_PIXEL_RATIO : DESKTOP_MAX_PIXEL_RATIO),
+    );
+  }, [compact, ready]);
 
   useEffect(() => {
     const element = containerRef.current;
@@ -382,22 +405,22 @@ export function TravelGlobe({
     const transition = reduceMotion ? 0 : 900;
 
     if (activeCode === null) {
-      if (!isWorldExplorer) globe.pointOfView(INITIAL_VIEW, transition);
+      if (!isWorldExplorer) globe.pointOfView(overviewView, transition);
       return;
     }
     const country = visitedByCode.get(activeCode);
     if (country) {
       globe.pointOfView(
-        { lat: country.latitude, lng: country.longitude, altitude: ALTITUDE_FOCUSED },
+        { lat: country.latitude, lng: country.longitude, altitude: focusedAltitude },
         transition,
       );
       return;
     }
     const center = isWorldExplorer ? featureCenterByCode.get(activeCode) : undefined;
     if (center) {
-      globe.pointOfView({ ...center, altitude: ALTITUDE_FOCUSED }, transition);
+      globe.pointOfView({ ...center, altitude: focusedAltitude }, transition);
     }
-  }, [activeCode, featureCenterByCode, isWorldExplorer, ready, reduceMotion, visitedByCode]);
+  }, [activeCode, featureCenterByCode, focusedAltitude, isWorldExplorer, overviewView, ready, reduceMotion, visitedByCode]);
 
   // While the globe turns on its own, softly identify the country nearest the camera's
   // center. The interval is deliberately low-frequency: it feels live without causing a
@@ -429,9 +452,12 @@ export function TravelGlobe({
     };
 
     updateCenteredCountry();
-    const interval = setInterval(updateCenteredCountry, CENTER_HIGHLIGHT_INTERVAL_MS);
+    const interval = setInterval(
+      updateCenteredCountry,
+      compact ? CENTER_HIGHLIGHT_INTERVAL_MOBILE_MS : CENTER_HIGHLIGHT_INTERVAL_MS,
+    );
     return () => clearInterval(interval);
-  }, [activeCode, autoRotating, centerCandidates, onCountryCenter, ready]);
+  }, [activeCode, autoRotating, centerCandidates, compact, onCountryCenter, ready]);
 
   // Stop rendering when the component goes away, so a navigation cannot leave a
   // requestAnimationFrame loop running against a detached canvas.
@@ -441,6 +467,24 @@ export function TravelGlobe({
       globe?.pauseAnimation();
     };
   }, [ready]);
+
+  useEffect(() => {
+    if (!ready) return;
+    const handleVisibility = () => {
+      const globe = globeRef.current;
+      if (!globe) return;
+      if (document.hidden) {
+        cancelAmbientRotation();
+        setAutoRotating(false);
+        globe.pauseAnimation();
+        return;
+      }
+      globe.resumeAnimation();
+      if (activeCode === null) scheduleAmbientRotation();
+    };
+    document.addEventListener("visibilitychange", handleVisibility);
+    return () => document.removeEventListener("visibilitychange", handleVisibility);
+  }, [activeCode, cancelAmbientRotation, ready, scheduleAmbientRotation]);
 
   // --- markers ------------------------------------------------------------
 
@@ -728,8 +772,8 @@ export function TravelGlobe({
   }, []);
 
   const resetView = useCallback(() => {
-    globeRef.current?.pointOfView(INITIAL_VIEW, 600);
-  }, []);
+    globeRef.current?.pointOfView(overviewView, 600);
+  }, [overviewView]);
 
   const handleKeyDown = useCallback(
     (event: React.KeyboardEvent<HTMLDivElement>) => {
@@ -763,6 +807,8 @@ export function TravelGlobe({
         role="application"
         aria-busy={!ready}
         data-auto-rotating={autoRotating && !reduceMotion && activeCode === null}
+        data-render-quality={compact ? "mobile" : "desktop"}
+        data-pixel-ratio-limit={compact ? MOBILE_MAX_PIXEL_RATIO : DESKTOP_MAX_PIXEL_RATIO}
         aria-label={isWorldExplorer
           ? "세계 랜드마크 지구본. 모든 국가에 마우스를 올려 대표 장소를 확인할 수 있습니다. 방향키로 회전하고 플러스·마이너스 키로 확대·축소합니다."
           : "여행 지구본. 방향키로 회전, 플러스·마이너스 키로 확대·축소, 0 키로 초기화합니다. 국가 선택은 아래 목록에서도 할 수 있습니다."}
@@ -778,7 +824,7 @@ export function TravelGlobe({
             globeMaterial={globeMaterial}
             showAtmosphere
             atmosphereColor={globeTheme.atmosphere}
-            atmosphereAltitude={0.17}
+            atmosphereAltitude={compact ? 0.13 : 0.17}
             onGlobeReady={handleReady}
             arcsData={routeArcs}
             arcStartLat={(d: object) => (d as GlobeRouteArc).startLat}
@@ -786,8 +832,8 @@ export function TravelGlobe({
             arcEndLat={(d: object) => (d as GlobeRouteArc).endLat}
             arcEndLng={(d: object) => (d as GlobeRouteArc).endLng}
             arcColor={() => [globeTheme.visitedRamp[1], globeTheme.recent]}
-            arcAltitudeAutoScale={0.24}
-            arcStroke={0.38}
+            arcAltitudeAutoScale={compact ? 0.2 : 0.24}
+            arcStroke={compact ? 0.3 : 0.38}
             arcDashLength={reduceMotion ? 1 : 0.58}
             arcDashGap={reduceMotion ? 0 : 0.22}
             arcDashAnimateTime={reduceMotion ? 0 : 1_800}
@@ -817,7 +863,7 @@ export function TravelGlobe({
             ringLat={(d: object) => (d as VisitedCountry).latitude}
             ringLng={(d: object) => (d as VisitedCountry).longitude}
             ringColor={() => (t: number) => `rgba(232, 112, 58, ${Math.max(0, 1 - t) * 0.32})`}
-            ringMaxRadius={3.6}
+            ringMaxRadius={compact ? 3 : 3.6}
             ringPropagationSpeed={1.1}
             ringRepeatPeriod={2600}
           />
@@ -844,7 +890,7 @@ export function TravelGlobe({
       ) : null}
     </div>
   );
-}
+});
 
 function GlobeViewControls({
   onZoomIn,

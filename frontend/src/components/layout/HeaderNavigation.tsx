@@ -6,6 +6,7 @@ import { useEffect, useSyncExternalStore } from "react";
 
 import { ThemeToggle } from "@/components/theme/ThemeToggle";
 import { AccountNavigation } from "@/components/layout/AccountNavigation";
+import { MobileJourneyCapture } from "@/components/layout/MobileJourneyCapture";
 import { TravelImage } from "@/components/common/TravelImage";
 import {
   getCachedAuthMember,
@@ -83,6 +84,7 @@ export function HeaderNavigation({ username, initialMember }: HeaderNavigationPr
       </nav>
 
       <ThemeToggle />
+      <MobileJourneyCapture key={pathname} pathname={pathname} member={member} />
       <MobileBottomNavigation pathname={pathname} member={member} username={username} />
     </div>
   );
