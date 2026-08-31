@@ -4,14 +4,23 @@ import Link from "next/link";
 
 import { TravelImage } from "@/components/common/TravelImage";
 import { FollowButton } from "@/components/discovery/FollowButton";
+import { MemberWorldPreview } from "@/components/discovery/MemberWorldPreview";
 import { formatCount } from "@/lib/utils/format";
 import { publicDisplayName } from "@/lib/utils/profile";
 import type { MemberDiscovery } from "@/types";
 
 export function MemberCard({ member, viewerAuthenticated }: { member: MemberDiscovery; viewerAuthenticated: boolean }) {
   const displayName = publicDisplayName(member.displayName);
+  const cityCount = member.cityCount ?? 0;
+  const recentDestinations = member.recentDestinations ?? [];
+  const worldCountries = member.worldCountries ?? [];
   return (
     <article className="member-card">
+      <Link href={`/${member.username}`} className="member-card__world" aria-label={`${displayName}님의 여행 세계 보기`}>
+        <MemberWorldPreview countries={worldCountries} displayName={displayName} id={member.username} />
+        <span>{formatCount(member.travelCount)} JOURNEYS</span>
+      </Link>
+
       <Link href={`/${member.username}`} className="member-card__identity" aria-label={`${displayName} 프로필 보기`}>
         <TravelImage
           src={member.profileImageUrl}
@@ -25,21 +34,25 @@ export function MemberCard({ member, viewerAuthenticated }: { member: MemberDisc
         </span>
       </Link>
 
-      <p className="member-card__bio">{member.bio || "여행으로 자신의 세계를 기록하고 있어요."}</p>
+      <div className="member-card__footprint">
+        <strong>
+          {formatCount(member.countryCount)} Countries <span aria-hidden="true">·</span> {formatCount(cityCount)} Cities
+        </strong>
+        <p>
+          {recentDestinations.length > 0 ? (
+            <>최근 여행 <b>{recentDestinations.join(" · ")}</b></>
+          ) : (
+            "첫 Journey를 준비하고 있어요."
+          )}
+        </p>
+      </div>
 
       <div className="member-card__reason">
-        <span>추천 이유</span>
         <strong>{member.recommendationReason}</strong>
       </div>
 
-      <dl className="member-card__stats">
-        <MemberStat label="국가" value={member.countryCount} />
-        <MemberStat label="여행" value={member.travelCount} />
-        <MemberStat label="팔로워" value={member.followerCount} />
-      </dl>
-
       <div className="member-card__actions">
-        <Link href={`/${member.username}`}>지구본 보기 <span aria-hidden="true">→</span></Link>
+        <Link href={`/${member.username}`}>Travel World 보기 <span aria-hidden="true">→</span></Link>
         {viewerAuthenticated ? (
           <FollowButton
             username={member.username}
@@ -52,8 +65,4 @@ export function MemberCard({ member, viewerAuthenticated }: { member: MemberDisc
       </div>
     </article>
   );
-}
-
-function MemberStat({ label, value }: { label: string; value: number }) {
-  return <div><dt>{label}</dt><dd>{formatCount(value)}</dd></div>;
 }

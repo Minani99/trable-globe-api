@@ -181,11 +181,21 @@ export interface MemberDiscovery {
   bio: string | null;
   profileImageUrl: string | null;
   countryCount: number;
+  cityCount: number;
   travelCount: number;
   followerCount: number;
   following: boolean;
   sharedCountryCount: number;
   recommendationReason: string;
+  recentDestinations: string[];
+  worldCountries: MemberDiscoveryCountry[];
+}
+
+export interface MemberDiscoveryCountry {
+  iso2Code: string;
+  nameKo: string;
+  latitude: number;
+  longitude: number;
 }
 
 export interface MemberConnection {

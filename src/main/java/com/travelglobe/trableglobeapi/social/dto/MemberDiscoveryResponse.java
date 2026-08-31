@@ -1,6 +1,7 @@
 package com.travelglobe.trableglobeapi.social.dto;
 
 import com.travelglobe.trableglobeapi.member.domain.Member;
+import java.util.List;
 
 public record MemberDiscoveryResponse(
         String username,
@@ -8,22 +9,29 @@ public record MemberDiscoveryResponse(
         String bio,
         String profileImageUrl,
         long countryCount,
+        long cityCount,
         long travelCount,
         long followerCount,
         boolean following,
         long sharedCountryCount,
-        String recommendationReason) {
+        String recommendationReason,
+        List<String> recentDestinations,
+        List<DiscoveryCountryResponse> worldCountries) {
 
     public static MemberDiscoveryResponse of(
             Member member,
             long countryCount,
+            long cityCount,
             long travelCount,
             long followerCount,
             boolean following,
             long sharedCountryCount,
-            String recommendationReason) {
+            String recommendationReason,
+            List<String> recentDestinations,
+            List<DiscoveryCountryResponse> worldCountries) {
         return new MemberDiscoveryResponse(
                 member.getUsername(), member.getDisplayName(), member.getBio(), member.getProfileImageUrl(),
-                countryCount, travelCount, followerCount, following, sharedCountryCount, recommendationReason);
+                countryCount, cityCount, travelCount, followerCount, following, sharedCountryCount,
+                recommendationReason, List.copyOf(recentDestinations), List.copyOf(worldCountries));
     }
 }

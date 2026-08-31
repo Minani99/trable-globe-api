@@ -1,6 +1,7 @@
 package com.travelglobe.trableglobeapi.member.repository;
 
 import com.travelglobe.trableglobeapi.member.domain.Member;
+import com.travelglobe.trableglobeapi.travel.domain.Visibility;
 import java.util.List;
 import java.util.Optional;
 import org.springframework.data.domain.Pageable;
@@ -32,9 +33,15 @@ public interface MemberRepository extends JpaRepository<Member, Long> {
                                            Pageable pageable);
 
     @Query("""
-            select m from Member m
+            select distinct m
+            from Travel t
+              join t.member m
+              join t.places p
             where m.id <> :currentMemberId
+              and t.visibility = :visibility
             order by m.updatedAt desc, m.id desc
             """)
-    List<Member> findDiscoveryCandidates(@Param("currentMemberId") Long currentMemberId, Pageable pageable);
+    List<Member> findDiscoveryCandidates(@Param("currentMemberId") Long currentMemberId,
+                                         @Param("visibility") Visibility visibility,
+                                         Pageable pageable);
 }

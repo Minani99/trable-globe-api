@@ -612,6 +612,9 @@ class TravelGlobeApiTest {
                         .param("query", "산책가"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.data[0].username").value("discover_target"))
+                .andExpect(jsonPath("$.data[0].cityCount").value(1))
+                .andExpect(jsonPath("$.data[0].recentDestinations").value(hasItem("서울")))
+                .andExpect(jsonPath("$.data[0].worldCountries[0].iso2Code").value("KR"))
                 .andExpect(jsonPath("$.data[0].sharedCountryCount").value(1))
                 .andExpect(jsonPath("$.data[0].following").value(false));
 
@@ -620,10 +623,23 @@ class TravelGlobeApiTest {
                 .andExpect(jsonPath("$.data[0].username").value("discover_target"))
                 .andExpect(jsonPath("$.data[0].following").value(false));
 
+        mockMvc.perform(post("/api/auth/register")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {"username":"discover_empty","displayName":"기록 없는 친구",
+                                 "email":"discover-empty@example.com","password":"discover-password-42"}
+                                """))
+                .andExpect(status().isOk());
+
+        mockMvc.perform(get("/api/discovery/search").param("query", "discover_empty"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data[0].username").value("discover_empty"));
+
         mockMvc.perform(get("/api/private/discovery/recommendations")
                         .header("Authorization", "Bearer " + seekerToken))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.data[?(@.username == 'discover_target')]").exists());
+                .andExpect(jsonPath("$.data[?(@.username == 'discover_target')]").exists())
+                .andExpect(jsonPath("$.data[?(@.username == 'discover_empty')]").isEmpty());
 
         mockMvc.perform(post("/api/private/discovery/profiles/discover_target/follow")
                         .header("Authorization", "Bearer " + seekerToken))

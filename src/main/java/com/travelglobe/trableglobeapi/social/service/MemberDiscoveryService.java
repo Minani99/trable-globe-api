@@ -9,6 +9,7 @@ import com.travelglobe.trableglobeapi.social.domain.MemberBlock;
 import com.travelglobe.trableglobeapi.social.domain.MemberFollow;
 import com.travelglobe.trableglobeapi.social.domain.MemberReport;
 import com.travelglobe.trableglobeapi.social.dto.CreateMemberReportRequest;
+import com.travelglobe.trableglobeapi.social.dto.DiscoveryCountryResponse;
 import com.travelglobe.trableglobeapi.social.dto.FollowStatusResponse;
 import com.travelglobe.trableglobeapi.social.dto.MemberConnectionResponse;
 import com.travelglobe.trableglobeapi.social.dto.MemberDiscoveryResponse;
@@ -21,6 +22,7 @@ import com.travelglobe.trableglobeapi.statistics.dto.TravelStatisticsResponse;
 import com.travelglobe.trableglobeapi.statistics.service.TravelStatisticsService;
 import com.travelglobe.trableglobeapi.travel.domain.Visibility;
 import com.travelglobe.trableglobeapi.travel.repository.TravelRepository;
+import com.travelglobe.trableglobeapi.travel.repository.projection.CountryVisitProjection;
 import java.util.Comparator;
 import java.time.Duration;
 import java.time.Instant;
@@ -94,11 +96,13 @@ public class MemberDiscoveryService {
         int limit = normalizeLimit(requestedLimit);
         Set<String> currentCountries = visitedCountryCodes(principal.username());
         return memberRepository.findDiscoveryCandidates(
-                        principal.memberId(), PageRequest.of(0, RECOMMENDATION_CANDIDATES)).stream()
+                        principal.memberId(), Visibility.PUBLIC,
+                        PageRequest.of(0, RECOMMENDATION_CANDIDATES)).stream()
                 .filter(member -> !followRepository.existsByFollowerIdAndFollowingId(
                         principal.memberId(), member.getId()))
                 .filter(member -> !blockRepository.existsBetween(principal.memberId(), member.getId()))
                 .map(member -> toResponse(principal.memberId(), currentCountries, member))
+                .filter(MemberDiscoveryService::hasPublicTravelWorld)
                 .sorted(Comparator
                         .comparingLong(MemberDiscoveryResponse::sharedCountryCount).reversed()
                         .thenComparing(Comparator.comparingLong(MemberDiscoveryResponse::travelCount).reversed())
@@ -111,8 +115,10 @@ public class MemberDiscoveryService {
     @Transactional(readOnly = true)
     public List<MemberDiscoveryResponse> publicRecommendations(int requestedLimit) {
         return memberRepository.findDiscoveryCandidates(
-                        -1L, PageRequest.of(0, RECOMMENDATION_CANDIDATES)).stream()
+                        -1L, Visibility.PUBLIC,
+                        PageRequest.of(0, RECOMMENDATION_CANDIDATES)).stream()
                 .map(member -> toResponse(null, Set.of(), member))
+                .filter(MemberDiscoveryService::hasPublicTravelWorld)
                 .sorted(Comparator
                         .comparingLong(MemberDiscoveryResponse::travelCount).reversed()
                         .thenComparing(Comparator.comparingLong(MemberDiscoveryResponse::followerCount).reversed())
@@ -223,7 +229,10 @@ public class MemberDiscoveryService {
 
     private MemberDiscoveryResponse toResponse(Long currentMemberId, Set<String> currentCountries, Member member) {
         TravelStatisticsResponse statistics = statisticsService.getPublicStatistics(member.getUsername());
-        long sharedCountries = visitedCountryCodes(member.getUsername()).stream()
+        List<CountryVisitProjection> visitedCountries = travelRepository.findVisitedCountries(
+                member.getUsername(), Visibility.PUBLIC);
+        long sharedCountries = visitedCountries.stream()
+                .map(CountryVisitProjection::iso2Code)
                 .filter(currentCountries::contains)
                 .count();
         boolean following = currentMemberId != null
@@ -233,14 +242,47 @@ public class MemberDiscoveryService {
                 : statistics.travelCount() > 0
                         ? "여행 기록 " + statistics.travelCount() + "개"
                         : "새로 합류한 여행자";
+        List<DiscoveryCountryResponse> worldCountries = visitedCountries.stream()
+                .sorted(Comparator.comparing(
+                        CountryVisitProjection::lastVisitedAt,
+                        Comparator.nullsLast(Comparator.reverseOrder())))
+                .limit(10)
+                .map(DiscoveryCountryResponse::from)
+                .toList();
         return MemberDiscoveryResponse.of(
                 member,
                 statistics.countryCount(),
+                statistics.cityCount(),
                 statistics.travelCount(),
                 followRepository.countByFollowingId(member.getId()),
                 following,
                 sharedCountries,
-                reason);
+                reason,
+                recentDestinations(member.getUsername()),
+                worldCountries);
+    }
+
+    private List<String> recentDestinations(String username) {
+        return travelRepository.findProfileTravels(username, Visibility.PUBLIC).stream()
+                .flatMap(travel -> travel.getPlaces().stream())
+                .map(place -> place.getCity() == null
+                        ? preferredName(place.getCountry().getNameKo(), place.getCountry().getNameEn())
+                        : preferredName(place.getCity().getNameKo(), place.getCity().getNameEn()))
+                .filter(StringUtils::hasText)
+                .distinct()
+                .limit(3)
+                .toList();
+    }
+
+    private static String preferredName(String korean, String english) {
+        if (StringUtils.hasText(korean)) {
+            return korean.trim();
+        }
+        return StringUtils.hasText(english) ? english.trim() : "기록된 장소";
+    }
+
+    private static boolean hasPublicTravelWorld(MemberDiscoveryResponse member) {
+        return member.travelCount() > 0 && member.countryCount() > 0 && !member.worldCountries().isEmpty();
     }
 
     private List<MemberConnectionResponse> connections(

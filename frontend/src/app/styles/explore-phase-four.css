@@ -1,0 +1,347 @@
+/* Phase 4 — Explore: public Journey density and travel identity. */
+
+.discover-page {
+  background:
+    radial-gradient(circle at 82% 4%, color-mix(in srgb, var(--globe-ocean) 13%, transparent), transparent 28rem),
+    var(--background);
+}
+
+.discover-shell {
+  padding-block: clamp(3.25rem, 6vw, 5.5rem) clamp(5rem, 8vw, 7rem);
+}
+
+.discover-hero {
+  grid-template-columns: minmax(0, 0.92fr) minmax(20rem, 0.58fr);
+  gap: clamp(1.5rem, 5vw, 4.5rem);
+}
+
+.discover-hero .eyebrow {
+  grid-column: 1 / -1;
+  margin-bottom: clamp(-1.8rem, -2vw, -0.9rem);
+}
+
+.discover-hero h1 {
+  max-width: 12ch;
+  font-size: clamp(2.65rem, 5.3vw, 5rem);
+  text-wrap: balance;
+}
+
+.discover-hero > p:last-child {
+  max-width: 30rem;
+  padding-bottom: 0.45rem;
+  font-size: 0.9rem;
+  line-height: 1.78;
+}
+
+.discover-search {
+  margin-top: clamp(2rem, 4vw, 3.2rem);
+  padding: 0.55rem;
+  border-radius: 1.05rem;
+  box-shadow: 0 1rem 3rem rgba(37, 62, 68, 0.06);
+}
+
+.discover-search__field {
+  min-height: 3.6rem;
+  border-radius: 0.78rem;
+}
+
+.discover-search__field input {
+  min-height: 3.4rem;
+  font-size: 0.94rem;
+}
+
+.discover-search > p {
+  margin: 0.55rem 0.45rem 0.1rem;
+  line-height: 1.55;
+}
+
+.discover-results {
+  padding-top: clamp(2.8rem, 5vw, 4.2rem);
+}
+
+.discover-results > header {
+  align-items: flex-end;
+  margin-bottom: 1.35rem;
+}
+
+.discover-results > header > div {
+  display: grid;
+  gap: 0.35rem;
+}
+
+.discover-results__eyebrow {
+  color: var(--text-tertiary);
+  font-family: var(--font-mono);
+  font-size: 0.62rem;
+  font-weight: 650;
+  letter-spacing: 0.14em;
+}
+
+.discover-results h2 {
+  margin: 0;
+  font-size: clamp(1.85rem, 3vw, 2.6rem);
+}
+
+.discover-results > header > div > p:last-child:not(.discover-results__eyebrow) {
+  color: var(--text-tertiary);
+  font-size: 0.72rem;
+  line-height: 1.55;
+}
+
+.member-grid {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: clamp(0.85rem, 1.5vw, 1.25rem);
+}
+
+.member-card {
+  min-height: 0;
+  overflow: hidden;
+  padding: 0.72rem;
+  border-color: var(--border-strong);
+  border-radius: 1.25rem;
+  background: color-mix(in srgb, var(--surface) 96%, transparent);
+  box-shadow: 0 0.8rem 2.6rem rgba(32, 56, 62, 0.045);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
+}
+
+.member-card:hover {
+  border-color: var(--accent-border);
+  box-shadow: 0 1.15rem 3.2rem rgba(32, 56, 62, 0.08);
+  transform: translateY(-3px);
+}
+
+.member-card__world {
+  position: relative;
+  display: block;
+  overflow: hidden;
+  border-radius: 0.92rem;
+  background: var(--surface-hover);
+}
+
+.member-card__world > span {
+  position: absolute;
+  top: 0.72rem;
+  left: 0.75rem;
+  padding: 0.3rem 0.42rem;
+  border: 1px solid color-mix(in srgb, var(--border-strong) 78%, transparent);
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--surface) 82%, transparent);
+  color: var(--text-secondary);
+  font-family: var(--font-mono);
+  font-size: 0.54rem;
+  font-weight: 650;
+  letter-spacing: 0.08em;
+  backdrop-filter: blur(10px);
+}
+
+.member-world-preview {
+  display: block;
+  width: 100%;
+  aspect-ratio: 2 / 1;
+  transition: transform 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.member-card:hover .member-world-preview {
+  transform: scale(1.018);
+}
+
+.member-world-preview__grid {
+  fill: none;
+  stroke: color-mix(in srgb, var(--border-strong) 55%, transparent);
+  stroke-width: 0.65;
+  stroke-dasharray: 2 7;
+}
+
+.member-world-preview__land {
+  fill: color-mix(in srgb, var(--surface) 74%, var(--globe-land));
+  stroke: color-mix(in srgb, var(--text-tertiary) 30%, transparent);
+  stroke-width: 0.75;
+}
+
+.member-world-preview__route {
+  fill: none;
+  stroke: var(--accent);
+  stroke-width: 1.2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-dasharray: 3 4;
+  opacity: 0.62;
+}
+
+.member-world-preview__halo {
+  fill: color-mix(in srgb, var(--accent) 19%, transparent);
+}
+
+.member-world-preview__point {
+  fill: var(--accent);
+  stroke: color-mix(in srgb, var(--surface) 86%, transparent);
+  stroke-width: 1.25;
+}
+
+.member-world-preview text {
+  fill: var(--text-tertiary);
+  font-family: var(--font-mono);
+  font-size: 7px;
+  letter-spacing: 0.12em;
+  text-anchor: middle;
+}
+
+.member-card__identity {
+  gap: 0.68rem;
+  margin-top: 0.85rem;
+  padding-inline: 0.15rem;
+}
+
+.member-card__avatar {
+  width: 2.8rem;
+  height: 2.8rem;
+}
+
+.member-card__name strong {
+  font-size: 0.88rem;
+  font-weight: 650;
+}
+
+.member-card__name small {
+  font-size: 0.62rem;
+}
+
+.member-card__bio,
+.member-card__stats {
+  display: none;
+}
+
+.member-card__footprint {
+  display: grid;
+  gap: 0.42rem;
+  margin-top: 0.95rem;
+  padding: 0.9rem 0.2rem;
+  border-block: 1px solid var(--border);
+}
+
+.member-card__footprint strong {
+  color: var(--text-primary);
+  font-family: var(--font-mono);
+  font-size: 0.76rem;
+  font-weight: 650;
+  letter-spacing: -0.015em;
+}
+
+.member-card__footprint strong span {
+  margin-inline: 0.25rem;
+  color: var(--accent);
+}
+
+.member-card__footprint p {
+  overflow: hidden;
+  color: var(--text-tertiary);
+  font-size: 0.66rem;
+  line-height: 1.45;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.member-card__footprint b {
+  color: var(--text-secondary);
+  font-weight: 560;
+}
+
+.member-card__reason {
+  margin-top: 0.75rem;
+  padding: 0.34rem 0.5rem;
+  font-size: 0.59rem;
+}
+
+.member-card__actions {
+  margin-top: 0.85rem;
+  padding: 0.05rem 0.12rem 0.12rem;
+}
+
+.member-card__actions > a {
+  font-size: 0.65rem;
+  font-weight: 600;
+}
+
+.member-card .follow-button.is-compact {
+  min-width: 4.8rem;
+  min-height: 2.2rem;
+  padding-inline: 0.85rem;
+  font-size: 0.65rem;
+}
+
+.discover-empty {
+  min-height: 13rem;
+  border-style: solid;
+  background: color-mix(in srgb, var(--surface) 72%, transparent);
+}
+
+@media (max-width: 1080px) {
+  .member-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 760px) {
+  .discover-hero {
+    grid-template-columns: 1fr;
+    gap: 0.9rem;
+  }
+
+  .discover-hero .eyebrow {
+    grid-column: auto;
+    margin-bottom: 0.2rem;
+  }
+
+  .discover-hero h1 {
+    max-width: 11ch;
+    font-size: clamp(2.45rem, 11vw, 3.65rem);
+  }
+
+  .discover-hero > p:last-child {
+    max-width: 33rem;
+    padding-bottom: 0;
+  }
+}
+
+@media (max-width: 620px) {
+  .discover-shell {
+    padding-block: 2.7rem 6.5rem;
+  }
+
+  .discover-search {
+    margin-top: 1.6rem;
+    padding: 0.42rem;
+  }
+
+  .discover-search > p {
+    margin: 0.55rem 0.3rem 0.2rem;
+    font-size: 0.61rem;
+  }
+
+  .discover-results {
+    padding-top: 2.2rem;
+  }
+
+  .discover-results > header {
+    align-items: flex-start;
+  }
+
+  .discover-results > header > span {
+    padding-top: 1.4rem;
+  }
+
+  .member-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .member-card {
+    padding: 0.6rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .member-card,
+  .member-world-preview {
+    transition: none;
+  }
+}

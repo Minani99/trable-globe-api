@@ -68,7 +68,10 @@ export function DiscoverExperience({
   }
 
   const searching = Boolean(query.trim());
-  const visible = searching ? results : recommendations;
+  const eligibleRecommendations = recommendations.filter(
+    (member) => member.travelCount > 0 && member.countryCount > 0,
+  );
+  const visible = searching ? results : eligibleRecommendations;
 
   return (
     <>
@@ -83,20 +86,23 @@ export function DiscoverExperience({
             type="search"
             value={query}
             onChange={(event) => changeQuery(event.target.value)}
-            placeholder="보여질 이름 또는 @사용자명"
+            placeholder="여행자 이름 또는 @사용자명 검색"
             autoComplete="off"
             maxLength={60}
           />
           {query ? <button type="button" onClick={() => changeQuery("")} aria-label="검색어 지우기">×</button> : null}
         </div>
+        <p>추천에는 공개 Journey가 있는 여행자만 표시됩니다. 검색에서는 새로 가입한 친구도 찾을 수 있어요.</p>
       </form>
 
       <section className="discover-results" aria-labelledby="discover-results-heading" aria-busy={loading}>
         <header>
           <div>
+            <p className="discover-results__eyebrow">{searching ? "SEARCH RESULTS" : "FEATURED TRAVELERS"}</p>
             <h2 id="discover-results-heading">
-              {searching ? `“${submittedQuery || query.trim()}” 검색 결과` : "여행 취향이 가까운 사람"}
+              {searching ? `“${submittedQuery || query.trim()}” 검색 결과` : "기록이 있는 여행자"}
             </h2>
+            {!searching ? <p>방문한 나라와 최근 Journey가 있는 Travel World만 모았습니다.</p> : null}
           </div>
           <span aria-live="polite">{loading ? "찾는 중…" : `${visible.length}명`}</span>
         </header>
@@ -104,8 +110,8 @@ export function DiscoverExperience({
         {error ? <div className="discover-empty" role="alert"><strong>검색을 완료하지 못했습니다</strong><p>{error}</p></div> : null}
         {!error && !loading && visible.length === 0 ? (
           <div className="discover-empty">
-            <strong>{searching ? "일치하는 여행자가 없습니다" : "추천할 여행자를 찾고 있습니다"}</strong>
-            <p>{searching ? "사용자명 일부나 보여질 이름으로 다시 검색해 보세요." : "다른 회원이 여행을 기록하면 이곳에 추천됩니다."}</p>
+            <strong>{searching ? "일치하는 여행자가 없습니다" : "아직 소개할 Travel World가 없어요"}</strong>
+            <p>{searching ? "사용자명 일부나 보여질 이름으로 다시 검색해 보세요." : "공개 Journey가 쌓이면 이곳에서 새로운 여행 세계로 소개됩니다. 위 검색으로 친구를 먼저 찾아볼 수도 있어요."}</p>
           </div>
         ) : null}
         {!error && visible.length > 0 ? (
