@@ -125,3 +125,464 @@
     width: 100%;
   }
 }
+
+/* Focused account pages --------------------------------------------------- */
+.settings-shell {
+  max-width: 68rem;
+  padding-block: clamp(1.5rem, 4vw, 3rem) 6rem;
+}
+
+.settings-page .studio-breadcrumb {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  margin-bottom: 1.25rem;
+  color: var(--text-tertiary);
+  font-size: 0.78rem;
+}
+
+.settings-page .studio-breadcrumb a:hover {
+  color: var(--text-primary);
+}
+
+.settings-hero {
+  align-items: flex-end;
+  padding-bottom: 1.5rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.settings-hero h1 {
+  max-width: none;
+  margin: 0;
+  font-family: var(--font-sans);
+  font-size: clamp(1.9rem, 3.2vw, 2.5rem);
+  font-weight: 650;
+  line-height: 1.15;
+  letter-spacing: -0.045em;
+}
+
+.settings-hero > div:first-child > p {
+  margin-top: 0.5rem;
+  color: var(--text-tertiary);
+  font-size: 0.88rem;
+}
+
+.settings-hero__actions {
+  flex: 0 0 auto;
+}
+
+.settings-hero__actions .studio-secondary-action,
+.settings-session-logout {
+  min-height: 2.75rem;
+  padding-inline: 1rem;
+  font-size: 0.8rem;
+}
+
+.settings-workspace {
+  display: grid;
+  grid-template-columns: 10.5rem minmax(0, 1fr);
+  align-items: start;
+  gap: clamp(1.5rem, 4vw, 3.5rem);
+  padding-top: 2rem;
+}
+
+.settings-section-nav {
+  position: sticky;
+  top: 5.25rem;
+  display: grid;
+  gap: 0.2rem;
+}
+
+.settings-section-nav a {
+  display: flex;
+  min-height: 2.6rem;
+  align-items: center;
+  padding-inline: 0.8rem;
+  border-radius: 0.65rem;
+  color: var(--text-tertiary);
+  font-size: 0.82rem;
+  font-weight: 580;
+  transition: background-color 0.16s ease, color 0.16s ease;
+}
+
+.settings-section-nav a:hover,
+.settings-section-nav a:focus-visible {
+  background: var(--surface-muted);
+  color: var(--text-primary);
+}
+
+.settings-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 1rem;
+  padding-top: 0;
+}
+
+.settings-layout .settings-card {
+  position: static;
+  scroll-margin-top: 5.5rem;
+  gap: 1.25rem;
+  padding: clamp(1.15rem, 3vw, 1.6rem);
+  border-radius: 1rem;
+  box-shadow: 0 0.7rem 2.4rem rgba(31, 62, 69, 0.045);
+}
+
+.settings-card .studio-profile__heading,
+.settings-card .studio-account__heading {
+  align-items: center;
+  padding-bottom: 1rem;
+}
+
+.settings-card .studio-profile__heading h2,
+.settings-card .studio-account__heading h2 {
+  margin: 0;
+  font-family: var(--font-sans);
+  font-size: 1.18rem;
+  font-weight: 650;
+  letter-spacing: -0.025em;
+}
+
+.settings-card .studio-profile__heading p,
+.settings-card .studio-account__heading p {
+  margin-top: 0.35rem;
+  color: var(--text-tertiary);
+  font-size: 0.8rem;
+  line-height: 1.5;
+}
+
+.settings-card .studio-profile__heading > span,
+.settings-card .studio-account__heading > span {
+  flex: 0 0 auto;
+  font-family: var(--font-sans);
+}
+
+.settings-avatar {
+  grid-template-columns: 5rem minmax(0, 1fr);
+  gap: 1rem;
+  padding: 0.85rem;
+  border-radius: 0.8rem;
+}
+
+.settings-avatar__preview {
+  width: 5rem;
+  height: 5rem;
+}
+
+.settings-avatar__actions strong {
+  font-family: var(--font-sans);
+  font-size: 0.86rem;
+  font-weight: 650;
+}
+
+.settings-avatar__actions p,
+.settings-avatar__actions small,
+.settings-field-help,
+.studio-account__identity label > small {
+  font-size: 0.78rem;
+  line-height: 1.5;
+}
+
+.settings-avatar__upload {
+  min-height: 2.65rem;
+  font-size: 0.8rem;
+}
+
+.settings-profile > label,
+.settings-image-url label {
+  gap: 0.45rem;
+}
+
+.settings-profile label > span,
+.studio-account__identity label > span,
+.studio-account__delete label > span {
+  color: var(--text-secondary);
+  font-size: 0.82rem;
+  font-weight: 620;
+}
+
+.settings-profile input,
+.settings-profile textarea,
+.studio-account__identity input,
+.studio-account__delete input {
+  min-height: 3rem;
+  padding-inline: 0.85rem;
+  border-radius: 0.7rem;
+  font-family: var(--font-sans);
+  font-size: 0.92rem;
+}
+
+.settings-profile textarea {
+  padding-block: 0.75rem;
+}
+
+.studio-account__identity {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+}
+
+.studio-account__identity label:nth-of-type(3),
+.studio-account__identity-actions,
+.settings-password-form label:first-child {
+  grid-column: 1 / -1;
+}
+
+.studio-account__identity-actions {
+  min-height: 2.75rem;
+  padding-top: 0.2rem;
+}
+
+.studio-account__identity-actions > span,
+.studio-form-actions span {
+  font-size: 0.78rem;
+}
+
+.studio-account__identity-actions > button,
+.studio-form-actions button {
+  min-height: 2.75rem;
+  padding-inline: 1.05rem;
+  font-size: 0.8rem;
+}
+
+.studio-account__verification {
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  padding: 0.8rem 0.9rem;
+}
+
+.studio-account__verification p {
+  font-size: 0.8rem;
+}
+
+.studio-account__verification small,
+.studio-account__verification a {
+  grid-column: 1 / -1;
+}
+
+.studio-account__links {
+  justify-content: flex-end;
+  padding-top: 0.25rem;
+  font-size: 0.78rem;
+}
+
+.settings-forgot-link {
+  width: fit-content;
+  color: var(--text-tertiary);
+  font-size: 0.78rem;
+}
+
+.settings-forgot-link:hover {
+  color: var(--accent-strong);
+}
+
+.studio-account__delete {
+  gap: 0.8rem;
+}
+
+/* Authentication stays a form, not a second landing page. */
+.auth-page {
+  min-height: calc(100svh - 3.75rem);
+  place-items: center;
+  padding: clamp(2rem, 6vw, 4.5rem) 1rem;
+}
+
+.auth-card,
+.auth-card--wide,
+.auth-card--login,
+.auth-card--register {
+  display: block;
+  width: min(100%, 30rem);
+  min-height: 0;
+  padding: clamp(1.5rem, 4vw, 2.25rem);
+  border-radius: 1.1rem;
+}
+
+.auth-card::before {
+  display: none;
+}
+
+.auth-card h1,
+.auth-card--login h1,
+.auth-card--register h1 {
+  max-width: none;
+  margin: 0;
+  font-family: var(--font-sans);
+  font-size: clamp(1.75rem, 5vw, 2.15rem);
+  font-weight: 680;
+  letter-spacing: -0.045em;
+}
+
+.auth-card__intro {
+  max-width: none;
+  margin-top: 0.55rem;
+  font-size: 0.88rem;
+  line-height: 1.55;
+}
+
+.auth-form {
+  display: grid;
+  grid-row: auto;
+  grid-column: auto;
+  gap: 0.85rem;
+  margin-top: 1.75rem;
+  padding-left: 0;
+  border-left: 0;
+}
+
+.auth-form label > span,
+.auth-form__field > label > span {
+  font-size: 0.82rem;
+}
+
+.auth-form label small,
+.auth-form__field > small {
+  font-size: 0.78rem;
+  line-height: 1.5;
+}
+
+.auth-form input {
+  min-height: 3rem;
+  font-size: 0.95rem;
+}
+
+.auth-form__username-preview {
+  padding: 0.5rem 0.65rem;
+}
+
+@media (max-width: 760px) {
+  .settings-shell {
+    padding-block: 1.25rem calc(6rem + env(safe-area-inset-bottom));
+  }
+
+  .settings-hero {
+    align-items: stretch;
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  .settings-hero__actions {
+    width: 100%;
+  }
+
+  .settings-hero__actions > * {
+    min-width: 0;
+    flex: 1;
+  }
+
+  .settings-workspace {
+    display: block;
+    padding-top: 1rem;
+  }
+
+  .settings-section-nav {
+    position: static;
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 0.4rem;
+    margin-bottom: 1rem;
+  }
+
+  .settings-section-nav a {
+    justify-content: center;
+    padding-inline: 0.35rem;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    font-size: 0.78rem;
+  }
+}
+
+@media (max-width: 560px) {
+  .settings-page .studio-breadcrumb {
+    margin-bottom: 0.9rem;
+  }
+
+  .settings-hero h1 {
+    font-size: 1.8rem;
+  }
+
+  .settings-hero > div:first-child > p {
+    font-size: 0.8rem;
+  }
+
+  .settings-hero__actions {
+    align-items: stretch;
+    flex-direction: row;
+  }
+
+  .settings-layout .settings-card {
+    padding: 1rem;
+  }
+
+  .settings-avatar {
+    grid-template-columns: 4.25rem minmax(0, 1fr);
+    gap: 0.8rem;
+    padding: 0.75rem;
+  }
+
+  .settings-avatar__preview {
+    width: 4.25rem;
+    height: 4.25rem;
+  }
+
+  .settings-avatar__actions > div {
+    flex-wrap: wrap;
+    gap: 0.55rem;
+  }
+
+  .studio-account__identity,
+  .settings-password-form {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .studio-account__identity label,
+  .studio-account__identity label:nth-of-type(3),
+  .settings-password-form label:first-child,
+  .studio-account__identity-actions {
+    grid-column: 1;
+  }
+
+  .studio-account__identity-actions {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .studio-account__identity-actions > button,
+  .studio-form-actions button {
+    width: 100%;
+  }
+
+  .studio-form-actions {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .studio-account__verification {
+    grid-template-columns: 1fr;
+  }
+
+  .studio-account__verification small,
+  .studio-account__verification a {
+    grid-column: 1;
+  }
+
+  .auth-page {
+    align-items: start;
+    padding: 1rem 0.75rem 2rem;
+  }
+
+  .auth-card,
+  .auth-card--wide {
+    padding: 1.25rem;
+  }
+
+  .auth-form input,
+  .settings-profile input,
+  .settings-profile textarea,
+  .studio-account__identity input,
+  .studio-account__delete input {
+    font-size: 1rem;
+  }
+}

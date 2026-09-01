@@ -6,6 +6,7 @@ import com.travelglobe.trableglobeapi.auth.domain.MemberCredential;
 import com.travelglobe.trableglobeapi.auth.dto.AccountActionResponse;
 import com.travelglobe.trableglobeapi.auth.dto.AuthMemberResponse;
 import com.travelglobe.trableglobeapi.auth.dto.AuthSessionResponse;
+import com.travelglobe.trableglobeapi.auth.dto.ChangePasswordRequest;
 import com.travelglobe.trableglobeapi.auth.dto.DeleteAccountRequest;
 import com.travelglobe.trableglobeapi.auth.dto.ForgotPasswordRequest;
 import com.travelglobe.trableglobeapi.auth.dto.LoginRequest;
@@ -180,6 +181,21 @@ public class AuthService {
             sendVerification(credential);
         }
         return AuthMemberResponse.from(credential);
+    }
+
+    @Transactional
+    public void changePassword(MemberPrincipal principal, ChangePasswordRequest request) {
+        MemberCredential credential = getCredential(principal.memberId());
+        if (!passwordHasher.matches(request.currentPassword(), credential.getPasswordHash())) {
+            throw new AuthenticationFailedException();
+        }
+        validatePasswordBytes(request.newPassword());
+        if (passwordHasher.matches(request.newPassword(), credential.getPasswordHash())) {
+            throw new InvalidRequestException("새 비밀번호는 현재 비밀번호와 다르게 입력해 주세요.");
+        }
+
+        credential.updatePassword(passwordHasher.hash(request.newPassword()));
+        authSessionService.revokeOtherSessions(principal);
     }
 
     @Transactional

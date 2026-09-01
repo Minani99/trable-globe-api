@@ -1,6 +1,6 @@
 import { expect, test } from "@playwright/test";
 
-test("내 지구본과 마이 프로필이 서로 다른 역할로 열린다", async ({ page }) => {
+test("내 지구본과 내 정보가 서로 다른 역할로 열린다", async ({ page }) => {
   const suffix = Date.now().toString(36);
   const username = `split_${suffix}`;
   const displayName = "세계 분리 여행자";
@@ -23,14 +23,22 @@ test("내 지구본과 마이 프로필이 서로 다른 역할로 열린다", a
   await page.setViewportSize({ width: 390, height: 844 });
   const mobileNav = page.getByRole("navigation", { name: "모바일 주요 메뉴" });
   await expect(mobileNav.getByRole("link", { name: "세계" })).toHaveAttribute("aria-current", "page");
-  await expect(mobileNav.getByRole("link", { name: "프로필" })).not.toHaveAttribute("aria-current", "page");
+  await expect(mobileNav.getByRole("link", { name: "마이" })).not.toHaveAttribute("aria-current", "page");
 
-  await mobileNav.getByRole("link", { name: "프로필" }).click();
-  await expect(page).toHaveURL(new RegExp(`/${username}$`));
-  await expect(page.getByRole("heading", { name: `${displayName}의 여행 세계` })).toBeVisible();
-  await expect(page.locator("#profile-travel-archive")).toBeVisible();
-  await expect(mobileNav.getByRole("link", { name: "프로필" })).toHaveAttribute("aria-current", "page");
+  await mobileNav.getByRole("link", { name: "마이" }).click();
+  await expect(page).toHaveURL(/\/settings$/);
+  await expect(page.getByRole("heading", { name: "내 정보", exact: true })).toBeVisible();
+  await expect(page.locator(".settings-page canvas")).toHaveCount(0);
+  await expect(page.getByRole("link", { name: /공개 프로필/ })).toHaveAttribute("href", `/${username}`);
+  await expect(mobileNav.getByRole("link", { name: "마이" })).toHaveAttribute("aria-current", "page");
   await expect(mobileNav.getByRole("link", { name: "세계" })).not.toHaveAttribute("aria-current", "page");
+
+  const security = page.locator("#security");
+  await security.getByLabel("현재 비밀번호", { exact: true }).fill("split-world-password-42");
+  await security.getByLabel("새 비밀번호", { exact: true }).fill("split-world-password-84");
+  await security.getByLabel("새 비밀번호 확인", { exact: true }).fill("split-world-password-84");
+  await security.getByRole("button", { name: "비밀번호 변경" }).click();
+  await expect(security.getByText("비밀번호를 변경했습니다.", { exact: true })).toBeVisible();
 
   const layout = await page.evaluate(() => ({
     viewportWidth: window.innerWidth,

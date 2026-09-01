@@ -512,9 +512,21 @@ export const TravelGlobe = memo(function TravelGlobe({
 
       element.addEventListener("click", (event) => {
         event.stopPropagation();
-        onSelectRef.current(
-          selectedRef.current === country.iso2Code ? null : country.iso2Code,
+        const nextCode = selectedRef.current === country.iso2Code ? null : country.iso2Code;
+        selectedRef.current = nextCode;
+        clearRotationResume();
+        stopAmbientRotation();
+        setHoveredCode(null);
+        onCountryHover?.(null);
+        onSelectRef.current(nextCode);
+        onCountrySelect?.(
+          nextCode
+            ? { code: nextCode, nameKo: country.nameKo, nameEn: country.nameEn }
+            : null,
         );
+        if (isWorldExplorer && nextCode === null && !reduceMotionRef.current) {
+          setTimeout(startAmbientRotation, 0);
+        }
       });
       element.addEventListener("pointerenter", () => setHoveredCode(country.iso2Code));
       element.addEventListener("pointerleave", () => setHoveredCode(null));
@@ -522,7 +534,14 @@ export const TravelGlobe = memo(function TravelGlobe({
       markerElements.current.set(country.iso2Code, element);
       return element;
     },
-    [],
+    [
+      clearRotationResume,
+      isWorldExplorer,
+      onCountryHover,
+      onCountrySelect,
+      startAmbientRotation,
+      stopAmbientRotation,
+    ],
   );
 
   // Markers are imperative DOM, so selection state is applied as a class rather than by

@@ -3,6 +3,7 @@ package com.travelglobe.trableglobeapi.auth.controller;
 import com.travelglobe.trableglobeapi.auth.dto.AuthMemberResponse;
 import com.travelglobe.trableglobeapi.auth.dto.AuthSessionResponse;
 import com.travelglobe.trableglobeapi.auth.dto.AccountActionResponse;
+import com.travelglobe.trableglobeapi.auth.dto.ChangePasswordRequest;
 import com.travelglobe.trableglobeapi.auth.dto.DeleteAccountRequest;
 import com.travelglobe.trableglobeapi.auth.dto.ForgotPasswordRequest;
 import com.travelglobe.trableglobeapi.auth.dto.LoginRequest;
@@ -107,6 +108,15 @@ public class AuthController {
     public ApiResponse<Void> resetPassword(@Valid @RequestBody ResetPasswordRequest request) {
         authService.resetPassword(request);
         return ApiResponse.ok(null, "새 비밀번호를 저장했습니다. 다시 로그인해 주세요.");
+    }
+
+    @PatchMapping("/password")
+    public ApiResponse<Void> changePassword(
+            HttpServletRequest servletRequest,
+            @Valid @RequestBody ChangePasswordRequest request) {
+        MemberPrincipal principal = AuthenticatedRequest.principal(servletRequest);
+        authService.changePassword(principal, request);
+        return ApiResponse.ok(null, "비밀번호를 변경했습니다.");
     }
 
     @DeleteMapping("/account")

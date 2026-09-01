@@ -78,7 +78,7 @@ export function LandingGlobePreview() {
   const activeCountry = resolvedSelectedCountry ?? hoveredCountry ?? centeredCountry;
   const activePlace = activeCountry ? getWorldLandmarkPlace(activeCountry.code) : null;
   const statistics = world?.profile.statistics;
-  const worldLabel = isOwnWorld ? `${world?.profile.displayName ?? member?.displayName}님의 여행 세계` : "다국가 샘플 여행 세계";
+  const worldLabel = isOwnWorld ? `${world?.profile.displayName ?? member?.displayName}님의 지구본` : "샘플 지구본";
 
   const handleSelect = (code: string | null) => {
     setSelectedCode(code);
@@ -110,9 +110,9 @@ export function LandingGlobePreview() {
             className={`landing-globe-stats${world || resolvedRequest?.failed ? " is-ready" : ""}`}
             aria-label={worldLabel}
           >
-            <GlobeStat label="Countries" value={formatStat(statistics?.countryCount)} />
-            <GlobeStat label="Cities" value={formatStat(statistics?.cityCount)} />
-            <GlobeStat label="Journeys" value={formatStat(statistics?.travelCount)} />
+            <GlobeStat label="국가" value={formatStat(statistics?.countryCount)} />
+            <GlobeStat label="도시" value={formatStat(statistics?.cityCount)} />
+            <GlobeStat label="여행" value={formatStat(statistics?.travelCount)} />
             <GlobeStat label="Memories" value={formatStat(statistics?.placeCount)} />
           </dl>
 
@@ -152,7 +152,7 @@ export function LandingGlobePreview() {
                     href={profilePath(username)}
                     className="landing-landmark-card__action"
                   >
-                    <span>{isOwnWorld ? "내 여행 세계 자세히 보기" : "여러 나라가 쌓인 샘플 보기"}</span>
+                    <span>{isOwnWorld ? "내 지구본 보기" : "샘플 프로필 보기"}</span>
                     <span aria-hidden="true">→</span>
                   </Link>
                 ) : null}
@@ -187,14 +187,14 @@ function landingWorldTitle(
   world: LandingWorld | null,
   failed: boolean,
 ) {
-  if (failed) return member ? "내 여행 세계를 불러오지 못했어요" : "샘플 여행 세계를 불러오지 못했어요";
-  if (member === undefined || !world) return "여행 세계를 확인하고 있어요";
+  if (failed) return member ? "내 지구본을 불러오지 못했습니다" : "샘플을 불러오지 못했습니다";
+  if (member === undefined || !world) return "지구본을 불러오는 중입니다";
   if (member) {
     return world.profile.statistics.travelCount > 0
-      ? `${world.profile.displayName}님의 여행 세계`
-      : `${world.profile.displayName}님의 첫 여행을 기다리는 지구본`;
+      ? `${world.profile.displayName}님의 지구본`
+      : "아직 기록된 여행이 없습니다";
   }
-  return `${world.profile.statistics.countryCount}개 나라가 쌓인 샘플 세계`;
+  return `${world.profile.statistics.countryCount}개 국가 샘플`;
 }
 
 function landingWorldDescription(
@@ -205,9 +205,9 @@ function landingWorldDescription(
   if (failed) return "잠시 후 다시 시도하거나 지구본에서 나라별 랜드마크를 둘러보세요.";
   if (member === undefined || !world) return "로그인 상태와 여행 기록을 불러오는 중입니다.";
   if (member && world.profile.statistics.travelCount === 0) {
-    return "첫 Journey를 만들면 방문한 나라와 이동 경로가 이곳에 쌓입니다.";
+    return "첫 여행을 기록하면 지구본에 표시됩니다.";
   }
-  return `${world.profile.statistics.travelCount}개의 Journey와 ${world.profile.statistics.placeCount}개의 기억이 연결되어 있어요.`;
+  return `여행 ${world.profile.statistics.travelCount}개 · 장소 ${world.profile.statistics.placeCount}개`;
 }
 
 function GlobeStat({ label, value }: { label: string; value: string }) {

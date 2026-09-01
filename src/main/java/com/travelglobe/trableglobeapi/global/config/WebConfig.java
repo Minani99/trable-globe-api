@@ -31,6 +31,7 @@ public class WebConfig implements WebMvcConfigurer {
                         "/api/auth/logout",
                         "/api/auth/profile",
                         "/api/auth/email-verification",
+                        "/api/auth/password",
                         "/api/auth/account");
     }
 

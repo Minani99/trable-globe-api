@@ -71,6 +71,12 @@ public class AuthSessionService {
     }
 
     @Transactional
+    public void revokeOtherSessions(MemberPrincipal principal) {
+        authSessionRepository.revokeOtherSessionsForMember(
+                principal.memberId(), principal.sessionId(), Instant.now());
+    }
+
+    @Transactional
     public void deleteAll(Long memberId) {
         authSessionRepository.deleteAllForMember(memberId);
     }

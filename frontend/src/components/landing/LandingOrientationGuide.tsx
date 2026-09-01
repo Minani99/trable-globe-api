@@ -36,7 +36,7 @@ export function LandingOrientationGuide() {
         onClick={openGuide}
       >
         <span aria-hidden="true">{seen ? "?" : "1·2·3"}</span>
-        {seen ? "이용 방법" : "처음이신가요? 30초 안내"}
+        {seen ? "이용 방법" : "처음 이용하시나요?"}
       </button>
 
       <dialog ref={dialogRef} className="landing-guide-dialog" aria-labelledby="landing-guide-title">
@@ -48,15 +48,15 @@ export function LandingOrientationGuide() {
         >
           ×
         </button>
-        <p className="eyebrow">How it works</p>
-        <h2 id="landing-guide-title">여행 하나가 나의 세계가 되기까지</h2>
+        <p className="eyebrow">이용 방법</p>
+        <h2 id="landing-guide-title">계획부터 기록까지</h2>
         <ol>
-          <GuideStep number="01" title="Journey 시작하기" description="다녀온 여행을 바로 기록하거나 다음 여행의 나라와 날짜를 정합니다." />
-          <GuideStep number="02" title="장소와 기억 잇기" description="방문한 장소를 확인하고 그곳의 사진과 메모를 가볍게 더합니다." />
-          <GuideStep number="03" title="내 세계 채우기" description="완성된 Journey가 경로와 기억이 되어 나만의 지구본에 쌓입니다." />
+          <GuideStep number="01" title="계획 만들기" description="나라와 날짜를 선택하고 장소를 추가합니다." />
+          <GuideStep number="02" title="여행 중 확인하기" description="일정, 예약, 준비 항목을 모바일에서 확인합니다." />
+          <GuideStep number="03" title="기록으로 남기기" description="다녀온 장소와 사진을 확인해 지구본에 표시합니다." />
         </ol>
         <button type="button" className="landing-guide-dialog__confirm" onClick={() => dialogRef.current?.close()}>
-          알겠어요, 시작할게요
+          확인
         </button>
       </dialog>
     </>

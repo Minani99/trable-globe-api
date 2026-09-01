@@ -88,7 +88,7 @@ export function ProfileEditor({ member }: { member: AuthMember }) {
         void deleteUploadedPhoto({ publicUrl: previousImageUrl }).catch(() => undefined);
       }
       setStatus("프로필을 저장했습니다.");
-      showFeedback("프로필 변경사항을 저장했습니다.", "success");
+      showFeedback("프로필을 저장했습니다.", "success");
     } catch (error) {
       if (uploaded) {
         void deleteUploadedPhoto({ objectKey: uploaded.objectKey }).catch(() => undefined);
@@ -101,13 +101,13 @@ export function ProfileEditor({ member }: { member: AuthMember }) {
   }
 
   return (
-    <form id="profile" className="studio-profile settings-profile" onSubmit={handleSubmit}>
+    <form id="profile" className="studio-profile settings-profile settings-card" onSubmit={handleSubmit}>
       <div className="studio-profile__heading">
         <div>
-          <p className="eyebrow">Public profile</p>
-          <h2>공개 프로필</h2>
+          <h2>프로필</h2>
+          <p>다른 사용자에게 표시되는 정보입니다.</p>
         </div>
-        <span>@{savedMember.username}</span>
+        <span>공개</span>
       </div>
 
       <div className="settings-avatar">
@@ -119,7 +119,7 @@ export function ProfileEditor({ member }: { member: AuthMember }) {
         />
         <div className="settings-avatar__actions">
           <strong>프로필 사진</strong>
-          <p>얼굴이나 나를 잘 보여주는 정사각형 이미지를 권장합니다. JPG, PNG, WebP · 최대 10MB</p>
+          <p>JPG, PNG, WebP · 10MB 이하</p>
           <div>
             <label className={`settings-avatar__upload${uploadConfig?.configured ? "" : " is-disabled"}`}>
               <span>{imageFile
@@ -128,7 +128,7 @@ export function ProfileEditor({ member }: { member: AuthMember }) {
                   ? "업로드 확인 중…"
                   : uploadConfig?.configured
                     ? "사진 업로드"
-                    : "파일 업로드 준비 중"}</span>
+                    : "URL로 등록"}</span>
               <input
                 type="file"
                 accept="image/jpeg,image/png,image/webp"
@@ -144,11 +144,11 @@ export function ProfileEditor({ member }: { member: AuthMember }) {
           </div>
           {uploadConfig && !uploadConfig.configured ? (
             <small className="settings-avatar__notice" role="status">
-              파일 저장소 연결이 아직 완료되지 않았습니다. 아래에서 이미지 URL을 등록할 수 있습니다.
+              사진 업로드를 사용할 수 없습니다. 이미지 URL을 입력해 주세요.
             </small>
           ) : uploadConfigFailed ? (
             <small className="settings-avatar__notice is-error" role="alert">
-              업로드 가능 여부를 확인하지 못했습니다. 새로고침 후 다시 시도해 주세요.
+              업로드 상태를 확인하지 못했습니다.
             </small>
           ) : null}
           {uploadProgress !== null ? <small role="status">업로드 {uploadProgress}%</small> : null}
@@ -156,7 +156,7 @@ export function ProfileEditor({ member }: { member: AuthMember }) {
       </div>
 
       <label>
-        <span>보여질 이름</span>
+        <span>표시 이름</span>
         <input
           name="displayName"
           defaultValue={savedMember.displayName}
@@ -164,20 +164,20 @@ export function ProfileEditor({ member }: { member: AuthMember }) {
           maxLength={60}
           pattern="[^<>]*"
           title="꺾쇠괄호 없이 1~60자로 입력해 주세요."
-          aria-label="보여질 이름"
+          aria-label="표시 이름"
           aria-describedby="settings-display-name-help"
           required
         />
         <small id="settings-display-name-help" className="settings-field-help">
-          프로필과 공개한 여행 기록에 표시됩니다. 사용자명 @{savedMember.username}은 프로필 주소와 검색에 사용돼요.
+          프로필과 공개 여행에 표시됩니다.
         </small>
       </label>
       <label>
         <span>소개</span>
-        <textarea name="bio" defaultValue={savedMember.bio ?? ""} maxLength={300} rows={4} placeholder="어떤 여행을 좋아하는지 들려주세요." />
+        <textarea name="bio" defaultValue={savedMember.bio ?? ""} maxLength={300} rows={3} placeholder="여행 스타일이나 관심 지역" />
       </label>
       <details className="settings-image-url">
-        <summary>이미지 URL 직접 입력</summary>
+        <summary>이미지 URL</summary>
         <label>
           <span>프로필 이미지 URL</span>
           <input value={imageUrl} onChange={(event) => { setImageUrl(event.target.value); setImageFile(null); setPreviewUrl(null); }} type="url" placeholder="https://…" />
@@ -185,7 +185,7 @@ export function ProfileEditor({ member }: { member: AuthMember }) {
       </details>
       <div className="studio-form-actions">
         <span aria-live="polite">{status}</span>
-        <button type="submit" disabled={pending}>{pending ? "저장 중…" : "변경사항 저장"}</button>
+        <button type="submit" disabled={pending}>{pending ? "저장 중…" : "프로필 저장"}</button>
       </div>
     </form>
   );

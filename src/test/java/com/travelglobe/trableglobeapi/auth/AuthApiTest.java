@@ -262,6 +262,47 @@ class AuthApiTest {
     }
 
     @Test
+    @DisplayName("비밀번호를 변경하면 현재 세션은 유지하고 다른 세션은 종료한다")
+    void passwordChangeKeepsTheCurrentSessionAndRevokesTheOthers() throws Exception {
+        String username = nextUsername();
+        String currentSession = register(username);
+        String otherSession = login(email(username), PASSWORD);
+        String newPassword = "a-new-secure-password-42";
+
+        mockMvc.perform(patch("/api/auth/password")
+                        .header("Authorization", "Bearer " + currentSession)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {"currentPassword":"%s","newPassword":"%s"}
+                                """.formatted(PASSWORD, newPassword)))
+                .andExpect(status().isOk());
+
+        mockMvc.perform(get("/api/auth/me").header("Authorization", "Bearer " + currentSession))
+                .andExpect(status().isOk());
+        mockMvc.perform(get("/api/auth/me").header("Authorization", "Bearer " + otherSession))
+                .andExpect(status().isUnauthorized());
+        postJson("/api/auth/login", loginBody(email(username), PASSWORD))
+                .andExpect(status().isUnauthorized());
+        postJson("/api/auth/login", loginBody(email(username), newPassword))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    @DisplayName("비밀번호 변경은 현재 비밀번호가 맞아야 한다")
+    void passwordChangeRequiresTheCurrentPassword() throws Exception {
+        String username = nextUsername();
+        String token = register(username);
+
+        mockMvc.perform(patch("/api/auth/password")
+                        .header("Authorization", "Bearer " + token)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {"currentPassword":"wrong-password","newPassword":"a-new-secure-password-42"}
+                                """))
+                .andExpect(status().isUnauthorized());
+    }
+
+    @Test
     @DisplayName("로그아웃하면 그 토큰은 즉시 무효가 된다")
     void logoutRevokesTheSession() throws Exception {
         String token = register(nextUsername());
@@ -357,6 +398,12 @@ class AuthApiTest {
     /** Registers the account and returns its session token. */
     private String register(String username) throws Exception {
         ResultActions result = postJson("/api/auth/register", registerBody(username, email(username)))
+                .andExpect(status().isOk());
+        return JsonPath.read(bodyOf(result), "$.data.token");
+    }
+
+    private String login(String address, String password) throws Exception {
+        ResultActions result = postJson("/api/auth/login", loginBody(address, password))
                 .andExpect(status().isOk());
         return JsonPath.read(bodyOf(result), "$.data.token");
     }

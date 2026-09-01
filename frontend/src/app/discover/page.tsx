@@ -8,8 +8,8 @@ import { apiGet } from "@/lib/api/client";
 import type { MemberDiscovery } from "@/types";
 
 export const metadata: Metadata = {
-  title: "여행 세계 둘러보기",
-  description: "공개 Journey가 쌓인 여행자의 세계와 최근 목적지를 발견해 보세요.",
+  title: "공개 여행 둘러보기",
+  description: "여행자와 목적지를 검색하고 공개된 여행 기록을 확인하세요.",
   robots: { index: false, follow: false },
 };
 
@@ -25,9 +25,9 @@ export default async function DiscoverPage() {
       <main id="main" className="discover-page flex-1">
         <div className="site-shell discover-shell">
           <header className="discover-hero">
-            <p className="eyebrow">EXPLORE TRAVEL WORLDS</p>
-            <h1>다른 사람의 여행 세계를 발견하세요</h1>
-            <p>공개 Journey가 쌓인 지구본을 둘러보고, 다음 여행으로 이어질 도시와 경로를 만나보세요.</p>
+            <p className="eyebrow">DISCOVER</p>
+            <h1>공개 여행 둘러보기</h1>
+            <p>여행자와 목적지를 검색하고 공개된 여행 기록을 확인하세요.</p>
           </header>
           <DiscoverExperience
             recommendations={recommendations ?? []}

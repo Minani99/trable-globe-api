@@ -64,7 +64,7 @@ test("Discover는 공개 Journey가 있는 Travel World만 추천하고 새 친�
   await register(page, viewerUsername, "둘러보는 여행자");
 
   await page.goto("/discover");
-  await expect(page.getByRole("heading", { name: "다른 사람의 여행 세계를 발견하세요" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "공개 여행 둘러보기" })).toBeVisible();
   const activeCard = page.locator(".member-card").filter({
     has: page.locator(`a[href="/${activeUsername}"]`),
   });

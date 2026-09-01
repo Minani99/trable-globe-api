@@ -14,7 +14,7 @@ import {
   setCachedAuthMember,
   subscribeToAuthState,
 } from "@/lib/auth-state";
-import { globePath, profilePath, siteConfig } from "@/lib/config";
+import { globePath } from "@/lib/config";
 import type { AuthMember } from "@/types";
 
 interface HeaderNavigationProps {
@@ -22,7 +22,7 @@ interface HeaderNavigationProps {
   initialMember?: AuthMember | null;
 }
 
-export function HeaderNavigation({ username, initialMember }: HeaderNavigationProps) {
+export function HeaderNavigation({ initialMember }: HeaderNavigationProps) {
   const pathname = usePathname();
   const cachedMember = useSyncExternalStore(
     subscribeToAuthState,
@@ -81,7 +81,7 @@ export function HeaderNavigation({ username, initialMember }: HeaderNavigationPr
 
       <ThemeToggle />
       <MobileJourneyCapture key={pathname} pathname={pathname} member={member} />
-      <MobileBottomNavigation pathname={pathname} member={member} username={username} />
+      <MobileBottomNavigation pathname={pathname} member={member} />
     </div>
   );
 }
@@ -103,18 +103,16 @@ export function HeaderNavigationFallback() {
 function MobileBottomNavigation({
   pathname,
   member,
-  username,
 }: {
   pathname: string;
   member: AuthMember | null | undefined;
-  username?: string;
 }) {
   const journeyHref = member ? "/studio" : "/login?next=%2Fstudio";
   const planHref = member ? "/studio/plans/new" : "/register?next=%2Fstudio%2Fplans%2Fnew";
-  const profileHref = member ? profilePath(member.username) : "/login";
+  const profileHref = member ? "/settings" : "/login";
   const globeActive = pathname === globePath;
   const profileActive = member
-    ? pathname === profilePath(member.username) || pathname === "/settings"
+    ? pathname === "/settings"
     : pathname === "/login" || pathname === "/register";
 
   return (
@@ -130,9 +128,9 @@ function MobileBottomNavigation({
       <MobileNavLink href="/discover" label="둘러보기" icon="search" active={pathname === "/discover"} />
       <MobileNavLink
         href={profileHref}
-        label="프로필"
+        label="마이"
         icon="profile"
-        active={profileActive || Boolean(!member && username === siteConfig.demoUsername && pathname === profilePath(siteConfig.demoUsername))}
+        active={profileActive}
         avatar={member ? {
           src: member.profileImageUrl,
           fallbackLabel: member.username.slice(0, 2),

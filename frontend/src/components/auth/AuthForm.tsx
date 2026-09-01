@@ -7,7 +7,6 @@ import { FormEvent, useEffect, useState } from "react";
 import { showFeedback } from "@/components/common/AppFeedback";
 import { setCachedAuthMember } from "@/lib/auth-state";
 import { apiMutation, ApiError } from "@/lib/api/client";
-import { publicDisplayName } from "@/lib/utils/profile";
 import { normalizeUsernameInput, validateUsername } from "@/lib/username";
 import { useUsernameAvailability } from "@/lib/useUsernameAvailability";
 import type { AuthMember } from "@/types";
@@ -65,9 +64,7 @@ export function AuthForm({ mode, nextPath }: { mode: "login" | "register"; nextP
       setCachedAuthMember(member);
       setCompleted(true);
       showFeedback(
-        isRegister
-          ? `${publicDisplayName(member.displayName)}님의 첫 여행을 준비할 공간이 생겼어요.`
-          : `${publicDisplayName(member.displayName)}님, 다시 만나 반가워요.`,
+        isRegister ? "계정을 만들었습니다." : "로그인했습니다.",
         "success",
       );
       router.replace(destination);
@@ -107,7 +104,7 @@ export function AuthForm({ mode, nextPath }: { mode: "login" | "register"; nextP
               onChange={() => setFieldErrors((current) => ({ ...current, displayName: "" }))}
               required
             />
-            <small id="display-name-help">프로필과 여행 기록에 공개되는 이름이에요. 가입 후 언제든 바꿀 수 있어요.</small>
+            <small id="display-name-help">다른 사용자에게 표시되는 이름입니다.</small>
             {fieldErrors.displayName ? <small id="display-name-error" className="field-validation is-error">{fieldErrors.displayName}</small> : null}
           </label>
           <label>
@@ -133,8 +130,7 @@ export function AuthForm({ mode, nextPath }: { mode: "login" | "register"; nextP
               required
             />
             <small id="username-help">
-              프로필 주소와 @검색에 쓰이는 고유 ID예요. 2~30자의 영문·숫자·점(.)·밑줄(_)·하이픈(-)을 사용할 수 있어요.
-              가입 후 설정에서도 바꿀 수 있습니다.
+              @검색과 프로필 주소에 사용합니다. 영문·숫자·점·밑줄·하이픈 2~30자.
             </small>
             <small
               id="username-availability"
@@ -186,7 +182,7 @@ export function AuthForm({ mode, nextPath }: { mode: "login" | "register"; nextP
             {passwordVisible ? "숨기기" : "보기"}
           </button>
         </span>
-        {isRegister ? <small>10자 이상. 비밀번호는 암호화된 해시로만 저장됩니다.</small> : null}
+        {isRegister ? <small>10자 이상</small> : null}
       </div>
 
       {error ? <p className="auth-form__error" role="alert">{error}</p> : null}
@@ -200,11 +196,11 @@ export function AuthForm({ mode, nextPath }: { mode: "login" | "register"; nextP
       <button type="submit" disabled={pending || completed || usernameBlocked} aria-busy={pending || completed}>
         <span className="auth-form__button-label">
           {completed
-            ? "완료 · 이동 중"
+            ? "완료"
             : pending
-              ? "안전하게 확인 중…"
+              ? "확인 중…"
               : isRegister
-                ? "여행 시작하기"
+                ? "계정 만들기"
                 : nextPath
                   ? "로그인하고 계속"
                   : "로그인"}

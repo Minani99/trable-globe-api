@@ -57,9 +57,9 @@ export function AccountSettings({ member }: { member: AuthMember }) {
       setEmail(result.email);
       setCurrentPassword("");
       setIdentityStatus(emailChanged
-        ? "가입 정보를 저장하고 새 이메일로 인증 메일을 보냈습니다."
-        : "가입 정보를 저장했습니다.");
-      showFeedback("가입 정보를 안전하게 변경했습니다.", "success");
+        ? "저장했습니다. 새 이메일을 인증해 주세요."
+        : "로그인 정보를 저장했습니다.");
+      showFeedback("로그인 정보를 저장했습니다.", "success");
       router.refresh();
     } catch (error) {
       if (error instanceof ApiError) {
@@ -70,7 +70,7 @@ export function AccountSettings({ member }: { member: AuthMember }) {
         setIdentityErrors(nextErrors);
         setIdentityStatus(Object.keys(nextErrors).length ? "입력한 정보를 다시 확인해 주세요." : error.message);
       } else {
-        setIdentityStatus("가입 정보를 저장하지 못했습니다.");
+        setIdentityStatus("로그인 정보를 저장하지 못했습니다.");
       }
     } finally {
       setIdentityPending(false);
@@ -114,16 +114,15 @@ export function AccountSettings({ member }: { member: AuthMember }) {
   }
 
   return (
-    <section id="account" className="studio-account" aria-labelledby="studio-account-heading">
+    <section id="account" className="studio-account settings-card" aria-labelledby="studio-account-heading">
       <div className="studio-account__heading">
-        <div><p className="eyebrow">Account</p><h2 id="studio-account-heading">계정</h2></div>
+        <div>
+          <h2 id="studio-account-heading">로그인 정보</h2>
+          <p>사용자명과 이메일을 변경합니다.</p>
+        </div>
         <span className={savedMember.emailVerified ? "is-verified" : "is-pending"}>{savedMember.emailVerified ? "인증됨" : "인증 필요"}</span>
       </div>
       <form className="studio-account__identity" onSubmit={updateIdentity}>
-        <div className="studio-account__identity-heading">
-          <strong>가입 정보 수정</strong>
-          <p>오타가 있어도 계정을 삭제할 필요 없이 사용자명과 로그인 이메일을 바꿀 수 있어요.</p>
-        </div>
         <label>
           <span>사용자명</span>
           <input
@@ -142,7 +141,7 @@ export function AccountSettings({ member }: { member: AuthMember }) {
             aria-invalid={Boolean(identityErrors.username) || ["invalid", "unavailable"].includes(usernameAvailability.status)}
             required
           />
-          <small id="settings-username-help">프로필 주소와 @검색에 사용됩니다. 변경하면 기존 프로필 주소도 함께 바뀝니다.</small>
+          <small id="settings-username-help">@검색과 프로필 주소에 사용됩니다.</small>
           <small
             id="settings-username-status"
             className={`field-validation${["available", "current"].includes(usernameAvailability.status) ? " is-ok" : ["invalid", "unavailable"].includes(usernameAvailability.status) ? " is-error" : ""}`}
@@ -152,7 +151,7 @@ export function AccountSettings({ member }: { member: AuthMember }) {
           </small>
         </label>
         <label>
-          <span>로그인 이메일</span>
+          <span>이메일</span>
           <input
             name="email"
             type="email"
@@ -165,7 +164,7 @@ export function AccountSettings({ member }: { member: AuthMember }) {
             aria-invalid={Boolean(identityErrors.email)}
             required
           />
-          <small>이메일을 바꾸면 새 주소로 다시 인증해야 합니다.</small>
+          <small>변경하면 새 이메일 인증이 필요합니다.</small>
           {identityErrors.email ? <small className="field-validation is-error">{identityErrors.email}</small> : null}
         </label>
         <label>
@@ -182,25 +181,25 @@ export function AccountSettings({ member }: { member: AuthMember }) {
             aria-invalid={Boolean(identityErrors.currentPassword)}
             required={identityChanged}
           />
-          <small>보안을 위해 가입 정보를 바꿀 때만 입력해 주세요.</small>
+          <small>변경 내용을 저장할 때 필요합니다.</small>
           {identityErrors.currentPassword ? <small className="field-validation is-error">{identityErrors.currentPassword}</small> : null}
         </label>
         <div className="studio-account__identity-actions">
           <span aria-live="polite">{identityStatus}</span>
           <button type="submit" disabled={!identityChanged || !currentPassword || identityPending || usernameBlocked}>
-            {identityPending ? "저장 중…" : "가입 정보 저장"}
+            {identityPending ? "저장 중…" : "로그인 정보 저장"}
           </button>
         </div>
       </form>
       {!savedMember.emailVerified ? (
         <div className="studio-account__verification">
-          <p>이메일을 인증하면 비밀번호를 잊어도 계정을 안전하게 되찾을 수 있어요.</p>
+          <p>계정 복구를 위해 이메일 인증이 필요합니다.</p>
           <button type="button" onClick={requestVerification} disabled={pending}>{pending ? "보내는 중…" : "인증 메일 다시 받기"}</button>
           {verificationStatus ? <small role="status">{verificationStatus}</small> : null}
           {developmentToken ? <Link href={`/verify-email?token=${encodeURIComponent(developmentToken)}`}>개발 환경에서 인증 계속하기 →</Link> : null}
         </div>
-      ) : <p className="studio-account__safe">계정 복구를 위한 이메일 인증이 완료되었습니다.</p>}
-      <div className="studio-account__links"><Link href="/forgot-password">비밀번호 재설정</Link><button type="button" onClick={() => setDeleteOpen((current) => !current)}>계정 삭제</button></div>
+      ) : null}
+      <div className="studio-account__links"><button type="button" onClick={() => setDeleteOpen((current) => !current)}>계정 삭제</button></div>
       {deleteOpen ? (
         <form className="studio-account__delete" onSubmit={deleteAccount}>
           <strong>계정과 모든 여행을 영구 삭제합니다.</strong>

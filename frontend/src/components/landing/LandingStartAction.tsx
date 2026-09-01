@@ -34,7 +34,7 @@ export function LandingStartAction() {
       href={member ? globePath : "/register?next=%2Fstudio"}
       className="landing-primary-cta group"
     >
-      <span>{member ? "내 세계 보기" : "내 지구본 만들기"}</span>
+      <span>{member ? "내 지구본" : "계정 만들기"}</span>
       <span className="landing-primary-cta__arrow" aria-hidden="true">↗</span>
     </Link>
   );
