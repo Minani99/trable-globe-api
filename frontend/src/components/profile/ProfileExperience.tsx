@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useCallback, useEffect, useMemo, useState } from "react";
 
 import { SectionHeading } from "@/components/common/SectionHeading";
@@ -18,6 +19,7 @@ import { TravelYearRecap } from "@/components/profile/TravelYearRecap";
 import { TravelCard } from "@/components/travel/TravelCard";
 import { TravelTimeline } from "@/components/travel/TravelTimeline";
 import { fetchTravelsByCountry } from "@/lib/api/profile";
+import { profilePath } from "@/lib/config";
 import { isDemoProfile } from "@/lib/demo-profile";
 import { arcsAtMoment, buildGlobeTimeline, countriesAtMoment, countriesForTravels } from "@/lib/globeTimeline";
 import { buildTravelRecap, buildTravelYearComparison, travelsForYear, travelYears } from "@/lib/travelInsights";
@@ -32,6 +34,7 @@ interface ProfileExperienceProps {
   relationship: FollowStatus | null;
   safetyStatus: MemberSafetyStatus | null;
   initialYear?: number | null;
+  mode?: "profile" | "globe";
 }
 
 type MobileArchiveView = "travels" | "countries" | "timeline";
@@ -51,6 +54,7 @@ export function ProfileExperience({
   relationship,
   safetyStatus,
   initialYear = null,
+  mode = "profile",
 }: ProfileExperienceProps) {
   const years = useMemo(() => travelYears(travels), [travels]);
   const [selectedCode, setSelectedCode] = useState<string | null>(null);
@@ -92,6 +96,7 @@ export function ProfileExperience({
   const isOwnProfile = viewer?.username === profile.username;
   const demoProfile = isDemoProfile(profile.username);
   const displayName = publicDisplayName(profile.displayName);
+  const globeOnly = mode === "globe";
 
   const changeWorldView = useCallback((view: WorldView) => {
     setWorldView(view);
@@ -267,34 +272,53 @@ export function ProfileExperience({
 
   return (
     <>
-      <section aria-labelledby="globe-heading" className="profile-world">
-        <div className="site-shell profile-world__identity">
-          <ProfileGlobeDock
-            profile={profile}
-            isOwnProfile={isOwnProfile}
-            viewerAuthenticated={Boolean(viewer)}
-            initialFollowing={relationship?.following ?? false}
-            initialSafetyStatus={safetyStatus}
-          />
-        </div>
+      <section aria-labelledby="globe-heading" className={`profile-world${globeOnly ? " is-globe-page" : ""}`}>
+        {!globeOnly ? (
+          <div className="site-shell profile-world__identity">
+            <ProfileGlobeDock
+              profile={profile}
+              isOwnProfile={isOwnProfile}
+              viewerAuthenticated={Boolean(viewer)}
+              initialFollowing={relationship?.following ?? false}
+              initialSafetyStatus={safetyStatus}
+            />
+          </div>
+        ) : null}
 
         <div className="site-shell profile-world__intro">
           <div>
             <p className="eyebrow">
-              {demoProfile ? "Public sample · 여러 나라 데모" : `Personal world · @${profile.username}`}
+              {globeOnly
+                ? demoProfile ? "Interactive demo globe" : `My globe · @${profile.username}`
+                : demoProfile ? "Public sample · 여러 나라 데모" : `Personal world · @${profile.username}`}
             </p>
-            <h1 id="globe-heading">{displayName}의 여행 세계</h1>
+            <h1 id="globe-heading">
+              {globeOnly
+                ? demoProfile ? "샘플 여행 지구본" : "나의 여행 지구본"
+                : `${displayName}의 여행 세계`}
+            </h1>
           </div>
           <div className="profile-world__summary">
             <p>
-              {demoProfile
+              {globeOnly
+                ? selectedYear
+                  ? `${selectedYear}년에 쌓인 ${recap.countryCount}개 나라와 ${recap.travelCount}번의 Journey입니다.`
+                  : "지구본을 돌리고 나라를 선택해 그곳에 쌓인 Journey와 기억을 탐색하세요."
+                : demoProfile
                 ? "여러 나라의 여행이 계획에서 기록으로 바뀌어 지구본에 쌓이는 모습을 체험해 보세요."
                 : selectedYear
                 ? `${selectedYear}년에 다녀온 ${recap.countryCount}개 나라와 ${recap.travelCount}번의 여행입니다.`
                 : `${countries.length}개 나라, ${travels.length}번의 여행이 하나의 지구본 위에 이어집니다.`}
-              {" "}{demoProfile ? "" : "재생하거나 나라를 선택해 그곳에 쌓인 기억을 살펴보세요."}
+              {!globeOnly && !demoProfile ? " 재생하거나 나라를 선택해 그곳에 쌓인 기억을 살펴보세요." : ""}
             </p>
-            <ShareProfileButton displayName={displayName} selectedYear={selectedYear} />
+            <div className="profile-world__intro-actions">
+              {globeOnly ? (
+                <Link href={profilePath(profile.username)} className="globe-page-profile-link">
+                  전체 프로필과 기록 보기 <span aria-hidden="true">→</span>
+                </Link>
+              ) : null}
+              <ShareProfileButton displayName={displayName} selectedYear={selectedYear} />
+            </div>
           </div>
         </div>
 
@@ -414,7 +438,7 @@ export function ProfileExperience({
         </div>
       </section>
 
-      <div className="site-shell profile-archive">
+      {!globeOnly ? <div className="site-shell profile-archive">
         {mobileArchivePanelCount > 1 ? (
           <nav className="profile-archive__mobile-nav" aria-label="프로필 기록 보기">
             <button
@@ -552,7 +576,7 @@ export function ProfileExperience({
           username={profile.username}
           displayName={displayName}
         />
-      </div>
+      </div> : null}
     </>
   );
 }

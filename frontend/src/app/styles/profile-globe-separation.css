@@ -1,0 +1,110 @@
+/* Keep My Globe immersive and the public profile focused on identity and archive. */
+.profile-world.is-globe-page {
+  min-height: calc(100svh - 3.75rem);
+  padding-top: clamp(1.6rem, 3vw, 2.75rem);
+  padding-bottom: clamp(2rem, 4vw, 3.5rem);
+}
+
+.profile-world.is-globe-page .profile-world__intro {
+  grid-template-columns: minmax(0, 0.8fr) minmax(22rem, 0.58fr);
+  gap: 2rem 4rem;
+  margin-bottom: 1.25rem;
+}
+
+.profile-world.is-globe-page .profile-world__intro h1 {
+  max-width: none;
+  font-size: clamp(2.25rem, 4vw, 3.8rem);
+}
+
+.profile-world__intro-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.65rem 1rem;
+  margin-top: 1rem;
+}
+
+.profile-world__intro-actions .profile-share {
+  min-height: 0;
+  margin-top: 0;
+}
+
+.globe-page-profile-link {
+  display: inline-flex;
+  min-height: 2.4rem;
+  align-items: center;
+  gap: 0.65rem;
+  padding-inline: 0.95rem;
+  border-radius: 999px;
+  background: var(--text-primary);
+  color: var(--background);
+  font-size: 0.7rem;
+  font-weight: 700;
+}
+
+.globe-page-profile-link span {
+  color: var(--accent);
+  font-size: 0.9rem;
+  transition: transform 0.2s ease;
+}
+
+.globe-page-profile-link:hover span,
+.globe-page-profile-link:focus-visible span {
+  transform: translateX(0.18rem);
+}
+
+.profile-world.is-globe-page .profile-globe-card {
+  min-height: clamp(40rem, calc(100svh - 15rem), 52rem);
+}
+
+.profile-world.is-globe-page .profile-world-summary {
+  margin-top: 1rem;
+}
+
+@media (max-width: 700px) {
+  .profile-world.is-globe-page {
+    min-height: calc(100svh - 3.75rem);
+    padding-top: 1rem;
+    padding-bottom: calc(5.5rem + env(safe-area-inset-bottom));
+  }
+
+  .profile-world.is-globe-page .profile-world__intro {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0.7rem;
+    margin-bottom: 0.8rem;
+  }
+
+  .profile-world.is-globe-page .profile-world__intro h1 {
+    font-size: clamp(1.8rem, 8.5vw, 2.35rem);
+  }
+
+  .profile-world.is-globe-page .profile-world__summary > p {
+    font-size: 0.74rem;
+    line-height: 1.55;
+  }
+
+  .profile-world.is-globe-page .profile-world__intro-actions {
+    margin-top: 0.65rem;
+  }
+
+  .profile-world.is-globe-page .globe-page-profile-link,
+  .profile-world.is-globe-page .profile-share button {
+    min-height: 2.25rem;
+    padding-inline: 0.78rem;
+    font-size: 0.64rem;
+  }
+
+  .profile-world.is-globe-page .profile-globe-card {
+    min-height: clamp(22rem, calc(100svh - 16rem), 31rem);
+  }
+
+  .profile-world.is-globe-page .profile-world-summary {
+    display: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .globe-page-profile-link span {
+    transform: none !important;
+  }
+}

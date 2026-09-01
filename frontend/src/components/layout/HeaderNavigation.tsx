@@ -42,11 +42,7 @@ export function HeaderNavigation({ username, initialMember }: HeaderNavigationPr
     if (initialMember === undefined && cachedMember === undefined) void loadAuthMember();
   }, [cachedMember, initialMember]);
 
-  const samplePath = profilePath(siteConfig.demoUsername);
-  const ownProfilePath = member ? profilePath(member.username) : null;
-  const globeActive = pathname === globePath
-    || pathname === ownProfilePath
-    || (!member && (pathname === samplePath || pathname.startsWith(`${samplePath}/`)));
+  const globeActive = pathname === globePath;
   const discoverActive = pathname === "/discover";
   const journeysActive = pathname === "/studio" || pathname.startsWith("/studio/travels");
   const planActive = pathname.startsWith("/studio/plans");
@@ -116,10 +112,7 @@ function MobileBottomNavigation({
   const journeyHref = member ? "/studio" : "/login?next=%2Fstudio";
   const planHref = member ? "/studio/plans/new" : "/register?next=%2Fstudio%2Fplans%2Fnew";
   const profileHref = member ? profilePath(member.username) : "/login";
-  const samplePath = profilePath(siteConfig.demoUsername);
-  const globeActive = pathname === globePath
-    || pathname === (member ? profilePath(member.username) : samplePath)
-    || Boolean(!member && username === siteConfig.demoUsername);
+  const globeActive = pathname === globePath;
   const profileActive = member
     ? pathname === profilePath(member.username) || pathname === "/settings"
     : pathname === "/login" || pathname === "/register";
@@ -139,7 +132,7 @@ function MobileBottomNavigation({
         href={profileHref}
         label="프로필"
         icon="profile"
-        active={profileActive}
+        active={profileActive || Boolean(!member && username === siteConfig.demoUsername && pathname === profilePath(siteConfig.demoUsername))}
         avatar={member ? {
           src: member.profileImageUrl,
           fallbackLabel: member.username.slice(0, 2),

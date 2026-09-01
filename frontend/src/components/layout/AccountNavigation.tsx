@@ -107,7 +107,8 @@ export function AccountNavigation({
   }
   return mobile ? (
     <>
-      <Link href={`/${member.username}`} onClick={onNavigate}><span>내 지구본</span><span aria-hidden="true">→</span></Link>
+      <Link href="/globe" onClick={onNavigate}><span>내 지구본</span><span aria-hidden="true">→</span></Link>
+      <Link href={`/${member.username}`} onClick={onNavigate}><span>내 프로필</span><span aria-hidden="true">→</span></Link>
       <Link href="/studio" onClick={onNavigate}><span>여행 기록</span><span aria-hidden="true">→</span></Link>
       <Link href="/studio/plans/new" onClick={onNavigate}><span>새 여행 계획</span><span aria-hidden="true">＋</span></Link>
       <Link href="/studio#activity" onClick={onNavigate}><span>최근 활동</span><span aria-hidden="true">→</span></Link>
@@ -144,7 +145,8 @@ export function AccountNavigation({
         </button>
         {menuOpen ? (
           <div className="site-account-popover" role="menu">
-            <Link href={`/${member.username}`} role="menuitem" onClick={() => setMenuOpen(false)}><span>내 지구본</span><span aria-hidden="true">↗</span></Link>
+            <Link href="/globe" role="menuitem" onClick={() => setMenuOpen(false)}><span>내 지구본</span><span aria-hidden="true">↗</span></Link>
+            <Link href={`/${member.username}`} role="menuitem" onClick={() => setMenuOpen(false)}><span>내 프로필</span><span aria-hidden="true">→</span></Link>
             <Link href="/studio" role="menuitem" onClick={() => setMenuOpen(false)}><span>여행 기록</span><span aria-hidden="true">→</span></Link>
             <Link href="/studio/plans/new" role="menuitem" onClick={() => setMenuOpen(false)}><span>새 여행 계획</span><span aria-hidden="true">＋</span></Link>
             <Link href="/studio#activity" role="menuitem" onClick={() => setMenuOpen(false)}><span>최근 활동</span><span aria-hidden="true">→</span></Link>
