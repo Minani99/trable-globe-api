@@ -1,67 +1,27 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useMemo, useState } from "react";
+import { useState } from "react";
 
 import { TravelGlobe, type GlobeCountryHover } from "@/components/globe/TravelGlobe";
-import { fetchProfile, fetchTravels, fetchVisitedCountries } from "@/lib/api/profile";
 import { profilePath, siteConfig } from "@/lib/config";
-import { buildGlobeTimeline } from "@/lib/globeTimeline";
-import { buildTravelRecap } from "@/lib/travelInsights";
-import { formatStat } from "@/lib/utils/format";
+import type { GlobeRouteArc } from "@/lib/globeTimeline";
 import { countryFlag, getWorldLandmarkPlace } from "@/lib/worldLandmarks";
-import type { TravelSummary, UserProfile, VisitedCountry } from "@/types";
+import type { VisitedCountry } from "@/types";
 
-interface DemoWorldData {
-  profile: UserProfile;
-  countries: VisitedCountry[];
-  travels: TravelSummary[];
-}
+const EMPTY_COUNTRIES: VisitedCountry[] = [];
+const EMPTY_ROUTES: GlobeRouteArc[] = [];
 
 export function LandingGlobePreview() {
   const [selectedCode, setSelectedCode] = useState<string | null>(null);
   const [hoveredCountry, setHoveredCountry] = useState<GlobeCountryHover | null>(null);
   const [selectedCountry, setSelectedCountry] = useState<GlobeCountryHover | null>(null);
   const [centeredCountry, setCenteredCountry] = useState<GlobeCountryHover | null>(null);
-  const [demoWorld, setDemoWorld] = useState<DemoWorldData | null>(null);
-  const selectedVisitedCountry = selectedCode
-    ? demoWorld?.countries.find((country) => country.iso2Code === selectedCode) ?? null
-    : null;
   const resolvedSelectedCountry = selectedCountry?.code === selectedCode
     ? selectedCountry
-    : selectedVisitedCountry ? {
-        code: selectedVisitedCountry.iso2Code,
-        nameKo: selectedVisitedCountry.nameKo,
-        nameEn: selectedVisitedCountry.nameEn,
-      } : null;
+    : null;
   const activeCountry = resolvedSelectedCountry ?? hoveredCountry ?? centeredCountry;
   const activePlace = activeCountry ? getWorldLandmarkPlace(activeCountry.code) : null;
-  const routeArcs = useMemo(
-    () => buildGlobeTimeline(demoWorld?.travels ?? []).arcs,
-    [demoWorld?.travels],
-  );
-  const recap = useMemo(
-    () => demoWorld ? buildTravelRecap(demoWorld.travels, null) : null,
-    [demoWorld],
-  );
-
-  useEffect(() => {
-    let active = true;
-    const username = siteConfig.demoUsername;
-    Promise.all([
-      fetchProfile(username),
-      fetchVisitedCountries(username),
-      fetchTravels(username),
-    ])
-      .then(([profile, countries, travels]) => {
-        if (active) setDemoWorld({ profile, countries, travels });
-      })
-      // The interactive world explorer remains useful while the public sample wakes up.
-      .catch(() => undefined);
-    return () => {
-      active = false;
-    };
-  }, []);
 
   const handleSelect = (code: string | null) => {
     setSelectedCode(code);
@@ -76,9 +36,9 @@ export function LandingGlobePreview() {
         <div className="landing-globe-frame">
           <div className="landing-globe-live">
             <TravelGlobe
-              countries={demoWorld?.countries ?? []}
+              countries={EMPTY_COUNTRIES}
               selectedCode={selectedCode}
-              routeArcs={routeArcs}
+              routeArcs={EMPTY_ROUTES}
               onSelect={handleSelect}
               onHover={() => undefined}
               onCountryHover={setHoveredCountry}
@@ -90,16 +50,13 @@ export function LandingGlobePreview() {
           <span className="landing-globe-vignette" aria-hidden="true" />
 
           <dl
-            className={`landing-globe-stats${demoWorld ? " is-ready" : ""}`}
-            aria-label={demoWorld ? "샘플 여행 세계 통계" : "샘플 여행 세계 불러오는 중"}
+            className="landing-globe-stats is-ready"
+            aria-label="전 세계 랜드마크 탐색 범위"
           >
-            <GlobeStat label="Countries" value={demoWorld ? formatStat(demoWorld.profile.statistics.countryCount) : "—"} />
-            <GlobeStat label="Cities" value={demoWorld ? formatStat(demoWorld.profile.statistics.cityCount) : "—"} />
-            <GlobeStat label="Journeys" value={demoWorld ? formatStat(demoWorld.profile.statistics.travelCount) : "—"} />
-            <GlobeStat
-              label="Distance"
-              value={recap ? `${formatDistance(recap.distanceKm)} km` : "—"}
-            />
+            <GlobeStat label="Countries" value="190+" />
+            <GlobeStat label="Landmarks" value="190+" />
+            <GlobeStat label="Explore" value="360°" />
+            <GlobeStat label="Focus" value="Click" />
           </dl>
 
           <div className="landing-landmark-card" aria-live="polite">
@@ -129,16 +86,16 @@ export function LandingGlobePreview() {
                     href={profilePath(siteConfig.demoUsername)}
                     className="landing-landmark-card__action"
                   >
-                    <span>완성된 샘플 세계 둘러보기</span>
+                    <span>여러 나라가 쌓인 샘플 보기</span>
                     <span aria-hidden="true">→</span>
                   </Link>
                 ) : null}
               </>
             ) : (
               <div>
-                <p className="text-content text-[0.88rem] font-medium">세계를 탐색해 보세요</p>
+                <p className="text-content text-[0.88rem] font-medium">190여 개 나라를 탐색해 보세요</p>
                 <p className="text-content-faint mt-1 text-[0.68rem]">
-                  회전 중인 국가를 누르면 중앙에 고정됩니다.
+                  모든 나라에 마우스를 올리거나 눌러 대표 랜드마크를 확인할 수 있어요.
                 </p>
               </div>
             )}
@@ -160,8 +117,4 @@ function GlobeStat({ label, value }: { label: string; value: string }) {
       <dd>{value}</dd>
     </div>
   );
-}
-
-function formatDistance(value: number): string {
-  return new Intl.NumberFormat("ko-KR").format(value);
 }

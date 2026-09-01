@@ -40,13 +40,13 @@ export default function LandingPage() {
 
             <p className="text-body landing-intro landing-reveal landing-reveal--body mt-7 max-w-[40ch]">
               방문한 국가와 도시, 이동한 길과 기억을 하나의 지구본에 쌓아보세요.
-              모든 여행이 나를 보여주는 세계의 일부가 됩니다.
+              오른쪽 지구본에서는 190여 개 나라와 대표 랜드마크를 먼저 탐색할 수 있습니다.
             </p>
 
             <div className="landing-reveal landing-reveal--actions mt-10 flex flex-wrap items-center gap-3">
               <LandingStartAction />
               <Link href={sampleWorldPath} className="landing-secondary-cta">
-                샘플 세계 둘러보기
+                다국가 샘플 세계 보기
               </Link>
               <LandingOrientationGuide />
             </div>
@@ -122,7 +122,7 @@ export default function LandingPage() {
           </div>
           <div className="landing-world-proof__actions">
             <Link href={sampleWorldPath} className="landing-primary-cta">
-              <span>완성된 샘플 세계 보기</span>
+              <span>여러 나라가 쌓인 샘플 보기</span>
               <span className="landing-primary-cta__arrow" aria-hidden="true">↗</span>
             </Link>
             <Link href="/discover" className="landing-text-link">

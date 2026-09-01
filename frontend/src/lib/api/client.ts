@@ -21,6 +21,7 @@ export class ApiError extends Error {
   readonly status: number;
   readonly code: string | null;
   readonly requestId: string | null;
+  fieldErrors: { field: string; message: string }[] = [];
 
   constructor(
     status: number,

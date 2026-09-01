@@ -10,6 +10,8 @@ import com.travelglobe.trableglobeapi.auth.dto.RegisterRequest;
 import com.travelglobe.trableglobeapi.auth.dto.ResetPasswordRequest;
 import com.travelglobe.trableglobeapi.auth.dto.TokenRequest;
 import com.travelglobe.trableglobeapi.auth.dto.UpdateProfileRequest;
+import com.travelglobe.trableglobeapi.auth.dto.UpdateAccountRequest;
+import com.travelglobe.trableglobeapi.auth.dto.UsernameAvailabilityResponse;
 import com.travelglobe.trableglobeapi.auth.security.MemberPrincipal;
 import com.travelglobe.trableglobeapi.auth.security.AuthenticatedRequest;
 import com.travelglobe.trableglobeapi.auth.service.AuthService;
@@ -23,6 +25,7 @@ import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
@@ -66,6 +69,20 @@ public class AuthController {
             @Valid @RequestBody UpdateProfileRequest request) {
         MemberPrincipal principal = AuthenticatedRequest.principal(servletRequest);
         return ApiResponse.ok(authService.updateProfile(principal, request), "프로필을 저장했습니다.");
+    }
+
+    @GetMapping("/username-availability")
+    public ApiResponse<UsernameAvailabilityResponse> usernameAvailability(
+            @RequestParam(defaultValue = "") String username) {
+        return ApiResponse.ok(authService.usernameAvailability(username));
+    }
+
+    @PatchMapping("/account")
+    public ApiResponse<AuthMemberResponse> updateAccount(
+            HttpServletRequest servletRequest,
+            @Valid @RequestBody UpdateAccountRequest request) {
+        MemberPrincipal principal = AuthenticatedRequest.principal(servletRequest);
+        return ApiResponse.ok(authService.updateAccount(principal, request), "가입 정보를 저장했습니다.");
     }
 
     @PostMapping("/email-verification")

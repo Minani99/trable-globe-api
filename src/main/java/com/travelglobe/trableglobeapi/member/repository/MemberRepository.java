@@ -16,6 +16,8 @@ public interface MemberRepository extends JpaRepository<Member, Long> {
 
     boolean existsByUsername(String username);
 
+    boolean existsByUsernameAndIdNot(String username, Long memberId);
+
     @Query("""
             select m from Member m
             where m.id <> :currentMemberId

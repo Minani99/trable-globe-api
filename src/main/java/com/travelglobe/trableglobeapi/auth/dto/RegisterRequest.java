@@ -4,15 +4,15 @@ import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
+import com.travelglobe.trableglobeapi.member.domain.UsernamePolicy;
 
 public record RegisterRequest(
         @NotBlank(message = "사용자명을 입력해 주세요.")
-        @Pattern(regexp = "^[A-Za-z0-9][A-Za-z0-9._-]{2,29}$",
-                message = "사용자명은 영문 또는 숫자로 시작하고, 영문·숫자·점·밑줄·하이픈으로 3~30자여야 합니다.")
+        @Pattern(regexp = UsernamePolicy.PATTERN, message = UsernamePolicy.FORMAT_MESSAGE)
         String username,
 
         @NotBlank(message = "보여질 이름을 입력해 주세요.")
-        @Size(min = 2, max = 60, message = "보여질 이름은 2~60자로 입력해 주세요.")
+        @Size(min = 1, max = 60, message = "보여질 이름은 1~60자로 입력해 주세요.")
         @Pattern(regexp = "^[^<>\\p{Cntrl}]+$",
                 message = "보여질 이름에는 꺾쇠괄호나 제어 문자를 사용할 수 없습니다.")
         String displayName,

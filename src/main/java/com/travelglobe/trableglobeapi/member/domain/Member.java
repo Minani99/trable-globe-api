@@ -16,7 +16,7 @@ import lombok.NoArgsConstructor;
  * A person who owns a travel globe.
  *
  * <p>{@code username} is the public handle used in the profile URL ({@code /traveler}),
- * which is why it is unique and immutable after creation. Authentication credentials are
+ * which is why it is unique. Authentication credentials are
  * intentionally absent: sign-up arrives in a later phase and will be modelled as a
  * separate credential entity so that this one stays a profile.
  */
@@ -34,7 +34,7 @@ public class Member extends BaseTimeEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "username", nullable = false, length = USERNAME_MAX_LENGTH, updatable = false)
+    @Column(name = "username", nullable = false, length = USERNAME_MAX_LENGTH)
     private String username;
 
     @Column(name = "display_name", nullable = false, length = 60)
@@ -72,5 +72,9 @@ public class Member extends BaseTimeEntity {
         this.displayName = displayName;
         this.bio = bio;
         this.profileImageUrl = profileImageUrl;
+    }
+
+    public void updateUsername(String username) {
+        this.username = normalizeUsername(username);
     }
 }

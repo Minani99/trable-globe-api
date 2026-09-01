@@ -71,4 +71,9 @@ public class MemberCredential extends BaseTimeEntity {
     public void updatePassword(String passwordHash) {
         this.passwordHash = passwordHash;
     }
+
+    public void updateEmail(String email) {
+        this.email = email;
+        this.emailVerifiedAt = null;
+    }
 }

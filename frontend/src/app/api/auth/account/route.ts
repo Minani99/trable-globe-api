@@ -5,6 +5,17 @@ import { authenticatedBackendGet, getCurrentMember, SESSION_COOKIE } from "@/lib
 import { deletePhotoObject, objectKeyFromPublicUrl } from "@/lib/uploads/r2";
 import type { OwnedTravelSummary, TravelDetail } from "@/types";
 
+export async function PATCH(request: NextRequest) {
+  if (!isSameOriginRequest(request)) {
+    return NextResponse.json({ success: false, data: null, message: "허용되지 않은 요청입니다." }, { status: 403 });
+  }
+  return passThrough(await forwardWithSession(
+    "/api/auth/account",
+    { method: "PATCH", body: await request.text() },
+    request.cookies.get(SESSION_COOKIE)?.value,
+  ));
+}
+
 export async function DELETE(request: NextRequest) {
   if (!isSameOriginRequest(request)) {
     return NextResponse.json({ success: false, data: null, message: "허용되지 않은 요청입니다." }, { status: 403 });

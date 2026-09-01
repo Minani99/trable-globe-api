@@ -8,6 +8,8 @@ import { showFeedback } from "@/components/common/AppFeedback";
 import { setCachedAuthMember } from "@/lib/auth-state";
 import { apiMutation, ApiError } from "@/lib/api/client";
 import { publicDisplayName } from "@/lib/utils/profile";
+import { normalizeUsernameInput, validateUsername } from "@/lib/username";
+import { useUsernameAvailability } from "@/lib/useUsernameAvailability";
 import type { AuthMember } from "@/types";
 
 export function AuthForm({ mode, nextPath }: { mode: "login" | "register"; nextPath?: string }) {
@@ -16,8 +18,11 @@ export function AuthForm({ mode, nextPath }: { mode: "login" | "register"; nextP
   const [pending, setPending] = useState(false);
   const [completed, setCompleted] = useState(false);
   const [username, setUsername] = useState("");
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const [passwordVisible, setPasswordVisible] = useState(false);
   const isRegister = mode === "register";
+  const usernameAvailability = useUsernameAvailability(isRegister ? username : "");
+  const usernameBlocked = isRegister && ["empty", "invalid", "checking", "unavailable"].includes(usernameAvailability.status);
   const destination = nextPath ?? "/studio";
   const switchHref = `${isRegister ? "/login" : "/register"}${
     nextPath ? `?next=${encodeURIComponent(nextPath)}` : ""
@@ -29,12 +34,23 @@ export function AuthForm({ mode, nextPath }: { mode: "login" | "register"; nextP
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    if (isRegister) {
+      const usernameError = validateUsername(username);
+      if (usernameError || ["empty", "checking", "unavailable"].includes(usernameAvailability.status)) {
+        setFieldErrors((current) => ({
+          ...current,
+          username: usernameError ?? usernameAvailability.message ?? "사용자명을 다시 확인해 주세요.",
+        }));
+        return;
+      }
+    }
     setPending(true);
     setError(null);
+    setFieldErrors({});
     const formData = new FormData(event.currentTarget);
     const body = isRegister
       ? {
-          username: formData.get("username"),
+          username: username.trim(),
           displayName: formData.get("displayName"),
           email: formData.get("email"),
           password: formData.get("password"),
@@ -57,7 +73,15 @@ export function AuthForm({ mode, nextPath }: { mode: "login" | "register"; nextP
       router.replace(destination);
       router.refresh();
     } catch (caught) {
-      setError(caught instanceof ApiError ? caught.message : "요청을 처리하지 못했습니다.");
+      if (caught instanceof ApiError) {
+        const nextFieldErrors = Object.fromEntries(caught.fieldErrors.map(({ field, message }) => [field, message]));
+        if (caught.message.includes("사용자명") && !nextFieldErrors.username) nextFieldErrors.username = caught.message;
+        if (caught.message.includes("이메일") && !nextFieldErrors.email) nextFieldErrors.email = caught.message;
+        setFieldErrors(nextFieldErrors);
+        setError(Object.keys(nextFieldErrors).length ? "아래 입력 항목을 확인해 주세요." : caught.message);
+      } else {
+        setError("요청을 처리하지 못했습니다.");
+      }
     } finally {
       setPending(false);
     }
@@ -72,16 +96,19 @@ export function AuthForm({ mode, nextPath }: { mode: "login" | "register"; nextP
             <input
               name="displayName"
               autoComplete="name"
-              minLength={2}
+              minLength={1}
               maxLength={60}
               pattern="[^<>]*"
-              title="꺾쇠괄호 없이 2~60자로 입력해 주세요."
+              title="꺾쇠괄호 없이 1~60자로 입력해 주세요."
               placeholder="예: 민아의 여행"
               aria-label="보여질 이름"
-              aria-describedby="display-name-help"
+              aria-describedby={`display-name-help${fieldErrors.displayName ? " display-name-error" : ""}`}
+              aria-invalid={Boolean(fieldErrors.displayName)}
+              onChange={() => setFieldErrors((current) => ({ ...current, displayName: "" }))}
               required
             />
             <small id="display-name-help">프로필과 여행 기록에 공개되는 이름이에요. 가입 후 언제든 바꿀 수 있어요.</small>
+            {fieldErrors.displayName ? <small id="display-name-error" className="field-validation is-error">{fieldErrors.displayName}</small> : null}
           </label>
           <label>
             <span>사용자명</span>
@@ -91,19 +118,30 @@ export function AuthForm({ mode, nextPath }: { mode: "login" | "register"; nextP
               autoCapitalize="none"
               inputMode="text"
               spellCheck={false}
-              pattern={"[A-Za-z0-9][A-Za-z0-9._\\-]{2,29}"}
+              pattern={"[A-Za-z0-9_][A-Za-z0-9._\\-]{1,29}"}
               maxLength={30}
               placeholder="travel_note"
               value={username}
-              onChange={(event) => setUsername(event.target.value.toLowerCase())}
+              onChange={(event) => {
+                setUsername(normalizeUsernameInput(event.target.value));
+                setFieldErrors((current) => ({ ...current, username: "" }));
+              }}
               aria-label="사용자명"
-              aria-describedby="username-help username-preview"
-              title="영문 또는 숫자로 시작하는 3~30자 사용자명을 입력해 주세요."
+              aria-describedby="username-help username-availability username-preview"
+              aria-invalid={Boolean(fieldErrors.username) || ["invalid", "unavailable"].includes(usernameAvailability.status)}
+              title="영문·숫자·밑줄로 시작하는 2~30자 사용자명을 입력해 주세요."
               required
             />
             <small id="username-help">
-              프로필 주소와 @검색에 쓰이는 고유 ID예요. 영문 또는 숫자로 시작해 3~30자,
-              영문·숫자·점(.)·밑줄(_)·하이픈(-)만 사용할 수 있으며 가입 후에는 바꿀 수 없어요.
+              프로필 주소와 @검색에 쓰이는 고유 ID예요. 2~30자의 영문·숫자·점(.)·밑줄(_)·하이픈(-)을 사용할 수 있어요.
+              가입 후 설정에서도 바꿀 수 있습니다.
+            </small>
+            <small
+              id="username-availability"
+              className={`field-validation${usernameAvailability.status === "available" ? " is-ok" : ["invalid", "unavailable"].includes(usernameAvailability.status) ? " is-error" : ""}`}
+              aria-live="polite"
+            >
+              {fieldErrors.username || usernameAvailability.message}
             </small>
             <small id="username-preview" className="auth-form__username-preview" aria-live="polite">
               프로필 주소 <strong>/{username || "travel_note"}</strong>
@@ -114,7 +152,16 @@ export function AuthForm({ mode, nextPath }: { mode: "login" | "register"; nextP
 
       <label>
         <span>이메일</span>
-        <input name="email" type="email" autoComplete="email" placeholder="you@example.com" required />
+        <input
+          name="email"
+          type="email"
+          autoComplete="email"
+          placeholder="you@example.com"
+          aria-invalid={Boolean(fieldErrors.email)}
+          onChange={() => setFieldErrors((current) => ({ ...current, email: "" }))}
+          required
+        />
+        {fieldErrors.email ? <small className="field-validation is-error">{fieldErrors.email}</small> : null}
       </label>
       <div className="auth-form__field">
         <label htmlFor="auth-password"><span>비밀번호</span></label>
@@ -150,7 +197,7 @@ export function AuthForm({ mode, nextPath }: { mode: "login" | "register"; nextP
           <Link href="/privacy" target="_blank">개인정보 안내</Link>를 확인해 주세요.
         </p>
       ) : null}
-      <button type="submit" disabled={pending || completed} aria-busy={pending || completed}>
+      <button type="submit" disabled={pending || completed || usernameBlocked} aria-busy={pending || completed}>
         <span className="auth-form__button-label">
           {completed
             ? "완료 · 이동 중"

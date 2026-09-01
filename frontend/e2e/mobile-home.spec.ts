@@ -31,11 +31,15 @@ test("모바일 메인은 한 화면 안에서 탐색과 국가 선택을 제공
   await expect(guide.getByRole("listitem")).toHaveCount(3);
   await guide.getByRole("button", { name: "알겠어요, 시작할게요" }).click();
 
-  const firstJourneyMarker = page.locator(".landing-globe-live .tg-marker").first();
-  await expect(firstJourneyMarker).toBeVisible();
-  // The marker moves with the ambient globe rotation; dispatch against the marker
-  // itself instead of asking Playwright to wait for a stationary screen coordinate.
-  await firstJourneyMarker.dispatchEvent("click");
+  const globeCanvas = page.locator(".landing-globe-live canvas").first();
+  await expect(globeCanvas).toBeVisible();
+  const globeBounds = await globeCanvas.boundingBox();
+  expect(globeBounds).not.toBeNull();
+  // World mode has no personal journey pins. Select the country currently centered
+  // on the sphere, which follows the same mobile tap path as a visitor.
+  await globeCanvas.click({
+    position: { x: globeBounds!.width / 2, y: globeBounds!.height / 2 },
+  });
   await expect(page.locator(".landing-landmark-card__action")).toBeVisible();
   expect(pageErrors).toEqual([]);
 });

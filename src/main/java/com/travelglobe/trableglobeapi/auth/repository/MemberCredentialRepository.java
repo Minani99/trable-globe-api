@@ -10,6 +10,8 @@ public interface MemberCredentialRepository extends JpaRepository<MemberCredenti
 
     boolean existsByEmail(String email);
 
+    boolean existsByEmailAndMemberIdNot(String email, Long memberId);
+
     @Query("select c from MemberCredential c join fetch c.member where c.email = :email")
     Optional<MemberCredential> findByEmailWithMember(@Param("email") String email);
 

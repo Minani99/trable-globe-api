@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.hasItem;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -106,6 +107,46 @@ class AuthApiTest {
                 .andExpect(jsonPath("$.error.fieldErrors[*].field").value(hasItem("displayName")));
     }
 
+    @Test
+    @DisplayName("한 글자 보여질 이름과 밑줄로 시작하는 사용자명도 가입할 수 있다")
+    void acceptsShortUnicodeDisplayNamesAndUnderscoreHandles() throws Exception {
+        String suffix = String.valueOf(SEQUENCE.incrementAndGet());
+        String username = "_" + suffix;
+        String body = """
+                {"username":"%s","displayName":"린","email":"%s","password":"%s"}
+                """.formatted(username, email("short" + suffix), PASSWORD);
+
+        postJson("/api/auth/register", body)
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.member.username").value(username))
+                .andExpect(jsonPath("$.data.member.displayName").value("린"));
+    }
+
+    @Test
+    @DisplayName("서비스 경로와 겹치는 사용자명은 가입 전에 이유를 알려준다")
+    void rejectsReservedUsernames() throws Exception {
+        postJson("/api/auth/register", registerBody("studio", email(nextUsername())))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.error.code").value("INVALID_REQUEST"))
+                .andExpect(jsonPath("$.message").value(org.hamcrest.Matchers.containsString("서비스")));
+    }
+
+    @Test
+    @DisplayName("사용자명 사용 가능 여부를 형식과 중복까지 확인한다")
+    void checksUsernameAvailability() throws Exception {
+        String taken = nextUsername();
+        register(taken);
+
+        mockMvc.perform(get("/api/auth/username-availability").param("username", taken))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.available").value(false))
+                .andExpect(jsonPath("$.data.message").value("이미 사용 중인 사용자명입니다."));
+        mockMvc.perform(get("/api/auth/username-availability").param("username", "globe"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.available").value(false))
+                .andExpect(jsonPath("$.data.message").value(org.hamcrest.Matchers.containsString("서비스")));
+    }
+
     // --- sign-in -----------------------------------------------------------
 
     @Test
@@ -175,6 +216,49 @@ class AuthApiTest {
         mockMvc.perform(get("/api/auth/me").header("Authorization", "Bearer " + token))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.data.username").value(username));
+    }
+
+    @Test
+    @DisplayName("현재 비밀번호로 사용자명과 로그인 이메일을 수정할 수 있다")
+    void updatesRegistrationIdentityWithoutDeletingTheAccount() throws Exception {
+        String username = nextUsername();
+        String token = register(username);
+        String nextHandle = nextUsername();
+        String nextEmail = email(nextHandle);
+
+        mockMvc.perform(patch("/api/auth/account")
+                        .header("Authorization", "Bearer " + token)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {"username":"%s","email":"%s","currentPassword":"%s"}
+                                """.formatted(nextHandle, nextEmail, PASSWORD)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.username").value(nextHandle))
+                .andExpect(jsonPath("$.data.email").value(nextEmail))
+                .andExpect(jsonPath("$.data.emailVerified").value(false));
+
+        mockMvc.perform(get("/api/auth/me").header("Authorization", "Bearer " + token))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.username").value(nextHandle));
+        postJson("/api/auth/login", loginBody(email(username), PASSWORD))
+                .andExpect(status().isUnauthorized());
+        postJson("/api/auth/login", loginBody(nextEmail, PASSWORD))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    @DisplayName("가입 정보 수정은 현재 비밀번호가 맞아야 한다")
+    void accountIdentityUpdateRequiresCurrentPassword() throws Exception {
+        String username = nextUsername();
+        String token = register(username);
+
+        mockMvc.perform(patch("/api/auth/account")
+                        .header("Authorization", "Bearer " + token)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {"username":"%s","email":"%s","currentPassword":"wrong-password"}
+                                """.formatted(nextUsername(), email(nextUsername()))))
+                .andExpect(status().isUnauthorized());
     }
 
     @Test

@@ -13,6 +13,8 @@ import com.travelglobe.trableglobeapi.auth.dto.RegisterRequest;
 import com.travelglobe.trableglobeapi.auth.dto.ResetPasswordRequest;
 import com.travelglobe.trableglobeapi.auth.dto.TokenRequest;
 import com.travelglobe.trableglobeapi.auth.dto.UpdateProfileRequest;
+import com.travelglobe.trableglobeapi.auth.dto.UpdateAccountRequest;
+import com.travelglobe.trableglobeapi.auth.dto.UsernameAvailabilityResponse;
 import com.travelglobe.trableglobeapi.auth.repository.AccountActionTokenRepository;
 import com.travelglobe.trableglobeapi.auth.repository.MemberCredentialRepository;
 import com.travelglobe.trableglobeapi.auth.security.MemberPrincipal;
@@ -22,6 +24,7 @@ import com.travelglobe.trableglobeapi.global.exception.ConflictException;
 import com.travelglobe.trableglobeapi.global.exception.InvalidRequestException;
 import com.travelglobe.trableglobeapi.global.exception.ResourceNotFoundException;
 import com.travelglobe.trableglobeapi.member.domain.Member;
+import com.travelglobe.trableglobeapi.member.domain.UsernamePolicy;
 import com.travelglobe.trableglobeapi.member.repository.MemberRepository;
 import com.travelglobe.trableglobeapi.social.repository.TravelCommentRepository;
 import com.travelglobe.trableglobeapi.social.repository.TravelLikeRepository;
@@ -103,6 +106,7 @@ public class AuthService {
     public AuthSessionResponse register(RegisterRequest request) {
         String username = Member.normalizeUsername(request.username());
         String email = normalizeEmail(request.email());
+        validateUsername(username);
         validatePasswordBytes(request.password());
         if (memberRepository.existsByUsername(username)) throw new ConflictException("이미 사용 중인 사용자명입니다.");
         if (credentialRepository.existsByEmail(email)) throw new ConflictException("이미 가입된 이메일입니다.");
@@ -133,6 +137,48 @@ public class AuthService {
         MemberCredential credential = getCredential(principal.memberId());
         credential.getMember().updateProfile(
                 request.displayName().trim(), emptyToNull(request.bio()), emptyToNull(request.profileImageUrl()));
+        return AuthMemberResponse.from(credential);
+    }
+
+    @Transactional(readOnly = true)
+    public UsernameAvailabilityResponse usernameAvailability(String rawUsername) {
+        String username = Member.normalizeUsername(rawUsername);
+        String validationMessage = UsernamePolicy.validationMessage(username);
+        if (validationMessage != null) {
+            return new UsernameAvailabilityResponse(false, username, validationMessage);
+        }
+        boolean available = !memberRepository.existsByUsername(username);
+        return new UsernameAvailabilityResponse(
+                available,
+                username,
+                available ? "사용할 수 있는 사용자명입니다." : "이미 사용 중인 사용자명입니다.");
+    }
+
+    @Transactional
+    public AuthMemberResponse updateAccount(MemberPrincipal principal, UpdateAccountRequest request) {
+        MemberCredential credential = getCredential(principal.memberId());
+        if (!passwordHasher.matches(request.currentPassword(), credential.getPasswordHash())) {
+            throw new AuthenticationFailedException();
+        }
+
+        Member member = credential.getMember();
+        String username = Member.normalizeUsername(request.username());
+        String email = normalizeEmail(request.email());
+        validateUsername(username);
+
+        if (memberRepository.existsByUsernameAndIdNot(username, member.getId())) {
+            throw new ConflictException("이미 사용 중인 사용자명입니다.");
+        }
+        if (credentialRepository.existsByEmailAndMemberIdNot(email, member.getId())) {
+            throw new ConflictException("이미 가입된 이메일입니다.");
+        }
+
+        boolean emailChanged = !credential.getEmail().equals(email);
+        member.updateUsername(username);
+        if (emailChanged) {
+            credential.updateEmail(email);
+            sendVerification(credential);
+        }
         return AuthMemberResponse.from(credential);
     }
 
@@ -227,6 +273,13 @@ public class AuthService {
     private static void validatePasswordBytes(String password) {
         if (password.getBytes(StandardCharsets.UTF_8).length > 72) {
             throw new InvalidRequestException("비밀번호는 UTF-8 기준 72바이트 이내로 입력해 주세요.");
+        }
+    }
+
+    private static void validateUsername(String username) {
+        String message = UsernamePolicy.validationMessage(username);
+        if (message != null) {
+            throw new InvalidRequestException(message);
         }
     }
 
