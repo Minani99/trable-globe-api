@@ -40,7 +40,7 @@ export default function LandingPage() {
 
             <p className="text-body landing-intro landing-reveal landing-reveal--body mt-7 max-w-[40ch]">
               방문한 국가와 도시, 이동한 길과 기억을 하나의 지구본에 쌓아보세요.
-              오른쪽 지구본에서는 190여 개 나라와 대표 랜드마크를 먼저 탐색할 수 있습니다.
+              로그인 전에는 여러 나라가 쌓인 샘플을, 로그인 후에는 내 여행 세계를 바로 보여드립니다.
             </p>
 
             <div className="landing-reveal landing-reveal--actions mt-10 flex flex-wrap items-center gap-3">

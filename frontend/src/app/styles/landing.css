@@ -1230,6 +1230,44 @@
   white-space: nowrap;
 }
 
+.landing-globe-context {
+  position: absolute;
+  top: 4.85rem;
+  left: 1rem;
+  z-index: 3;
+  pointer-events: none;
+  display: inline-flex;
+  max-width: min(18rem, calc(100% - 2rem));
+  align-items: center;
+  gap: 0.55rem;
+  min-height: 1.9rem;
+  padding: 0.35rem 0.65rem;
+  overflow: hidden;
+  border: 1px solid rgba(98, 125, 151, 0.28);
+  border-radius: 999px;
+  background: rgba(5, 10, 16, 0.62);
+  box-shadow: 0 0.55rem 1.5rem rgba(0, 0, 0, 0.1);
+  color: rgba(225, 237, 245, 0.92);
+  backdrop-filter: blur(14px);
+}
+
+.landing-globe-context small {
+  flex: 0 0 auto;
+  color: rgba(189, 207, 220, 0.62);
+  font-family: var(--font-mono);
+  font-size: 0.47rem;
+  font-weight: 650;
+  letter-spacing: 0.1em;
+}
+
+.landing-globe-context strong {
+  overflow: hidden;
+  font-size: 0.65rem;
+  font-weight: 650;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 .landing-section-heading {
   display: grid;
   grid-template-columns: minmax(0, 1.06fr) minmax(19rem, 0.94fr);
@@ -1458,5 +1496,13 @@
 
   .landing-globe-stats dd {
     font-size: 0.69rem;
+  }
+
+  .landing-globe-context {
+    top: 3.9rem;
+    left: 0.65rem;
+    max-width: calc(100% - 1.3rem);
+    min-height: 1.7rem;
+    padding: 0.3rem 0.55rem;
   }
 }

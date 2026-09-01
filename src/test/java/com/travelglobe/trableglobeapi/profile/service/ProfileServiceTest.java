@@ -43,13 +43,13 @@ class ProfileServiceTest {
 
         assertThat(profile.username()).isEqualTo(DEMO_USERNAME);
         assertThat(profile.displayName()).isEqualTo("샘플 여행자");
-        assertThat(profile.statistics().countryCount()).isEqualTo(6);
-        assertThat(profile.statistics().cityCount()).isEqualTo(9);
-        assertThat(profile.statistics().travelCount()).isEqualTo(7);
+        assertThat(profile.statistics().countryCount()).isEqualTo(66);
+        assertThat(profile.statistics().cityCount()).isEqualTo(69);
+        assertThat(profile.statistics().travelCount()).isEqualTo(27);
     }
 
     @Test
-    @DisplayName("기존 데모 여행은 보존하면서 프로필 문구를 최신 상태로 맞춘다")
+    @DisplayName("기존 데모 여행은 보존하면서 빠진 샘플만 보강한다")
     void refreshesExistingDemoProfileWithoutDuplicatingTravels() {
         Member traveler = memberRepository.findByUsername(DEMO_USERNAME).orElseThrow();
         traveler.updateProfile("Old demo name", "Old demo bio", null);
@@ -82,9 +82,11 @@ class ProfileServiceTest {
     void returnsVisitedCountriesForTheGlobe() {
         List<VisitedCountryResponse> countries = profileService.getVisitedCountries(DEMO_USERNAME);
 
-        assertThat(countries).hasSize(6);
+        assertThat(countries).hasSize(66);
         assertThat(countries).extracting(VisitedCountryResponse::iso2Code)
-                .containsExactlyInAnyOrder("KR", "JP", "TW", "US", "FR", "TH");
+                .contains("KR", "JP", "TW", "US", "FR", "TH")
+                .contains("GB", "IS", "MA", "CH", "TR", "SG", "NP", "NZ")
+                .contains("CA", "MX", "PE", "BR", "CU", "EG", "KE", "ZA");
         assertThat(countries).allSatisfy(country -> {
             assertThat(country.latitude()).isNotNull();
             assertThat(country.longitude()).isNotNull();
@@ -112,7 +114,7 @@ class ProfileServiceTest {
     void returnsTravelsNewestFirst() {
         List<TravelSummaryResponse> travels = profileService.getTravels(DEMO_USERNAME);
 
-        assertThat(travels).hasSize(7);
+        assertThat(travels).hasSize(27);
         assertThat(travels.get(0).title()).isEqualTo("Taipei, again.");
         assertThat(travels.get(0).primaryCountry().iso2Code()).isEqualTo("TW");
         assertThat(travels.get(0).primaryCity().nameEn()).isEqualTo("Taipei");
@@ -159,7 +161,7 @@ class ProfileServiceTest {
     void statisticsEndpointMatchesProfile() {
         TravelStatisticsResponse statistics = profileService.getStatistics(DEMO_USERNAME);
 
-        assertThat(statistics.placeCount()).isEqualTo(17);
+        assertThat(statistics.placeCount()).isEqualTo(77);
         assertThat(statistics.firstTravelDate()).isNotNull();
         assertThat(statistics.latestTravelDate()).isNotNull();
     }
