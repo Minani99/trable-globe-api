@@ -91,15 +91,28 @@ as a manual incident-response fallback.
 
 ### Settings
 
-| Setting | Value |
-| --- | --- |
-| URL | `https://travel-globe-api-cexs.onrender.com/api/health` |
-| Method | `GET` |
-| Interval | 10 minutes |
-| Expected | HTTP 200 with `"status":"UP"` |
+This is done by `.github/workflows/keep-awake.yml`, which runs every five minutes
+during the awake window. Point it at a different deployment with the repository
+variables `API_BASE_URL` and `SAMPLE_PROFILE` (Settings > Secrets and variables >
+Actions > Variables); it falls back to the current URLs when they are unset.
 
-Five-minute polling buys nothing here - the sleep timer is 15 minutes, so 10
-leaves a full missed request of slack.
+Five minutes rather than ten, despite the fifteen-minute sleep timer: GitHub's
+scheduler is best-effort and routinely runs late, so the interval needs slack.
+
+### It is also the only alarm
+
+The workflow checks two things, and fails the run - which GitHub emails the
+repository owner about - if either breaks:
+
+| Check | Catches |
+| --- | --- |
+| `/api/health` reports `"status":"UP"` | the process being down, or the database unreachable |
+| `/api/profiles/{sample}` returns a profile | a deployment that boots but can no longer serve anyone |
+
+The second matters because readiness alone stays green while the API returns
+nothing useful. Request failures are logged on Render with a correlation ID and
+read by nobody, so until an error tracker is wired up this workflow is what stands
+between a broken deployment and a friend noticing first.
 
 ### The hour budget is the real constraint
 
