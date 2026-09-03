@@ -53,8 +53,8 @@ public class SeedDataLoader implements ApplicationRunner {
     /**
      * A broad, invented travel history for the public sample account.
      *
-     * <p>Each journey crosses three countries so the sample globe feels genuinely lived in
-     * instead of looking like a product tour with a handful of pins. Titles are stable IDs for
+     * <p>Multi-country routes provide breadth; return trips show how the same country
+     * accumulates distinct visits, cities and dates. Titles are stable IDs for
      * the idempotent reconciliation performed on every demo-profile startup.
      */
     private static final List<ShowcaseJourney> GLOBAL_SHOWCASE = List.of(
@@ -137,7 +137,61 @@ public class SeedDataLoader implements ApplicationRunner {
             journey("아프리카 남쪽 끝", "테이블 마운틴에서 사막과 델타까지 넓은 풍경을 건넜다.", "2014-09-05",
                     destination("ZA", "ZAF", "South Africa", "남아프리카공화국", "Cape Town", "케이프타운", "-33.9249", "18.4241", "테이블 마운틴"),
                     destination("BW", "BWA", "Botswana", "보츠와나", "Gaborone", "가보로네", "-24.6282", "25.9231", "가보로네 보호구역"),
-                    destination("NA", "NAM", "Namibia", "나미비아", "Windhoek", "빈트후크", "-22.5609", "17.0658", "크리스투스 교회"))
+                    destination("NA", "NAM", "Namibia", "나미비아", "Windhoek", "빈트후크", "-22.5609", "17.0658", "크리스투스 교회")),
+            journey("도쿄의 봄 산책", "우에노 공원과 아사쿠사를 둘러본 봄 여행.", "2025-03-14",
+                    destination("JP", "JPN", "Japan", "일본", "Tokyo", "도쿄", "35.7148", "139.7745", "우에노 공원"),
+                    destination("JP", "JPN", "Japan", "일본", "Tokyo", "도쿄", "35.7148", "139.7967", "센소지")),
+            journey("오사카에서 교토까지", "오사카의 시장을 걷고 교토에서 하루를 보냈다.", "2024-11-15",
+                    destination("JP", "JPN", "Japan", "일본", "Osaka", "오사카", "34.6687", "135.5013", "구로몬 시장"),
+                    destination("JP", "JPN", "Japan", "일본", "Kyoto", "교토", "34.9671", "135.7727", "후시미 이나리")),
+            journey("삿포로 겨울 여행", "눈 쌓인 공원과 삿포로 시내를 돌아본 겨울 기록.", "2026-01-16",
+                    destination("JP", "JPN", "Japan", "일본", "Sapporo", "삿포로", "43.0600", "141.3544", "오도리 공원"),
+                    destination("JP", "JPN", "Japan", "일본", "Sapporo", "삿포로", "43.0713", "141.3685", "삿포로 맥주박물관")),
+            journey("뉴욕 미술관과 공원", "미술관을 보고 센트럴 파크에서 쉬었던 뉴욕 여행.", "2025-09-05",
+                    destination("US", "USA", "United States", "미국", "New York", "뉴욕", "40.7794", "-73.9632", "메트로폴리탄 미술관"),
+                    destination("US", "USA", "United States", "미국", "New York", "뉴욕", "40.7812", "-73.9665", "센트럴 파크")),
+            journey("샌프란시스코 해안 산책", "금문교와 항구를 천천히 둘러본 여정.", "2024-06-07",
+                    destination("US", "USA", "United States", "미국", "San Francisco", "샌프란시스코", "37.8199", "-122.4783", "금문교"),
+                    destination("US", "USA", "United States", "미국", "San Francisco", "샌프란시스코", "37.8087", "-122.4098", "피어 39")),
+            journey("로스앤젤레스의 여름", "전망대에서 도시를 보고 해변에서 하루를 마무리했다.", "2023-07-14",
+                    destination("US", "USA", "United States", "미국", "Los Angeles", "로스앤젤레스", "34.1184", "-118.3004", "그리피스 천문대"),
+                    destination("US", "USA", "United States", "미국", "Los Angeles", "로스앤젤레스", "34.0100", "-118.4960", "산타모니카 해변")),
+            journey("다시 찾은 파리", "지난번에 못 본 미술관과 정원을 찾았다.", "2025-05-09",
+                    destination("FR", "FRA", "France", "프랑스", "Paris", "파리", "48.8606", "2.3376", "루브르 박물관"),
+                    destination("FR", "FRA", "France", "프랑스", "Paris", "파리", "48.8462", "2.3372", "뤽상부르 공원")),
+            journey("니스와 리옹 기차 여행", "니스의 해안을 걷고 리옹의 구시가지를 둘러봤다.", "2023-05-12",
+                    destination("FR", "FRA", "France", "프랑스", "Nice", "니스", "43.6940", "7.2650", "프롬나드 데 장글레"),
+                    destination("FR", "FRA", "France", "프랑스", "Lyon", "리옹", "45.7622", "4.8270", "리옹 구시가지")),
+            journey("치앙마이의 사원과 시장", "올드시티와 주말 시장을 둘러본 두 번째 태국 여행.", "2025-01-10",
+                    destination("TH", "THA", "Thailand", "태국", "Chiang Mai", "치앙마이", "18.7879", "98.9866", "왓 체디 루앙"),
+                    destination("TH", "THA", "Thailand", "태국", "Chiang Mai", "치앙마이", "18.7876", "98.9931", "타패문")),
+            journey("푸껫에서 쉬어가기", "바닷가와 올드타운을 번갈아 둘러본 휴가.", "2025-11-14",
+                    destination("TH", "THA", "Thailand", "태국", "Phuket", "푸껫", "7.8200", "98.2993", "카타 해변"),
+                    destination("TH", "THA", "Thailand", "태국", "Phuket", "푸껫", "7.8840", "98.3890", "푸껫 올드타운")),
+            journey("타이베이 첫 방문", "야시장과 오래된 사원을 찾아다닌 첫 대만 여행.", "2023-11-10",
+                    destination("TW", "TWN", "Taiwan", "대만", "Taipei", "타이베이", "25.0372", "121.4999", "용산사"),
+                    destination("TW", "TWN", "Taiwan", "대만", "Taipei", "타이베이", "25.0880", "121.5245", "스린 야시장")),
+            journey("가오슝의 항구와 예술", "대만을 다시 찾아 남쪽 항구 도시를 걸었다.", "2025-02-14",
+                    destination("TW", "TWN", "Taiwan", "대만", "Kaohsiung", "가오슝", "22.6200", "120.2816", "보얼 예술특구"),
+                    destination("TW", "TWN", "Taiwan", "대만", "Kaohsiung", "가오슝", "22.6273", "120.2863", "아이허")),
+            journey("피렌체와 베네치아", "로마 다음으로 찾은 두 도시의 미술관과 운하.", "2025-07-04",
+                    destination("IT", "ITA", "Italy", "이탈리아", "Florence", "피렌체", "43.7687", "11.2553", "우피치 미술관"),
+                    destination("IT", "ITA", "Italy", "이탈리아", "Venice", "베네치아", "45.4340", "12.3388", "산마르코 광장")),
+            journey("런던에 다시 머물다", "박물관과 시장을 중심으로 런던을 다시 둘러봤다.", "2025-12-05",
+                    destination("GB", "GBR", "United Kingdom", "영국", "London", "런던", "51.5194", "-0.1270", "대영박물관"),
+                    destination("GB", "GBR", "United Kingdom", "영국", "London", "런던", "51.5055", "-0.0910", "버러 마켓")),
+            journey("마드리드와 세비야", "바르셀로나 다음에는 미술관과 남쪽 광장을 찾았다.", "2026-02-06",
+                    destination("ES", "ESP", "Spain", "스페인", "Madrid", "마드리드", "40.4138", "-3.6921", "프라도 미술관"),
+                    destination("ES", "ESP", "Spain", "스페인", "Seville", "세비야", "37.3772", "-5.9869", "스페인 광장")),
+            journey("다낭과 호이안", "베트남 중부의 해변과 구시가지를 둘러봤다.", "2024-01-12",
+                    destination("VN", "VNM", "Vietnam", "베트남", "Da Nang", "다낭", "16.0544", "108.2473", "미케 해변"),
+                    destination("VN", "VNM", "Vietnam", "베트남", "Hoi An", "호이안", "15.8770", "108.3268", "호이안 구시가지")),
+            journey("싱가포르 두 번째 산책", "이번에는 식물원과 호커 센터를 중심으로 둘러봤다.", "2024-03-08",
+                    destination("SG", "SGP", "Singapore", "싱가포르", "Singapore", "싱가포르", "1.3138", "103.8159", "싱가포르 식물원"),
+                    destination("SG", "SGP", "Singapore", "싱가포르", "Singapore", "싱가포르", "1.2804", "103.8448", "맥스웰 푸드 센터")),
+            journey("멜버른의 골목과 정원", "시드니에 이어 멜버른의 카페와 정원을 찾았다.", "2024-12-06",
+                    destination("AU", "AUS", "Australia", "호주", "Melbourne", "멜버른", "-37.8166", "144.9691", "호시어 레인"),
+                    destination("AU", "AUS", "Australia", "호주", "Melbourne", "멜버른", "-37.8304", "144.9796", "왕립 식물원"))
     );
 
     private final MemberRepository memberRepository;
@@ -216,7 +270,7 @@ public class SeedDataLoader implements ApplicationRunner {
             ShowcaseJourney journey = GLOBAL_SHOWCASE.get(journeyIndex);
             int stableIndex = journeyIndex;
             seedIfMissing(existingTitles, journey.title(), () -> {
-                LocalDate endDate = journey.startDate().plusDays(8);
+                LocalDate endDate = journey.startDate().plusDays(journey.destinations().size() * 3L - 1);
                 Travel travel = Travel.create(
                         traveler,
                         journey.title(),

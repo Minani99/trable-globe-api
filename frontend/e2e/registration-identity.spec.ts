@@ -3,8 +3,8 @@ import { expect, test } from "@playwright/test";
 test("샘플 세계를 미리 보고 가입 후 내 세계와 가입 정보를 바로 고친다", async ({ page }) => {
   await page.goto("/");
   const worldScope = page.locator(".landing-globe-stats");
-  await expect(worldScope).toContainText("Countries66", { timeout: 20_000 });
-  await expect(worldScope).toContainText("Journeys27");
+  await expect(worldScope).toContainText("국가66", { timeout: 20_000 });
+  await expect(worldScope).toContainText("여행45");
   await expect(page.locator(".landing-globe-context")).toContainText("SAMPLE WORLD샘플 여행자");
 
   const suffix = Date.now().toString(36);
@@ -29,8 +29,8 @@ test("샘플 세계를 미리 보고 가입 후 내 세계와 가입 정보를 �
   await expect(page).toHaveURL(/\/studio$/, { timeout: 30_000 });
 
   await page.goto("/");
-  await expect(page.locator(".landing-globe-stats")).toContainText("Countries0", { timeout: 20_000 });
-  await expect(page.locator(".landing-globe-stats")).toContainText("Journeys0");
+  await expect(page.locator(".landing-globe-stats")).toContainText("국가0", { timeout: 20_000 });
+  await expect(page.locator(".landing-globe-stats")).toContainText("여행0");
   await expect(page.locator(".landing-globe-context")).toContainText("MY WORLD린");
 
   await page.goto("/settings");

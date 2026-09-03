@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useMemo, useState, useSyncExternalStore } from "react";
+import { useCallback, useEffect, useMemo, useState, useSyncExternalStore } from "react";
 
 import { TravelGlobe, type GlobeCountryHover } from "@/components/globe/TravelGlobe";
 import { fetchProfile, fetchTravels, fetchVisitedCountries } from "@/lib/api/profile";
@@ -16,6 +16,7 @@ import { countryFlag, getWorldLandmarkPlace } from "@/lib/worldLandmarks";
 import type { TravelSummary, UserProfile, VisitedCountry } from "@/types";
 
 const EMPTY_COUNTRIES: VisitedCountry[] = [];
+const ignoreHover = () => undefined;
 
 interface LandingWorld {
   profile: UserProfile;
@@ -77,15 +78,16 @@ export function LandingGlobePreview() {
     : null;
   const activeCountry = resolvedSelectedCountry ?? hoveredCountry ?? centeredCountry;
   const activePlace = activeCountry ? getWorldLandmarkPlace(activeCountry.code) : null;
+  const activeVisit = world?.countries.find((country) => country.iso2Code === activeCountry?.code);
   const statistics = world?.profile.statistics;
   const worldLabel = isOwnWorld ? `${world?.profile.displayName ?? member?.displayName}님의 지구본` : "샘플 지구본";
 
-  const handleSelect = (code: string | null) => {
+  const handleSelect = useCallback((code: string | null) => {
     setSelectedCode(code);
     if (!code) {
       setSelectedCountry(null);
     }
-  };
+  }, []);
 
   return (
     <div id="world-explorer" className="landing-globe-link landing-reveal landing-reveal--visual">
@@ -97,7 +99,7 @@ export function LandingGlobePreview() {
               selectedCode={selectedCode}
               routeArcs={routeArcs}
               onSelect={handleSelect}
-              onHover={() => undefined}
+              onHover={ignoreHover}
               onCountryHover={setHoveredCountry}
               onCountryCenter={setCenteredCountry}
               onCountrySelect={setSelectedCountry}
@@ -136,7 +138,9 @@ export function LandingGlobePreview() {
                     {activeCountry.nameKo}
                   </p>
                   <p className="text-content-faint mt-0.5 truncate text-[0.66rem]">
-                    {activeCountry.nameEn}
+                    {activeVisit
+                      ? `여행 ${activeVisit.travelCount}회 · 도시 ${activeVisit.cityCount}곳`
+                      : activeCountry.nameEn}
                   </p>
                 </div>
                 <div className="min-w-0 max-w-[52%] text-right">

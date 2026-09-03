@@ -67,6 +67,14 @@ const MOBILE_MAX_PIXEL_RATIO = 1.25;
 const DESKTOP_MAX_PIXEL_RATIO = 1.75;
 const LOADING_INDICATOR_MINIMUM_MS = 650;
 const AUTO_ROTATE_RESUME_DELAY_MS = 6_000;
+const AUTO_ROTATE_EASE_IN_MS = 1_200;
+const EMPTY_ROUTES: GlobeRouteArc[] = [];
+const ringOpacity = (t: number) => `rgba(232, 112, 58, ${Math.max(0, 1 - t) * 0.32})`;
+const ringColor = () => ringOpacity;
+const setMarkerVisibility = (element: HTMLElement, isVisible: boolean) => {
+  element.classList.toggle("is-behind", !isVisible);
+  element.style.pointerEvents = isVisible ? "auto" : "none";
+};
 const CENTER_HIGHLIGHT_INTERVAL_MS = 180;
 const CENTER_HIGHLIGHT_INTERVAL_MOBILE_MS = 300;
 const CENTER_HIGHLIGHT_MAX_DISTANCE_DEGREES = 24;
@@ -78,7 +86,7 @@ export const TravelGlobe = memo(function TravelGlobe({
   selectedCode,
   focusCode = null,
   recentCode = null,
-  routeArcs = [],
+  routeArcs = EMPTY_ROUTES,
   onSelect,
   onHover,
   onCountryHover,
@@ -94,6 +102,8 @@ export const TravelGlobe = memo(function TravelGlobe({
   const autoRotateTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const autoRotateFrame = useRef<number | null>(null);
   const lastRotationAt = useRef<number | null>(null);
+  const rotationElapsed = useRef(0);
+  const interactingRef = useRef(false);
   const compactRef = useRef(false);
 
   const [size, setSize] = useState({ width: 0, height: 0 });
@@ -121,13 +131,17 @@ export const TravelGlobe = memo(function TravelGlobe({
   const selectedRef = useRef(selectedCode);
   const focusRef = useRef(focusCode);
   const onSelectRef = useRef(onSelect);
+  const onCountryHoverRef = useRef(onCountryHover);
+  const onCountrySelectRef = useRef(onCountrySelect);
   const reduceMotionRef = useRef(reduceMotion);
 
   useEffect(() => {
     selectedRef.current = selectedCode;
     focusRef.current = focusCode;
     onSelectRef.current = onSelect;
-  }, [focusCode, selectedCode, onSelect]);
+    onCountryHoverRef.current = onCountryHover;
+    onCountrySelectRef.current = onCountrySelect;
+  }, [focusCode, selectedCode, onSelect, onCountryHover, onCountrySelect]);
 
   useEffect(() => {
     reduceMotionRef.current = reduceMotion;
@@ -139,6 +153,7 @@ export const TravelGlobe = memo(function TravelGlobe({
       autoRotateFrame.current = null;
     }
     lastRotationAt.current = null;
+    rotationElapsed.current = 0;
   }, []);
 
   const stopAmbientRotation = useCallback(() => {
@@ -147,21 +162,25 @@ export const TravelGlobe = memo(function TravelGlobe({
   }, [cancelAmbientRotation]);
 
   const startAmbientRotation = useCallback(() => {
-    if (autoRotateFrame.current !== null || reduceMotionRef.current || selectedRef.current !== null || focusRef.current !== null) return;
+    if (autoRotateFrame.current !== null || document.hidden || interactingRef.current || reduceMotionRef.current || selectedRef.current !== null || focusRef.current !== null) return;
     setAutoRotating(true);
 
     const rotate = (time: number) => {
       const globe = globeRef.current;
-      if (!globe || reduceMotionRef.current || selectedRef.current !== null || focusRef.current !== null) {
+      if (!globe || document.hidden || interactingRef.current || reduceMotionRef.current || selectedRef.current !== null || focusRef.current !== null) {
         autoRotateFrame.current = null;
         lastRotationAt.current = null;
+        rotationElapsed.current = 0;
         setAutoRotating(false);
         return;
       }
       if (lastRotationAt.current !== null) {
         const elapsed = Math.min(50, time - lastRotationAt.current);
+        rotationElapsed.current += elapsed;
+        const progress = Math.min(1, rotationElapsed.current / AUTO_ROTATE_EASE_IN_MS);
+        const speed = progress * progress * (3 - 2 * progress);
         const view = globe.pointOfView();
-        globe.pointOfView({ ...view, lng: view.lng - elapsed * (compactRef.current ? 0.00135 : 0.002) }, 0);
+        globe.pointOfView({ ...view, lng: view.lng - elapsed * speed * (compactRef.current ? 0.00135 : 0.002) }, 0);
       }
       lastRotationAt.current = time;
       autoRotateFrame.current = requestAnimationFrame(rotate);
@@ -180,7 +199,10 @@ export const TravelGlobe = memo(function TravelGlobe({
   const scheduleAmbientRotation = useCallback(() => {
     clearRotationResume();
     if (reduceMotionRef.current || selectedRef.current !== null || focusRef.current !== null) return;
-    autoRotateTimer.current = setTimeout(startAmbientRotation, AUTO_ROTATE_RESUME_DELAY_MS);
+    autoRotateTimer.current = setTimeout(() => {
+      autoRotateTimer.current = null;
+      startAmbientRotation();
+    }, AUTO_ROTATE_RESUME_DELAY_MS);
   }, [clearRotationResume, startAmbientRotation]);
 
   const visitedByCode = useMemo(() => {
@@ -310,7 +332,7 @@ export const TravelGlobe = memo(function TravelGlobe({
     const globe = globeRef.current;
     globe?.renderer().setPixelRatio(Math.min(window.devicePixelRatio || 1, compact ? MOBILE_MAX_PIXEL_RATIO : DESKTOP_MAX_PIXEL_RATIO));
     globe?.pointOfView(overviewView, 0);
-    const shouldRotate = !reduceMotion && selectedRef.current === null;
+    const shouldRotate = isWorldExplorer && !reduceMotion && selectedRef.current === null;
     if (shouldRotate) startAmbientRotation();
 
     const controls = globeRef.current?.controls();
@@ -322,7 +344,7 @@ export const TravelGlobe = memo(function TravelGlobe({
     controls.enablePan = false;
     controls.minDistance = 100 * (1 + ALTITUDE_MIN);
     controls.maxDistance = 100 * (1 + ALTITUDE_MAX);
-  }, [compact, overviewView, reduceMotion, startAmbientRotation]);
+  }, [compact, isWorldExplorer, overviewView, reduceMotion, startAmbientRotation]);
 
   useEffect(() => {
     if (!ready) return;
@@ -336,23 +358,32 @@ export const TravelGlobe = memo(function TravelGlobe({
     if (!element) return;
 
     const beginInteraction = () => {
+      interactingRef.current = true;
       clearRotationResume();
       stopAmbientRotation();
     };
-    const endInteraction = () => scheduleAmbientRotation();
+    const endInteraction = () => {
+      if (!interactingRef.current) return;
+      interactingRef.current = false;
+      scheduleAmbientRotation();
+    };
     const handleWheel = () => {
-      beginInteraction();
+      clearRotationResume();
+      stopAmbientRotation();
       scheduleAmbientRotation();
     };
 
     element.addEventListener("pointerdown", beginInteraction);
-    element.addEventListener("pointerup", endInteraction);
-    element.addEventListener("pointercancel", endInteraction);
+    // A drag can end outside the canvas; do not leave rotation paused forever.
+    window.addEventListener("pointerup", endInteraction);
+    window.addEventListener("pointercancel", endInteraction);
+    window.addEventListener("blur", endInteraction);
     element.addEventListener("wheel", handleWheel, { passive: true });
     return () => {
       element.removeEventListener("pointerdown", beginInteraction);
-      element.removeEventListener("pointerup", endInteraction);
-      element.removeEventListener("pointercancel", endInteraction);
+      window.removeEventListener("pointerup", endInteraction);
+      window.removeEventListener("pointercancel", endInteraction);
+      window.removeEventListener("blur", endInteraction);
       element.removeEventListener("wheel", handleWheel);
     };
   }, [clearRotationResume, scheduleAmbientRotation, stopAmbientRotation]);
@@ -382,7 +413,8 @@ export const TravelGlobe = memo(function TravelGlobe({
       return () => clearTimeout(stateTimer);
     }
     if (isWorldExplorer) {
-      const rotationTimer = setTimeout(startAmbientRotation, 0);
+      // Let an in-flight country focus finish before taking over the camera.
+      const rotationTimer = setTimeout(startAmbientRotation, 900);
       return () => clearTimeout(rotationTimer);
     }
     scheduleAmbientRotation();
@@ -405,7 +437,15 @@ export const TravelGlobe = memo(function TravelGlobe({
     const transition = reduceMotion ? 0 : 900;
 
     if (activeCode === null) {
-      if (!isWorldExplorer) globe.pointOfView(overviewView, transition);
+      if (!isWorldExplorer) {
+        // A pointOfView write ends an existing tween. Never run the ambient loop
+        // during an overview/focus transition, including the first ready frame.
+        cancelAmbientRotation();
+        const stateTimer = setTimeout(() => setAutoRotating(false), 0);
+        globe.pointOfView(overviewView, transition);
+        scheduleAmbientRotation();
+        return () => clearTimeout(stateTimer);
+      }
       return;
     }
     const country = visitedByCode.get(activeCode);
@@ -420,7 +460,7 @@ export const TravelGlobe = memo(function TravelGlobe({
     if (center) {
       globe.pointOfView({ ...center, altitude: focusedAltitude }, transition);
     }
-  }, [activeCode, featureCenterByCode, focusedAltitude, isWorldExplorer, overviewView, ready, reduceMotion, visitedByCode]);
+  }, [activeCode, cancelAmbientRotation, featureCenterByCode, focusedAltitude, isWorldExplorer, overviewView, ready, reduceMotion, scheduleAmbientRotation, visitedByCode]);
 
   // While the globe turns on its own, softly identify the country nearest the camera's
   // center. The interval is deliberately low-frequency: it feels live without causing a
@@ -517,16 +557,13 @@ export const TravelGlobe = memo(function TravelGlobe({
         clearRotationResume();
         stopAmbientRotation();
         setHoveredCode(null);
-        onCountryHover?.(null);
+        onCountryHoverRef.current?.(null);
         onSelectRef.current(nextCode);
-        onCountrySelect?.(
+        onCountrySelectRef.current?.(
           nextCode
             ? { code: nextCode, nameKo: country.nameKo, nameEn: country.nameEn }
             : null,
         );
-        if (isWorldExplorer && nextCode === null && !reduceMotionRef.current) {
-          setTimeout(startAmbientRotation, 0);
-        }
       });
       element.addEventListener("pointerenter", () => setHoveredCode(country.iso2Code));
       element.addEventListener("pointerleave", () => setHoveredCode(null));
@@ -536,10 +573,6 @@ export const TravelGlobe = memo(function TravelGlobe({
     },
     [
       clearRotationResume,
-      isWorldExplorer,
-      onCountryHover,
-      onCountrySelect,
-      startAmbientRotation,
       stopAmbientRotation,
     ],
   );
@@ -620,17 +653,29 @@ export const TravelGlobe = memo(function TravelGlobe({
       if (selectedCode === null && code === focusCode) {
         return 0.045;
       }
-      if (activeCode === null && code === hoveredCode) {
-        return 0.036;
-      }
-      if (activeCode === null && autoRotating && code === centeredCode) {
-        return 0.03;
-      }
       if (!isWorldExplorer && code === recentCode) return 0.026;
       return 0.018;
     },
-    [activeCode, autoRotating, centeredCode, focusCode, hoveredCode, isWorldExplorer, recentCode, selectedCode, visitedByCode],
+    [focusCode, isWorldExplorer, recentCode, selectedCode, visitedByCode],
   );
+
+  // Keep country meshes and layer accessors stable on hover. Updating a material
+  // color avoids re-digesting every polygon/island and restarting altitude tweens.
+  const countryMaterials = useMemo(() => new Map(features.map((feature) => [
+    feature,
+    new THREE.MeshBasicMaterial({ side: THREE.DoubleSide }),
+  ])), [features]);
+  const capMaterial = useCallback(
+    (polygon: object) => countryMaterials.get(polygon as CountryFeature)!,
+    [countryMaterials],
+  );
+  // String accessors name a data field in globe.gl; literal colors need callbacks.
+  const sideColor = useCallback(() => globeTheme.side, [globeTheme]);
+  const strokeColor = useCallback(() => globeTheme.landStroke, [globeTheme]);
+  useEffect(() => {
+    countryMaterials.forEach((material, feature) => material.color.set(capColor(feature)));
+  }, [capColor, countryMaterials]);
+  useEffect(() => () => countryMaterials.forEach((material) => material.dispose()), [countryMaterials]);
 
   const polygonTooltip = useCallback(
     (polygon: object) => {
@@ -641,7 +686,7 @@ export const TravelGlobe = memo(function TravelGlobe({
         if (selectedCode !== null && code !== selectedCode) return "";
         return `<div class="tg-tip">
           <strong>${escapeHtml(properties.nameKo ?? properties.nameEn)}</strong>
-          <span>${escapeHtml(properties.nameEn)}</span>
+          <span>${visited ? `여행 ${visited.travelCount}회 · 도시 ${visited.cityCount}곳` : escapeHtml(properties.nameEn)}</span>
           <em>${code === selectedCode ? "다시 클릭해 선택 해제" : "클릭해 위치 고정"}</em>
         </div>`;
       }
@@ -667,31 +712,29 @@ export const TravelGlobe = memo(function TravelGlobe({
     clearRotationResume();
     stopAmbientRotation();
     setHoveredCode(null);
-    onCountryHover?.(null);
+    onCountryHoverRef.current?.(null);
     onSelectRef.current(nextCode);
-    onCountrySelect?.(
+    onCountrySelectRef.current?.(
       nextCode
         ? { code: nextCode, nameKo: feature.properties.nameKo, nameEn: feature.properties.nameEn }
         : null,
     );
-    if (isWorldExplorer && nextCode === null && !reduceMotionRef.current) {
-      setTimeout(startAmbientRotation, 0);
-    }
   }, [
     clearRotationResume,
     isWorldExplorer,
-    onCountryHover,
-    onCountrySelect,
-    startAmbientRotation,
     stopAmbientRotation,
     visitedByCode,
   ]);
 
-  const handlePolygonClick = useCallback((polygon: object) => {
+  const handlePolygonClick = useCallback((polygon: object, event: MouseEvent) => {
+    // globe.gl raycasts on pointerup (capture), before a marker's click handler.
+    // Do not let that second event toggle the same selection back off.
+    if (event.target instanceof Element && event.target.closest(".tg-marker")) return;
     selectWorldFeature(polygon as CountryFeature);
   }, [selectWorldFeature]);
 
-  const handleGlobeClick = useCallback((coords: { lat: number; lng: number }) => {
+  const handleGlobeClick = useCallback((coords: { lat: number; lng: number }, event: MouseEvent) => {
+    if (event.target instanceof Element && event.target.closest(".tg-marker")) return;
     if (!isWorldExplorer) return;
     const nearest = findNearestFeature(featureCenters, coords.lat, coords.lng);
     if (!nearest || nearest.distance > WORLD_SURFACE_SNAP_DISTANCE_DEGREES) return;
@@ -702,13 +745,13 @@ export const TravelGlobe = memo(function TravelGlobe({
     (polygon: object | null) => {
       if (isWorldExplorer && selectedRef.current !== null) {
         setHoveredCode(null);
-        onCountryHover?.(null);
+        onCountryHoverRef.current?.(null);
         return;
       }
       const code = polygon ? getFeatureCode(polygon as CountryFeature) : null;
       const nextCode = code && (isWorldExplorer || visitedByCode.has(code)) ? code : null;
       setHoveredCode(nextCode);
-      onCountryHover?.(
+      onCountryHoverRef.current?.(
         polygon && nextCode
           ? {
               code: nextCode,
@@ -717,21 +760,11 @@ export const TravelGlobe = memo(function TravelGlobe({
             }
           : null,
       );
-      if (isWorldExplorer) {
-        if (nextCode) {
-          clearRotationResume();
-          stopAmbientRotation();
-        } else {
-          scheduleAmbientRotation();
-        }
-      }
+      // Hover only highlights. Pausing here made every country boundary feel
+      // like a dropped frame, even when the visitor had not clicked or dragged.
     },
     [
-      clearRotationResume,
       isWorldExplorer,
-      onCountryHover,
-      scheduleAmbientRotation,
-      stopAmbientRotation,
       visitedByCode,
     ],
   );
@@ -749,6 +782,7 @@ export const TravelGlobe = memo(function TravelGlobe({
     const route = arc as GlobeRouteArc;
     return `<div class="tg-tip"><strong>${escapeHtml(route.fromLabel)}</strong><span>→ ${escapeHtml(route.toLabel)}</span></div>`;
   }, []);
+  const arcColors = useMemo(() => [globeTheme.visitedRamp[1], globeTheme.recent], [globeTheme]);
 
   const globeMaterial = useMemo(
     () =>
@@ -765,11 +799,18 @@ export const TravelGlobe = memo(function TravelGlobe({
 
   // --- keyboard -----------------------------------------------------------
 
+  const pauseForCameraControl = useCallback(() => {
+    clearRotationResume();
+    stopAmbientRotation();
+    scheduleAmbientRotation();
+  }, [clearRotationResume, scheduleAmbientRotation, stopAmbientRotation]);
+
   const nudge = useCallback((deltaLat: number, deltaLng: number) => {
     const globe = globeRef.current;
     if (!globe) {
       return;
     }
+    pauseForCameraControl();
     const pov = globe.pointOfView();
     globe.pointOfView(
       {
@@ -777,22 +818,24 @@ export const TravelGlobe = memo(function TravelGlobe({
         lng: pov.lng + deltaLng,
         altitude: pov.altitude,
       },
-      220,
+      reduceMotion ? 0 : 220,
     );
-  }, []);
+  }, [pauseForCameraControl, reduceMotion]);
 
   const zoomBy = useCallback((factor: number) => {
     const globe = globeRef.current;
     if (!globe) {
       return;
     }
+    pauseForCameraControl();
     const pov = globe.pointOfView();
-    globe.pointOfView({ altitude: clamp(pov.altitude * factor, ALTITUDE_MIN, ALTITUDE_MAX) }, 220);
-  }, []);
+    globe.pointOfView({ altitude: clamp(pov.altitude * factor, ALTITUDE_MIN, ALTITUDE_MAX) }, reduceMotion ? 0 : 220);
+  }, [pauseForCameraControl, reduceMotion]);
 
   const resetView = useCallback(() => {
-    globeRef.current?.pointOfView(overviewView, 600);
-  }, [overviewView]);
+    pauseForCameraControl();
+    globeRef.current?.pointOfView(overviewView, reduceMotion ? 0 : 600);
+  }, [overviewView, pauseForCameraControl, reduceMotion]);
 
   const handleKeyDown = useCallback(
     (event: React.KeyboardEvent<HTMLDivElement>) => {
@@ -846,11 +889,11 @@ export const TravelGlobe = memo(function TravelGlobe({
             atmosphereAltitude={compact ? 0.13 : 0.17}
             onGlobeReady={handleReady}
             arcsData={routeArcs}
-            arcStartLat={(d: object) => (d as GlobeRouteArc).startLat}
-            arcStartLng={(d: object) => (d as GlobeRouteArc).startLng}
-            arcEndLat={(d: object) => (d as GlobeRouteArc).endLat}
-            arcEndLng={(d: object) => (d as GlobeRouteArc).endLng}
-            arcColor={() => [globeTheme.visitedRamp[1], globeTheme.recent]}
+            arcStartLat="startLat"
+            arcStartLng="startLng"
+            arcEndLat="endLat"
+            arcEndLng="endLng"
+            arcColor={arcColors}
             arcAltitudeAutoScale={compact ? 0.2 : 0.24}
             arcStroke={compact ? 0.3 : 0.38}
             arcDashLength={reduceMotion ? 1 : 0.58}
@@ -859,9 +902,9 @@ export const TravelGlobe = memo(function TravelGlobe({
             arcsTransitionDuration={reduceMotion ? 0 : 420}
             arcLabel={arcTooltip}
             polygonsData={features}
-            polygonCapColor={capColor}
-            polygonSideColor={() => globeTheme.side}
-            polygonStrokeColor={() => globeTheme.landStroke}
+            polygonCapMaterial={capMaterial}
+            polygonSideColor={sideColor}
+            polygonStrokeColor={strokeColor}
             polygonAltitude={altitude}
             polygonLabel={polygonTooltip}
             polygonsTransitionDuration={reduceMotion ? 0 : 320}
@@ -869,19 +912,15 @@ export const TravelGlobe = memo(function TravelGlobe({
             onPolygonHover={handlePolygonHover}
             onGlobeClick={handleGlobeClick}
             htmlElementsData={markerData}
-            htmlLat={(d: object) => (d as VisitedCountry).latitude}
-            htmlLng={(d: object) => (d as VisitedCountry).longitude}
+            htmlLat="latitude"
+            htmlLng="longitude"
             htmlAltitude={0.06}
             htmlElement={createMarker}
-            htmlElementVisibilityModifier={(element, isVisible) => {
-              // Hide markers that sit on the far side of the sphere.
-              element.classList.toggle("is-behind", !isVisible);
-              element.style.pointerEvents = isVisible ? "auto" : "none";
-            }}
+            htmlElementVisibilityModifier={setMarkerVisibility}
             ringsData={ringData}
-            ringLat={(d: object) => (d as VisitedCountry).latitude}
-            ringLng={(d: object) => (d as VisitedCountry).longitude}
-            ringColor={() => (t: number) => `rgba(232, 112, 58, ${Math.max(0, 1 - t) * 0.32})`}
+            ringLat="latitude"
+            ringLng="longitude"
+            ringColor={ringColor}
             ringMaxRadius={compact ? 3 : 3.6}
             ringPropagationSpeed={1.1}
             ringRepeatPeriod={2600}
