@@ -151,8 +151,15 @@ H2 호환 버전을 따로 유지하면 두 스키마가 서서히 어긋나므�
 
 ## 시드 데이터
 
-`SeedDataLoader`가 `travel-globe.seed.enabled=true`일 때만 동작합니다
-(`local`·`postgres`는 true, **`prod`는 false**).
+`SeedDataLoader`가 `travel-globe.seed.enabled=true`일 때만 동작합니다.
+`local`·`postgres`는 true, `prod`의 기본값은 false입니다.
+
+> **운영 환경은 이 기본값을 일부러 덮어씁니다.** Render에 `TRAVEL_GLOBE_SEED_ENABLED=true`가
+> 설정되어 있어 `@traveler` 쇼케이스 프로필이 운영 DB에도 존재합니다. 랜딩 페이지의
+> "샘플 지구본 보기"가 이 프로필을 링크하므로, 끄면 첫 화면의 링크가 404가 됩니다.
+>
+> 운영 DB에서 가공된 계정은 이것 하나뿐이며, 이미 존재하면 아무것도 하지 않으므로
+> 재시작해도 중복되지 않습니다. 통계나 사용자 수를 집계할 때 실제 회원과 섞지 마세요.
 
 `traveler` 핸들이 이미 있으면 아무것도 하지 않으므로,
 영속 DB에 대해 재시작해도 중복이 생기지 않습니다.
