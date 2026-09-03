@@ -1,0 +1,272 @@
+.overview {
+  padding-block: 1rem 2rem;
+}
+
+.features {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: clamp(2.5rem, 6vw, 5.5rem);
+  padding-block: clamp(3rem, 5vw, 4.5rem);
+  border-top: 1px solid var(--border);
+}
+
+.feature {
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  gap: 1.75rem;
+  min-width: 0;
+}
+
+.eyebrow {
+  margin-bottom: 0.7rem;
+  color: var(--text-secondary);
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+
+.copy h2 {
+  color: var(--text-primary);
+  font-size: clamp(1.5rem, 2.2vw, 1.9rem);
+  font-weight: 550;
+  line-height: 1.35;
+  letter-spacing: -0.04em;
+  word-break: keep-all;
+  text-wrap: balance;
+}
+
+.description {
+  margin-top: 0.8rem;
+  color: var(--text-secondary);
+  font-size: 0.875rem;
+  line-height: 1.75;
+  word-break: keep-all;
+  text-wrap: pretty;
+}
+
+.preview {
+  position: relative;
+  min-width: 0;
+  min-height: 17.25rem;
+  margin: 0;
+  padding: 1.5rem 1.75rem;
+  border: 1px solid var(--border);
+  border-radius: 1rem;
+  background: var(--surface);
+  color: var(--text-primary);
+}
+
+.previewHeading {
+  display: grid;
+  gap: 0.4rem;
+}
+
+.exampleLabel {
+  color: var(--text-secondary);
+  font-size: 0.6875rem;
+}
+
+.previewHeading strong {
+  font-size: 0.9375rem;
+  font-weight: 600;
+  line-height: 1.4;
+}
+
+.days {
+  display: flex;
+  gap: 1.5rem;
+  margin-top: 1.15rem;
+  border-bottom: 1px solid var(--border);
+  color: var(--text-secondary);
+  font-size: 0.75rem;
+}
+
+.days > span {
+  padding-bottom: 0.7rem;
+}
+
+.days .activeDay {
+  margin-bottom: -1px;
+  border-bottom: 2px solid var(--accent);
+  color: var(--text-primary);
+  font-weight: 600;
+}
+
+.schedule {
+  display: grid;
+  gap: 0.8rem;
+  margin-top: 1rem;
+}
+
+.schedule li {
+  display: grid;
+  grid-template-columns: 3.25rem minmax(0, 1fr) auto;
+  align-items: baseline;
+  gap: 0.65rem;
+  font-size: 0.8125rem;
+  line-height: 1.5;
+}
+
+.time,
+.category {
+  color: var(--text-secondary);
+  font-size: 0.6875rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.visibility {
+  position: absolute;
+  top: 1.5rem;
+  right: 1.75rem;
+  padding: 0.25rem 0.6rem;
+  border-radius: 0.35rem;
+  background: var(--surface-raised);
+  color: var(--text-secondary);
+  font-size: 0.6875rem;
+}
+
+.recordDate {
+  margin-top: 0.6rem;
+  color: var(--text-secondary);
+  font-size: 0.75rem;
+}
+
+.route {
+  display: flex;
+  margin-block: 1.6rem 1.3rem;
+}
+
+.route li {
+  position: relative;
+  display: grid;
+  flex: 1;
+  justify-items: center;
+  gap: 0.75rem;
+  min-width: 0;
+  font-size: 0.6875rem;
+  text-align: center;
+  word-break: keep-all;
+}
+
+.route li:not(:last-child)::after {
+  position: absolute;
+  top: 0.25rem;
+  right: -50%;
+  left: 50%;
+  height: 1px;
+  background: var(--border-strong);
+  content: "";
+}
+
+.routeDot {
+  position: relative;
+  z-index: 1;
+  width: 0.55rem;
+  height: 0.55rem;
+  border: 1.5px solid var(--accent);
+  border-radius: 50%;
+  background: var(--surface);
+  box-shadow: 0 0 0 0.3rem var(--surface);
+}
+
+.route li:last-child .routeDot {
+  background: var(--accent);
+}
+
+.recordSummary {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--border);
+  color: var(--text-secondary);
+  font-size: 0.75rem;
+}
+
+.link {
+  display: inline-flex;
+  align-items: center;
+  justify-self: start;
+  gap: 0.6rem;
+  min-height: 2.75rem;
+  color: var(--text-primary);
+  font-size: 0.8125rem;
+  font-weight: 550;
+  text-underline-offset: 0.3rem;
+  transition: color 150ms ease;
+}
+
+.link svg {
+  flex: 0 0 auto;
+}
+
+.link:hover {
+  color: var(--accent-strong);
+  text-decoration: underline;
+}
+
+.link:focus-visible {
+  border-radius: 0.25rem;
+  outline: 2px solid var(--accent-strong);
+  outline-offset: 4px;
+}
+
+.browse {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.5rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid var(--border);
+}
+
+.browse p {
+  color: var(--text-secondary);
+  font-size: 0.8125rem;
+}
+
+@media (min-width: 701px) and (max-width: 999px) {
+  .features {
+    grid-template-columns: 1fr;
+    gap: 2.5rem;
+  }
+
+  .feature {
+    grid-template-columns: minmax(0, 0.85fr) minmax(0, 1.15fr);
+    grid-template-rows: 1fr auto;
+    gap: 1rem 2rem;
+    align-items: start;
+  }
+
+  .feature + .feature {
+    padding-top: 2.5rem;
+    border-top: 1px solid var(--border);
+  }
+
+  .preview {
+    grid-column: 2;
+    grid-row: 1 / 3;
+    padding-inline: 1.25rem;
+  }
+
+  .visibility {
+    right: 1.25rem;
+  }
+
+  .link {
+    grid-column: 1;
+  }
+}
+
+/* Keep the mobile home focused on the globe and its bottom navigation. */
+@media (max-width: 700px) {
+  .overview {
+    display: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .link {
+    transition: none;
+  }
+}

@@ -1159,9 +1159,6 @@
     min-height: 2.1rem;
   }
 
-  .landing-experience,
-  .landing-journey,
-  .landing-world-proof,
   .site-footer--compact {
     display: none;
   }

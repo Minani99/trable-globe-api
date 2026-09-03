@@ -21,7 +21,7 @@ test("모바일 메인은 한 화면 안에서 탐색과 국가 선택을 제공
   await expect(bottomNavigation).toBeVisible();
   await expect(bottomNavigation.getByRole("link")).toHaveCount(5);
   await expect(page.getByRole("button", { name: "메뉴 열기" })).toBeHidden();
-  await expect(page.locator(".landing-experience")).toBeHidden();
+  await expect(page.getByRole("region", { name: "계획과 기록", includeHidden: true })).toBeHidden();
 
   const guideTrigger = page.getByRole("button", { name: /처음 이용하시나요|이용 방법/ });
   await expect(guideTrigger).toBeVisible();
