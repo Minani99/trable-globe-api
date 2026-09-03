@@ -2,6 +2,7 @@ import "server-only";
 
 import { NextResponse } from "next/server";
 
+import { checkRateLimit } from "@/lib/api/rate-limit";
 import { getApiBaseUrl } from "@/lib/config";
 import { SESSION_COOKIE } from "@/lib/api/server-session";
 import type { ApiEnvelope } from "@/lib/api/client";
@@ -40,6 +41,19 @@ export function isSameOriginRequest(request: Request) {
   return acceptedHostnames.has(originUrl.hostname);
 }
 
+/** 429 in the shared envelope, with the header a client needs to back off politely. */
+function tooManyRequests(retryAfterSeconds: number) {
+  return NextResponse.json(
+    {
+      success: false,
+      data: null,
+      message: "요청이 너무 잦습니다. 잠시 후 다시 시도해 주세요.",
+      error: { code: "TOO_MANY_REQUESTS" },
+    },
+    { status: 429, headers: { "Retry-After": String(retryAfterSeconds) } },
+  );
+}
+
 export async function handleAuthStart(request: Request, action: "login" | "register") {
   if (!isSameOriginRequest(request)) {
     return NextResponse.json(
@@ -47,6 +61,11 @@ export async function handleAuthStart(request: Request, action: "login" | "regis
       { status: 403 },
     );
   }
+  const limit = checkRateLimit(action, request);
+  if (!limit.allowed) {
+    return tooManyRequests(limit.retryAfterSeconds);
+  }
+
   let backendResponse: Response;
   try {
     backendResponse = await fetch(`${getApiBaseUrl()}/api/auth/${action}`, {
@@ -92,6 +111,11 @@ export async function forwardPublicAuth(request: Request, path: string) {
       { success: false, data: null, message: "허용되지 않은 요청입니다.", error: { code: "ACCESS_DENIED" } },
       { status: 403 },
     );
+  }
+  // Keyed by path so a reset attempt never eats the budget for verification.
+  const limit = checkRateLimit(path, request);
+  if (!limit.allowed) {
+    return tooManyRequests(limit.retryAfterSeconds);
   }
   try {
     return passThrough(await fetch(`${getApiBaseUrl()}${path}`, {
