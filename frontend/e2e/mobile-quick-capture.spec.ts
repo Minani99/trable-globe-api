@@ -54,6 +54,9 @@ test("진행 중인 여행은 모바일 어디서나 장소·사진·메모로 �
   const capture = page.getByRole("region", { name: "오늘의 서울 산책 빠른 기록" });
   await expect(capture).toBeVisible();
   await expect(capture).toContainText("오늘 진행 중인 여행을 자동으로 선택했어요.");
+  await expect(capture.getByRole("heading", { name: "오늘 일정" })).toBeVisible();
+  await expect(capture.getByRole("list", { name: "오늘의 서울 산책 오늘 일정" })).toContainText("서울숲");
+  await expect(capture.getByRole("link", { name: /지도에서 위치 보기/ })).toHaveAttribute("href", /google\.com\/maps\/search/);
   await expect(capture.getByRole("link", { name: /장소/ })).toHaveAttribute("href", `/studio/travels/${travelId}/edit#travel-place-editor`);
   await expect(capture.getByRole("link", { name: /사진/ })).toHaveAttribute("href", `/studio/travels/${travelId}/edit#travel-photo-editor`);
   await expect(capture.getByRole("link", { name: /메모/ })).toHaveAttribute("href", `/studio/travels/${travelId}/edit#travel-note-editor`);
@@ -61,6 +64,7 @@ test("진행 중인 여행은 모바일 어디서나 장소·사진·메모로 �
   await capture.getByRole("link", { name: /장소/ }).click();
   await expect(page).toHaveURL(new RegExp(`/studio/travels/${travelId}/edit#travel-place-editor$`));
   await expect(page.locator("#travel-place-editor")).toBeVisible();
+  await expect(page.locator("#travel-day-view").getByRole("heading", { name: "오늘 일정" })).toBeVisible();
 
   const quickNavigation = page.getByRole("navigation", { name: "여행 중 빠른 입력" });
   await expect(quickNavigation).toBeVisible();

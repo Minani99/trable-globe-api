@@ -21,12 +21,15 @@ export default async function StudioPage() {
   if (!member) redirect("/login?next=/studio");
   const travels = travelRecords ?? [];
   const today = todayInKorea();
+  const activeTravel = travels
+    .filter(({ travel, visibility }) => visibility === "PRIVATE" && travel.startDate <= today && today <= travel.endDate)
+    .sort((left, right) => Date.parse(right.updatedAt) - Date.parse(left.updatedAt))[0] ?? null;
   const plans = travels
-    .filter(({ travel, visibility }) => visibility === "PRIVATE" && travel.endDate > today)
+    .filter(({ travel, visibility }) => visibility === "PRIVATE" && travel.startDate > today)
     .sort((left, right) => Date.parse(right.updatedAt) - Date.parse(left.updatedAt));
   const recentPlan = plans[0] ?? null;
   const otherPlans = plans.slice(1);
-  const readyToRemember = travels.filter(({ travel, visibility }) => visibility === "PRIVATE" && travel.endDate <= today);
+  const readyToRemember = travels.filter(({ travel, visibility }) => visibility === "PRIVATE" && travel.endDate < today);
   const records = travels.filter(({ visibility }) => visibility === "PUBLIC");
   const profileReady = Boolean(member.profileImageUrl && member.bio?.trim());
 
@@ -47,6 +50,8 @@ export default async function StudioPage() {
               <Link href="/studio/plans/new" className="studio-primary-action">새 여행 계획 <span>＋</span></Link>
             </div>
           </header>
+
+          {activeTravel ? <ActiveTravelCard plan={activeTravel} today={today} /> : null}
 
           {recentPlan ? (
             <section className="studio-plans" aria-labelledby="studio-plans-heading">
@@ -162,6 +167,23 @@ export default async function StudioPage() {
       </main>
       <SiteFooter />
     </>
+  );
+}
+
+function ActiveTravelCard({ plan, today }: { plan: OwnedTravelSummary; today: string }) {
+  const dayNumber = Math.max(1, Math.min(plan.travel.durationDays, Math.round((Date.parse(`${today}T00:00:00Z`) - Date.parse(`${plan.travel.startDate}T00:00:00Z`)) / 86_400_000) + 1));
+  return (
+    <section className="studio-live" aria-labelledby="studio-live-heading">
+      <div className="studio-live__status"><span aria-hidden="true" /><strong>여행 중</strong><small>DAY {dayNumber}</small></div>
+      <div className="studio-live__copy">
+        <small>{plan.travel.primaryCountry?.nameKo ?? "현재 여행"} · {formatDateRange(plan.travel.startDate, plan.travel.endDate)}</small>
+        <h2 id="studio-live-heading">{plan.travel.title}</h2>
+        <p>오늘 일정과 다음 장소를 확인하고, 사진과 메모를 바로 남길 수 있어요.</p>
+      </div>
+      <Link href={`/studio/travels/${plan.travel.id}/edit#travel-day-view`} className="studio-live__action">
+        오늘 여행 열기 <span aria-hidden="true">→</span>
+      </Link>
+    </section>
   );
 }
 

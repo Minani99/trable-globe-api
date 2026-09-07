@@ -1,10 +1,10 @@
 "use client";
 
-import Link from "next/link";
 import { useEffect, useId, useState } from "react";
 
+import { MobileTripCompanion } from "@/components/layout/MobileTripCompanion";
 import { apiSessionGet } from "@/lib/api/client";
-import type { AuthMember, OwnedTravelSummary } from "@/types";
+import type { AuthMember, OwnedTravelSummary, TravelDetail } from "@/types";
 
 interface MobileJourneyCaptureProps {
   member: AuthMember | null | undefined;
@@ -13,26 +13,42 @@ interface MobileJourneyCaptureProps {
 
 export function MobileJourneyCapture({ member, pathname }: MobileJourneyCaptureProps) {
   const panelId = useId();
-  const [travelState, setTravelState] = useState<{ username: string; travel: OwnedTravelSummary | null } | null>(null);
+  const [travelState, setTravelState] = useState<{
+    username: string;
+    travel: OwnedTravelSummary | null;
+    detail: TravelDetail | null;
+    detailPending: boolean;
+  } | null>(null);
   const [open, setOpen] = useState(false);
 
   useEffect(() => {
-    if (!member || !window.matchMedia("(max-width: 700px)").matches) {
+    if (!member || pathname.includes("/studio/travels/") || !window.matchMedia("(max-width: 700px)").matches) {
       return;
     }
 
     let active = true;
     apiSessionGet<OwnedTravelSummary[]>("/api/private/travels")
-      .then((travels) => {
-        if (active) setTravelState({ username: member.username, travel: findCurrentTravel(travels) });
+      .then(async (travels) => {
+        const currentTravel = findCurrentTravel(travels);
+        if (!currentTravel) {
+          if (active) setTravelState({ username: member.username, travel: null, detail: null, detailPending: false });
+          return;
+        }
+        if (active) setTravelState({ username: member.username, travel: currentTravel, detail: null, detailPending: true });
+        try {
+          const detail = await apiSessionGet<TravelDetail>(`/api/private/travels/${currentTravel.travel.id}`);
+          if (active) setTravelState({ username: member.username, travel: currentTravel, detail, detailPending: false });
+        } catch {
+          if (active) setTravelState({ username: member.username, travel: currentTravel, detail: null, detailPending: false });
+        }
       })
       .catch(() => {
-        if (active) setTravelState({ username: member.username, travel: null });
+        if (active) setTravelState({ username: member.username, travel: null, detail: null, detailPending: false });
       });
     return () => {
       active = false;
     };
-  }, [member]);
+  }, [member, pathname]);
 
   useEffect(() => {
     if (!open) return;
@@ -49,7 +65,6 @@ export function MobileJourneyCapture({ member, pathname }: MobileJourneyCaptureP
   }
 
   const travel = currentTravel.travel;
-  const editPath = `/studio/travels/${travel.id}/edit`;
   const country = travel.primaryCountry?.nameKo ?? travel.countries[0]?.nameKo ?? "현재 여행";
 
   return (
@@ -64,14 +79,16 @@ export function MobileJourneyCapture({ member, pathname }: MobileJourneyCaptureP
             </div>
             <button type="button" onClick={() => setOpen(false)} aria-label="빠른 기록 닫기">×</button>
           </header>
-          <nav aria-label="빠른 기록 종류">
-            <QuickCaptureLink href={`${editPath}#travel-place-editor`} label="장소" detail="지금 있는 곳" icon="pin" onNavigate={() => setOpen(false)} />
-            <QuickCaptureLink href={`${editPath}#travel-photo-editor`} label="사진" detail="여러 장 선택" icon="photo" onNavigate={() => setOpen(false)} />
-            <QuickCaptureLink href={`${editPath}#travel-note-editor`} label="메모" detail="한 줄 기억" icon="note" onNavigate={() => setOpen(false)} />
-          </nav>
-          <Link className="mobile-journey-capture__edit" href={editPath} onClick={() => setOpen(false)}>
-            전체 여행 편집 <span aria-hidden="true">→</span>
-          </Link>
+          {travelState?.detail ? (
+            <MobileTripCompanion travel={travelState.detail} today={todayInKorea()} />
+          ) : travelState?.detailPending ? (
+            <div className="mobile-journey-capture__loading" role="status">오늘 일정을 불러오는 중…</div>
+          ) : (
+            <div className="mobile-journey-capture__loading" role="status">
+              <span>오늘 일정을 불러오지 못했어요.</span>
+              <a href={`/studio/travels/${travel.id}/edit`}>전체 계획에서 확인</a>
+            </div>
+          )}
         </div>
       ) : null}
       <button
@@ -82,53 +99,25 @@ export function MobileJourneyCapture({ member, pathname }: MobileJourneyCaptureP
         onClick={() => setOpen((current) => !current)}
       >
         <span aria-hidden="true">＋</span>
-        <strong>빠른 기록</strong>
+        <span className="mobile-journey-capture__trigger-copy"><small>여행 중</small><strong>빠른 기록</strong></span>
       </button>
     </aside>
   );
 }
 
-function QuickCaptureLink({
-  href,
-  label,
-  detail,
-  icon,
-  onNavigate,
-}: {
-  href: string;
-  label: string;
-  detail: string;
-  icon: "pin" | "photo" | "note";
-  onNavigate: () => void;
-}) {
-  return (
-    <Link href={href} onClick={onNavigate}>
-      <QuickCaptureIcon name={icon} />
-      <strong>{label}</strong>
-      <small>{detail}</small>
-    </Link>
-  );
-}
-
-function QuickCaptureIcon({ name }: { name: "pin" | "photo" | "note" }) {
-  if (name === "pin") {
-    return <svg aria-hidden="true" viewBox="0 0 24 24"><path d="M12 21s6-5.2 6-11a6 6 0 1 0-12 0c0 5.8 6 11 6 11Z" /><circle cx="12" cy="10" r="2" /></svg>;
-  }
-  if (name === "photo") {
-    return <svg aria-hidden="true" viewBox="0 0 24 24"><rect x="3.5" y="5" width="17" height="14" rx="2" /><circle cx="9" cy="10" r="1.7" /><path d="m5.5 17 4.3-4 2.9 2.5 2.4-2.2 3.4 3.7" /></svg>;
-  }
-  return <svg aria-hidden="true" viewBox="0 0 24 24"><path d="M5 4.5h14v15H5z" /><path d="M8 9h8M8 12.5h8M8 16h5" /></svg>;
-}
-
 function findCurrentTravel(travels: OwnedTravelSummary[]): OwnedTravelSummary | null {
-  const today = new Intl.DateTimeFormat("en-CA", {
+  const today = todayInKorea();
+
+  return travels
+    .filter(({ travel }) => travel.startDate <= today && today <= travel.endDate)
+    .sort((left, right) => Date.parse(right.updatedAt) - Date.parse(left.updatedAt))[0] ?? null;
+}
+
+function todayInKorea(): string {
+  return new Intl.DateTimeFormat("en-CA", {
     timeZone: "Asia/Seoul",
     year: "numeric",
     month: "2-digit",
     day: "2-digit",
   }).format(new Date());
-
-  return travels
-    .filter(({ travel }) => travel.startDate <= today && today <= travel.endDate)
-    .sort((left, right) => Date.parse(right.updatedAt) - Date.parse(left.updatedAt))[0] ?? null;
 }

@@ -111,6 +111,7 @@ test("몇 번의 선택으로 여행 계획을 만들고 일차별 일정으로 
   const travelId = Number(page.url().match(/\/travels\/(\d+)\/edit/)?.[1]);
   expect(travelId).toBeGreaterThan(0);
   await expect(page.getByRole("heading", { name: "일본 3일 여행" })).toBeVisible();
+  await page.getByText("전체 계획 및 기록 편집", { exact: true }).click();
   await expect(page.getByRole("heading", { name: "예약부터 변수 대응까지, 한곳에서" })).toBeVisible();
   await expect(page.getByRole("button", { name: "이 변경안 적용" })).toBeVisible();
   await expect(page.getByRole("combobox", { name: "출발 공항 검색" })).toHaveValue("서울 · 서울 모든 공항");
@@ -217,9 +218,9 @@ test("몇 번의 선택으로 여행 계획을 만들고 일차별 일정으로 
   await expect(page.getByRole("button", { name: "계획 저장" })).toBeVisible();
 
   await page.goto("/studio");
-  await expect(page.getByRole("heading", { name: "작성 중인 여행 계획" })).toBeVisible();
-  await expect(page.getByRole("heading", { name: "일본 3일 여행" })).toBeVisible();
-  await expect(page.getByRole("link", { name: /이어서 작성하기/ })).toBeVisible();
+  const activeTrip = page.getByRole("region", { name: "일본 3일 여행" });
+  await expect(activeTrip).toContainText("여행 중");
+  await expect(activeTrip.getByRole("link", { name: /오늘 여행 열기/ })).toBeVisible();
   await expect(page.getByRole("navigation", { name: "모바일 주요 메뉴" }).getByRole("link", { name: "기록" })).toHaveAttribute("href", "/studio");
   await expect(page.getByRole("heading", { name: "최근 활동" })).toBeVisible();
 
@@ -252,9 +253,10 @@ test("몇 번의 선택으로 여행 계획을 만들고 일차별 일정으로 
   expect(finishResponse.status()).toBe(200);
   await page.evaluate((key) => window.localStorage.removeItem(key), `travel-globe:draft:${username}:${travelId}`);
   await page.goto("/studio");
-  await expect(page.getByRole("heading", { name: "기록으로 완성할 여행" })).toBeVisible();
-  await expect(page.getByRole("heading", { name: "다녀온 일본 여행" })).toBeVisible();
-  await page.getByRole("link", { name: /기록 완성하기/ }).click();
+  const finishingTrip = page.getByRole("region", { name: "다녀온 일본 여행" });
+  await expect(finishingTrip).toContainText("여행 중");
+  await finishingTrip.getByRole("link", { name: /오늘 여행 열기/ }).click();
+  await page.getByText("전체 계획 및 기록 편집", { exact: true }).click();
   await expect(page.getByRole("heading", { name: "이 계획을 여행 기록으로 완성하세요." })).toBeVisible();
   await page.getByRole("button", { name: "기록으로 전환 준비" }).click();
   await page.getByRole("button", { name: "기록으로 전환하기" }).click();
