@@ -93,6 +93,7 @@ export interface TravelPlace {
   startTime: string | null;
   durationMinutes: number | null;
   memo: string | null;
+  completedAt: string | null;
   sortOrder: number;
 }
 
@@ -321,6 +322,7 @@ export interface TravelPlaceWriteInput {
   startTime: string | null;
   durationMinutes: number | null;
   memo: string | null;
+  completed?: boolean;
 }
 
 export interface TravelPhotoWriteInput {

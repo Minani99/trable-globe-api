@@ -15,6 +15,7 @@ import jakarta.persistence.Table;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.time.Instant;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -75,6 +76,9 @@ public class TravelPlace {
     @Column(name = "memo", length = 1000)
     private String memo;
 
+    @Column(name = "completed_at")
+    private Instant completedAt;
+
     @Column(name = "sort_order", nullable = false)
     private int sortOrder;
 
@@ -123,6 +127,16 @@ public class TravelPlace {
         }
         return travel != null && candidate != null
                 && travel.getId() != null && travel.getId().equals(candidate.getId());
+    }
+
+    /** Updates only the fields used while the owner is actively travelling. */
+    public void updateInTrip(String memo, boolean completed) {
+        this.memo = memo;
+        if (completed && completedAt == null) {
+            completedAt = Instant.now();
+        } else if (!completed) {
+            completedAt = null;
+        }
     }
 
     /**

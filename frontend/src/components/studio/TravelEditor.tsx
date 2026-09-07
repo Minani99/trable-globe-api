@@ -28,6 +28,7 @@ interface PlaceDraft {
   startTime: string;
   durationMinutes: string;
   memo: string;
+  completed: boolean;
 }
 
 interface PhotoDraft {
@@ -123,6 +124,7 @@ export function TravelEditor({
           startTime: place.startTime?.slice(0, 5) ?? "",
           durationMinutes: place.durationMinutes ? String(place.durationMinutes) : "",
           memo: place.memo ?? "",
+          completed: Boolean(place.completedAt),
         }))
       : [emptyPlace(initialCountryCode)],
   );
@@ -1019,7 +1021,7 @@ export function TravelEditor({
 }
 
 function emptyPlace(countryCode: string): PlaceDraft {
-  return { key: draftKey(), countryCode, cityNameEn: "", cityName: "", placeName: "", latitude: "", longitude: "", visitedAt: "", startTime: "", durationMinutes: "", memo: "" };
+  return { key: draftKey(), countryCode, cityNameEn: "", cityName: "", placeName: "", latitude: "", longitude: "", visitedAt: "", startTime: "", durationMinutes: "", memo: "", completed: false };
 }
 
 function emptyPhoto(): PhotoDraft {
@@ -1276,6 +1278,7 @@ function toPlaceInput(place: PlaceDraft, countries: Map<string, CountryOption>):
     visitedAt: nullable(place.visitedAt), memo: nullable(place.memo),
     startTime: nullable(place.startTime),
     durationMinutes: place.durationMinutes ? Number(place.durationMinutes) : null,
+    completed: place.completed,
   };
 }
 

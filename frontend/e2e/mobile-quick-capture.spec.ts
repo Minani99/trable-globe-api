@@ -40,7 +40,8 @@ test("진행 중인 여행은 모바일 어디서나 장소·사진·메모로 �
     },
   });
   expect(travelResponse.status()).toBe(201);
-  const travelId = (await travelResponse.json()).data.id as number;
+  const createdTravel = (await travelResponse.json()).data;
+  const travelId = createdTravel.id as number;
 
   await page.route("**/api/weather/forecast?**", async (route) => {
     await route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify({ success: true, data: { available: false, availableFrom: null, days: [] }, message: null }) });
@@ -58,8 +59,24 @@ test("진행 중인 여행은 모바일 어디서나 장소·사진·메모로 �
   await expect(capture.getByRole("list", { name: "오늘의 서울 산책 오늘 일정" })).toContainText("서울숲");
   await expect(capture.getByRole("link", { name: /지도에서 위치 보기/ })).toHaveAttribute("href", /google\.com\/maps\/search/);
   await expect(capture.getByRole("link", { name: /장소/ })).toHaveAttribute("href", `/studio/travels/${travelId}/edit#travel-place-editor`);
-  await expect(capture.getByRole("link", { name: /사진/ })).toHaveAttribute("href", `/studio/travels/${travelId}/edit#travel-photo-editor`);
-  await expect(capture.getByRole("link", { name: /메모/ })).toHaveAttribute("href", `/studio/travels/${travelId}/edit#travel-note-editor`);
+  await capture.getByRole("button", { name: "메모" }).click();
+  const quickNote = capture.getByRole("group", { name: "빠른 메모" });
+  await expect(quickNote.getByRole("textbox", { name: "한 줄 메모" })).toHaveValue("나무 그늘에서 잠시 쉬기");
+  await quickNote.getByRole("textbox", { name: "한 줄 메모" }).fill("서울숲에서 바로 남긴 현장 메모");
+  await quickNote.getByRole("button", { name: "메모 저장" }).click();
+  await expect(capture.getByRole("status")).toContainText("메모를 남겼어요");
+  await expect(capture.getByRole("list", { name: "오늘의 서울 산책 오늘 일정" })).toContainText("서울숲에서 바로 남긴 현장 메모");
+
+  await capture.getByRole("button", { name: "사진" }).click();
+  const quickPhoto = capture.getByRole("group", { name: "빠른 사진 기록" });
+  await expect(quickPhoto.locator('input[type="file"]')).toHaveAttribute("capture", "environment");
+  await quickPhoto.getByRole("button", { name: "빠른 기록 닫기" }).click();
+
+  await capture.getByRole("button", { name: "서울숲 완료" }).click();
+  await expect(capture.getByText("오늘 일정을 모두 마쳤어요.")).toBeVisible();
+  const savedTravel = await page.request.get(`/api/private/travels/${travelId}`);
+  expect(savedTravel.status()).toBe(200);
+  expect((await savedTravel.json()).data.places[0].completedAt).not.toBeNull();
 
   await capture.getByRole("link", { name: /장소/ }).click();
   await expect(page).toHaveURL(new RegExp(`/studio/travels/${travelId}/edit#travel-place-editor$`));

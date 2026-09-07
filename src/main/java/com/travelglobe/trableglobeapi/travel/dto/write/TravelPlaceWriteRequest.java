@@ -26,5 +26,6 @@ public record TravelPlaceWriteRequest(
         @Max(value = 1440, message = "장소 체류 시간은 24시간 이하여야 합니다.")
         Integer durationMinutes,
         @Size(max = 1000, message = "장소 메모는 1,000자 이내로 입력해 주세요.")
-        String memo) {
+        String memo,
+        Boolean completed) {
 }

@@ -11,10 +11,12 @@ import com.travelglobe.trableglobeapi.travel.dto.TravelDetailResponse;
 import com.travelglobe.trableglobeapi.travel.dto.TravelPlanningResponse;
 import com.travelglobe.trableglobeapi.travel.dto.TravelTaskResponse;
 import com.travelglobe.trableglobeapi.travel.dto.write.CreateTravelTaskRequest;
+import com.travelglobe.trableglobeapi.travel.dto.write.CreateTravelPhotoInTripRequest;
 import com.travelglobe.trableglobeapi.travel.dto.write.TravelExpenseWriteRequest;
 import com.travelglobe.trableglobeapi.travel.dto.write.TravelReservationWriteRequest;
 import com.travelglobe.trableglobeapi.travel.dto.write.TravelWriteRequest;
 import com.travelglobe.trableglobeapi.travel.dto.write.UpdateTravelTaskRequest;
+import com.travelglobe.trableglobeapi.travel.dto.write.UpdateTravelPlaceInTripRequest;
 import com.travelglobe.trableglobeapi.travel.dto.write.UpdateTravelBudgetRequest;
 import com.travelglobe.trableglobeapi.travel.service.TravelCommandService;
 import com.travelglobe.trableglobeapi.travel.service.TravelPlanningService;
@@ -84,6 +86,26 @@ public class PrivateTravelController {
             @Valid @RequestBody TravelWriteRequest request) {
         MemberPrincipal principal = AuthenticatedRequest.principal(servletRequest);
         return ApiResponse.ok(travelCommandService.update(principal, travelId, request), "여행을 저장했습니다.");
+    }
+
+    @PatchMapping("/{travelId}/places/{placeId}")
+    public ApiResponse<TravelDetailResponse> updatePlaceInTrip(
+            HttpServletRequest request,
+            @PathVariable Long travelId,
+            @PathVariable Long placeId,
+            @Valid @RequestBody UpdateTravelPlaceInTripRequest body) {
+        return ApiResponse.ok(travelCommandService.updatePlaceInTrip(
+                AuthenticatedRequest.principal(request), travelId, placeId, body), "현장 기록을 저장했습니다.");
+    }
+
+    @PostMapping("/{travelId}/photos")
+    @ResponseStatus(HttpStatus.CREATED)
+    public ApiResponse<TravelDetailResponse> addPhotoInTrip(
+            HttpServletRequest request,
+            @PathVariable Long travelId,
+            @Valid @RequestBody CreateTravelPhotoInTripRequest body) {
+        return ApiResponse.ok(travelCommandService.addPhotoInTrip(
+                AuthenticatedRequest.principal(request), travelId, body), "사진을 기록했습니다.");
     }
 
     @DeleteMapping("/{travelId}")

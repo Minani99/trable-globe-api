@@ -18,8 +18,10 @@ import com.travelglobe.trableglobeapi.travel.domain.Visibility;
 import com.travelglobe.trableglobeapi.travel.dto.OwnedTravelSummaryResponse;
 import com.travelglobe.trableglobeapi.travel.dto.TravelDetailResponse;
 import com.travelglobe.trableglobeapi.travel.dto.write.TravelPhotoWriteRequest;
+import com.travelglobe.trableglobeapi.travel.dto.write.CreateTravelPhotoInTripRequest;
 import com.travelglobe.trableglobeapi.travel.dto.write.TravelPlaceWriteRequest;
 import com.travelglobe.trableglobeapi.travel.dto.write.TravelWriteRequest;
+import com.travelglobe.trableglobeapi.travel.dto.write.UpdateTravelPlaceInTripRequest;
 import com.travelglobe.trableglobeapi.travel.repository.TravelPhotoRepository;
 import com.travelglobe.trableglobeapi.travel.repository.TravelBudgetRepository;
 import com.travelglobe.trableglobeapi.travel.repository.TravelExpenseRepository;
@@ -137,6 +139,37 @@ public class TravelCommandService {
     }
 
     @Transactional
+    public TravelDetailResponse updatePlaceInTrip(MemberPrincipal principal, Long travelId, Long placeId,
+                                                   UpdateTravelPlaceInTripRequest request) {
+        Travel travel = ownedTravel(principal, travelId);
+        TravelPlace place = ownedPlace(travel, placeId);
+        place.updateInTrip(emptyToNull(request.memo()), request.completed());
+        return TravelDetailResponse.of(
+                travel, travelPhotoRepository.findAllForTravel(travelId), null, null);
+    }
+
+    @Transactional
+    public TravelDetailResponse addPhotoInTrip(MemberPrincipal principal, Long travelId,
+                                                CreateTravelPhotoInTripRequest request) {
+        Travel travel = ownedTravel(principal, travelId);
+        TravelPlace place = request.travelPlaceId() == null
+                ? null
+                : ownedPlace(travel, request.travelPlaceId());
+        List<TravelPhoto> currentPhotos = travelPhotoRepository.findAllForTravel(travelId);
+        TravelPhoto photo = TravelPhoto.create(
+                travel,
+                place,
+                request.imageUrl().trim(),
+                emptyToNull(request.caption()),
+                request.takenAt(),
+                currentPhotos.size());
+        travelPhotoRepository.saveAndFlush(photo);
+        List<TravelPhoto> photos = new ArrayList<>(currentPhotos);
+        photos.add(photo);
+        return TravelDetailResponse.of(travel, photos, null, null);
+    }
+
+    @Transactional
     public void delete(MemberPrincipal principal, Long travelId) {
         Travel travel = ownedTravel(principal, travelId);
         travelLikeRepository.deleteAllByTravelId(travelId);
@@ -153,13 +186,20 @@ public class TravelCommandService {
                 .orElseThrow(() -> ResourceNotFoundException.travel(travelId));
     }
 
+    private static TravelPlace ownedPlace(Travel travel, Long placeId) {
+        return travel.getPlaces().stream()
+                .filter(place -> place.getId().equals(placeId))
+                .findFirst()
+                .orElseThrow(() -> new ResourceNotFoundException("여행 장소를 찾을 수 없습니다: " + placeId));
+    }
+
     private List<TravelPlace> buildPlaces(List<TravelPlaceWriteRequest> requests) {
         List<TravelPlace> places = new ArrayList<>();
         for (int index = 0; index < requests.size(); index++) {
             TravelPlaceWriteRequest request = requests.get(index);
             Country country = locationResolverService.resolveCountry(request.country());
             City city = locationResolverService.resolveCity(country, request.city());
-            places.add(TravelPlace.create(
+            TravelPlace place = TravelPlace.create(
                     country,
                     city,
                     request.placeName().trim(),
@@ -169,7 +209,9 @@ public class TravelCommandService {
                     request.startTime(),
                     request.durationMinutes(),
                     emptyToNull(request.memo()),
-                    index));
+                    index);
+            place.updateInTrip(emptyToNull(request.memo()), Boolean.TRUE.equals(request.completed()));
+            places.add(place);
         }
         return places;
     }

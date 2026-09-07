@@ -4,6 +4,7 @@ import com.travelglobe.trableglobeapi.travel.domain.TravelPlace;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.time.Instant;
 
 /**
  * A stop on the itinerary.
@@ -22,6 +23,7 @@ public record TravelPlaceResponse(
         LocalTime startTime,
         Integer durationMinutes,
         String memo,
+        Instant completedAt,
         int sortOrder) {
 
     public static TravelPlaceResponse from(TravelPlace place) {
@@ -36,6 +38,7 @@ public record TravelPlaceResponse(
                 place.getStartTime(),
                 place.getDurationMinutes(),
                 place.getMemo(),
+                place.getCompletedAt(),
                 place.getSortOrder());
     }
 }

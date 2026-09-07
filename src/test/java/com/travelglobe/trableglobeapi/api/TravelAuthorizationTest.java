@@ -78,6 +78,41 @@ class TravelAuthorizationTest {
     }
 
     @Test
+    @DisplayName("소유자는 현장 완료·메모·사진을 바로 저장하고 다른 사용자는 막힌다")
+    void inTripQuickActionsStayOwnerOnly() throws Exception {
+        Member owner = signUp();
+        long travelId = createTravel(owner.token(), "현장 기록 여행", "PRIVATE");
+        String detail = okBody(get("/api/private/travels/" + travelId)
+                .header("Authorization", bearer(owner)));
+        long placeId = ((Number) JsonPath.read(detail, "$.data.places[0].id")).longValue();
+
+        mockMvc.perform(patch("/api/private/travels/" + travelId + "/places/" + placeId)
+                        .header("Authorization", bearer(owner))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"memo\":\"현장에서 바로 남긴 메모\",\"completed\":true}"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.places[0].memo").value("현장에서 바로 남긴 메모"))
+                .andExpect(jsonPath("$.data.places[0].completedAt").isNotEmpty());
+
+        mockMvc.perform(post("/api/private/travels/" + travelId + "/photos")
+                        .header("Authorization", bearer(owner))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {"imageUrl":"https://images.example.com/memory.jpg",
+                                 "caption":null,"takenAt":"2026-08-01","travelPlaceId":%d}
+                                """.formatted(placeId)))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.data.photos[0].travelPlaceId").value(placeId));
+
+        Member stranger = signUp();
+        mockMvc.perform(patch("/api/private/travels/" + travelId + "/places/" + placeId)
+                        .header("Authorization", bearer(stranger))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"memo\":\"침입\",\"completed\":false}"))
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
     @DisplayName("남의 여행을 삭제할 수 없고, 원본도 살아남는다")
     void aStrangerCannotDeleteSomeoneElsesTravel() throws Exception {
         Member owner = signUp();
