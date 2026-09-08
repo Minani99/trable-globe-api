@@ -145,6 +145,12 @@ export interface HealthStatus {
   environment?: string | null;
 }
 
+export interface ProfileRecapCustomization {
+  year: number;
+  narrative: string | null;
+  featuredTravelIds: number[];
+}
+
 export interface AuthMember {
   id: number;
   username: string;

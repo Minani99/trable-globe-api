@@ -24,4 +24,7 @@ public interface TravelTaskRepository extends JpaRepository<TravelTask, Long> {
     long countByTravelId(Long travelId);
 
     void deleteAllByTravelId(Long travelId);
+
+    /** Account deletion: removes every task from every trip the member owns. */
+    void deleteAllByTravelMemberId(Long memberId);
 }

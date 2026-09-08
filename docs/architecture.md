@@ -168,6 +168,21 @@ WebGL 캔버스는 스크린 리더가 읽을 DOM이 없고 마커에 포커스�
 - 모든 공개 조회 쿼리가 `Visibility`를 명시적으로 인자로 받습니다.
   기본값을 두지 않았기 때문에 필터를 빠뜨리면 컴파일이 되지 않습니다.
 
+## 6.5 삭제 · 시간 · 플레이스홀더 규칙이 사는 곳
+
+- **삭제는 두 서비스만 합니다.** `TravelPurgeService`가 "여행 하나 + 딸려 있는 것들
+  (체크리스트·예산·지출·예약·좋아요·댓글)"을 지우는 유일한 곳이고,
+  `AccountDeletionService`가 그 위에서 "회원 + 소셜 관계 + 모든 여행 + 인증 상태"를 지웁니다.
+  PostgreSQL에는 `on delete cascade`가 있지만 로컬 H2(Hibernate DDL)에는 없어서,
+  애플리케이션이 명시적으로 지워야 두 환경이 같은 동작을 합니다.
+  자식 테이블을 새로 추가하면 `TravelPurgeService` 한 곳만 고치면 됩니다.
+- **"오늘"은 `Clock` 빈에서 옵니다.** `ClockConfig`가 `travel-globe.timezone`(기본 `Asia/Seoul`)
+  으로 `Clock`을 만들고, 서비스는 `LocalDate.now(clock)`을 씁니다. 테스트에서 날짜를
+  고정하고 싶으면 이 빈 하나만 바꿉니다.
+- **"장소를 골라주세요" 마커**는 백엔드 `TravelPlanningPlaceholder.MARKER`와 프론트
+  `lib/travel-placeholders.ts`의 `PLACEHOLDER_PLACE_MARKER` 두 상수로만 존재합니다.
+  둘은 반드시 같은 값이어야 합니다.
+
 ## 7. 알려진 한계
 
 - **여행 목록에 페이지네이션이 없습니다.** fetch join으로 컬렉션을 함께 가져오기 때문에

@@ -9,4 +9,6 @@ public interface TravelBudgetRepository extends JpaRepository<TravelBudget, Long
     Optional<TravelBudget> findByTravelIdAndTravelMemberId(Long travelId, Long memberId);
 
     void deleteAllByTravelId(Long travelId);
+
+    void deleteAllByTravelMemberId(Long memberId);
 }

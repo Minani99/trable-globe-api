@@ -793,6 +793,199 @@
   font-size: 0.66rem;
 }
 
+.travel-recap__edit-trigger {
+  width: fit-content;
+  min-height: 2.35rem;
+  margin-top: 0.5rem;
+  padding-inline: 0.9rem;
+  border: 1px solid var(--border-strong);
+  border-radius: 999px;
+  background: var(--surface);
+  color: var(--text-primary);
+  font-size: 0.7rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.travel-recap__edit-trigger:hover,
+.travel-recap__edit-trigger:focus-visible {
+  border-color: var(--accent-border);
+  color: var(--accent-strong);
+}
+
+.travel-recap-editor {
+  display: grid;
+  gap: 1.1rem;
+  margin: 0 1.7rem 1.5rem;
+  padding: 1.35rem;
+  border: 1px solid var(--border);
+  border-radius: 1.1rem;
+  background: color-mix(in srgb, var(--surface) 92%, var(--accent-soft));
+}
+
+.travel-recap-editor__heading,
+.travel-recap-editor__actions {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.travel-recap-editor__heading strong,
+.travel-recap-editor__narrative > span,
+.travel-recap-editor legend {
+  color: var(--text-primary);
+  font-size: 0.82rem;
+  font-weight: 750;
+}
+
+.travel-recap-editor__heading p,
+.travel-recap-editor__heading > span,
+.travel-recap-editor legend small {
+  margin: 0.25rem 0 0;
+  color: var(--text-tertiary);
+  font-size: 0.68rem;
+  font-weight: 500;
+}
+
+.travel-recap-editor__narrative {
+  display: grid;
+  gap: 0.5rem;
+}
+
+.travel-recap-editor textarea {
+  width: 100%;
+  min-height: 5.5rem;
+  resize: vertical;
+  padding: 0.8rem 0.9rem;
+  border: 1px solid var(--border-strong);
+  border-radius: 0.8rem;
+  background: var(--surface);
+  color: var(--text-primary);
+  font: inherit;
+  font-size: 0.86rem;
+  line-height: 1.6;
+}
+
+.travel-recap-editor textarea:focus {
+  outline: 2px solid color-mix(in srgb, var(--accent) 32%, transparent);
+  border-color: var(--accent-border);
+}
+
+.travel-recap-editor fieldset {
+  min-width: 0;
+  padding: 0;
+  border: 0;
+}
+
+.travel-recap-editor legend {
+  margin-bottom: 0.65rem;
+}
+
+.travel-recap-editor__travels {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.65rem;
+}
+
+.travel-recap-editor__travels label {
+  position: relative;
+  display: grid;
+  grid-template-columns: 3.5rem minmax(0, 1fr);
+  align-items: center;
+  gap: 0.65rem;
+  min-width: 0;
+  padding: 0.45rem;
+  border: 1px solid var(--border);
+  border-radius: 0.8rem;
+  background: var(--surface);
+  cursor: pointer;
+}
+
+.travel-recap-editor__travels label.is-selected {
+  border-color: var(--accent-border);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent) 13%, transparent);
+}
+
+.travel-recap-editor__travels label:has(input:disabled) {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+.travel-recap-editor__travels input {
+  position: absolute;
+  top: 0.45rem;
+  left: 0.45rem;
+  z-index: 1;
+  width: 1rem;
+  height: 1rem;
+  accent-color: var(--accent);
+}
+
+.travel-recap-editor__travels img,
+.travel-recap-editor__travels label > div {
+  width: 3.5rem;
+  height: 3rem;
+  border-radius: 0.55rem;
+  object-fit: cover;
+}
+
+.travel-recap-editor__travels label > span {
+  display: grid;
+  gap: 0.2rem;
+  min-width: 0;
+}
+
+.travel-recap-editor__travels strong,
+.travel-recap-editor__travels small {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.travel-recap-editor__travels strong {
+  color: var(--text-primary);
+  font-size: 0.76rem;
+}
+
+.travel-recap-editor__travels small {
+  color: var(--text-tertiary);
+  font-size: 0.65rem;
+}
+
+.travel-recap-editor__error {
+  margin: -0.35rem 0 0;
+  color: #b54832;
+  font-size: 0.74rem;
+}
+
+.travel-recap-editor__actions {
+  align-items: center;
+}
+
+.travel-recap-editor__actions button {
+  min-height: 2.5rem;
+  padding-inline: 1rem;
+  border: 1px solid var(--border-strong);
+  border-radius: 999px;
+  background: var(--surface);
+  color: var(--text-primary);
+  font-size: 0.74rem;
+  font-weight: 750;
+  cursor: pointer;
+}
+
+.travel-recap-editor__actions button[type="submit"] {
+  border-color: var(--accent);
+  background: var(--accent);
+  color: #fff;
+}
+
+.travel-recap-editor__actions button:disabled {
+  cursor: wait;
+  opacity: 0.55;
+}
+
 .travel-recap__stats {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
@@ -1290,6 +1483,36 @@
 
   .travel-recap__heading h2 {
     font-size: 1.65rem;
+  }
+
+  .travel-recap__edit-trigger {
+    min-height: 2.65rem;
+  }
+
+  .travel-recap-editor {
+    gap: 1rem;
+    margin: 0 0.85rem 1.1rem;
+    padding: 1rem;
+    border-radius: 0.95rem;
+  }
+
+  .travel-recap-editor__travels {
+    grid-template-columns: 1fr;
+  }
+
+  .travel-recap-editor__travels label {
+    grid-template-columns: 4.25rem minmax(0, 1fr);
+    min-height: 4rem;
+  }
+
+  .travel-recap-editor__travels img,
+  .travel-recap-editor__travels label > div {
+    width: 4.25rem;
+    height: 3.25rem;
+  }
+
+  .travel-recap-editor__actions button {
+    min-height: 2.75rem;
   }
 
   .recap-actions__buttons {

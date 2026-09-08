@@ -8,11 +8,10 @@ import com.travelglobe.trableglobeapi.location.domain.Country;
 import com.travelglobe.trableglobeapi.location.service.LocationResolverService;
 import com.travelglobe.trableglobeapi.member.domain.Member;
 import com.travelglobe.trableglobeapi.member.repository.MemberRepository;
-import com.travelglobe.trableglobeapi.social.repository.TravelCommentRepository;
-import com.travelglobe.trableglobeapi.social.repository.TravelLikeRepository;
 import com.travelglobe.trableglobeapi.travel.domain.Travel;
 import com.travelglobe.trableglobeapi.travel.domain.TravelPhoto;
 import com.travelglobe.trableglobeapi.travel.domain.TravelPlace;
+import com.travelglobe.trableglobeapi.travel.domain.TravelPlanningPlaceholder;
 import com.travelglobe.trableglobeapi.travel.domain.TravelTask;
 import com.travelglobe.trableglobeapi.travel.domain.Visibility;
 import com.travelglobe.trableglobeapi.travel.dto.OwnedTravelSummaryResponse;
@@ -23,13 +22,10 @@ import com.travelglobe.trableglobeapi.travel.dto.write.TravelPlaceWriteRequest;
 import com.travelglobe.trableglobeapi.travel.dto.write.TravelWriteRequest;
 import com.travelglobe.trableglobeapi.travel.dto.write.UpdateTravelPlaceInTripRequest;
 import com.travelglobe.trableglobeapi.travel.repository.TravelPhotoRepository;
-import com.travelglobe.trableglobeapi.travel.repository.TravelBudgetRepository;
-import com.travelglobe.trableglobeapi.travel.repository.TravelExpenseRepository;
 import com.travelglobe.trableglobeapi.travel.repository.TravelRepository;
-import com.travelglobe.trableglobeapi.travel.repository.TravelReservationRepository;
 import com.travelglobe.trableglobeapi.travel.repository.TravelTaskRepository;
+import java.time.Clock;
 import java.time.LocalDate;
-import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -45,34 +41,25 @@ public class TravelCommandService {
     private final MemberRepository memberRepository;
     private final TravelRepository travelRepository;
     private final TravelPhotoRepository travelPhotoRepository;
-    private final TravelLikeRepository travelLikeRepository;
-    private final TravelCommentRepository travelCommentRepository;
     private final TravelTaskRepository travelTaskRepository;
-    private final TravelBudgetRepository travelBudgetRepository;
-    private final TravelExpenseRepository travelExpenseRepository;
-    private final TravelReservationRepository travelReservationRepository;
+    private final TravelPurgeService travelPurgeService;
     private final LocationResolverService locationResolverService;
+    private final Clock clock;
 
     public TravelCommandService(MemberRepository memberRepository,
                                 TravelRepository travelRepository,
                                 TravelPhotoRepository travelPhotoRepository,
-                                TravelLikeRepository travelLikeRepository,
-                                TravelCommentRepository travelCommentRepository,
                                 TravelTaskRepository travelTaskRepository,
-                                TravelBudgetRepository travelBudgetRepository,
-                                TravelExpenseRepository travelExpenseRepository,
-                                TravelReservationRepository travelReservationRepository,
-                                LocationResolverService locationResolverService) {
+                                TravelPurgeService travelPurgeService,
+                                LocationResolverService locationResolverService,
+                                Clock clock) {
         this.memberRepository = memberRepository;
         this.travelRepository = travelRepository;
         this.travelPhotoRepository = travelPhotoRepository;
-        this.travelLikeRepository = travelLikeRepository;
-        this.travelCommentRepository = travelCommentRepository;
         this.travelTaskRepository = travelTaskRepository;
-        this.travelBudgetRepository = travelBudgetRepository;
-        this.travelExpenseRepository = travelExpenseRepository;
-        this.travelReservationRepository = travelReservationRepository;
+        this.travelPurgeService = travelPurgeService;
         this.locationResolverService = locationResolverService;
+        this.clock = clock;
     }
 
     @Transactional(readOnly = true)
@@ -112,8 +99,7 @@ public class TravelCommandService {
                 request.visibility());
         travel.replacePlaces(buildPlaces(request.places()));
         Travel saved = travelRepository.saveAndFlush(travel);
-        if (request.visibility() == com.travelglobe.trableglobeapi.travel.domain.Visibility.PRIVATE
-                && !request.endDate().isBefore(LocalDate.now(ZoneId.of("Asia/Seoul")))) {
+        if (isUpcomingPlan(request)) {
             travelTaskRepository.saveAll(TravelTask.defaultsFor(saved));
         }
         List<TravelPhoto> photos = savePhotos(saved, request.photos());
@@ -171,14 +157,7 @@ public class TravelCommandService {
 
     @Transactional
     public void delete(MemberPrincipal principal, Long travelId) {
-        Travel travel = ownedTravel(principal, travelId);
-        travelLikeRepository.deleteAllByTravelId(travelId);
-        travelCommentRepository.deleteAllByTravelId(travelId);
-        travelTaskRepository.deleteAllByTravelId(travelId);
-        travelExpenseRepository.deleteAllByTravelId(travelId);
-        travelReservationRepository.deleteAllByTravelId(travelId);
-        travelBudgetRepository.deleteAllByTravelId(travelId);
-        travelRepository.delete(travel);
+        travelPurgeService.purge(ownedTravel(principal, travelId));
     }
 
     private Travel ownedTravel(MemberPrincipal principal, Long travelId) {
@@ -234,7 +213,16 @@ public class TravelCommandService {
         return requests.isEmpty() ? List.of() : travelPhotoRepository.saveAll(photos);
     }
 
-    private static void validateDates(TravelWriteRequest request) {
+    /** A private trip that has not ended yet is a plan, and plans start with a default checklist. */
+    private boolean isUpcomingPlan(TravelWriteRequest request) {
+        return request.visibility() == Visibility.PRIVATE && !request.endDate().isBefore(today());
+    }
+
+    private LocalDate today() {
+        return LocalDate.now(clock);
+    }
+
+    private void validateDates(TravelWriteRequest request) {
         if (request.endDate().isBefore(request.startDate())) {
             throw new InvalidRequestException("여행 종료일은 시작일보다 빠를 수 없습니다.");
         }
@@ -246,18 +234,16 @@ public class TravelCommandService {
             }
         }
         if (request.visibility() == Visibility.PUBLIC) {
-            if (request.endDate().isAfter(LocalDate.now(ZoneId.of("Asia/Seoul")))) {
+            if (request.endDate().isAfter(today())) {
                 throw new InvalidRequestException("여행이 끝난 뒤 기록을 공개할 수 있습니다.");
             }
-            if (request.places().stream().anyMatch(TravelCommandService::isPlanningPlaceholder)) {
+            if (request.places().stream()
+                    .anyMatch(place -> TravelPlanningPlaceholder.isPlaceholder(place.placeName()))) {
                 throw new InvalidRequestException("미정인 장소를 실제 방문 장소로 바꾼 뒤 기록을 공개해 주세요.");
             }
         }
     }
 
-    private static boolean isPlanningPlaceholder(TravelPlaceWriteRequest place) {
-        return place.placeName().contains("골라주세요");
-    }
 
     private static String emptyToNull(String value) {
         return StringUtils.hasText(value) ? value.trim() : null;

@@ -2,11 +2,12 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 
 import { ApiError, apiMutation } from "@/lib/api/client";
 import { travelPath } from "@/lib/config";
 import { isPlaceholderPlaceName } from "@/lib/travel-placeholders";
+import { useUnsavedChangesGuard } from "@/lib/useUnsavedChangesGuard";
 import { formatDateRange } from "@/lib/utils/format";
 import type { TravelDetail, TravelPhotoWriteInput, TravelPlaceWriteInput, TravelWriteInput, Visibility } from "@/types";
 
@@ -27,24 +28,10 @@ export function TravelFinishEditor({ username, travel }: { username: string; tra
   const readyItems = [unresolvedPlaces.length === 0, travel.photos.length > 0, Boolean(coverImageUrl), Boolean(description.trim())];
   const readyCount = readyItems.filter(Boolean).length;
 
-  useEffect(() => {
-    if (!dirty || pending) return;
-    const warn = (event: BeforeUnloadEvent) => event.preventDefault();
-    const warnBeforeLink = (event: MouseEvent) => {
-      const link = (event.target as Element | null)?.closest("a");
-      if (!link || link.target === "_blank" || link.hasAttribute("download")) return;
-      if (!window.confirm("저장하지 않은 변경 내용이 있습니다. 이 화면을 나갈까요?")) {
-        event.preventDefault();
-        event.stopPropagation();
-      }
-    };
-    window.addEventListener("beforeunload", warn);
-    document.addEventListener("click", warnBeforeLink, true);
-    return () => {
-      window.removeEventListener("beforeunload", warn);
-      document.removeEventListener("click", warnBeforeLink, true);
-    };
-  }, [dirty, pending]);
+  useUnsavedChangesGuard({
+    enabled: dirty && !pending,
+    message: "저장하지 않은 변경 내용이 있습니다. 이 화면을 나갈까요?",
+  });
 
   function updateCaption(index: number, value: string) {
     setCaptions((current) => current.map((caption, captionIndex) => captionIndex === index ? value : caption));

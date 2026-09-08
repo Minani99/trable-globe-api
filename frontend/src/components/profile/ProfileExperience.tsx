@@ -24,7 +24,15 @@ import { isDemoProfile } from "@/lib/demo-profile";
 import { arcsAtMoment, buildGlobeTimeline, countriesAtMoment, countriesForTravels } from "@/lib/globeTimeline";
 import { buildTravelRecap, buildTravelYearComparison, travelsForYear, travelYears } from "@/lib/travelInsights";
 import { publicDisplayName } from "@/lib/utils/profile";
-import type { AuthMember, FollowStatus, MemberSafetyStatus, TravelSummary, UserProfile, VisitedCountry } from "@/types";
+import type {
+  AuthMember,
+  FollowStatus,
+  MemberSafetyStatus,
+  ProfileRecapCustomization,
+  TravelSummary,
+  UserProfile,
+  VisitedCountry,
+} from "@/types";
 
 interface ProfileExperienceProps {
   profile: UserProfile;
@@ -34,6 +42,7 @@ interface ProfileExperienceProps {
   relationship: FollowStatus | null;
   safetyStatus: MemberSafetyStatus | null;
   initialYear?: number | null;
+  initialRecapCustomizations?: ProfileRecapCustomization[];
   mode?: "profile" | "globe";
 }
 
@@ -54,6 +63,7 @@ export function ProfileExperience({
   relationship,
   safetyStatus,
   initialYear = null,
+  initialRecapCustomizations = [],
   mode = "profile",
 }: ProfileExperienceProps) {
   const years = useMemo(() => travelYears(travels), [travels]);
@@ -87,6 +97,7 @@ export function ProfileExperience({
   const [timelineControlsExpanded, setTimelineControlsExpanded] = useState(false);
   const [mobileArchiveView, setMobileArchiveView] = useState<MobileArchiveView>("travels");
   const [worldView, setWorldView] = useState<WorldView>("globe");
+  const [recapCustomizations, setRecapCustomizations] = useState(initialRecapCustomizations);
   // Keyed by the country it was fetched for, so a result arriving after the visitor moved
   // on is simply ignored instead of briefly showing the wrong country's trips.
   const [countryTravels, setCountryTravels] = useState<{
@@ -97,6 +108,24 @@ export function ProfileExperience({
   const demoProfile = isDemoProfile(profile.username);
   const displayName = publicDisplayName(profile.displayName);
   const globeOnly = mode === "globe";
+  const recapCustomization = selectedYear === null
+    ? null
+    : recapCustomizations.find((item) => item.year === selectedYear) ?? null;
+  const displayedRecap = useMemo(() => {
+    if (!recapCustomization?.featuredTravelIds.length) return recap;
+    const selected = recapCustomization.featuredTravelIds
+      .map((id) => scopedTravels.find((travel) => travel.id === id))
+      .filter((travel): travel is TravelSummary => Boolean(travel));
+    return selected.length > 0 ? { ...recap, featuredTravels: selected } : recap;
+  }, [recap, recapCustomization, scopedTravels]);
+
+  const updateRecapCustomization = useCallback((next: ProfileRecapCustomization | null) => {
+    if (selectedYear === null) return;
+    setRecapCustomizations((current) => {
+      const withoutYear = current.filter((item) => item.year !== selectedYear);
+      return next ? [...withoutYear, next] : withoutYear;
+    });
+  }, [selectedYear]);
 
   const changeWorldView = useCallback((view: WorldView) => {
     setWorldView(view);
@@ -571,10 +600,14 @@ export function ProfileExperience({
         ) : null}
 
         <TravelYearRecap
-          recap={recap}
+          recap={displayedRecap}
           comparison={yearComparison}
           username={profile.username}
           displayName={displayName}
+          isOwnProfile={isOwnProfile}
+          availableTravels={scopedTravels}
+          customization={recapCustomization}
+          onCustomizationChange={updateRecapCustomization}
         />
       </div> : null}
     </>

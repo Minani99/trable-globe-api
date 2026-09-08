@@ -16,7 +16,6 @@ import com.travelglobe.trableglobeapi.auth.dto.TokenRequest;
 import com.travelglobe.trableglobeapi.auth.dto.UpdateProfileRequest;
 import com.travelglobe.trableglobeapi.auth.dto.UpdateAccountRequest;
 import com.travelglobe.trableglobeapi.auth.dto.UsernameAvailabilityResponse;
-import com.travelglobe.trableglobeapi.auth.repository.AccountActionTokenRepository;
 import com.travelglobe.trableglobeapi.auth.repository.MemberCredentialRepository;
 import com.travelglobe.trableglobeapi.auth.security.MemberPrincipal;
 import com.travelglobe.trableglobeapi.auth.security.PasswordHasher;
@@ -27,17 +26,9 @@ import com.travelglobe.trableglobeapi.global.exception.ResourceNotFoundException
 import com.travelglobe.trableglobeapi.member.domain.Member;
 import com.travelglobe.trableglobeapi.member.domain.UsernamePolicy;
 import com.travelglobe.trableglobeapi.member.repository.MemberRepository;
-import com.travelglobe.trableglobeapi.social.repository.TravelCommentRepository;
-import com.travelglobe.trableglobeapi.social.repository.TravelLikeRepository;
-import com.travelglobe.trableglobeapi.social.repository.MemberFollowRepository;
-import com.travelglobe.trableglobeapi.social.repository.MemberBlockRepository;
-import com.travelglobe.trableglobeapi.social.repository.MemberReportRepository;
-import com.travelglobe.trableglobeapi.travel.domain.Travel;
-import com.travelglobe.trableglobeapi.travel.repository.TravelPhotoRepository;
-import com.travelglobe.trableglobeapi.travel.repository.TravelRepository;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
-import java.util.List;
+import java.time.Instant;
 import java.util.Locale;
 import java.util.Optional;
 import org.springframework.beans.factory.annotation.Value;
@@ -45,59 +36,45 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
+/**
+ * Identity use cases: sign up, sign in, profile/account edits, email verification and
+ * password recovery. Anything that touches other domains (deleting a member's trips,
+ * follows, comments) is delegated to {@link AccountDeletionService}.
+ */
 @Service
 public class AuthService {
 
     private static final Duration VERIFICATION_LIFETIME = Duration.ofHours(24);
     private static final Duration RESET_LIFETIME = Duration.ofHours(1);
+    /** bcrypt silently truncates input past 72 bytes, so longer passwords are rejected up front. */
+    private static final int BCRYPT_MAX_PASSWORD_BYTES = 72;
     private static final String RESET_SENT_MESSAGE =
             "가입된 이메일이라면 비밀번호 재설정 링크를 보냈습니다.";
 
     private final MemberRepository memberRepository;
     private final MemberCredentialRepository credentialRepository;
-    private final AccountActionTokenRepository actionTokenRepository;
-    private final TravelRepository travelRepository;
-    private final TravelPhotoRepository travelPhotoRepository;
-    private final TravelLikeRepository travelLikeRepository;
-    private final TravelCommentRepository travelCommentRepository;
-    private final MemberFollowRepository memberFollowRepository;
-    private final MemberBlockRepository memberBlockRepository;
-    private final MemberReportRepository memberReportRepository;
     private final AuthSessionService authSessionService;
     private final AccountActionTokenService actionTokenService;
     private final AccountMailService accountMailService;
+    private final AccountDeletionService accountDeletionService;
     private final PasswordHasher passwordHasher;
     private final String dummyPasswordHash;
     private final boolean exposeActionTokens;
 
     public AuthService(MemberRepository memberRepository,
                        MemberCredentialRepository credentialRepository,
-                       AccountActionTokenRepository actionTokenRepository,
-                       TravelRepository travelRepository,
-                       TravelPhotoRepository travelPhotoRepository,
-                       TravelLikeRepository travelLikeRepository,
-                       TravelCommentRepository travelCommentRepository,
-                       MemberFollowRepository memberFollowRepository,
-                       MemberBlockRepository memberBlockRepository,
-                       MemberReportRepository memberReportRepository,
                        AuthSessionService authSessionService,
                        AccountActionTokenService actionTokenService,
                        AccountMailService accountMailService,
+                       AccountDeletionService accountDeletionService,
                        PasswordHasher passwordHasher,
                        @Value("${travel-globe.auth.expose-action-tokens:false}") boolean exposeActionTokens) {
         this.memberRepository = memberRepository;
         this.credentialRepository = credentialRepository;
-        this.actionTokenRepository = actionTokenRepository;
-        this.travelRepository = travelRepository;
-        this.travelPhotoRepository = travelPhotoRepository;
-        this.travelLikeRepository = travelLikeRepository;
-        this.travelCommentRepository = travelCommentRepository;
-        this.memberFollowRepository = memberFollowRepository;
-        this.memberBlockRepository = memberBlockRepository;
-        this.memberReportRepository = memberReportRepository;
         this.authSessionService = authSessionService;
         this.actionTokenService = actionTokenService;
         this.accountMailService = accountMailService;
+        this.accountDeletionService = accountDeletionService;
         this.passwordHasher = passwordHasher;
         this.exposeActionTokens = exposeActionTokens;
         this.dummyPasswordHash = passwordHasher.hash("timing-only-password");
@@ -211,7 +188,7 @@ public class AuthService {
     @Transactional
     public AuthMemberResponse confirmEmail(TokenRequest request) {
         AccountActionToken token = actionTokenService.consume(request.token(), AccountActionPurpose.VERIFY_EMAIL);
-        token.getCredential().verifyEmail(java.time.Instant.now());
+        token.getCredential().verifyEmail(Instant.now());
         return AuthMemberResponse.from(token.getCredential());
     }
 
@@ -242,22 +219,7 @@ public class AuthService {
         if (!passwordHasher.matches(request.password(), credential.getPasswordHash())) {
             throw new AuthenticationFailedException();
         }
-        Long memberId = credential.getMember().getId();
-        memberFollowRepository.deleteAllByFollowerIdOrFollowingId(memberId, memberId);
-        memberBlockRepository.deleteAllForMember(memberId);
-        memberReportRepository.deleteAllForMember(memberId);
-        travelLikeRepository.deleteAllByMemberId(memberId);
-        travelCommentRepository.deleteAllByMemberId(memberId);
-        travelLikeRepository.deleteAllByTravelMemberId(memberId);
-        travelCommentRepository.deleteAllByTravelMemberId(memberId);
-        travelPhotoRepository.deleteAllForMember(memberId);
-        List<Travel> travels = travelRepository.findOwnedTravels(memberId);
-        travelRepository.deleteAll(travels);
-        travelRepository.flush();
-        actionTokenRepository.deleteAllForCredential(credential.getId());
-        authSessionService.deleteAll(memberId);
-        credentialRepository.delete(credential);
-        memberRepository.delete(credential.getMember());
+        accountDeletionService.delete(credential);
     }
 
     private AccountActionTokenService.IssuedToken sendVerification(MemberCredential credential) {
@@ -287,7 +249,7 @@ public class AuthService {
     }
 
     private static void validatePasswordBytes(String password) {
-        if (password.getBytes(StandardCharsets.UTF_8).length > 72) {
+        if (password.getBytes(StandardCharsets.UTF_8).length > BCRYPT_MAX_PASSWORD_BYTES) {
             throw new InvalidRequestException("비밀번호는 UTF-8 기준 72바이트 이내로 입력해 주세요.");
         }
     }

@@ -16,6 +16,7 @@ import {
 } from "@/lib/uploads/client";
 import { readPhotoMetadata, type PhotoMetadata } from "@/lib/uploads/photo-metadata";
 import { isPlaceholderPlaceName } from "@/lib/travel-placeholders";
+import { useUnsavedChangesGuard } from "@/lib/useUnsavedChangesGuard";
 import type { TravelDetail, TravelPhotoWriteInput, TravelPlaceWriteInput, TravelWriteInput, Visibility } from "@/types";
 import { PlaceLocationPicker } from "@/components/studio/PlaceLocationPicker";
 
@@ -269,29 +270,11 @@ export function TravelEditor({
     return () => window.clearTimeout(timer);
   }, [coverImageUrl, description, dirty, draftStorageKey, endDate, pending, photos, places, startDate, title, visibility]);
 
-  useEffect(() => {
-    if (!dirty || pending) return;
-    const warnBeforeUnload = (event: BeforeUnloadEvent) => event.preventDefault();
-    const warnBeforeLink = (event: MouseEvent) => {
-      const target = event.target as Element | null;
-      const link = target?.closest("a");
-      if (!link || link.target === "_blank" || link.hasAttribute("download")) return;
-      const href = link.getAttribute("href");
-      if (!href || href.startsWith("#")) return;
-      if (!window.confirm("아직 서버에 저장하지 않은 변경 내용이 있습니다. 페이지를 떠날까요? 임시 저장본은 이 브라우저에 남습니다.")) {
-        event.preventDefault();
-        event.stopPropagation();
-        return;
-      }
-      setDirty(false);
-    };
-    window.addEventListener("beforeunload", warnBeforeUnload);
-    document.addEventListener("click", warnBeforeLink, true);
-    return () => {
-      window.removeEventListener("beforeunload", warnBeforeUnload);
-      document.removeEventListener("click", warnBeforeLink, true);
-    };
-  }, [dirty, pending]);
+  useUnsavedChangesGuard({
+    enabled: dirty && !pending,
+    message: "아직 서버에 저장하지 않은 변경 내용이 있습니다. 페이지를 떠날까요? 임시 저장본은 이 브라우저에 남습니다.",
+    onLeave: () => setDirty(false),
+  });
 
   function updatePlace(index: number, field: keyof PlaceDraft, value: string) {
     setPlaces((current) => current.map((place, placeIndex) =>

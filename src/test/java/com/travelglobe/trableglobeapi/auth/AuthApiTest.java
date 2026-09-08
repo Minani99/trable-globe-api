@@ -384,6 +384,68 @@ class AuthApiTest {
                 .andExpect(status().isOk());
     }
 
+    @Test
+    @DisplayName("계획(체크리스트 포함)을 가진 계정도 한 번에 삭제된다")
+    void accountDeletionPurgesPlansWithChecklists() throws Exception {
+        String username = nextUsername();
+        String token = register(username);
+
+        // A private trip that has not ended yet becomes a plan and receives default tasks -
+        // rows that only point at the trip and are not part of the JPA aggregate.
+        ResultActions created = mockMvc.perform(withJson(post("/api/private/travels"), upcomingPlanBody())
+                        .header("Authorization", "Bearer " + token))
+                .andExpect(status().isCreated());
+        int travelId = JsonPath.read(bodyOf(created), "$.data.id");
+        mockMvc.perform(get("/api/private/travels/" + travelId + "/tasks")
+                        .header("Authorization", "Bearer " + token))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data").isNotEmpty());
+
+        mockMvc.perform(delete("/api/auth/account")
+                        .header("Authorization", "Bearer " + token)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {"password":"%s"}
+                                """.formatted(PASSWORD)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.success").value(true));
+
+        mockMvc.perform(get("/api/auth/me").header("Authorization", "Bearer " + token))
+                .andExpect(status().isUnauthorized());
+        mockMvc.perform(get("/api/profiles/" + username))
+                .andExpect(status().isNotFound());
+    }
+
+    private static String upcomingPlanBody() {
+        return """
+                {
+                  "title": "다음 여행",
+                  "description": null,
+                  "startDate": "2099-08-01",
+                  "endDate": "2099-08-02",
+                  "coverImageUrl": null,
+                  "visibility": "PRIVATE",
+                  "places": [{
+                    "country": {
+                      "iso2Code": "KR", "iso3Code": "KOR",
+                      "nameEn": "South Korea", "nameKo": "대한민국",
+                      "latitude": 35.907757, "longitude": 127.766922
+                    },
+                    "city": {
+                      "nameEn": "Seoul", "nameKo": "서울",
+                      "latitude": 37.566535, "longitude": 126.977969
+                    },
+                    "placeName": "1일차 · 장소를 골라주세요",
+                    "latitude": 37.544387,
+                    "longitude": 127.037442,
+                    "visitedAt": "2099-08-01",
+                    "memo": null
+                  }],
+                  "photos": []
+                }
+                """;
+    }
+
     // --- helpers -----------------------------------------------------------
 
     /** Unique per test so accounts never collide across the shared context. */

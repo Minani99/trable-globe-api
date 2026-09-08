@@ -9,7 +9,12 @@ import { SiteHeader } from "@/components/layout/SiteHeader";
 import { ProfileExperience } from "@/components/profile/ProfileExperience";
 import { ApiError } from "@/lib/api/client";
 import { authenticatedBackendGet, getCurrentMember } from "@/lib/api/server-session";
-import { fetchProfile, fetchTravels, fetchVisitedCountries } from "@/lib/api/profile";
+import {
+  fetchProfile,
+  fetchProfileRecaps,
+  fetchTravels,
+  fetchVisitedCountries,
+} from "@/lib/api/profile";
 import { profilePath, profileRecapImagePath, siteConfig } from "@/lib/config";
 import { presentDemoProfile } from "@/lib/demo-profile";
 import { getSiteUrl } from "@/lib/site-url";
@@ -116,7 +121,7 @@ export default async function ProfilePage(props: PageProps<"/[username]">) {
     );
   }
 
-  const { profile, countries, travels } = data;
+  const { profile, countries, travels, recapCustomizations } = data;
   const profileUrl = new URL(profilePath(profile.username), getSiteUrl()).toString();
   const [relationship, safetyStatus] = viewer && viewer.username !== profile.username
     ? await Promise.all([
@@ -157,6 +162,7 @@ export default async function ProfilePage(props: PageProps<"/[username]">) {
           relationship={relationship}
           safetyStatus={safetyStatus}
           initialYear={initialYear}
+          initialRecapCustomizations={recapCustomizations}
         />
       </main>
       <SiteFooter />
@@ -175,12 +181,15 @@ function parseYearParam(value: string | string[] | undefined): number | null {
  * waterfalling. A 404 on any of them means the handle does not exist.
  */
 async function loadProfileBundle(username: string) {
-  const [loadedProfile, countries, travels] = await Promise.all([
+  const [loadedProfile, countries, travels, recapCustomizations] = await Promise.all([
     loadProfile(username),
     fetchVisitedCountries(username),
     loadTravels(username),
+    // Old backend revisions do not expose this endpoint. Keep the profile usable
+    // during the short frontend/backend rollout window and fall back to defaults.
+    fetchProfileRecaps(username).catch(() => []),
   ]);
-  return { profile: presentDemoProfile(loadedProfile), countries, travels };
+  return { profile: presentDemoProfile(loadedProfile), countries, travels, recapCustomizations };
 }
 
 /**

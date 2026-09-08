@@ -23,4 +23,6 @@ public interface TravelReservationRepository extends JpaRepository<TravelReserva
     long countByTravelId(Long travelId);
 
     void deleteAllByTravelId(Long travelId);
+
+    void deleteAllByTravelMemberId(Long memberId);
 }

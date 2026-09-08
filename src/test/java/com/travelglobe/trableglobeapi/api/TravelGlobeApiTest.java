@@ -300,6 +300,70 @@ class TravelGlobeApiTest {
     }
 
     @Test
+    @DisplayName("연간 리캡 문장과 대표 공개 여행을 저장하고 공개 프로필에 반영한다")
+    void yearlyRecapCanBeCustomizedAndReset() throws Exception {
+        String registerResponse = mockMvc.perform(post("/api/auth/register")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {
+                                  "username":"recap_writer",
+                                  "displayName":"리캡 여행자",
+                                  "email":"recap-writer@example.com",
+                                  "password":"correct-horse-42"
+                                }
+                                """))
+                .andExpect(status().isOk())
+                .andReturn().getResponse().getContentAsString();
+        String token = stringValue(registerResponse, "token");
+
+        String publicTravel = mockMvc.perform(post("/api/private/travels")
+                        .header("Authorization", "Bearer " + token)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(travelPayload("리캡에 남길 여행", "PUBLIC")))
+                .andExpect(status().isCreated())
+                .andReturn().getResponse().getContentAsString();
+        long publicTravelId = Long.parseLong(numberValue(publicTravel, "id"));
+        String privateTravel = mockMvc.perform(post("/api/private/travels")
+                        .header("Authorization", "Bearer " + token)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(travelPayload("비공개 여행", "PRIVATE")))
+                .andExpect(status().isCreated())
+                .andReturn().getResponse().getContentAsString();
+        long privateTravelId = Long.parseLong(numberValue(privateTravel, "id"));
+
+        mockMvc.perform(put("/api/private/recaps/2026")
+                        .header("Authorization", "Bearer " + token)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {"narrative":"올해 가장 오래 기억할 장면","featuredTravelIds":[%d]}
+                                """.formatted(publicTravelId)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.year").value(2026))
+                .andExpect(jsonPath("$.data.narrative").value("올해 가장 오래 기억할 장면"))
+                .andExpect(jsonPath("$.data.featuredTravelIds[0]").value(publicTravelId));
+
+        mockMvc.perform(get("/api/profiles/recap_writer/recaps"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data[0].narrative").value("올해 가장 오래 기억할 장면"))
+                .andExpect(jsonPath("$.data[0].featuredTravelIds[0]").value(publicTravelId));
+
+        mockMvc.perform(put("/api/private/recaps/2026")
+                        .header("Authorization", "Bearer " + token)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {"narrative":"숨긴 여행","featuredTravelIds":[%d]}
+                                """.formatted(privateTravelId)))
+                .andExpect(status().isBadRequest());
+
+        mockMvc.perform(delete("/api/private/recaps/2026")
+                        .header("Authorization", "Bearer " + token))
+                .andExpect(status().isOk());
+        mockMvc.perform(get("/api/profiles/recap_writer/recaps"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data").isEmpty());
+    }
+
+    @Test
     @DisplayName("이메일 인증·비밀번호 재설정·계정 삭제가 일회용 토큰으로 동작한다")
     void accountSecurityLifecycle() throws Exception {
         String email = "secure@example.com";

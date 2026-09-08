@@ -1,37 +1,67 @@
 "use client";
 
 import Link from "next/link";
-import { useId, useState } from "react";
+import { useEffect, useId, useState } from "react";
 
+import { showFeedback } from "@/components/common/AppFeedback";
 import { TravelImage } from "@/components/common/TravelImage";
 import { RecapActions } from "@/components/profile/RecapActions";
+import { ApiError, apiMutation } from "@/lib/api/client";
 import { travelPath } from "@/lib/config";
 import { formatDate } from "@/lib/utils/format";
 import type { TravelRecap, TravelYearComparison } from "@/lib/travelInsights";
+import type { ProfileRecapCustomization, TravelSummary } from "@/types";
 
 interface TravelYearRecapProps {
   recap: TravelRecap;
   comparison: TravelYearComparison | null;
   username: string;
   displayName: string;
+  isOwnProfile: boolean;
+  availableTravels: TravelSummary[];
+  customization: ProfileRecapCustomization | null;
+  onCustomizationChange: (customization: ProfileRecapCustomization | null) => void;
 }
 
 const numberFormatter = new Intl.NumberFormat("ko-KR");
 
-export function TravelYearRecap({ recap, comparison, username, displayName }: TravelYearRecapProps) {
+export function TravelYearRecap({
+  recap,
+  comparison,
+  username,
+  displayName,
+  isOwnProfile,
+  availableTravels,
+  customization,
+  onCustomizationChange,
+}: TravelYearRecapProps) {
   const [detailsExpanded, setDetailsExpanded] = useState(false);
+  const [editorOpen, setEditorOpen] = useState(false);
+  const [draftNarrative, setDraftNarrative] = useState(customization?.narrative ?? "");
+  const [draftFeaturedIds, setDraftFeaturedIds] = useState<number[]>(
+    customization?.featuredTravelIds ?? [],
+  );
+  const [saving, setSaving] = useState(false);
+  const [editorError, setEditorError] = useState<string | null>(null);
   const detailsId = useId();
+  const editorId = useId();
+
+  useEffect(() => {
+    setDraftNarrative(customization?.narrative ?? "");
+    setDraftFeaturedIds(customization?.featuredTravelIds ?? []);
+  }, [customization]);
 
   if (!recap.latestTravel) return null;
 
   const scopeLabel = recap.year ? `${recap.year}년` : "지금까지";
-  const narrative = recap.distanceKm > 0
+  const defaultNarrative = recap.distanceKm > 0
     ? recap.topCountry
       ? `${recap.topCountry.nameKo}을 ${recap.topCountryVisits}번 찾았고, ${numberFormatter.format(recap.distanceKm)}km의 여정이 세계에 남았습니다.`
       : `${numberFormatter.format(recap.distanceKm)}km의 여정이 세계에 남았습니다.`
     : recap.travelCount === 1
       ? "첫 Journey를 기록하며 나의 여행 세계를 시작했습니다."
       : `${recap.travelCount}번의 Journey가 나의 여행 세계에 기록되었습니다.`;
+  const narrative = customization?.narrative || defaultNarrative;
   const busiestMonth = [...recap.monthSummaries].sort((left, right) => (
     right.travelCount - left.travelCount || right.travelDays - left.travelDays
   ))[0];
@@ -55,8 +85,124 @@ export function TravelYearRecap({ recap, comparison, username, displayName }: Tr
             year={recap.year}
             shareText={shareText}
           />
+          {isOwnProfile && recap.year ? (
+            <button
+              type="button"
+              className="travel-recap__edit-trigger"
+              aria-expanded={editorOpen}
+              aria-controls={editorId}
+              onClick={() => {
+                setEditorOpen((current) => !current);
+                setEditorError(null);
+              }}
+            >
+              {editorOpen ? "편집 닫기" : "리캡 편집"}
+            </button>
+          ) : null}
         </div>
       </div>
+
+      {isOwnProfile && recap.year && editorOpen ? (
+        <form
+          id={editorId}
+          className="travel-recap-editor"
+          onSubmit={async (event) => {
+            event.preventDefault();
+            setSaving(true);
+            setEditorError(null);
+            try {
+              const saved = await apiMutation<ProfileRecapCustomization>(
+                `/api/private/recaps/${recap.year}`,
+                "PUT",
+                { narrative: draftNarrative, featuredTravelIds: draftFeaturedIds },
+              );
+              if (saved) onCustomizationChange(saved);
+              setEditorOpen(false);
+              showFeedback("리캡을 저장했어요.", "success");
+            } catch (error) {
+              setEditorError(error instanceof ApiError ? error.message : "리캡을 저장하지 못했습니다.");
+            } finally {
+              setSaving(false);
+            }
+          }}
+        >
+          <div className="travel-recap-editor__heading">
+            <div>
+              <strong>{recap.year} 리캡 편집</strong>
+              <p>한 문장과 대표 여행만 골라 내 리캡을 정리할 수 있어요.</p>
+            </div>
+            <span>{draftNarrative.length}/240</span>
+          </div>
+          <label className="travel-recap-editor__narrative">
+            <span>리캡 한 문장</span>
+            <textarea
+              value={draftNarrative}
+              maxLength={240}
+              rows={3}
+              placeholder={defaultNarrative}
+              onChange={(event) => setDraftNarrative(event.target.value)}
+            />
+          </label>
+          <fieldset>
+            <legend>대표 여행 <small>최대 3개 · 선택하지 않으면 최근 여행을 자동 표시</small></legend>
+            <div className="travel-recap-editor__travels">
+              {availableTravels.map((travel) => {
+                const selected = draftFeaturedIds.includes(travel.id);
+                const selectionBlocked = !selected && draftFeaturedIds.length >= 3;
+                return (
+                  <label key={travel.id} className={selected ? "is-selected" : undefined}>
+                    <input
+                      type="checkbox"
+                      checked={selected}
+                      disabled={selectionBlocked}
+                      onChange={() => setDraftFeaturedIds((current) => (
+                        selected
+                          ? current.filter((id) => id !== travel.id)
+                          : [...current, travel.id]
+                      ))}
+                    />
+                    <TravelImage
+                      src={travel.coverImageUrl}
+                      alt=""
+                      fallbackLabel={travel.primaryCountry?.iso2Code}
+                    />
+                    <span>
+                      <strong>{travel.title}</strong>
+                      <small>{formatDate(travel.startDate)}</small>
+                    </span>
+                  </label>
+                );
+              })}
+            </div>
+          </fieldset>
+          {editorError ? <p className="travel-recap-editor__error" role="alert">{editorError}</p> : null}
+          <div className="travel-recap-editor__actions">
+            {customization ? (
+              <button
+                type="button"
+                disabled={saving}
+                onClick={async () => {
+                  setSaving(true);
+                  setEditorError(null);
+                  try {
+                    await apiMutation(`/api/private/recaps/${recap.year}`, "DELETE");
+                    onCustomizationChange(null);
+                    setEditorOpen(false);
+                    showFeedback("기본 리캡으로 되돌렸어요.", "success");
+                  } catch (error) {
+                    setEditorError(error instanceof ApiError ? error.message : "리캡을 초기화하지 못했습니다.");
+                  } finally {
+                    setSaving(false);
+                  }
+                }}
+              >
+                기본으로 되돌리기
+              </button>
+            ) : <span />}
+            <button type="submit" disabled={saving}>{saving ? "저장 중…" : "저장"}</button>
+          </div>
+        </form>
+      ) : null}
 
       <button
         type="button"
