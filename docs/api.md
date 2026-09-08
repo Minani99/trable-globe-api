@@ -470,8 +470,9 @@ Base URL: `http://localhost:8080` (개발). Next.js 서버와 동일 출처 `/ap
 | GET | `/api/locations/search?q={query}&country={iso2}` | Fallback search for up to five place candidates |
 | GET | `/api/locations/reverse?lat={lat}&lng={lng}` | Fallback reverse geocode for a manually adjusted pin |
 
-The primary MapTiler SDK requests go directly from the browser, provide Korean labels and
-autocomplete, and persist only the location fields chosen by the user. If the key is absent or the
+MapTiler geocoding requests use the provider's browser client while MapLibre GL JS renders the
+MapTiler style with Korean → English → local label fallback. Only location fields chosen by the
+user are persisted. If the key is absent or the
 initial provider connection fails, search is submitted explicitly rather than called on every
 keystroke. The fallback Next.js routes identify the application and serialize public Nominatim
 requests to at most one per second per instance. Latitude/longitude remain outside the ordinary

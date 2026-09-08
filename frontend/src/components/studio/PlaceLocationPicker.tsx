@@ -4,13 +4,11 @@ import {
   geocoding,
   type GeocodingFeature,
   Language,
-  Map as MapTilerMap,
-  MapStyle,
-  NavigationControl,
-} from "@maptiler/sdk";
+} from "@maptiler/client";
+import { Map as MapLibreMap, NavigationControl } from "maplibre-gl";
 // Loaded here rather than in the root layout: this is the only screen that renders a
 // map, and from the layout every page paid for the stylesheet.
-import "@maptiler/sdk/style.css";
+import "maplibre-gl/dist/maplibre-gl.css";
 import {
   KeyboardEvent,
   PointerEvent,
@@ -595,17 +593,11 @@ function MapTilerMapCanvas({
 
   useEffect(() => {
     if (!mapElementRef.current) return;
-    const map = new MapTilerMap({
+    const map = new MapLibreMap({
       container: mapElementRef.current,
-      apiKey,
-      style: MapStyle.STREETS,
+      style: `https://api.maptiler.com/maps/streets-v4/style.json?key=${encodeURIComponent(apiKey)}`,
       center: [initialCenter.longitude, initialCenter.latitude],
       zoom: 16,
-      language: Language.KOREAN,
-      navigationControl: false,
-      geolocateControl: false,
-      terrainControl: false,
-      fullscreenControl: false,
     });
     map.addControl(new NavigationControl({ showCompass: false }), "top-right");
     let loaded = false;
@@ -619,6 +611,7 @@ function MapTilerMapCanvas({
     map.on("load", () => {
       loaded = true;
       window.clearTimeout(loadTimeout);
+      localizeMapLabels(map);
     });
     map.on("error", reportUnavailable);
     const updateCenter = () => {
@@ -633,6 +626,23 @@ function MapTilerMapCanvas({
   }, [apiKey, initialCenter.latitude, initialCenter.longitude, onCenterChange, onUnavailable]);
 
   return <div ref={mapElementRef} className="place-map-dialog__provider-map" aria-label="한국어 MapTiler 지도" />;
+}
+
+/** Prefer Korean labels while keeping English/local names when a translation is absent. */
+function localizeMapLabels(map: MapLibreMap) {
+  for (const layer of map.getStyle().layers ?? []) {
+    if (layer.type !== "symbol" || !layer.layout?.["text-field"]) continue;
+    try {
+      map.setLayoutProperty(layer.id, "text-field", [
+        "coalesce",
+        ["get", "name:ko"],
+        ["get", "name:en"],
+        ["get", "name"],
+      ]);
+    } catch {
+      // A third-party style may lock one label layer; the rest of the map remains usable.
+    }
+  }
 }
 
 function FallbackMapCanvas({ initialCenter, onCenterChange }: { initialCenter: Coordinate; onCenterChange: (coordinate: Coordinate) => void }) {

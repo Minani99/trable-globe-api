@@ -1,6 +1,6 @@
 import { expect, test } from "@playwright/test";
 
-test("MapTiler 컨테이너가 SDK 기본 스타일에도 높이를 유지한다", async ({ page }) => {
+test("MapTiler 지도를 안전한 MapLibre 렌더러로 열고 높이를 유지한다", async ({ page }) => {
   const suffix = Date.now().toString(36);
   const username = `map_${suffix}`;
   const registerResponse = await page.request.post("/api/auth/register", {
@@ -13,8 +13,32 @@ test("MapTiler 컨테이너가 SDK 기본 스타일에도 높이를 유지한다
   });
   expect(registerResponse.status()).toBe(200);
 
+  await page.route("**/api/maps/config", async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      body: JSON.stringify({
+        success: true,
+        data: { provider: "maptiler", maptilerApiKey: "test-map-key" },
+        message: null,
+      }),
+    });
+  });
+  await page.route("https://api.maptiler.com/maps/streets-v4/style.json?**", async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      body: JSON.stringify({ version: 8, sources: {}, layers: [] }),
+    });
+  });
+
   await page.goto("/studio/travels/new");
-  await expect(page.getByRole("button", { name: /지도에서 직접 찾기/ })).toBeVisible();
+  const openMap = page.getByRole("button", { name: /지도에서 직접 찾기/ });
+  await expect(openMap).toBeVisible();
+  await openMap.click();
+  await expect(page.getByRole("dialog", { name: "지도에서 위치 조정" })).toBeVisible();
+  await expect(page.locator(".place-map-dialog__provider-map .maplibregl-canvas")).toBeVisible();
+  await page.getByRole("button", { name: "지도 닫기" }).click();
 
   const fixture = page.locator("[data-map-layout-fixture]");
   await page.evaluate(() => {
