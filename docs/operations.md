@@ -86,18 +86,20 @@ that keeps the service awake also tells us when the database link breaks.
 
 The production beta uses the Cloudflare Cron Worker in
 `ops/render-keepalive-worker`. It runs every ten minutes without consuming private
-GitHub Actions minutes. `.github/workflows/keep-awake.yml` remains available only
-as a manual incident-response fallback.
+GitHub Actions minutes and validates both readiness and the public `traveler`
+profile. `.github/workflows/keep-awake.yml` remains available only as a manual
+incident-response fallback.
 
 ### Settings
 
-This is done by `.github/workflows/keep-awake.yml`, which runs every five minutes
-during the awake window. Point it at a different deployment with the repository
-variables `API_BASE_URL` and `SAMPLE_PROFILE` (Settings > Secrets and variables >
-Actions > Variables); it falls back to the current URLs when they are unset.
+The deployed Worker uses the production URLs in
+`ops/render-keepalive-worker/src/index.js`; update and redeploy that file if the
+Render service or sample username changes. The fallback GitHub workflow reads
+`API_BASE_URL` and `SAMPLE_PROFILE` repository variables and uses the current
+production values when they are unset.
 
-Five minutes rather than ten, despite the fifteen-minute sleep timer: GitHub's
-scheduler is best-effort and routinely runs late, so the interval needs slack.
+The fallback runs every five minutes during its awake window. Five minutes rather
+than ten leaves slack because GitHub's scheduler is best-effort and can run late.
 
 ### It is also the only alarm
 

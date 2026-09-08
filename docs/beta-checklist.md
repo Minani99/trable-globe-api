@@ -13,7 +13,7 @@
 - [ ] 비행기 모드에서 새 페이지를 열면 오프라인 안내가 표시되고 다른 사용자의 비공개 화면은 캐시에 남지 않는다.
 - [ ] 종료된 비공개 계획의 `기록 완성하기`에서 장소·대표 사진·짧은 기록을 확인하고 공개 상세로 이동한다.
 - [ ] Neon 보존 기간을 확인하고 [`operations.md`](./operations.md)의 복구 리허설을 한 번 완료했다.
-- [ ] GitHub의 `PRODUCTION_SITE_URL`, `PRODUCTION_API_URL` 변수를 추가하고 수동 Production smoke가 통과한다.
+- [ ] GitHub의 수동 Production smoke가 통과한다. 운영 주소를 바꾼 경우에만 `PRODUCTION_SITE_URL`, `PRODUCTION_API_URL` 변수를 덮어쓴다.
 - [ ] Vercel의 `MAPTILER_API_KEY`를 설정하고 MapTiler 키의 허용 출처를 Production·Preview 도메인으로 제한한다.
 - [ ] Vercel Firewall에 `POST /api/auth/*`를 IP 기준으로 제한하는 규칙을 먼저 Log 모드로 적용한 뒤 차단 기준을 확정한다.
 - [ ] 운영자에게 Vercel, Render, Neon, Resend, R2 및 GitHub Actions 장애 알림이 도착한다.

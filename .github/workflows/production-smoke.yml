@@ -5,28 +5,45 @@ on:
   schedule:
     - cron: "17,47 * * * *"
 
+concurrency:
+  group: production-smoke
+  cancel-in-progress: true
+
 permissions:
   contents: read
 
 jobs:
   probe:
     name: Public service probes
-    if: ${{ vars.PRODUCTION_SITE_URL != '' && vars.PRODUCTION_API_URL != '' }}
     runs-on: ubuntu-latest
     timeout-minutes: 5
     env:
       SITE_URL: ${{ vars.PRODUCTION_SITE_URL }}
       API_URL: ${{ vars.PRODUCTION_API_URL }}
+      SAMPLE_PROFILE: ${{ vars.SAMPLE_PROFILE }}
     steps:
+      - name: Resolve production targets
+        run: |
+          echo "SITE_URL=${SITE_URL:-https://travel-globe-minani99.vercel.app}" >> "$GITHUB_ENV"
+          echo "API_URL=${API_URL:-https://travel-globe-api-cexs.onrender.com}" >> "$GITHUB_ENV"
+          echo "SAMPLE_PROFILE=${SAMPLE_PROFILE:-traveler}" >> "$GITHUB_ENV"
       - name: Check backend readiness
-        run: curl --fail --show-error --silent --retry 3 --retry-all-errors --max-time 30 "$API_URL/api/health"
+        run: |
+          body="$(curl --fail --show-error --silent --retry 3 --retry-all-errors --max-time 30 "$API_URL/api/health")"
+          jq -e '.success == true and .data.status == "UP" and .data.database == "UP"' <<< "$body" > /dev/null
       - name: Check backend liveness
         run: curl --fail --show-error --silent --retry 3 --retry-all-errors --max-time 30 "$API_URL/api/health/live"
+      - name: Check the public sample profile
+        run: |
+          body="$(curl --fail --show-error --silent --retry 3 --retry-all-errors --max-time 30 "$API_URL/api/profiles/$SAMPLE_PROFILE")"
+          jq -e --arg username "$SAMPLE_PROFILE" '.success == true and .data.username == $username' <<< "$body" > /dev/null
       - name: Check frontend and same-origin API proxy
         run: |
           curl --fail --show-error --silent --retry 3 --retry-all-errors --max-time 30 "$SITE_URL/" > /dev/null
-          curl --fail --show-error --silent --retry 3 --retry-all-errors --max-time 30 "$SITE_URL/api/health" > /dev/null
-          curl --fail --show-error --silent --retry 3 --retry-all-errors --max-time 30 "$SITE_URL/api/version" > /dev/null
+          health="$(curl --fail --show-error --silent --retry 3 --retry-all-errors --max-time 30 "$SITE_URL/api/health")"
+          version="$(curl --fail --show-error --silent --retry 3 --retry-all-errors --max-time 30 "$SITE_URL/api/version")"
+          jq -e '.success == true and .data.status == "UP" and .data.database == "UP"' <<< "$health" > /dev/null
+          jq -e '.success == true and (.data.commit | length) >= 7 and .data.environment == "production"' <<< "$version" > /dev/null
       - name: Check frontend security headers
         run: |
           curl --fail --show-error --silent --head --retry 3 --retry-all-errors --max-time 30 "$SITE_URL/" | grep -qi '^x-content-type-options: nosniff'
