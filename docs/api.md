@@ -96,6 +96,17 @@ Base URL: `http://localhost:8080` (개발). Next.js 서버와 동일 출처 `/ap
 
 ---
 
+## 연간 리캡 편집
+
+- `GET /api/profiles/{username}/recaps`: 공개 프로필의 연도별 리캡 문장과 대표 여행 순서
+- `PUT /api/private/recaps/{year}`: 내 리캡 문장과 대표 공개 여행 최대 3개 저장
+- `DELETE /api/private/recaps/{year}`: 자동 생성되는 기본 리캡으로 복구
+
+대표 여행은 해당 회원이 같은 연도에 공개한 여행만 허용합니다. 여행이 비공개로
+바뀌거나 삭제되면 공개 응답에서 자동으로 제외됩니다.
+
+---
+
 ## GET /api/profiles/{username}
 
 프로필 기본 정보와 통계.
