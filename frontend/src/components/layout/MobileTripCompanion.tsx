@@ -4,7 +4,15 @@ import Link from "next/link";
 import { useEffect, useMemo, useRef, useState } from "react";
 
 import { ApiError, apiMutation } from "@/lib/api/client";
-import { deleteUploadedPhoto, getUploadConfiguration, uploadPhoto } from "@/lib/uploads/client";
+import {
+  applyPlaceUpdate,
+  cacheTravel,
+  queuePlaceUpdate,
+  readQueuedPlaceUpdates,
+  removeQueuedPlaceUpdate,
+  removeQueuedUpdatesForPlace,
+} from "@/lib/travel-offline";
+import { deleteUploadedPhoto, getUploadConfiguration, MAX_SOURCE_IMAGE_BYTES, uploadPhoto } from "@/lib/uploads/client";
 import type { TravelDetail, TravelPlace } from "@/types";
 
 type ForecastDay = {
@@ -23,10 +31,12 @@ type ForecastResponse = {
 export function MobileTripCompanion({
   travel,
   today,
+  username,
   variant = "sheet",
 }: {
   travel: TravelDetail;
   today: string;
+  username: string;
   variant?: "sheet" | "page";
 }) {
   const [currentTravel, setCurrentTravel] = useState(travel);
@@ -37,6 +47,9 @@ export function MobileTripCompanion({
   const [pendingAction, setPendingAction] = useState<"place" | "note" | "photo" | null>(null);
   const [uploadProgress, setUploadProgress] = useState(0);
   const [status, setStatus] = useState<string | null>(null);
+  const [online, setOnline] = useState(true);
+  const [syncing, setSyncing] = useState(false);
+  const [pendingSyncCount, setPendingSyncCount] = useState(0);
   const photoInputRef = useRef<HTMLInputElement>(null);
   const dayNumber = Math.max(1, Math.min(currentTravel.durationDays, differenceInDays(currentTravel.startDate, today) + 1));
   const todaysPlaces = useMemo(() => placesForDay(currentTravel.places, today), [today, currentTravel.places]);
@@ -66,19 +79,127 @@ export function MobileTripCompanion({
     return () => controller.abort();
   }, [location, today]);
 
+  useEffect(() => {
+    cacheTravel(username, currentTravel);
+  }, [currentTravel, username]);
+
+  useEffect(() => {
+    let active = true;
+    let syncInProgress = false;
+    const travelId = travel.id;
+
+    async function syncPendingUpdates() {
+      if (syncInProgress) return;
+      const queue = readQueuedPlaceUpdates(username, travelId);
+      if (!queue.length || !navigator.onLine) {
+        if (active) setPendingSyncCount(queue.length);
+        return;
+      }
+
+      syncInProgress = true;
+      if (active) setSyncing(true);
+      let synced = 0;
+      for (const operation of queue) {
+        try {
+          const result = await apiMutation<TravelDetail>(`/api/private/travels/${travelId}/places/${operation.placeId}`, "PATCH", {
+            memo: operation.memo,
+            completed: operation.completed,
+          });
+          if (!result) throw new ApiError(500, "동기화된 일정을 확인할 수 없습니다.");
+          removeQueuedPlaceUpdate(username, travelId, operation.id);
+          synced += 1;
+          if (active) setCurrentTravel(result);
+        } catch (error) {
+          if (error instanceof ApiError && error.isUnreachable && active) setOnline(false);
+          if (active && !(error instanceof ApiError && error.isUnreachable)) {
+            setStatus(error instanceof ApiError ? error.message : "저장한 기록을 동기화하지 못했습니다.");
+          }
+          break;
+        }
+      }
+
+      const remaining = readQueuedPlaceUpdates(username, travelId).length;
+      if (active) {
+        setPendingSyncCount(remaining);
+        setSyncing(false);
+        if (synced > 0 && remaining === 0) setStatus("오프라인 기록을 모두 동기화했습니다.");
+      }
+      syncInProgress = false;
+    }
+
+    function handleOnline() {
+      if (!navigator.onLine) {
+        setOnline(false);
+        return;
+      }
+      setOnline(true);
+      void syncPendingUpdates();
+    }
+
+    function handleOffline() {
+      setOnline(false);
+    }
+
+    queueMicrotask(() => {
+      if (!active) return;
+      setOnline(navigator.onLine);
+      setPendingSyncCount(readQueuedPlaceUpdates(username, travelId).length);
+    });
+    window.addEventListener("online", handleOnline);
+    window.addEventListener("offline", handleOffline);
+    window.addEventListener("focus", handleOnline);
+    const retryTimer = window.setInterval(() => {
+      if (navigator.onLine && readQueuedPlaceUpdates(username, travelId).length) void syncPendingUpdates();
+    }, 15_000);
+    if (navigator.onLine) void syncPendingUpdates();
+
+    return () => {
+      active = false;
+      window.removeEventListener("online", handleOnline);
+      window.removeEventListener("offline", handleOffline);
+      window.removeEventListener("focus", handleOnline);
+      window.clearInterval(retryTimer);
+    };
+  }, [travel.id, username]);
+
+  function saveOfflinePlaceUpdate(place: TravelPlace, completed: boolean, nextMemo: string | null, message: string) {
+    const optimisticTravel = applyPlaceUpdate(currentTravel, place.id, nextMemo, completed);
+    setCurrentTravel(optimisticTravel);
+    const queue = queuePlaceUpdate(username, currentTravel.id, {
+      placeId: place.id,
+      memo: nextMemo,
+      completed,
+    });
+    setPendingSyncCount(queue.length);
+    setOnline(false);
+    setStatus(`${message} 연결되면 자동으로 반영됩니다.`);
+  }
+
   async function updatePlace(place: TravelPlace, completed: boolean, nextMemo = place.memo ?? "") {
     setPendingAction("place");
     setStatus(null);
+    const normalizedMemo = nextMemo.trim() || null;
+    if (!navigator.onLine) {
+      saveOfflinePlaceUpdate(place, completed, normalizedMemo, completed ? "완료 상태를 기기에 저장했습니다." : "일정을 다시 열었습니다.");
+      setPendingAction(null);
+      return;
+    }
     try {
       const result = await apiMutation<TravelDetail>(`/api/private/travels/${currentTravel.id}/places/${place.id}`, "PATCH", {
-        memo: nextMemo.trim() || null,
+        memo: normalizedMemo,
         completed,
       });
       if (!result) throw new ApiError(500, "저장된 일정을 확인할 수 없습니다.");
+      removeQueuedUpdatesForPlace(username, currentTravel.id, place.id);
+      setPendingSyncCount(readQueuedPlaceUpdates(username, currentTravel.id).length);
       setCurrentTravel(result);
       setStatus(completed ? `${place.placeName} 일정을 완료했어요.` : `${place.placeName} 일정을 다시 열었어요.`);
     } catch (error) {
-      setStatus(error instanceof ApiError ? error.message : "일정을 저장하지 못했습니다.");
+      if (error instanceof ApiError && error.isUnreachable) {
+        saveOfflinePlaceUpdate(place, completed, normalizedMemo, completed ? "완료 상태를 기기에 저장했습니다." : "일정을 다시 열었습니다.");
+      } else {
+        setStatus(error instanceof ApiError ? error.message : "일정을 저장하지 못했습니다.");
+      }
     } finally {
       setPendingAction(null);
     }
@@ -96,32 +217,51 @@ export function MobileTripCompanion({
     if (!selectedPlace) return;
     setPendingAction("note");
     setStatus(null);
+    const normalizedMemo = note.trim() || null;
+    if (!navigator.onLine) {
+      saveOfflinePlaceUpdate(selectedPlace, Boolean(selectedPlace.completedAt), normalizedMemo, "메모를 기기에 저장했습니다.");
+      setComposer(null);
+      setPendingAction(null);
+      return;
+    }
     try {
       const result = await apiMutation<TravelDetail>(`/api/private/travels/${currentTravel.id}/places/${selectedPlace.id}`, "PATCH", {
-        memo: note.trim() || null,
+        memo: normalizedMemo,
         completed: Boolean(selectedPlace.completedAt),
       });
       if (!result) throw new ApiError(500, "저장된 메모를 확인할 수 없습니다.");
+      removeQueuedUpdatesForPlace(username, currentTravel.id, selectedPlace.id);
+      setPendingSyncCount(readQueuedPlaceUpdates(username, currentTravel.id).length);
       setCurrentTravel(result);
       setComposer(null);
       setStatus(`${selectedPlace.placeName}에 메모를 남겼어요.`);
     } catch (error) {
-      setStatus(error instanceof ApiError ? error.message : "메모를 저장하지 못했습니다.");
+      if (error instanceof ApiError && error.isUnreachable) {
+        saveOfflinePlaceUpdate(selectedPlace, Boolean(selectedPlace.completedAt), normalizedMemo, "메모를 기기에 저장했습니다.");
+        setComposer(null);
+      } else {
+        setStatus(error instanceof ApiError ? error.message : "메모를 저장하지 못했습니다.");
+      }
     } finally {
       setPendingAction(null);
     }
   }
 
   async function addPhoto(file: File) {
+    if (!navigator.onLine) {
+      setOnline(false);
+      setStatus("사진은 연결된 상태에서 올릴 수 있습니다. 완료와 메모는 오프라인에서도 저장됩니다.");
+      return;
+    }
     setPendingAction("photo");
     setUploadProgress(0);
     setStatus(null);
-    let uploaded: { objectKey: string; publicUrl: string } | null = null;
+    let uploaded: Awaited<ReturnType<typeof uploadPhoto>> | null = null;
     try {
       const configuration = await getUploadConfiguration();
       if (!configuration.configured) throw new ApiError(503, "사진 저장소가 아직 연결되지 않았습니다.");
       if (!configuration.acceptedTypes.includes(file.type)) throw new ApiError(400, "JPG, PNG, WebP 사진만 올릴 수 있습니다.");
-      if (file.size > configuration.maxBytes) throw new ApiError(400, `사진은 장당 ${Math.round(configuration.maxBytes / 1024 / 1024)}MB 이하여야 합니다.`);
+      if (file.size > MAX_SOURCE_IMAGE_BYTES) throw new ApiError(400, "원본 사진은 장당 30MB 이하여야 합니다.");
       if (currentTravel.photos.length >= configuration.maxPhotos) throw new ApiError(400, `사진은 여행당 최대 ${configuration.maxPhotos}장까지 올릴 수 있습니다.`);
       uploaded = await uploadPhoto(file, setUploadProgress);
       const result = await apiMutation<TravelDetail>(`/api/private/travels/${currentTravel.id}/photos`, "POST", {
@@ -133,7 +273,9 @@ export function MobileTripCompanion({
       if (!result) throw new ApiError(500, "저장된 사진을 확인할 수 없습니다.");
       setCurrentTravel(result);
       setComposer(null);
-      setStatus(`${selectedPlace?.placeName ?? "오늘 여행"}에 사진을 기록했어요.`);
+      setStatus(uploaded.optimized
+        ? `${selectedPlace?.placeName ?? "오늘 여행"}에 사진을 기록했어요. ${formatBytes(uploaded.sourceBytes)} → ${formatBytes(uploaded.uploadedBytes)}`
+        : `${selectedPlace?.placeName ?? "오늘 여행"}에 사진을 기록했어요.`);
     } catch (error) {
       if (uploaded) await deleteUploadedPhoto({ objectKey: uploaded.objectKey }).catch(() => undefined);
       setStatus(error instanceof ApiError ? error.message : "사진을 기록하지 못했습니다.");
@@ -159,6 +301,18 @@ export function MobileTripCompanion({
           </p>
         ) : null}
       </header>
+
+      {!online || pendingSyncCount > 0 || syncing ? (
+        <div className={`mobile-trip-companion__connectivity${online ? " is-online" : " is-offline"}`} role="status" aria-live="polite">
+          <span aria-hidden="true" />
+          <div>
+            <strong>{syncing ? "기록 동기화 중" : online ? "동기화 대기" : "오프라인 모드"}</strong>
+            <small>{online
+              ? `${pendingSyncCount}개의 현장 기록을 서버에 반영하고 있습니다.`
+              : "일정은 그대로 볼 수 있고, 완료와 메모는 기기에 저장됩니다."}</small>
+          </div>
+        </div>
+      ) : null}
 
       {nextPlace ? (
         <a className="mobile-trip-companion__next" href={googleMapsUrl(nextPlace)} target="_blank" rel="noreferrer">
@@ -215,7 +369,7 @@ export function MobileTripCompanion({
           {composer === "note" ? (
             <><label><span>한 줄 메모</span><textarea value={note} maxLength={1000} rows={3} onChange={(event) => setNote(event.target.value)} placeholder="기억하고 싶은 내용을 적어주세요" /></label><button className="mobile-trip-companion__composer-submit" type="button" disabled={pendingAction !== null} onClick={() => void saveNote()}>{pendingAction === "note" ? "저장 중…" : "메모 저장"}</button></>
           ) : (
-            <><input ref={photoInputRef} type="file" accept="image/jpeg,image/png,image/webp" capture="environment" onChange={(event) => { const file = event.target.files?.[0]; if (file) void addPhoto(file); }} /><button className="mobile-trip-companion__composer-submit" type="button" disabled={pendingAction !== null} onClick={() => photoInputRef.current?.click()}>{pendingAction === "photo" ? `업로드 ${uploadProgress}%` : "카메라 또는 사진 선택"}</button><small>선택한 사진은 이 일정에 바로 저장됩니다.</small></>
+            <><input ref={photoInputRef} type="file" accept="image/jpeg,image/png,image/webp" capture="environment" onChange={(event) => { const file = event.target.files?.[0]; if (file) void addPhoto(file); }} /><button className="mobile-trip-companion__composer-submit" type="button" disabled={pendingAction !== null || !online} onClick={() => photoInputRef.current?.click()}>{pendingAction === "photo" ? `업로드 ${uploadProgress}%` : online ? "카메라 또는 사진 선택" : "연결 후 사진 올리기"}</button><small>{online ? "선택한 사진은 이 일정에 바로 저장됩니다." : "완료 체크와 메모는 지금도 저장할 수 있습니다."}</small></>
           )}
         </div>
       ) : null}
@@ -300,4 +454,9 @@ function weatherIcon(code: number): string {
 function formatTemperature(day: ForecastDay): string {
   if (day.temperatureMax == null) return "오늘 날씨";
   return `${Math.round(day.temperatureMax)}°`;
+}
+
+function formatBytes(bytes: number): string {
+  if (bytes < 1024 * 1024) return `${Math.max(1, Math.round(bytes / 1024))}KB`;
+  return `${(bytes / 1024 / 1024).toFixed(1)}MB`;
 }

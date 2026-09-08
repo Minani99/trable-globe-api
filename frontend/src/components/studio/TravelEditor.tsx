@@ -10,6 +10,7 @@ import type { CountryOption } from "@/lib/countries";
 import {
   deleteUploadedPhoto,
   getUploadConfiguration,
+  MAX_SOURCE_IMAGE_BYTES,
   type UploadConfiguration,
   uploadPhoto,
 } from "@/lib/uploads/client";
@@ -643,9 +644,9 @@ export function TravelEditor({
       setStatus(`사진은 여행 한 건에 최대 ${configuration.maxPhotos}장까지 올릴 수 있습니다.`);
       return;
     }
-    const invalid = files.find((file) => !configuration.acceptedTypes.includes(file.type) || file.size > configuration.maxBytes);
+    const invalid = files.find((file) => !configuration.acceptedTypes.includes(file.type) || file.size > MAX_SOURCE_IMAGE_BYTES);
     if (invalid) {
-      setStatus("JPG, PNG, WebP 형식의 10MB 이하 사진만 올릴 수 있습니다.");
+      setStatus("JPG, PNG, WebP 형식의 30MB 이하 원본 사진만 올릴 수 있습니다.");
       return;
     }
     setStatus(null);
@@ -961,7 +962,7 @@ export function TravelEditor({
           />
           <span className="travel-editor__dropzone-icon" aria-hidden="true">＋</span>
           <strong>{uploadConfig === null ? "사진 업로드 준비를 확인하고 있어요" : uploadConfig.configured ? "사진을 선택하거나 이곳에 놓아 주세요" : "사진 저장소 연결이 필요해요"}</strong>
-          <small>{uploadConfig?.configured ? `JPG · PNG · WebP / 장당 최대 ${Math.round(uploadConfig.maxBytes / 1024 / 1024)}MB / 최대 ${uploadConfig.maxPhotos}장` : "연결 전까지는 아래의 외부 이미지 주소 방식을 사용할 수 있어요."}</small>
+          <small>{uploadConfig?.configured ? `JPG · PNG · WebP / 원본 30MB 이하 · 자동 최적화 / 최대 ${uploadConfig.maxPhotos}장` : "연결 전까지는 아래의 외부 이미지 주소 방식을 사용할 수 있어요."}</small>
         </label>
         {photos.length ? (
           <ol className="travel-editor__photos">

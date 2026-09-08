@@ -8,6 +8,7 @@ import { showFeedback } from "@/components/common/AppFeedback";
 import { TravelImage } from "@/components/common/TravelImage";
 import { setCachedAuthMember } from "@/lib/auth-state";
 import { ApiError, apiMutation } from "@/lib/api/client";
+import { clearOfflineTravelData } from "@/lib/travel-offline";
 import { publicDisplayName } from "@/lib/utils/profile";
 import type { AuthMember } from "@/types";
 
@@ -53,6 +54,7 @@ export function AccountNavigation({
     setMenuOpen(false);
     try {
       await apiMutation<null>("/api/auth/logout", "POST");
+      if (member) clearOfflineTravelData(member.username);
       showFeedback("로그아웃했습니다.", "success");
       router.replace("/");
       router.refresh();

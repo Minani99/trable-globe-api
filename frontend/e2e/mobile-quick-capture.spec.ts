@@ -46,6 +46,20 @@ test("진행 중인 여행은 모바일 어디서나 장소·사진·메모로 �
   await page.route("**/api/weather/forecast?**", async (route) => {
     await route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify({ success: true, data: { available: false, availableFrom: null, days: [] }, message: null }) });
   });
+  let uploadedBytes = 0;
+  let uploadedContentType = "";
+  await page.route("**/api/uploads/presign", async (route) => {
+    if (route.request().method() === "GET") {
+      await route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify({ success: true, data: { configured: true, maxBytes: 10 * 1024 * 1024, maxPhotos: 30, acceptedTypes: ["image/jpeg", "image/png", "image/webp"] }, message: null }) });
+      return;
+    }
+    await route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify({ success: true, data: { objectKey: "members/test/photos/optimized.webp", uploadUrl: "https://upload.travel-globe.test/optimized.webp", publicUrl: "https://images.travel-globe.test/optimized.webp", expiresInSeconds: 300 }, message: null }) });
+  });
+  await page.route("https://upload.travel-globe.test/**", async (route) => {
+    uploadedBytes = route.request().postDataBuffer()?.length ?? 0;
+    uploadedContentType = route.request().headers()["content-type"] ?? "";
+    await route.fulfill({ status: 200, body: "" });
+  });
   await page.goto("/discover");
 
   const trigger = page.getByRole("button", { name: "빠른 기록" });
@@ -66,14 +80,43 @@ test("진행 중인 여행은 모바일 어디서나 장소·사진·메모로 �
   await quickNote.getByRole("button", { name: "메모 저장" }).click();
   await expect(capture.getByRole("status")).toContainText("메모를 남겼어요");
   await expect(capture.getByRole("list", { name: "오늘의 서울 산책 오늘 일정" })).toContainText("서울숲에서 바로 남긴 현장 메모");
+  await expect.poll(() => page.evaluate(() => Object.keys(localStorage).some((key) => key.startsWith("travel-globe:trip-cache:v1:")))).toBe(true);
+
+  await page.route("**/api/private/travels", async (route) => route.abort("internetdisconnected"));
+  await page.reload();
+  await expect(trigger).toBeVisible();
+  await trigger.click();
+  await expect(capture).toContainText("기기에 저장된 일정을 표시하고 있어요.");
+  await expect(capture.getByRole("list", { name: "오늘의 서울 산책 오늘 일정" })).toContainText("서울숲에서 바로 남긴 현장 메모");
+  await page.unroute("**/api/private/travels");
 
   await capture.getByRole("button", { name: "사진" }).click();
   const quickPhoto = capture.getByRole("group", { name: "빠른 사진 기록" });
   await expect(quickPhoto.locator('input[type="file"]')).toHaveAttribute("capture", "environment");
-  await quickPhoto.getByRole("button", { name: "빠른 기록 닫기" }).click();
+  const tinyPng = Buffer.from("iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=", "base64");
+  const largePhoto = Buffer.concat([tinyPng, Buffer.alloc(3 * 1024 * 1024)]);
+  await quickPhoto.locator('input[type="file"]').setInputFiles({ name: "large-photo.png", mimeType: "image/png", buffer: largePhoto });
+  await expect(capture.getByText(/사진을 기록했어요\. 3\.0MB →/)).toBeVisible();
+  expect(uploadedContentType).toBe("image/webp");
+  expect(uploadedBytes).toBeGreaterThan(0);
+  expect(uploadedBytes).toBeLessThan(largePhoto.length);
 
+  await page.context().setOffline(true);
+  await expect(capture.getByText("오프라인 모드")).toBeVisible();
   await capture.getByRole("button", { name: "서울숲 완료" }).click();
   await expect(capture.getByText("오늘 일정을 모두 마쳤어요.")).toBeVisible();
+  await expect(capture.getByText(/완료 상태를 기기에 저장했습니다/)).toBeVisible();
+  await expect.poll(() => page.evaluate(() => Object.keys(localStorage)
+    .filter((key) => key.startsWith("travel-globe:trip-queue:v1:"))
+    .map((key) => JSON.parse(localStorage.getItem(key) ?? "[]").length)
+    .reduce((sum, count) => sum + count, 0))).toBe(1);
+
+  await page.context().setOffline(false);
+  await expect(capture.getByText("오프라인 기록을 모두 동기화했습니다.")).toBeVisible();
+  await expect.poll(() => page.evaluate(() => Object.keys(localStorage)
+    .filter((key) => key.startsWith("travel-globe:trip-queue:v1:"))
+    .map((key) => JSON.parse(localStorage.getItem(key) ?? "[]").length)
+    .reduce((sum, count) => sum + count, 0))).toBe(0);
   const savedTravel = await page.request.get(`/api/private/travels/${travelId}`);
   expect(savedTravel.status()).toBe(200);
   expect((await savedTravel.json()).data.places[0].completedAt).not.toBeNull();

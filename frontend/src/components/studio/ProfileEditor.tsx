@@ -9,6 +9,7 @@ import { ApiError, apiMutation } from "@/lib/api/client";
 import {
   deleteUploadedPhoto,
   getUploadConfiguration,
+  MAX_SOURCE_IMAGE_BYTES,
   uploadPhoto,
   type UploadConfiguration,
 } from "@/lib/uploads/client";
@@ -50,8 +51,8 @@ export function ProfileEditor({ member }: { member: AuthMember }) {
       event.target.value = "";
       return;
     }
-    if (file.size > uploadConfig.maxBytes) {
-      setStatus(`이미지는 ${Math.round(uploadConfig.maxBytes / 1024 / 1024)}MB 이하여야 합니다.`);
+    if (file.size > MAX_SOURCE_IMAGE_BYTES) {
+      setStatus("원본 이미지는 30MB 이하여야 합니다.");
       event.target.value = "";
       return;
     }
@@ -63,7 +64,7 @@ export function ProfileEditor({ member }: { member: AuthMember }) {
     event.preventDefault();
     const formData = new FormData(event.currentTarget);
     const previousImageUrl = savedMember.profileImageUrl;
-    let uploaded: { objectKey: string; publicUrl: string } | null = null;
+    let uploaded: Awaited<ReturnType<typeof uploadPhoto>> | null = null;
     setPending(true);
     setStatus(null);
     setUploadProgress(imageFile ? 0 : null);
@@ -87,7 +88,7 @@ export function ProfileEditor({ member }: { member: AuthMember }) {
       if (previousImageUrl && previousImageUrl !== nextImageUrl) {
         void deleteUploadedPhoto({ publicUrl: previousImageUrl }).catch(() => undefined);
       }
-      setStatus("프로필을 저장했습니다.");
+      setStatus(uploaded?.optimized ? "프로필 사진을 최적화해 저장했습니다." : "프로필을 저장했습니다.");
       showFeedback("프로필을 저장했습니다.", "success");
     } catch (error) {
       if (uploaded) {
@@ -119,7 +120,7 @@ export function ProfileEditor({ member }: { member: AuthMember }) {
         />
         <div className="settings-avatar__actions">
           <strong>프로필 사진</strong>
-          <p>JPG, PNG, WebP · 10MB 이하</p>
+          <p>JPG, PNG, WebP · 원본 30MB 이하 · 자동 최적화</p>
           <div>
             <label className={`settings-avatar__upload${uploadConfig?.configured ? "" : " is-disabled"}`}>
               <span>{imageFile

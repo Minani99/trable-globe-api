@@ -4,6 +4,7 @@ import { useEffect, useId, useState } from "react";
 
 import { MobileTripCompanion } from "@/components/layout/MobileTripCompanion";
 import { apiSessionGet } from "@/lib/api/client";
+import { cacheTravel, readCachedCurrentTravel, readCachedTravel } from "@/lib/travel-offline";
 import type { AuthMember, OwnedTravelSummary, TravelDetail } from "@/types";
 
 interface MobileJourneyCaptureProps {
@@ -18,6 +19,7 @@ export function MobileJourneyCapture({ member, pathname }: MobileJourneyCaptureP
     travel: OwnedTravelSummary | null;
     detail: TravelDetail | null;
     detailPending: boolean;
+    cached: boolean;
   } | null>(null);
   const [open, setOpen] = useState(false);
 
@@ -27,23 +29,38 @@ export function MobileJourneyCapture({ member, pathname }: MobileJourneyCaptureP
     }
 
     let active = true;
+    const today = todayInKorea();
+    const cached = readCachedCurrentTravel(member.username, today);
+    if (cached) {
+      queueMicrotask(() => {
+        if (active) setTravelState({
+          username: member.username,
+          travel: summaryFromCachedTravel(cached.travel, cached.savedAt),
+          detail: cached.travel,
+          detailPending: false,
+          cached: true,
+        });
+      });
+    }
     apiSessionGet<OwnedTravelSummary[]>("/api/private/travels")
       .then(async (travels) => {
         const currentTravel = findCurrentTravel(travels);
         if (!currentTravel) {
-          if (active) setTravelState({ username: member.username, travel: null, detail: null, detailPending: false });
+          if (active) setTravelState({ username: member.username, travel: null, detail: null, detailPending: false, cached: false });
           return;
         }
-        if (active) setTravelState({ username: member.username, travel: currentTravel, detail: null, detailPending: true });
+        const cachedDetail = readCachedTravel(member.username, currentTravel.travel.id)?.travel ?? null;
+        if (active) setTravelState({ username: member.username, travel: currentTravel, detail: cachedDetail, detailPending: !cachedDetail, cached: Boolean(cachedDetail) });
         try {
           const detail = await apiSessionGet<TravelDetail>(`/api/private/travels/${currentTravel.travel.id}`);
-          if (active) setTravelState({ username: member.username, travel: currentTravel, detail, detailPending: false });
+          cacheTravel(member.username, detail);
+          if (active) setTravelState({ username: member.username, travel: currentTravel, detail, detailPending: false, cached: false });
         } catch {
-          if (active) setTravelState({ username: member.username, travel: currentTravel, detail: null, detailPending: false });
+          if (active) setTravelState({ username: member.username, travel: currentTravel, detail: cachedDetail, detailPending: false, cached: Boolean(cachedDetail) });
         }
       })
       .catch(() => {
-        if (active) setTravelState({ username: member.username, travel: null, detail: null, detailPending: false });
+        if (active && !cached) setTravelState({ username: member.username, travel: null, detail: null, detailPending: false, cached: false });
       });
     return () => {
       active = false;
@@ -75,12 +92,12 @@ export function MobileJourneyCapture({ member, pathname }: MobileJourneyCaptureP
             <div>
               <small>NOW · {country}</small>
               <strong>{travel.title}</strong>
-              <span>오늘 진행 중인 여행을 자동으로 선택했어요.</span>
+              <span>{travelState?.cached ? "기기에 저장된 일정을 표시하고 있어요." : "오늘 진행 중인 여행을 자동으로 선택했어요."}</span>
             </div>
             <button type="button" onClick={() => setOpen(false)} aria-label="빠른 기록 닫기">×</button>
           </header>
           {travelState?.detail ? (
-            <MobileTripCompanion travel={travelState.detail} today={todayInKorea()} />
+            <MobileTripCompanion key={`${travelState.detail.id}-${travelState.cached ? "cached" : "live"}`} travel={travelState.detail} today={todayInKorea()} username={member.username} />
           ) : travelState?.detailPending ? (
             <div className="mobile-journey-capture__loading" role="status">오늘 일정을 불러오는 중…</div>
           ) : (
@@ -103,6 +120,34 @@ export function MobileJourneyCapture({ member, pathname }: MobileJourneyCaptureP
       </button>
     </aside>
   );
+}
+
+function summaryFromCachedTravel(travel: TravelDetail, updatedAt: string): OwnedTravelSummary {
+  const firstPlace = travel.places[0] ?? null;
+  return {
+    visibility: travel.visibility,
+    updatedAt,
+    travel: {
+      id: travel.id,
+      title: travel.title,
+      description: travel.description,
+      startDate: travel.startDate,
+      endDate: travel.endDate,
+      durationDays: travel.durationDays,
+      coverImageUrl: travel.coverImageUrl,
+      primaryCountry: firstPlace?.country ?? travel.countries[0] ?? null,
+      primaryCity: firstPlace?.city ?? null,
+      countries: travel.countries,
+      routePoints: travel.places.map((place) => ({
+        latitude: place.latitude,
+        longitude: place.longitude,
+        label: place.placeName,
+        countryCode: place.country.iso2Code,
+      })),
+      placeCount: travel.places.length,
+      photoCount: travel.photos.length,
+    },
+  };
 }
 
 function findCurrentTravel(travels: OwnedTravelSummary[]): OwnedTravelSummary | null {
