@@ -3,6 +3,7 @@ import type { TravelDetail } from "@/types";
 const CACHE_PREFIX = "travel-globe:trip-cache:v1:";
 const INDEX_PREFIX = "travel-globe:trip-index:v1:";
 const QUEUE_PREFIX = "travel-globe:trip-queue:v1:";
+const ACTIVE_USER_KEY = "travel-globe:trip-active-user:v1";
 const MAX_CACHED_TRAVELS = 5;
 
 export interface CachedTravel {
@@ -25,6 +26,7 @@ export function cacheTravel(username: string, travel: TravelDetail): void {
   const savedAt = new Date().toISOString();
   try {
     storage.setItem(cacheKey(username, travel.id), JSON.stringify({ savedAt, travel } satisfies CachedTravel));
+    storage.setItem(ACTIVE_USER_KEY, username);
     const ids = readIndex(storage, username).filter((id) => id !== travel.id);
     ids.unshift(travel.id);
     const retained = ids.slice(0, MAX_CACHED_TRAVELS);
@@ -51,6 +53,15 @@ export function readCachedCurrentTravel(username: string, today: string): Cached
     .filter((entry): entry is CachedTravel => Boolean(entry))
     .filter(({ travel }) => travel.startDate <= today && today <= travel.endDate)
     .sort((left, right) => Date.parse(right.savedAt) - Date.parse(left.savedAt))[0] ?? null;
+}
+
+export function readCachedActiveTravel(today: string): { username: string; cached: CachedTravel } | null {
+  const storage = getStorage();
+  if (!storage) return null;
+  const username = storage.getItem(ACTIVE_USER_KEY)?.trim();
+  if (!username) return null;
+  const cached = readCachedCurrentTravel(username, today);
+  return cached ? { username, cached } : null;
 }
 
 export function queuePlaceUpdate(
@@ -119,6 +130,7 @@ export function clearOfflineTravelData(username: string): void {
       key === `${INDEX_PREFIX}${encodedUsername}`
     )) storage.removeItem(key);
   }
+  if (storage.getItem(ACTIVE_USER_KEY) === username) storage.removeItem(ACTIVE_USER_KEY);
 }
 
 function writeQueue(username: string, travelId: number, queue: QueuedPlaceUpdate[]): void {

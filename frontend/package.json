@@ -11,7 +11,8 @@
     "test:e2e": "playwright test",
     "geo:build": "node scripts/build-geo-data.mjs",
     "airports:build": "node scripts/build-airport-data.mjs",
-    "placeholders:build": "node scripts/build-placeholders.mjs"
+    "placeholders:build": "node scripts/build-placeholders.mjs",
+    "pwa:icons": "node scripts/build-pwa-icons.mjs"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.1109.0",

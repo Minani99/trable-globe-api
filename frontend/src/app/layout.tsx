@@ -1,13 +1,22 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono, Noto_Sans_KR } from "next/font/google";
 
 import { AppFeedback } from "@/components/common/AppFeedback";
 import { BackendWarmup } from "@/components/common/BackendWarmup";
+import { PwaManager } from "@/components/common/PwaManager";
 import { siteConfig } from "@/lib/config";
 import { getSiteUrl } from "@/lib/site-url";
 import "./globals.css";
 
 export const maxDuration = 60;
+
+export const viewport: Viewport = {
+  colorScheme: "light dark",
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "#f6f7f4" },
+    { media: "(prefers-color-scheme: dark)", color: "#10252c" },
+  ],
+};
 
 const themeInitScript = `(() => {
   try {
@@ -43,6 +52,16 @@ export const metadata: Metadata = {
     template: `%s · ${siteConfig.name}`,
   },
   description: siteConfig.description,
+  manifest: "/manifest.webmanifest",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "default",
+    title: siteConfig.name,
+  },
+  icons: {
+    icon: "/icon.svg",
+    apple: "/icon-180.png",
+  },
   keywords: ["여행 지구본", "여행 기록", "여행 아카이브", "여행 지도", "여행 계획"],
   openGraph: {
     type: "website",
@@ -71,6 +90,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
           본문으로 건너뛰기
         </a>
         <BackendWarmup />
+        <PwaManager />
         <AppFeedback />
         {children}
       </body>
