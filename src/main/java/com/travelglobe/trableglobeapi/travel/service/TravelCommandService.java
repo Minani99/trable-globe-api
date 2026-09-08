@@ -256,7 +256,7 @@ public class TravelCommandService {
     }
 
     private static boolean isPlanningPlaceholder(TravelPlaceWriteRequest place) {
-        return place.placeName().contains("장소를 골라주세요");
+        return place.placeName().contains("골라주세요");
     }
 
     private static String emptyToNull(String value) {

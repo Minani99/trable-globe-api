@@ -11,6 +11,7 @@
 - [ ] Cloudflare R2 운영 버킷과 CORS가 설정됐고 사진 업로드·삭제가 동작한다.
 - [ ] 모바일 브라우저에서 홈 화면 설치가 가능하고, 설치 후 `/studio`가 독립 창으로 열린다.
 - [ ] 비행기 모드에서 새 페이지를 열면 오프라인 안내가 표시되고 다른 사용자의 비공개 화면은 캐시에 남지 않는다.
+- [ ] 종료된 비공개 계획의 `기록 완성하기`에서 장소·대표 사진·짧은 기록을 확인하고 공개 상세로 이동한다.
 - [ ] Neon 보존 기간을 확인하고 [`operations.md`](./operations.md)의 복구 리허설을 한 번 완료했다.
 - [ ] GitHub의 `PRODUCTION_SITE_URL`, `PRODUCTION_API_URL` 변수를 추가하고 수동 Production smoke가 통과한다.
 - [ ] Vercel의 `MAPTILER_API_KEY`를 설정하고 MapTiler 키의 허용 출처를 Production·Preview 도메인으로 제한한다.

@@ -411,6 +411,13 @@ class TravelGlobeApiTest {
                         .content(travelPayload("미완성 계획", "PUBLIC")
                                 .replace("서울숲", "1일차 · 장소를 골라주세요")))
                 .andExpect(status().isBadRequest());
+
+        mockMvc.perform(post("/api/private/travels")
+                        .header("Authorization", "Bearer " + token)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(travelPayload("종류만 정한 계획", "PUBLIC")
+                                .replace("서울숲", "1일차 · 관광을 골라주세요")))
+                .andExpect(status().isBadRequest());
     }
 
     @Test

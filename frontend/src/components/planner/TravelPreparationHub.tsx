@@ -12,6 +12,7 @@ import {
   type AirportOption,
 } from "@/lib/airports";
 import type { TravelPlace } from "@/types";
+import { isPlaceholderPlaceName } from "@/lib/travel-placeholders";
 
 type ForecastDay = {
   date: string;
@@ -104,7 +105,7 @@ export function TravelPreparationHub({
           {weatherState === "loading" ? <div className="trip-weather-skeleton" aria-label="여행지 날씨 확인 중" /> : null}
           {weatherState === "error" ? <p className="trip-action-card__notice">예보 연결이 원활하지 않아요. 잠시 후 다시 확인해 주세요.</p> : null}
           {rainyDays.length ? <ul className="trip-weather-days">{rainyDays.map((day) => {
-            const matchingPlaces = places.filter((place) => place.visitedAt === day.date && !place.placeName.includes("장소를 골라주세요"));
+            const matchingPlaces = places.filter((place) => place.visitedAt === day.date && !isPlaceholderPlaceName(place.placeName));
             return <li key={day.date}><span><b>{formatMonthDay(day.date)}</b><small>비 {day.precipitationProbability}%</small></span><p>{matchingPlaces.length ? `${matchingPlaces[0].placeName}${matchingPlaces.length > 1 ? ` 외 ${matchingPlaces.length - 1}곳` : ""}` : "아직 비어 있는 일정"}</p></li>;
           })}</ul> : null}
           {rainyDays.length ? <a className="trip-action-card__button is-secondary" href="#itinerary-editor">비 오는 날 일정 점검하기 <span aria-hidden="true">↓</span></a> : null}

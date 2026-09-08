@@ -1,4 +1,4 @@
-const SHELL_CACHE = "travel-globe-shell-v2";
+const SHELL_CACHE = "travel-globe-shell-v3";
 const OFFLINE_ROUTES = ["/offline", "/offline/trip"];
 const SHELL_FILES = ["/icon.svg", "/icon-192.png", "/icon-512.png"];
 

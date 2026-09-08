@@ -8,6 +8,7 @@ import { ActivityFeed } from "@/components/studio/ActivityFeed";
 import { authenticatedBackendGet, getCurrentMember } from "@/lib/api/server-session";
 import { todayInKorea } from "@/lib/utils/date";
 import { formatDateRange } from "@/lib/utils/format";
+import { isPlaceholderPlaceName } from "@/lib/travel-placeholders";
 import type { ActivityEvent, OwnedTravelSummary, TravelSummary } from "@/types";
 
 export const metadata: Metadata = { title: "여행 허브", robots: { index: false, follow: false } };
@@ -98,7 +99,7 @@ export default async function StudioPage() {
                   <li key={travel.id}>
                     <div className="studio-memory-ready__country"><span>{travel.primaryCountry?.iso2Code ?? "TR"}</span><small>{travel.primaryCountry?.nameKo ?? "지난 여행"}</small></div>
                     <div><h3>{travel.title}</h3><p>{formatDateRange(travel.startDate, travel.endDate)} · 장소 {travel.placeCount}곳 · 사진 {travel.photoCount}장</p></div>
-                    <Link href={`/studio/travels/${travel.id}/edit?plan=1`}>기록 완성하기 <span aria-hidden="true">→</span></Link>
+                    <Link href={`/studio/travels/${travel.id}/edit?finish=1`}>기록 완성하기 <span aria-hidden="true">→</span></Link>
                   </li>
                 ))}
               </ol>
@@ -239,7 +240,7 @@ function PlanListItem({ plan, today }: { plan: OwnedTravelSummary; today: string
 
 function planProgress(travel: TravelSummary) {
   const total = Math.max(1, travel.placeCount);
-  const completed = Math.min(total, travel.routePoints.filter((place) => !place.label.includes("장소를 골라주세요")).length);
+  const completed = Math.min(total, travel.routePoints.filter((place) => !isPlaceholderPlaceName(place.label)).length);
   return { completed, total, percentage: Math.round((completed / total) * 100) };
 }
 

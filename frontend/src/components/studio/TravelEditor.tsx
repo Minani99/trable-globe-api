@@ -15,6 +15,7 @@ import {
   uploadPhoto,
 } from "@/lib/uploads/client";
 import { readPhotoMetadata, type PhotoMetadata } from "@/lib/uploads/photo-metadata";
+import { isPlaceholderPlaceName } from "@/lib/travel-placeholders";
 import type { TravelDetail, TravelPhotoWriteInput, TravelPlaceWriteInput, TravelWriteInput, Visibility } from "@/types";
 import { PlaceLocationPicker } from "@/components/studio/PlaceLocationPicker";
 
@@ -1108,7 +1109,7 @@ function estimatedEndTime(startTime: string, duration: string): string {
 }
 
 function isPlanningPlaceholder(place: PlaceDraft): boolean {
-  return !place.placeName.trim() || place.placeName.includes("장소를 골라주세요");
+  return isPlaceholderPlaceName(place.placeName);
 }
 
 function planDayInsertionIndex(places: PlaceDraft[], day: string): number {

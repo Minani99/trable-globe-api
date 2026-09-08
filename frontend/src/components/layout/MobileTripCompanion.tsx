@@ -12,6 +12,7 @@ import {
   removeQueuedPlaceUpdate,
   removeQueuedUpdatesForPlace,
 } from "@/lib/travel-offline";
+import { isPlaceholderPlaceName } from "@/lib/travel-placeholders";
 import { deleteUploadedPhoto, getUploadConfiguration, MAX_SOURCE_IMAGE_BYTES, uploadPhoto } from "@/lib/uploads/client";
 import type { TravelDetail, TravelPlace } from "@/types";
 
@@ -393,7 +394,7 @@ function QuickActionIcon({ name }: { name: "place" | "photo" | "note" | "more" }
 
 function placesForDay(places: TravelPlace[], today: string): TravelPlace[] {
   return places
-    .filter((place) => place.visitedAt === today && !place.placeName.includes("장소를 골라주세요"))
+    .filter((place) => place.visitedAt === today && !isPlaceholderPlaceName(place.placeName))
     .sort((left, right) => (formatTime(left.startTime) ?? "99:99").localeCompare(formatTime(right.startTime) ?? "99:99") || left.sortOrder - right.sortOrder);
 }
 

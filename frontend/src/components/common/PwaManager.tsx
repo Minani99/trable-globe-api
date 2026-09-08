@@ -61,8 +61,7 @@ export function PwaManager() {
   }, []);
 
   const inTravelWorkspace = pathname === "/studio"
-    || pathname === "/settings"
-    || pathname.startsWith("/studio/travels/");
+    || pathname === "/settings";
   const canShow = !installed && !dismissed && inTravelWorkspace && (Boolean(installPrompt) || isIos);
   if (!canShow) return null;
 
