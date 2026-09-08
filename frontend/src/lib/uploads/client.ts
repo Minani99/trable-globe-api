@@ -87,7 +87,8 @@ async function preparePhoto(file: File): Promise<{ file: File }> {
   try {
     decoded = await decodeImage(file);
     const scale = Math.min(1, MAX_IMAGE_EDGE / Math.max(decoded.width, decoded.height));
-    if (scale === 1 && file.size <= OPTIMIZE_ABOVE_BYTES) return { file };
+    const shouldStripMetadata = file.type === "image/jpeg";
+    if (scale === 1 && file.size <= OPTIMIZE_ABOVE_BYTES && !shouldStripMetadata) return { file };
 
     const width = Math.max(1, Math.round(decoded.width * scale));
     const height = Math.max(1, Math.round(decoded.height * scale));
@@ -100,7 +101,7 @@ async function preparePhoto(file: File): Promise<{ file: File }> {
 
     const outputType = file.type === "image/jpeg" ? "image/jpeg" : "image/webp";
     const blob = await canvasToBlob(canvas, outputType, 0.84);
-    if (blob.size >= file.size && scale === 1) return { file };
+    if (blob.size >= file.size && scale === 1 && !shouldStripMetadata) return { file };
     return {
       file: new File([blob], optimizedFilename(file.name, outputType), {
         type: outputType,

@@ -458,6 +458,15 @@
   color: var(--accent-strong) !important;
 }
 
+.travel-editor__photo-import-note {
+  grid-column: 2;
+  margin: -0.45rem 0 1rem;
+  color: var(--accent-strong);
+  font-size: 0.66rem;
+  font-weight: 650;
+  line-height: 1.55;
+}
+
 @media (max-width: 980px) {
   .trip-preparation__grid {
     grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
@@ -470,6 +479,11 @@
 }
 
 @media (max-width: 700px) {
+  .travel-editor__photo-import-note {
+    grid-column: 1;
+    margin-top: -0.35rem;
+  }
+
   .trip-preparation {
     padding: 0.8rem;
     border-radius: 1.1rem;
@@ -530,6 +544,10 @@
   font-size: 0.66rem;
   font-weight: 650;
   letter-spacing: 0.09em;
+}
+
+.travel-year-filter__mobile {
+  display: none;
 }
 
 .travel-year-filter__options {
@@ -1221,23 +1239,45 @@
   }
 
   .travel-year-filter {
-    align-items: stretch;
-    flex-direction: column;
-    gap: 0.35rem;
-    padding: 0.7rem;
-    border-radius: 1rem;
+    min-height: 3rem;
+    padding: 0.35rem;
+    border-radius: 0.9rem;
   }
 
   .travel-year-filter__label {
-    padding-inline: 0.25rem;
+    display: none;
   }
 
   .travel-year-filter__options {
-    margin-inline: -0.15rem;
+    display: none;
   }
 
-  .travel-year-filter__options button {
-    min-height: 2.2rem;
+  .travel-year-filter__mobile {
+    display: grid;
+    width: 100%;
+    grid-template-columns: auto minmax(0, 1fr);
+    align-items: center;
+    gap: 0.75rem;
+    padding-left: 0.55rem;
+  }
+
+  .travel-year-filter__mobile > span {
+    color: var(--text-tertiary);
+    font-size: 0.62rem;
+    font-weight: 650;
+  }
+
+  .travel-year-filter__mobile select {
+    width: 100%;
+    min-height: 2.35rem;
+    padding: 0.35rem 2rem 0.35rem 0.8rem;
+    border: 0;
+    border-radius: 0.68rem;
+    background: var(--text-primary);
+    color: var(--background);
+    font-family: var(--font-mono);
+    font-size: 1rem;
+    font-weight: 700;
   }
 
   .travel-recap {

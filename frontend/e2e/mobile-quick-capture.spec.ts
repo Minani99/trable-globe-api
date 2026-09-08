@@ -131,6 +131,18 @@ test("진행 중인 여행은 모바일 어디서나 장소·사진·메모로 �
   await expect(page.getByRole("tab", { name: /DAY 1/ })).toHaveAttribute("aria-selected", "true");
   await expect(page.locator("#travel-photo-editor input[type=file]")).toHaveAttribute("multiple", "");
 
+  const photoEditor = page.locator("#travel-photo-editor");
+  await expect(photoEditor.getByText("사진을 선택하거나 이곳에 놓아 주세요", { exact: true })).toBeVisible();
+  await photoEditor.locator('input[type="file"]').setInputFiles({
+    name: "seoul-forest.jpg",
+    mimeType: "image/jpeg",
+    buffer: jpegWithExif(today, 37.5444, 127.0374),
+  });
+  await expect(photoEditor.getByRole("status")).toContainText("촬영정보로 날짜 1장 · 장소 1장");
+  const importedPhoto = photoEditor.locator(".travel-editor__photos > li").last();
+  await expect(importedPhoto.getByLabel("촬영일")).toHaveValue(today);
+  await expect(importedPhoto.getByLabel("연결할 장소")).toHaveValue("0");
+
   await quickNavigation.getByRole("button", { name: "메모" }).click();
   await expect.poll(() => page.evaluate(() => document.activeElement?.id)).toBe("travel-note-editor");
 
@@ -145,4 +157,61 @@ function addDays(value: string, amount: number): string {
   const date = new Date(`${value}T00:00:00Z`);
   date.setUTCDate(date.getUTCDate() + amount);
   return date.toISOString().slice(0, 10);
+}
+
+function jpegWithExif(date: string, latitude: number, longitude: number): Buffer {
+  const [year, month, day] = date.split("-");
+  const dateTime = `${year}:${month}:${day} 12:00:00\0`;
+  const tiff = Buffer.alloc(178);
+  tiff.write("II", 0, "ascii");
+  tiff.writeUInt16LE(42, 2);
+  tiff.writeUInt32LE(8, 4);
+
+  tiff.writeUInt16LE(2, 8);
+  writeIfdEntry(tiff, 10, 0x8769, 4, 1, 38);
+  writeIfdEntry(tiff, 22, 0x8825, 4, 1, 76);
+  tiff.writeUInt32LE(0, 34);
+
+  tiff.writeUInt16LE(1, 38);
+  writeIfdEntry(tiff, 40, 0x9003, 2, 20, 56);
+  tiff.writeUInt32LE(0, 52);
+  tiff.write(dateTime, 56, "ascii");
+
+  tiff.writeUInt16LE(4, 76);
+  writeIfdEntry(tiff, 78, 0x0001, 2, 2, latitude < 0 ? 0x00000053 : 0x0000004e);
+  writeIfdEntry(tiff, 90, 0x0002, 5, 3, 130);
+  writeIfdEntry(tiff, 102, 0x0003, 2, 2, longitude < 0 ? 0x00000057 : 0x00000045);
+  writeIfdEntry(tiff, 114, 0x0004, 5, 3, 154);
+  tiff.writeUInt32LE(0, 126);
+  writeGpsRationals(tiff, 130, Math.abs(latitude));
+  writeGpsRationals(tiff, 154, Math.abs(longitude));
+
+  const payload = Buffer.concat([Buffer.from("Exif\0\0", "binary"), tiff]);
+  const segment = Buffer.alloc(4);
+  segment[0] = 0xff;
+  segment[1] = 0xe1;
+  segment.writeUInt16BE(payload.length + 2, 2);
+  return Buffer.concat([Buffer.from([0xff, 0xd8]), segment, payload, Buffer.from([0xff, 0xd9])]);
+}
+
+function writeIfdEntry(buffer: Buffer, offset: number, tag: number, type: number, count: number, value: number) {
+  buffer.writeUInt16LE(tag, offset);
+  buffer.writeUInt16LE(type, offset + 2);
+  buffer.writeUInt32LE(count, offset + 4);
+  buffer.writeUInt32LE(value, offset + 8);
+}
+
+function writeGpsRationals(buffer: Buffer, offset: number, coordinate: number) {
+  const degrees = Math.floor(coordinate);
+  const minuteValue = (coordinate - degrees) * 60;
+  const minutes = Math.floor(minuteValue);
+  const secondsTimesTenThousand = Math.round((minuteValue - minutes) * 60 * 10_000);
+  for (const [index, numerator, denominator] of [
+    [0, degrees, 1],
+    [1, minutes, 1],
+    [2, secondsTimesTenThousand, 10_000],
+  ] as const) {
+    buffer.writeUInt32LE(numerator, offset + index * 8);
+    buffer.writeUInt32LE(denominator, offset + index * 8 + 4);
+  }
 }

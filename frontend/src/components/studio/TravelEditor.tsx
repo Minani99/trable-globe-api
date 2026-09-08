@@ -14,6 +14,7 @@ import {
   type UploadConfiguration,
   uploadPhoto,
 } from "@/lib/uploads/client";
+import { readPhotoMetadata, type PhotoMetadata } from "@/lib/uploads/photo-metadata";
 import type { TravelDetail, TravelPhotoWriteInput, TravelPlaceWriteInput, TravelWriteInput, Visibility } from "@/types";
 import { PlaceLocationPicker } from "@/components/studio/PlaceLocationPicker";
 
@@ -154,6 +155,8 @@ export function TravelEditor({
     })) ?? [],
   );
   const [uploadConfig, setUploadConfig] = useState<UploadConfiguration | null>(null);
+  const [photoImporting, setPhotoImporting] = useState(false);
+  const [photoImportNotice, setPhotoImportNotice] = useState<string | null>(null);
   const [removedPhotoUrls, setRemovedPhotoUrls] = useState<string[]>([]);
   const [pending, setPending] = useState(false);
   const [status, setStatus] = useState<string | null>(null);
@@ -633,8 +636,9 @@ export function TravelEditor({
     }
   }
 
-  function addPhotoFiles(files: File[]) {
+  async function addPhotoFiles(files: File[]) {
     if (!files.length) return;
+    if (photoImporting) return;
     const configuration = uploadConfig;
     if (!configuration?.configured) {
       setStatus("사진 저장소가 아직 연결되지 않았습니다. 아래의 이미지 URL 방식은 계속 사용할 수 있어요.");
@@ -650,31 +654,48 @@ export function TravelEditor({
       return;
     }
     setStatus(null);
-    const drafts = files.map((file) => {
-      const previewUrl = URL.createObjectURL(file);
-      return {
-        ...emptyPhoto(),
-        key: draftKey(),
-        previewUrl,
-        file,
-        uploadState: "uploading" as const,
-      };
-    });
-    setPhotos((current) => [...current, ...drafts]);
-    setDirty(true);
-    drafts.forEach((draft) => void uploadDraft(draft.key, draft.file!, draft.previewUrl!));
+    setPhotoImporting(true);
+    setPhotoImportNotice("사진의 촬영일과 위치를 확인하고 있어요.");
+    try {
+      const metadata = await Promise.all(files.map(readPhotoMetadata));
+      const suggestions = metadata.map((item) => inferPhotoSchedule(item, places, startDate, endDate));
+      const drafts = files.map((file, index) => {
+        const previewUrl = URL.createObjectURL(file);
+        return {
+          ...emptyPhoto(),
+          key: draftKey(),
+          takenAt: suggestions[index].takenAt,
+          placeIndex: suggestions[index].placeIndex,
+          previewUrl,
+          file,
+          uploadState: "uploading" as const,
+        };
+      });
+      const dateCount = suggestions.filter((suggestion) => suggestion.takenAt).length;
+      const placeCount = suggestions.filter((suggestion) => suggestion.placeIndex).length;
+      setPhotoImportNotice(
+        dateCount || placeCount
+          ? `촬영정보로 날짜 ${dateCount}장${placeCount ? ` · 장소 ${placeCount}장` : ""}을 자동 입력했어요. 저장 전에 확인해 주세요.`
+          : "촬영정보가 없는 사진은 날짜와 장소를 직접 선택할 수 있어요.",
+      );
+      setPhotos((current) => [...current, ...drafts]);
+      setDirty(true);
+      drafts.forEach((draft) => void uploadDraft(draft.key, draft.file!, draft.previewUrl!));
+    } finally {
+      setPhotoImporting(false);
+    }
   }
 
   function handlePhotoFiles(event: ChangeEvent<HTMLInputElement>) {
     const files = Array.from(event.target.files ?? []);
     event.target.value = "";
-    addPhotoFiles(files);
+    void addPhotoFiles(files);
   }
 
   function handlePhotoDrop(event: DragEvent<HTMLLabelElement>) {
     event.preventDefault();
     if (!uploadConfig?.configured || pending) return;
-    addPhotoFiles(Array.from(event.dataTransfer.files));
+    void addPhotoFiles(Array.from(event.dataTransfer.files));
   }
 
   function retryPhoto(photo: PhotoDraft) {
@@ -958,12 +979,13 @@ export function TravelEditor({
             accept="image/jpeg,image/png,image/webp"
             multiple
             onChange={handlePhotoFiles}
-            disabled={!uploadConfig?.configured || pending}
+            disabled={!uploadConfig?.configured || pending || photoImporting}
           />
           <span className="travel-editor__dropzone-icon" aria-hidden="true">＋</span>
-          <strong>{uploadConfig === null ? "사진 업로드 준비를 확인하고 있어요" : uploadConfig.configured ? "사진을 선택하거나 이곳에 놓아 주세요" : "사진 저장소 연결이 필요해요"}</strong>
+          <strong>{photoImporting ? "촬영정보를 확인하고 있어요" : uploadConfig === null ? "사진 업로드 준비를 확인하고 있어요" : uploadConfig.configured ? "사진을 선택하거나 이곳에 놓아 주세요" : "사진 저장소 연결이 필요해요"}</strong>
           <small>{uploadConfig?.configured ? `JPG · PNG · WebP / 원본 30MB 이하 · 자동 최적화 / 최대 ${uploadConfig.maxPhotos}장` : "연결 전까지는 아래의 외부 이미지 주소 방식을 사용할 수 있어요."}</small>
         </label>
+        {photoImportNotice ? <p className="travel-editor__photo-import-note" role="status">{photoImportNotice}</p> : null}
         {photos.length ? (
           <ol className="travel-editor__photos">
             {photos.map((photo, index) => (
@@ -1216,6 +1238,70 @@ function isIndoorPlace(place: PlaceDraft): boolean {
 
 function isRainWeatherCode(code: number): boolean {
   return (code >= 51 && code <= 67) || (code >= 80 && code <= 82) || code >= 95;
+}
+
+function inferPhotoSchedule(
+  metadata: PhotoMetadata,
+  places: PlaceDraft[],
+  startDate: string,
+  endDate: string,
+): { takenAt: string; placeIndex: string } {
+  const metadataDateFits = Boolean(metadata.takenAt)
+    && (!startDate || metadata.takenAt! >= startDate)
+    && (!endDate || metadata.takenAt! <= endDate);
+  let takenAt = metadataDateFits ? metadata.takenAt! : "";
+  let placeIndex = "";
+
+  if (metadata.latitude !== null && metadata.longitude !== null) {
+    const candidates = places
+      .map((place, index) => ({
+        index,
+        place,
+        latitude: coordinate(place.latitude),
+        longitude: coordinate(place.longitude),
+      }))
+      .filter((candidate) => candidate.latitude !== null && candidate.longitude !== null);
+    const sameDayCandidates = takenAt
+      ? candidates.filter((candidate) => candidate.place.visitedAt === takenAt)
+      : [];
+    const ranked = (sameDayCandidates.length ? sameDayCandidates : candidates)
+      .map((candidate) => ({
+        ...candidate,
+        distance: distanceInKilometers(
+          metadata.latitude!,
+          metadata.longitude!,
+          candidate.latitude!,
+          candidate.longitude!,
+        ),
+      }))
+      .sort((left, right) => left.distance - right.distance);
+    if (ranked[0] && ranked[0].distance <= 100) {
+      placeIndex = String(ranked[0].index);
+      if (!takenAt && ranked[0].place.visitedAt) takenAt = ranked[0].place.visitedAt;
+    }
+  }
+
+  if (!placeIndex && takenAt) {
+    const sameDayIndex = places.findIndex((place) => place.visitedAt === takenAt);
+    if (sameDayIndex >= 0) placeIndex = String(sameDayIndex);
+  }
+  return { takenAt, placeIndex };
+}
+
+function distanceInKilometers(
+  firstLatitude: number,
+  firstLongitude: number,
+  secondLatitude: number,
+  secondLongitude: number,
+): number {
+  const radians = (degrees: number) => degrees * Math.PI / 180;
+  const latitudeDistance = radians(secondLatitude - firstLatitude);
+  const longitudeDistance = radians(secondLongitude - firstLongitude);
+  const firstRadians = radians(firstLatitude);
+  const secondRadians = radians(secondLatitude);
+  const haversine = Math.sin(latitudeDistance / 2) ** 2
+    + Math.cos(firstRadians) * Math.cos(secondRadians) * Math.sin(longitudeDistance / 2) ** 2;
+  return 6371 * 2 * Math.atan2(Math.sqrt(haversine), Math.sqrt(1 - haversine));
 }
 
 function nullable(value: string): string | null {

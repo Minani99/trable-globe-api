@@ -63,7 +63,12 @@
 
 @media (max-width: 700px) {
   .profile-world.is-globe-page {
+    display: flex;
+    height: calc(100svh - 3.5rem);
     min-height: calc(100svh - 3.75rem);
+    flex-direction: column;
+    overflow-x: clip;
+    overflow-y: hidden;
     padding-top: 1rem;
     padding-bottom: calc(5.5rem + env(safe-area-inset-bottom));
   }
@@ -95,11 +100,77 @@
   }
 
   .profile-world.is-globe-page .profile-globe-card {
-    min-height: clamp(22rem, calc(100svh - 16rem), 31rem);
+    height: auto;
+    min-height: 0;
+    flex: 1;
+  }
+
+  .profile-world.is-globe-page .profile-globe-card__canvas {
+    height: 100%;
+    min-height: 0;
   }
 
   .profile-world.is-globe-page .profile-world-summary {
     display: none;
+  }
+
+  .profile-world.is-globe-page > .site-shell:not(.profile-world__intro) {
+    display: flex;
+    min-height: 0;
+    flex: 1;
+    flex-direction: column;
+  }
+
+  .profile-world.is-globe-page .profile-world-toolbar {
+    flex: 0 0 auto;
+  }
+}
+
+@media (max-width: 700px) and (max-height: 700px) {
+  .profile-world.is-globe-page {
+    padding-top: 0.65rem;
+    padding-bottom: calc(4.75rem + env(safe-area-inset-bottom));
+  }
+
+  .profile-world.is-globe-page .profile-world__intro {
+    gap: 0.35rem;
+    margin-bottom: 0.55rem;
+  }
+
+  .profile-world.is-globe-page .profile-world__summary > p {
+    display: none;
+  }
+
+  .profile-world.is-globe-page .profile-world__intro-actions {
+    margin-top: 0;
+  }
+
+  .profile-world.is-globe-page .profile-world-toolbar {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    align-items: stretch;
+    gap: 0.45rem;
+    margin-bottom: 0.55rem;
+  }
+
+  .profile-world.is-globe-page .profile-world-view-switch,
+  .profile-world.is-globe-page .travel-year-filter {
+    min-width: 0;
+    margin: 0;
+  }
+
+  .profile-world.is-globe-page .travel-year-filter__mobile {
+    grid-template-columns: minmax(0, 1fr);
+    padding-left: 0;
+  }
+
+  .profile-world.is-globe-page .travel-year-filter__mobile > span {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
   }
 }
 
