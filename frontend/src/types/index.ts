@@ -139,7 +139,10 @@ export interface TravelDetail {
 
 export interface HealthStatus {
   status: string;
+  database?: string;
   serverTime: string;
+  commit?: string | null;
+  environment?: string | null;
 }
 
 export interface AuthMember {

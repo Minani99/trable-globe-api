@@ -68,6 +68,8 @@ class TravelGlobeApiTest {
                 .andExpect(jsonPath("$.success").value(true))
                 .andExpect(jsonPath("$.data.status").value("UP"))
                 .andExpect(jsonPath("$.data.database").value("UP"))
+                .andExpect(jsonPath("$.data.commit").value("local"))
+                .andExpect(jsonPath("$.data.environment").value("local"))
                 .andExpect(header().exists("X-Request-ID"));
     }
 

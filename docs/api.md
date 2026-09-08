@@ -83,7 +83,13 @@ Base URL: `http://localhost:8080` (개발). Next.js 서버와 동일 출처 `/ap
 ```json
 {
   "success": true,
-  "data": { "status": "UP", "serverTime": "2026-08-11T01:27:18.962862800Z" },
+  "data": {
+    "status": "UP",
+    "database": "UP",
+    "serverTime": "2026-08-11T01:27:18.962862800Z",
+    "commit": "f70d82b...",
+    "environment": "travel-globe-api"
+  },
   "message": null
 }
 ```

@@ -49,6 +49,11 @@ travel-globe:
     enabled: false
   observability:
     slow-request-ms: ${SLOW_REQUEST_MS:1000}
+  build:
+    # Hosting providers expose their deployed git revision through environment variables.
+    # Returning it from /api/health makes production verification unambiguous.
+    commit: ${RENDER_GIT_COMMIT:${GIT_COMMIT:local}}
+    environment: ${RENDER_SERVICE_NAME:${SPRING_PROFILES_ACTIVE:local}}
 
 logging:
   level:

@@ -2,6 +2,7 @@ package com.travelglobe.trableglobeapi.global.web;
 
 import com.travelglobe.trableglobeapi.global.response.ApiResponse;
 import java.time.Instant;
+import org.springframework.beans.factory.annotation.Value;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
@@ -21,9 +22,16 @@ public class HealthController {
     private static final Logger log = LoggerFactory.getLogger(HealthController.class);
 
     private final JdbcTemplate jdbcTemplate;
+    private final String commit;
+    private final String environment;
 
-    public HealthController(JdbcTemplate jdbcTemplate) {
+    public HealthController(
+            JdbcTemplate jdbcTemplate,
+            @Value("${travel-globe.build.commit:local}") String commit,
+            @Value("${travel-globe.build.environment:local}") String environment) {
         this.jdbcTemplate = jdbcTemplate;
+        this.commit = commit;
+        this.environment = environment;
     }
 
     /**
@@ -31,7 +39,12 @@ public class HealthController {
      * @param database   database dependency status
      * @param serverTime server clock, useful when debugging a stale frontend cache
      */
-    public record HealthResponse(String status, String database, Instant serverTime) {
+    public record HealthResponse(
+            String status,
+            String database,
+            Instant serverTime,
+            String commit,
+            String environment) {
     }
 
     /**
@@ -43,11 +56,11 @@ public class HealthController {
         Instant now = Instant.now();
         try {
             jdbcTemplate.queryForObject("select 1", Integer.class);
-            return ResponseEntity.ok(ApiResponse.ok(new HealthResponse("UP", "UP", now)));
+            return ResponseEntity.ok(ApiResponse.ok(new HealthResponse("UP", "UP", now, commit, environment)));
         } catch (RuntimeException exception) {
             log.error("Database readiness check failed", exception);
             return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE)
-                    .body(ApiResponse.ok(new HealthResponse("DOWN", "DOWN", now)));
+                    .body(ApiResponse.ok(new HealthResponse("DOWN", "DOWN", now, commit, environment)));
         }
     }
 
@@ -57,6 +70,6 @@ public class HealthController {
      */
     @GetMapping("/live")
     public ApiResponse<HealthResponse> liveness() {
-        return ApiResponse.ok(new HealthResponse("UP", "NOT_CHECKED", Instant.now()));
+        return ApiResponse.ok(new HealthResponse("UP", "NOT_CHECKED", Instant.now(), commit, environment));
     }
 }
