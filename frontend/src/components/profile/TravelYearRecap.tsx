@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useId, useState } from "react";
+import { useId, useState } from "react";
 
 import { showFeedback } from "@/components/common/AppFeedback";
 import { TravelImage } from "@/components/common/TravelImage";
@@ -46,11 +46,6 @@ export function TravelYearRecap({
   const detailsId = useId();
   const editorId = useId();
 
-  useEffect(() => {
-    setDraftNarrative(customization?.narrative ?? "");
-    setDraftFeaturedIds(customization?.featuredTravelIds ?? []);
-  }, [customization]);
-
   if (!recap.latestTravel) return null;
 
   const scopeLabel = recap.year ? `${recap.year}년` : "지금까지";
@@ -92,7 +87,11 @@ export function TravelYearRecap({
               aria-expanded={editorOpen}
               aria-controls={editorId}
               onClick={() => {
-                setEditorOpen((current) => !current);
+                if (!editorOpen) {
+                  setDraftNarrative(customization?.narrative ?? "");
+                  setDraftFeaturedIds(customization?.featuredTravelIds ?? []);
+                }
+                setEditorOpen(!editorOpen);
                 setEditorError(null);
               }}
             >
