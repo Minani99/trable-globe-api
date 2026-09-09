@@ -1,7 +1,7 @@
 import "server-only";
 
-import { DeleteObjectCommand, PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
-import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
+import { DeleteObjectCommand, S3Client } from "@aws-sdk/client-s3";
+import { AwsClient } from "aws4fetch";
 
 const CONTENT_TYPES = new Map([
   ["image/jpeg", "jpg"],
@@ -68,14 +68,22 @@ export async function createPhotoUpload(memberId: number, contentType: string, s
   if (!storage) throw new Error("PHOTO_STORAGE_NOT_CONFIGURED");
   const extension = validateUpload(contentType, size);
   const objectKey = `members/${memberId}/photos/${crypto.randomUUID()}.${extension}`;
-  const command = new PutObjectCommand({
-    Bucket: storage.bucket,
-    Key: objectKey,
-    ContentType: contentType,
+  const uploadUrl = new URL(
+    `https://${storage.accountId}.r2.cloudflarestorage.com/${encodeURIComponent(storage.bucket)}/${objectKey.split("/").map(encodeURIComponent).join("/")}`,
+  );
+  uploadUrl.searchParams.set("X-Amz-Expires", "300");
+  const signer = new AwsClient({
+    accessKeyId: storage.accessKeyId,
+    secretAccessKey: storage.secretAccessKey,
+    service: "s3",
+    region: "auto",
   });
-  const uploadUrl = await getSignedUrl(client(storage), command, { expiresIn: 300 });
+  const signedRequest = await signer.sign(new Request(uploadUrl, {
+    method: "PUT",
+    headers: { "Content-Type": contentType },
+  }), { aws: { signQuery: true, allHeaders: true } });
   const publicUrl = `${storage.publicBaseUrl}/${objectKey.split("/").map(encodeURIComponent).join("/")}`;
-  return { objectKey, uploadUrl, publicUrl, expiresInSeconds: 300 };
+  return { objectKey, uploadUrl: signedRequest.url, publicUrl, expiresInSeconds: 300 };
 }
 
 export async function deletePhotoObject(memberId: number, objectKey: string) {
