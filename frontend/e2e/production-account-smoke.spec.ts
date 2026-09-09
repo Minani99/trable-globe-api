@@ -14,6 +14,7 @@ test("운영에서 임시 계정·비공개 여행·R2 사진을 만들고 모�
   const requestHeaders = { Origin: baseUrl! };
   let registered = false;
   let uploadedObjectKey: string | null = null;
+  let primaryFailure: unknown = null;
 
   try {
     const registerResponse = await page.request.post("/api/auth/register", {
@@ -134,6 +135,9 @@ test("운영에서 임시 계정·비공개 여행·R2 사진을 만들고 모�
     });
     expect(deleteImageResponse.status(), await responseDetails(deleteImageResponse)).toBe(200);
     uploadedObjectKey = null;
+  } catch (error) {
+    primaryFailure = error;
+    throw error;
   } finally {
     if (uploadedObjectKey) {
       await page.request.delete("/api/uploads/object", {
@@ -146,12 +150,14 @@ test("운영에서 임시 계정·비공개 여행·R2 사진을 만들고 모�
         headers: requestHeaders,
         data: { password },
       });
-      expect(deleteAccountResponse.status(), await responseDetails(deleteAccountResponse)).toBe(200);
-      const memberAfterDelete = await page.request.get("/api/auth/me");
-      expect(memberAfterDelete.status(), await responseDetails(memberAfterDelete)).toBe(401);
-      const signedOutEnvelope = await memberAfterDelete.json();
-      expect(signedOutEnvelope.data).toBeNull();
-      expect(signedOutEnvelope.error?.code).toBe("AUTHENTICATION_REQUIRED");
+      if (primaryFailure === null) {
+        expect(deleteAccountResponse.status(), await responseDetails(deleteAccountResponse)).toBe(200);
+        const memberAfterDelete = await page.request.get("/api/auth/me");
+        expect(memberAfterDelete.status(), await responseDetails(memberAfterDelete)).toBe(401);
+        const signedOutEnvelope = await memberAfterDelete.json();
+        expect(signedOutEnvelope.data).toBeNull();
+        expect(signedOutEnvelope.error?.code).toBe("AUTHENTICATION_REQUIRED");
+      }
     }
   }
 });
