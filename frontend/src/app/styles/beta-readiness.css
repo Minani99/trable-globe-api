@@ -215,13 +215,29 @@
   font-size: 0.68rem !important;
 }
 
-.beta-feedback-form > button {
+.beta-feedback-form__actions {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 0.65rem;
+}
+
+.beta-feedback-form__actions button {
   min-height: 3.2rem;
+  padding-inline: 1.15rem;
   border-radius: 0.85rem;
-  background: var(--text-primary);
-  color: var(--background);
   font-size: 0.74rem;
   font-weight: 750;
+}
+
+.beta-feedback-form__actions button:first-child {
+  background: var(--text-primary);
+  color: var(--background);
+}
+
+.beta-feedback-form__actions button:last-child {
+  border: 1px solid var(--border-strong);
+  background: var(--surface);
+  color: var(--text-secondary);
 }
 
 .beta-feedback-result {
@@ -287,6 +303,10 @@
   }
 
   .beta-feedback-form__row {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .beta-feedback-form__actions {
     grid-template-columns: minmax(0, 1fr);
   }
 }

@@ -10,6 +10,8 @@ export default function GlobalError({
   error: Error & { digest?: string };
   reset: () => void;
 }) {
+  const feedbackParams = new URLSearchParams({ area: "기타", intent: "화면을 불러오지 못했습니다" });
+  if (error.digest) feedbackParams.set("requestId", error.digest);
   useEffect(() => {
     console.error("[ui] unrecoverable render error", error);
   }, [error]);
@@ -26,7 +28,7 @@ export default function GlobalError({
             <button type="button" className="profile-panel__primary-action" onClick={reset}>다시 시도</button>
             <Link href="/">홈으로 이동</Link>
           </div>
-          <Link href="/feedback">계속 안 되면 오류 알려주기</Link>
+          <Link href={`/feedback?${feedbackParams}`}>계속 안 되면 오류 알려주기</Link>
         </main>
       </body>
     </html>

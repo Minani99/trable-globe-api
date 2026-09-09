@@ -16,6 +16,8 @@ export function RouteErrorState({
   title: string;
   description: string;
 }) {
+  const feedbackParams = new URLSearchParams({ area: "기타", intent: title });
+  if (error.digest) feedbackParams.set("requestId", error.digest);
   useEffect(() => {
     console.error(error);
   }, [error]);
@@ -31,7 +33,7 @@ export function RouteErrorState({
           <button type="button" onClick={reset}>다시 시도</button>
           <Link href="/">홈으로</Link>
         </div>
-        <Link className="route-state-card__feedback" href="/feedback">계속 안 되면 오류 알려주기</Link>
+        <Link className="route-state-card__feedback" href={`/feedback?${feedbackParams}`}>계속 안 되면 오류 알려주기</Link>
         {error.digest ? <small>오류 번호 {error.digest}</small> : null}
       </section>
     </main>
