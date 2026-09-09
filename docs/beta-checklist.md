@@ -20,6 +20,16 @@
 
 ## 한 사람이 확인할 핵심 여정
 
+운영 계정·비공개 여행·R2 브라우저 업로드의 기본 연결은 아래 명령으로 먼저 점검할 수 있습니다.
+실행 중 만든 임시 계정과 사진은 성공·실패 여부와 관계없이 마지막에 삭제합니다.
+
+```powershell
+$env:PLAYWRIGHT_BASE_URL="https://travel-globe-minani99.vercel.app"
+$env:PRODUCTION_ACCOUNT_SMOKE="1"
+Set-Location frontend
+npx playwright test e2e/production-account-smoke.spec.ts --project=chromium
+```
+
 1. 새 계정을 만들고 이메일을 인증한다.
 2. 로그아웃한 뒤 다시 로그인하고, 비밀번호 재설정 메일도 한 번 확인한다.
 3. 여행 제목·기간을 입력하고 한국어 자동완성으로 세 장소를 추가한 뒤 전체화면 지도에서 핀 하나를 조정한다.

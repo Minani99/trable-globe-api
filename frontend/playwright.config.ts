@@ -1,6 +1,7 @@
 import { defineConfig, devices } from "@playwright/test";
 
 const isWindows = process.platform === "win32";
+const externalBaseUrl = process.env.PLAYWRIGHT_BASE_URL?.trim().replace(/\/+$/, "");
 const backendCommand = isWindows
   ? "mvn.cmd -B spring-boot:run"
   : "chmod +x ./mvnw && ./mvnw -B spring-boot:run";
@@ -17,7 +18,7 @@ export default defineConfig({
   workers: 1,
   reporter: process.env.CI ? [["line"], ["html", { open: "never" }]] : "list",
   use: {
-    baseURL: "http://127.0.0.1:3000",
+    baseURL: externalBaseUrl || "http://127.0.0.1:3000",
     trace: "retain-on-failure",
     screenshot: "only-on-failure",
     // CI has no GPU. Respecting the reduced-motion path prevents the ambient
@@ -30,7 +31,7 @@ export default defineConfig({
   projects: [
     { name: "chromium", use: { ...devices["Desktop Chrome"] } },
   ],
-  webServer: [
+  webServer: externalBaseUrl ? undefined : [
     {
       command: backendCommand,
       cwd: "..",

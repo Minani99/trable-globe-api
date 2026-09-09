@@ -57,7 +57,7 @@ export async function uploadPhoto(file: File, onProgress: (progress: number) => 
         reject(new ApiError(request.status, "사진 저장소가 업로드를 거절했습니다. 저장소 CORS 설정을 확인해 주세요."));
       }
     };
-    request.onerror = () => reject(new ApiError(0, "사진 업로드 중 네트워크 연결이 끊겼습니다."));
+    request.onerror = () => reject(new ApiError(0, "사진 저장소에 연결하지 못했습니다. 잠시 후 다시 시도해 주세요."));
     request.onabort = () => reject(new ApiError(0, "사진 업로드가 취소되었습니다."));
     request.send(prepared.file);
   });
