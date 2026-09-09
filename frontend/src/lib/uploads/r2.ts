@@ -41,6 +41,10 @@ function client(storage: R2Config) {
     cachedClient = new S3Client({
       region: "auto",
       endpoint: `https://${storage.accountId}.r2.cloudflarestorage.com`,
+      // The SDK defaults to CRC32 for supported uploads. A presigner has no file
+      // body yet, so that default signs the checksum of an empty object and R2
+      // rejects the real browser payload with SignatureDoesNotMatch.
+      requestChecksumCalculation: "WHEN_REQUIRED",
       credentials: {
         accessKeyId: storage.accessKeyId,
         secretAccessKey: storage.secretAccessKey,
