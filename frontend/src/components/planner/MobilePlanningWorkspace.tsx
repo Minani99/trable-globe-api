@@ -3,36 +3,50 @@
 import { useEffect, useState, type ReactNode } from "react";
 
 const WORKSPACE_STEPS = ["항공·날씨", "준비물", "예산·예약", "일정·기록"] as const;
-const EDITOR_HASHES = new Set([
-  "#itinerary-editor",
-  "#travel-place-editor",
-  "#travel-photo-editor",
-  "#travel-note-editor",
-]);
+const WORKSPACE_HASHES = ["#travel-preparation", "#travel-checklist", "#travel-budget", "#travel-editor"] as const;
+const EDITOR_HASHES = ["#travel-editor", "#itinerary-editor", "#travel-place-editor", "#travel-photo-editor", "#travel-note-editor"];
 
 type MobilePlanningWorkspaceProps = {
+  travelId: number;
   preparation: ReactNode;
   checklist: ReactNode;
   budget: ReactNode;
   editor: ReactNode;
 };
 
-export function MobilePlanningWorkspace({ preparation, checklist, budget, editor }: MobilePlanningWorkspaceProps) {
+export function MobilePlanningWorkspace({ travelId, preparation, checklist, budget, editor }: MobilePlanningWorkspaceProps) {
   const [activeStep, setActiveStep] = useState(0);
   const panels = [preparation, checklist, budget, editor];
+  const storageKey = `travel-globe:planning-step:${travelId}`;
 
   useEffect(() => {
     const syncHash = () => {
-      if (EDITOR_HASHES.has(window.location.hash)) setActiveStep(3);
+      const hash = window.location.hash;
+      const step = EDITOR_HASHES.some((editorHash) => hash.startsWith(editorHash))
+        ? 3
+        : WORKSPACE_HASHES.findIndex((workspaceHash) => hash.startsWith(workspaceHash));
+      if (step >= 0) {
+        setActiveStep(step);
+        window.localStorage.setItem(storageKey, String(step));
+      }
     };
-    syncHash();
     window.addEventListener("hashchange", syncHash);
+    if (window.location.hash) {
+      syncHash();
+    } else if (window.matchMedia("(max-width: 700px)").matches) {
+      const restoredStep = Number(window.localStorage.getItem(storageKey));
+      if (Number.isInteger(restoredStep) && restoredStep > 0 && restoredStep < WORKSPACE_STEPS.length) {
+        replaceHash(WORKSPACE_HASHES[restoredStep]);
+      }
+    }
     return () => window.removeEventListener("hashchange", syncHash);
-  }, []);
+  }, [storageKey]);
 
   const moveTo = (nextStep: number) => {
     const boundedStep = Math.max(0, Math.min(WORKSPACE_STEPS.length - 1, nextStep));
     setActiveStep(boundedStep);
+    window.localStorage.setItem(storageKey, String(boundedStep));
+    replaceHash(WORKSPACE_HASHES[boundedStep]);
     window.requestAnimationFrame(() => {
       document.getElementById("mobile-planning-workspace-progress")?.scrollIntoView({ block: "start" });
     });
@@ -88,4 +102,10 @@ export function MobilePlanningWorkspace({ preparation, checklist, budget, editor
       ) : null}
     </section>
   );
+}
+
+function replaceHash(hash: string) {
+  if (window.location.hash === hash) return;
+  window.history.replaceState(window.history.state, "", `${window.location.pathname}${window.location.search}${hash}`);
+  window.dispatchEvent(new Event("hashchange"));
 }

@@ -10,7 +10,7 @@ export function TravelModeEditorPanel({ children }: { children: ReactNode }) {
     if (!details) return;
 
     const syncWithViewportAndHash = () => {
-      const editingSection = ["#travel-place-editor", "#travel-photo-editor", "#travel-note-editor", "#itinerary-editor"]
+      const editingSection = ["#travel-preparation", "#travel-checklist", "#travel-budget", "#travel-editor", "#travel-place-editor", "#travel-photo-editor", "#travel-note-editor", "#itinerary-editor"]
         .some((hash) => window.location.hash.startsWith(hash));
       details.open = window.matchMedia("(min-width: 701px)").matches || editingSection;
     };

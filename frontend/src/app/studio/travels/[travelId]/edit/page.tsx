@@ -40,6 +40,7 @@ export default async function EditTravelPage(props: PageProps<"/studio/travels/[
   const editor = finishMode ? <TravelFinishEditor username={member.username} travel={travel} /> : (
     planningMode ? (
       <MobilePlanningWorkspace
+        travelId={travel.id}
         preparation={<TravelPreparationHub startDate={travel.startDate} endDate={travel.endDate} countryCode={travel.countries[0]?.iso2Code ?? travel.places[0]?.country.iso2Code ?? ""} destinationLabel={travel.places[0]?.city?.nameKo ?? travel.countries[0]?.nameKo ?? "여행지"} latitude={travel.places[0]?.latitude ?? travel.countries[0]?.latitude ?? 37.5665} longitude={travel.places[0]?.longitude ?? travel.countries[0]?.longitude ?? 126.978} places={travel.places} />}
         checklist={<TravelChecklist travelId={travel.id} initialTasks={tasks ?? []} />}
         budget={<TravelPlanningBoard travelId={travel.id} startDate={travel.startDate} endDate={travel.endDate} initialPlanning={planning ?? emptyPlanning()} />}

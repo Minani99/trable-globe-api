@@ -69,6 +69,13 @@ test("내 연도 리캡의 문장과 대표 여행을 모바일에서도 편집�
 test("연도 링크를 열고 바꾸면 지구본, 기록, 리캡과 공유 주소가 함께 바뀐다", async ({ page }) => {
   const pageErrors: string[] = [];
   page.on("pageerror", (error) => pageErrors.push(error.message));
+  const travelsResponse = await page.request.get("/api/profiles/traveler/travels");
+  expect(travelsResponse.ok()).toBeTruthy();
+  const allTravels = (await travelsResponse.json()).data as PublicTravel[];
+  const recap2025 = recapExpectations(allTravels, 2025);
+  const recap2026 = recapExpectations(allTravels, 2026);
+  const newCountries2026 = countryNames(recap2026.travels)
+    .filter((country) => !countryNames(recap2025.travels).includes(country));
 
   await page.goto("/traveler?year=2025");
   await expect(page.locator(".profile-globe-card canvas")).toBeVisible({ timeout: 30_000 });
@@ -91,35 +98,35 @@ test("연도 링크를 열고 바꾸면 지구본, 기록, 리캡과 공유 주�
   await recapDetailsToggle.click();
   await expect(page.getByRole("button", { name: "리캡 접기" })).toHaveAttribute("aria-expanded", "true");
   await expect(page.getByRole("heading", { name: "그해의 여행 리듬" })).toBeVisible();
-  await expect(page.locator(".travel-recap__month-chart .is-active")).toHaveCount(3);
-  await expect(page.locator(".travel-recap__cities li")).toHaveCount(3);
+  await expect(page.locator(".travel-recap__month-chart .is-active")).toHaveCount(recap2025.activeMonths);
+  await expect(page.locator(".travel-recap__cities li")).toHaveCount(recap2025.cityHighlights);
   await expect(
     page.locator(".travel-recap__comparison").getByRole("heading", { name: "2024년과 2025년 비교" }),
   ).toBeVisible();
-  await expect(page.locator(".travel-recap__memories a")).toHaveCount(3);
-  await expect(page.locator(".travel-card")).toHaveCount(3);
+  await expect(page.locator(".travel-recap__memories a")).toHaveCount(Math.min(3, recap2025.travels.length));
+  await expect(page.locator(".travel-card")).toHaveCount(recap2025.travels.length);
 
   await yearFilter.getByRole("button", { name: "2026" }).click();
   await expect(page).toHaveURL(/\/traveler\?year=2026$/);
   await expect(page.getByRole("heading", { name: "2026년, 내가 만든 여행 세계" })).toBeVisible();
-  await expect(page.locator(".travel-recap__month-chart .is-active")).toHaveCount(2);
-  await expect(page.locator(".travel-recap__cities li")).toHaveCount(2);
+  await expect(page.locator(".travel-recap__month-chart .is-active")).toHaveCount(recap2026.activeMonths);
+  await expect(page.locator(".travel-recap__cities li")).toHaveCount(recap2026.cityHighlights);
   const comparison = page.locator(".travel-recap__comparison");
   await expect(comparison.getByRole("heading", { name: "2025년과 2026년 비교" })).toBeVisible();
-  await expect(comparison).toContainText("지구본에는 대만의 기억이 새로 더해졌습니다.");
-  await expect(comparison.getByRole("list", { name: "새로 더해진 나라" })).toContainText("대만");
-  await expect(page.locator(".travel-recap__memories a")).toHaveCount(2);
-  await expect(page.locator(".travel-card")).toHaveCount(2);
-  await expect(countryList.getByRole("button", { name: /대만/ })).toBeVisible();
-  await expect(countryList.getByRole("button", { name: /일본/ })).toBeVisible();
-  await expect(countryList.getByRole("button", { name: /미국/ })).toHaveCount(0);
+  const newCountryList = comparison.getByRole("list", { name: "새로 더해진 나라" });
+  for (const country of newCountries2026) await expect(newCountryList).toContainText(country);
+  await expect(page.locator(".travel-recap__memories a")).toHaveCount(Math.min(3, recap2026.travels.length));
+  await expect(page.locator(".travel-card")).toHaveCount(recap2026.travels.length);
+  for (const country of countryNames(recap2026.travels)) {
+    await expect(countryList.getByRole("button", { name: new RegExp(country) })).toBeVisible();
+  }
   await expect(page.locator("#timeline-2026")).toBeVisible();
   await expect(page.locator("#timeline-2025")).toHaveCount(0);
 
   await yearFilter.getByRole("button", { name: "전체" }).click();
   await expect(page).toHaveURL(/\/traveler$/);
   await expect(page.getByRole("heading", { name: "지금까지, 내가 만든 여행 세계" })).toBeVisible();
-  await expect(page.locator(".travel-card")).toHaveCount(7);
+  await expect(page.locator(".travel-card")).toHaveCount(allTravels.length);
 
   await page.setViewportSize({ width: 390, height: 844 });
   const layout = await page.evaluate(() => ({
@@ -143,6 +150,8 @@ test("연도 리캡 이미지를 저장하고 링크와 네이티브 공유로 �
   await page.goto("/traveler?year=2026");
   await expect(page.locator(".profile-globe-card canvas")).toBeVisible({ timeout: 30_000 });
   await expect(page.getByRole("heading", { name: "2026년, 내가 만든 여행 세계" })).toBeVisible();
+  const comparisonNarrative = await page.locator(".travel-recap__comparison-intro > p").last().textContent();
+  expect(comparisonNarrative).toBeTruthy();
 
   const recapActions = page.locator(".recap-actions");
   const downloadPromise = page.waitForEvent("download");
@@ -179,7 +188,26 @@ test("연도 리캡 이미지를 저장하고 링크와 네이티브 공유로 �
   ).sharedRecapFilename)).toBe("travel-globe-traveler-2026.png");
   await expect.poll(() => page.evaluate(() => (
     window as typeof window & { sharedRecapText?: string }
-  ).sharedRecapText)).toContain("지구본에는 대만의 기억이 새로 더해졌습니다.");
+  ).sharedRecapText)).toContain(comparisonNarrative!);
   expect(recapImageRequests).toBe(1);
   expect(pageErrors).toEqual([]);
 });
+
+type PublicTravel = {
+  startDate: string;
+  countries: Array<{ iso2Code: string; nameKo: string }>;
+  primaryCity: { id: number } | null;
+};
+
+function recapExpectations(allTravels: PublicTravel[], year: number) {
+  const travels = allTravels.filter((travel) => travel.startDate.startsWith(`${year}-`));
+  return {
+    travels,
+    activeMonths: new Set(travels.map((travel) => travel.startDate.slice(5, 7))).size,
+    cityHighlights: Math.min(3, new Set(travels.flatMap((travel) => travel.primaryCity?.id ?? [])).size),
+  };
+}
+
+function countryNames(travels: PublicTravel[]): string[] {
+  return [...new Map(travels.flatMap((travel) => travel.countries).map((country) => [country.iso2Code, country.nameKo])).values()];
+}

@@ -182,6 +182,11 @@ test("몇 번의 선택으로 여행 계획을 만들고 일차별 일정으로 
   await expect(page.getByText("시부야 호텔 체크인", { exact: true })).toBeVisible();
   await expect(page.getByText("15시 이후 체크인", { exact: true })).toBeVisible();
   await page.getByRole("button", { name: "시부야 호텔 체크인 예약 확정으로 변경" }).click();
+  await expect(page).toHaveURL(/#travel-budget$/);
+  await page.reload();
+  await expect(page.getByRole("heading", { name: "예산과 예약" })).toBeVisible();
+  await expect(page.getByRole("progressbar", { name: "여행 준비 진행률" })).toHaveAttribute("aria-valuenow", "3");
+  await expect(page.getByText("왕복 항공권·수하물", { exact: true })).toBeVisible();
   await preparationStepNavigation.getByRole("button", { name: "다음" }).click();
   await expect(page.getByRole("button", { name: "← 준비·예산으로 돌아가기" })).toBeVisible();
   const editorStepNavigation = page.getByRole("navigation", { name: "여행 편집 단계 이동" });
