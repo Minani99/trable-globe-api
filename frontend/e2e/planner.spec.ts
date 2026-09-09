@@ -128,6 +128,10 @@ test("몇 번의 선택으로 여행 계획을 만들고 일차별 일정으로 
   expect(travelId).toBeGreaterThan(0);
   await expect(page.getByRole("heading", { name: "일본 3일 여행" })).toBeVisible();
   await page.getByText("전체 계획 및 기록 편집", { exact: true }).click();
+  const preparationStepNavigation = page.getByRole("navigation", { name: "여행 준비 단계 이동" });
+  await expect(preparationStepNavigation).toBeVisible();
+  await expect(page.getByRole("progressbar", { name: "여행 준비 진행률" })).toHaveAttribute("aria-valuenow", "1");
+  await expect(page.getByRole("heading", { name: "여행 준비 체크리스트" })).toBeHidden();
   await expect(page.getByRole("heading", { name: "예약부터 변수 대응까지, 한곳에서" })).toBeVisible();
   await expect(page.getByRole("combobox", { name: "출발 공항 검색" })).toHaveValue("서울 · 서울 모든 공항");
   const destinationAirport = page.getByRole("combobox", { name: "도착 공항 검색" });
@@ -141,6 +145,8 @@ test("몇 번의 선택으로 여행 계획을 만들고 일차별 일정으로 
   await expect(destinationAirport).toHaveValue("Cairo · Cairo International Airport");
   await expect(page.getByRole("link", { name: /이 일정으로 항공권 찾기/ })).toHaveAttribute("href", /skyscanner\.co\.kr\/transport\/flights\/sel\/cai\//);
   await expect(page.getByText(/예보는 출발 16일 전부터 제공/)).toBeVisible();
+  await preparationStepNavigation.getByRole("button", { name: "다음" }).click();
+  await expect(page.getByRole("progressbar", { name: "여행 준비 진행률" })).toHaveAttribute("aria-valuenow", "2");
   await expect(page.getByRole("heading", { name: "여행 준비 체크리스트" })).toBeVisible();
   await expect(page.locator(".travel-checklist__items li")).toHaveCount(6);
   await page.getByRole("button", { name: "항공·교통편 확인 완료로 변경" }).click();
@@ -148,6 +154,8 @@ test("몇 번의 선택으로 여행 계획을 만들고 일차별 일정으로 
   await page.getByRole("textbox", { name: "새 준비 항목" }).fill("공항철도 예약");
   await page.getByRole("button", { name: "＋ 추가" }).click();
   await expect(page.getByText("공항철도 예약", { exact: true })).toBeVisible();
+  await preparationStepNavigation.getByRole("button", { name: "다음" }).click();
+  await expect(page.getByRole("progressbar", { name: "여행 준비 진행률" })).toHaveAttribute("aria-valuenow", "3");
   await expect(page.getByRole("heading", { name: "예산과 예약" })).toBeVisible();
   await page.getByRole("spinbutton", { name: "총예산" }).fill("1500000");
   await page.getByRole("button", { name: "저장", exact: true }).click();
@@ -174,6 +182,8 @@ test("몇 번의 선택으로 여행 계획을 만들고 일차별 일정으로 
   await expect(page.getByText("시부야 호텔 체크인", { exact: true })).toBeVisible();
   await expect(page.getByText("15시 이후 체크인", { exact: true })).toBeVisible();
   await page.getByRole("button", { name: "시부야 호텔 체크인 예약 확정으로 변경" }).click();
+  await preparationStepNavigation.getByRole("button", { name: "다음" }).click();
+  await expect(page.getByRole("button", { name: "← 준비·예산으로 돌아가기" })).toBeVisible();
   const editorStepNavigation = page.getByRole("navigation", { name: "여행 편집 단계 이동" });
   await expect(editorStepNavigation).toBeVisible();
   await editorStepNavigation.getByRole("button", { name: "다음" }).click();
@@ -277,6 +287,10 @@ test("몇 번의 선택으로 여행 계획을 만들고 일차별 일정으로 
   await expect(finishingTrip).toContainText("여행 중");
   await finishingTrip.getByRole("link", { name: /오늘 여행 열기/ }).click();
   await page.getByText("전체 계획 및 기록 편집", { exact: true }).click();
+  const finishPreparationNavigation = page.getByRole("navigation", { name: "여행 준비 단계 이동" });
+  await finishPreparationNavigation.getByRole("button", { name: "다음" }).click();
+  await finishPreparationNavigation.getByRole("button", { name: "다음" }).click();
+  await finishPreparationNavigation.getByRole("button", { name: "다음" }).click();
   const finishStepNavigation = page.getByRole("navigation", { name: "여행 편집 단계 이동" });
   await finishStepNavigation.getByRole("button", { name: "다음" }).click();
   await finishStepNavigation.getByRole("button", { name: "다음" }).click();

@@ -179,6 +179,7 @@ function AirportSearchField({
     setQuery(airport ? formatAirportLabel(airport) : code);
     setCatalogResults([]);
     setOpen(false);
+    if (document.activeElement instanceof HTMLElement) document.activeElement.blur();
   }
 
   return (
