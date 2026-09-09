@@ -186,6 +186,98 @@ body {
   to { opacity: 1; transform: translateY(0) scale(1); }
 }
 
+.session-expiry {
+  position: fixed;
+  inset: 0;
+  z-index: 140;
+  display: grid;
+  place-items: center;
+  padding: 1rem;
+  background: rgba(10, 24, 29, 0.42);
+  backdrop-filter: blur(8px);
+}
+
+.session-expiry > section {
+  display: grid;
+  width: min(26rem, 100%);
+  gap: 1rem;
+  padding: 1.35rem;
+  border: 1px solid var(--border-strong);
+  border-radius: 1.2rem;
+  background: var(--surface);
+  box-shadow: 0 1.5rem 4rem rgba(8, 24, 30, 0.24);
+  animation: feedback-enter 0.2s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.session-expiry__icon {
+  display: grid;
+  width: 2.4rem;
+  height: 2.4rem;
+  place-items: center;
+  border-radius: 50%;
+  background: var(--accent-soft);
+  color: var(--accent-strong);
+  font-size: 1.1rem;
+}
+
+.session-expiry > section > div:not(.session-expiry__actions) {
+  display: grid;
+  gap: 0.35rem;
+}
+
+.session-expiry > section p:first-child {
+  color: var(--accent-strong);
+  font-size: 0.68rem;
+  font-weight: 750;
+}
+
+.session-expiry h2 {
+  font-size: 1.3rem;
+  letter-spacing: -0.04em;
+}
+
+.session-expiry h2 + p {
+  color: var(--text-secondary);
+  font-size: 0.76rem;
+  line-height: 1.65;
+}
+
+.session-expiry__actions {
+  display: grid;
+  grid-template-columns: 1fr 1.35fr;
+  gap: 0.6rem;
+}
+
+.session-expiry__actions :is(button, a) {
+  display: grid;
+  min-height: 2.9rem;
+  place-items: center;
+  border-radius: 0.75rem;
+  font-size: 0.72rem;
+  font-weight: 750;
+}
+
+.session-expiry__actions button {
+  background: var(--surface-muted);
+  color: var(--text-secondary);
+}
+
+.session-expiry__actions a {
+  background: var(--accent);
+  color: #1d0d07;
+}
+
+@media (max-width: 700px) {
+  .session-expiry {
+    align-items: end;
+    padding: 0.7rem 0.7rem calc(var(--mobile-bottom-nav-height) + env(safe-area-inset-bottom) + 0.7rem);
+  }
+
+  .session-expiry > section {
+    border-radius: 1.15rem;
+  }
+}
+
 .site-shell {
   width: 100%;
   max-width: 1400px;

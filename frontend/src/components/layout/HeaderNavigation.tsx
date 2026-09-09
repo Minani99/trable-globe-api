@@ -128,7 +128,7 @@ function MobileBottomNavigation({
       <MobileNavLink href="/discover" label="둘러보기" icon="search" active={pathname === "/discover"} />
       <MobileNavLink
         href={profileHref}
-        label="마이"
+        label={member ? "마이" : "로그인"}
         icon="profile"
         active={profileActive}
         avatar={member ? {

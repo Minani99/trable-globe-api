@@ -4,6 +4,7 @@ import { Geist, Geist_Mono, Noto_Sans_KR } from "next/font/google";
 import { AppFeedback } from "@/components/common/AppFeedback";
 import { BackendWarmup } from "@/components/common/BackendWarmup";
 import { PwaManager } from "@/components/common/PwaManager";
+import { SessionExpiryNotice } from "@/components/common/SessionExpiryNotice";
 import { siteConfig } from "@/lib/config";
 import { getSiteUrl } from "@/lib/site-url";
 import "./globals.css";
@@ -92,6 +93,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         <BackendWarmup />
         <PwaManager />
         <AppFeedback />
+        <SessionExpiryNotice />
         {children}
       </body>
     </html>

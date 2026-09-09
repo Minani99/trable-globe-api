@@ -10,7 +10,7 @@ export async function DELETE(request: NextRequest) {
   }
   const member = await getCurrentMember();
   if (!member) {
-    return NextResponse.json({ success: false, data: null, message: "로그인이 필요합니다." }, { status: 401 });
+    return NextResponse.json({ success: false, data: null, message: "로그인이 필요합니다.", error: { code: "AUTHENTICATION_REQUIRED" } }, { status: 401 });
   }
   const body = (await request.json().catch(() => null)) as { objectKey?: string; publicUrl?: string } | null;
   try {

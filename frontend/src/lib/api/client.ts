@@ -1,4 +1,5 @@
 import { getApiBaseUrl } from "@/lib/config";
+import { notifySessionExpired } from "@/lib/session-events";
 
 /** Shape every `/api` endpoint returns. */
 export interface ApiEnvelope<T> {
@@ -115,13 +116,18 @@ export async function apiMutation<T>(
 
 async function sameOriginFetch(path: string, init: RequestInit): Promise<Response> {
   try {
-    return await fetch(path, {
+    const response = await fetch(path, {
       ...init,
       credentials: "same-origin",
       cache: "no-store",
       headers: { Accept: "application/json", ...(init.headers ?? {}) },
       signal: AbortSignal.timeout(SESSION_REQUEST_TIMEOUT_MS),
     });
+    if (response.status === 401) {
+      const envelope = await readEnvelope<unknown>(response.clone());
+      if (envelope?.error?.code === "AUTHENTICATION_REQUIRED") notifySessionExpired();
+    }
+    return response;
   } catch {
     throw new ApiError(0, UNREACHABLE_MESSAGE);
   }
