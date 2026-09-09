@@ -131,6 +131,8 @@ test("진행 중인 여행은 모바일 어디서나 장소·사진·메모로 �
   await expect(page.getByRole("tab", { name: /DAY 1/ })).toHaveAttribute("aria-selected", "true");
   await expect(page.locator("#travel-photo-editor input[type=file]")).toHaveAttribute("multiple", "");
 
+  const editorStepNavigation = page.getByRole("navigation", { name: "여행 편집 단계 이동" });
+  await editorStepNavigation.getByRole("button", { name: "다음" }).click();
   const photoEditor = page.locator("#travel-photo-editor");
   await expect(photoEditor.getByText("사진을 선택하거나 이곳에 놓아 주세요", { exact: true })).toBeVisible();
   await photoEditor.locator('input[type="file"]').setInputFiles({

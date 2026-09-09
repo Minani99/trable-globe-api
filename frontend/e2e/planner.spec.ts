@@ -98,12 +98,28 @@ test("몇 번의 선택으로 여행 계획을 만들고 일차별 일정으로 
     data: { name: "Tokyo Station", latitude: 35.681236, longitude: 139.767125 },
   });
   await expect(page.getByRole("heading", { name: /빈 페이지 없이/ })).toBeVisible();
+  const planStepNavigation = page.getByRole("navigation", { name: "여행 계획 단계 이동" });
+  await expect(planStepNavigation).toBeVisible();
+  await expect(page.getByRole("progressbar", { name: "여행 계획 작성 진행률" })).toHaveAttribute("aria-valuenow", "1");
+  await expect(page.getByRole("heading", { name: "언제, 며칠 동안 갈까요?" })).toBeHidden();
+  const stepNavigationBox = await planStepNavigation.boundingBox();
+  const primaryNavigationBox = await page.getByRole("navigation", { name: "모바일 주요 메뉴" }).boundingBox();
+  expect((stepNavigationBox?.y ?? 0) + (stepNavigationBox?.height ?? 0)).toBeLessThanOrEqual((primaryNavigationBox?.y ?? 844) + 1);
   await page.getByRole("button", { name: "일본", exact: true }).click();
+  await planStepNavigation.getByRole("button", { name: "다음" }).click();
+  await expect(page.getByRole("heading", { name: "언제, 며칠 동안 갈까요?" })).toBeVisible();
   await page.getByRole("button", { name: "2박 3일" }).click();
+  await planStepNavigation.getByRole("button", { name: "다음" }).click();
+  await planStepNavigation.getByRole("button", { name: "이전" }).click();
+  await expect(page.getByRole("button", { name: "2박 3일" })).toHaveClass(/is-selected/);
+  await planStepNavigation.getByRole("button", { name: "다음" }).click();
   await page.getByRole("button", { name: "혼자" }).click();
   await page.getByRole("button", { name: "문화" }).click();
+  await planStepNavigation.getByRole("button", { name: "다음" }).click();
   await expect(page.getByRole("button", { name: /자동으로 전부 짜기/ })).toBeVisible();
   await page.getByRole("button", { name: /일차만 만들기/ }).click();
+  await planStepNavigation.getByRole("button", { name: "다음" }).click();
+  await expect(page.getByRole("heading", { name: "일본 여행" })).toBeVisible();
   await expect(page.getByRole("button", { name: "일정 만들기", exact: true })).toBeVisible();
   await page.getByRole("button", { name: "일정 만들기", exact: true }).click();
 
@@ -113,7 +129,6 @@ test("몇 번의 선택으로 여행 계획을 만들고 일차별 일정으로 
   await expect(page.getByRole("heading", { name: "일본 3일 여행" })).toBeVisible();
   await page.getByText("전체 계획 및 기록 편집", { exact: true }).click();
   await expect(page.getByRole("heading", { name: "예약부터 변수 대응까지, 한곳에서" })).toBeVisible();
-  await expect(page.getByRole("button", { name: "이 변경안 적용" })).toBeVisible();
   await expect(page.getByRole("combobox", { name: "출발 공항 검색" })).toHaveValue("서울 · 서울 모든 공항");
   const destinationAirport = page.getByRole("combobox", { name: "도착 공항 검색" });
   await expect(destinationAirport).toHaveValue("도쿄 · 도쿄 모든 공항");
@@ -159,7 +174,11 @@ test("몇 번의 선택으로 여행 계획을 만들고 일차별 일정으로 
   await expect(page.getByText("시부야 호텔 체크인", { exact: true })).toBeVisible();
   await expect(page.getByText("15시 이후 체크인", { exact: true })).toBeVisible();
   await page.getByRole("button", { name: "시부야 호텔 체크인 예약 확정으로 변경" }).click();
+  const editorStepNavigation = page.getByRole("navigation", { name: "여행 편집 단계 이동" });
+  await expect(editorStepNavigation).toBeVisible();
+  await editorStepNavigation.getByRole("button", { name: "다음" }).click();
   await expect(page.getByRole("heading", { name: "일차별 일정" })).toBeVisible();
+  await expect(page.getByRole("button", { name: "이 변경안 적용" })).toBeVisible();
   await expect(page.getByRole("tab", { name: /DAY 1/ })).toHaveAttribute("aria-selected", "true");
   await expect(page.getByText("0 / 3일", { exact: true })).toBeVisible();
   await expect(page.getByRole("textbox", { name: "장소 이름" }).first()).toHaveValue("1일차 · 장소를 골라주세요");
@@ -215,6 +234,7 @@ test("몇 번의 선택으로 여행 계획을 만들고 일차별 일정으로 
   await expect(page.getByRole("textbox", { name: "장소 이름" }).nth(1)).toHaveValue("도쿄 국립박물관");
   await page.getByRole("button", { name: "변경 전으로 되돌리기" }).click();
   await expect(page.getByRole("textbox", { name: "장소 이름" }).first()).toHaveValue("도쿄역");
+  await editorStepNavigation.getByRole("button", { name: "다음" }).click();
   await expect(page.getByRole("button", { name: "계획 저장" })).toBeVisible();
 
   await page.goto("/studio");
@@ -257,6 +277,9 @@ test("몇 번의 선택으로 여행 계획을 만들고 일차별 일정으로 
   await expect(finishingTrip).toContainText("여행 중");
   await finishingTrip.getByRole("link", { name: /오늘 여행 열기/ }).click();
   await page.getByText("전체 계획 및 기록 편집", { exact: true }).click();
+  const finishStepNavigation = page.getByRole("navigation", { name: "여행 편집 단계 이동" });
+  await finishStepNavigation.getByRole("button", { name: "다음" }).click();
+  await finishStepNavigation.getByRole("button", { name: "다음" }).click();
   await expect(page.getByRole("heading", { name: "이 계획을 여행 기록으로 완성하세요." })).toBeVisible();
   await page.getByRole("button", { name: "기록으로 전환 준비" }).click();
   await page.getByRole("button", { name: "기록으로 전환하기" }).click();

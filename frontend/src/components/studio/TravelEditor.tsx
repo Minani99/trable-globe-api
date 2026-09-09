@@ -93,6 +93,7 @@ interface WeatherUndoSnapshot {
 
 const draftKey = () => `${Date.now()}-${Math.random().toString(36).slice(2)}`;
 const PLAN_SLOT_PRESETS = ["관광", "식사", "카페", "숙소"] as const;
+const MOBILE_EDITOR_STEPS = ["기본 정보", "일정과 장소", "사진과 공개"] as const;
 
 export function TravelEditor({
   username,
@@ -173,6 +174,7 @@ export function TravelEditor({
   const [scheduleView, setScheduleView] = useState<"simple" | "timeline">(
     initialTravel?.places.some((place) => Boolean(place.startTime)) ? "timeline" : "simple",
   );
+  const [mobileEditorStep, setMobileEditorStep] = useState(0);
   const countryMap = useMemo(() => new Map(countries.map((country) => [country.iso2Code, country])), [countries]);
   const travelPreferences = useMemo(() => recommendationPreferences(`${title} ${description}`), [description, title]);
   const planDays = useMemo(() => {
@@ -191,11 +193,22 @@ export function TravelEditor({
   const placeholderCount = places.filter(isPlanningPlaceholder).length;
   const tripFinished = Boolean(today && endDate && endDate <= today);
   const conversionReady = planningMode && tripFinished && placeholderCount === 0;
+  const travelActive = Boolean(today && startDate && endDate && startDate <= today && today <= endDate);
 
   useEffect(() => {
     if (!planningMode || planDays.length === 0) return;
     if (!activePlanDate || !planDays.includes(activePlanDate)) setActivePlanDate(planDays[0]);
   }, [activePlanDate, planDays, planningMode]);
+
+  useEffect(() => {
+    const syncStepWithHash = () => {
+      if (window.location.hash.startsWith("#travel-photo-editor")) setMobileEditorStep(2);
+      else if (["#travel-place-editor", "#travel-note-editor", "#itinerary-editor"].some((hash) => window.location.hash.startsWith(hash))) setMobileEditorStep(1);
+    };
+    syncStepWithHash();
+    window.addEventListener("hashchange", syncStepWithHash);
+    return () => window.removeEventListener("hashchange", syncStepWithHash);
+  }, []);
 
   useEffect(() => {
     let active = true;
@@ -764,28 +777,71 @@ export function TravelEditor({
     }
   }
 
+  function validateMobileEditorStep(step: number): boolean {
+    if (step === 0) {
+      if (!title.trim()) {
+        setStatus("여행 제목을 입력해 주세요.");
+        return false;
+      }
+      if (!startDate || !endDate) {
+        setStatus("여행 시작일과 종료일을 선택해 주세요.");
+        return false;
+      }
+      if (endDate < startDate) {
+        setStatus("종료일은 시작일보다 빠를 수 없습니다.");
+        return false;
+      }
+    }
+    if (step === 1) {
+      const incompletePlace = places.find((place) => !place.placeName.trim());
+      if (incompletePlace) {
+        setStatus(planningMode ? "아직 이름이 없는 일정을 확인해 주세요." : "방문한 장소의 이름을 입력해 주세요.");
+        return false;
+      }
+      const unlocatedPlace = places.find((place) => coordinate(place.latitude) === null || coordinate(place.longitude) === null);
+      if (unlocatedPlace) {
+        setStatus("각 장소를 검색하거나 지도에서 위치를 선택해 주세요.");
+        return false;
+      }
+    }
+    return true;
+  }
+
+  function moveMobileEditorStep(direction: -1 | 1) {
+    if (direction > 0 && !validateMobileEditorStep(mobileEditorStep)) return;
+    const nextStep = Math.max(0, Math.min(MOBILE_EDITOR_STEPS.length - 1, mobileEditorStep + direction));
+    setMobileEditorStep(nextStep);
+    setStatus(null);
+    window.requestAnimationFrame(() => {
+      document.getElementById("mobile-travel-editor-progress")?.scrollIntoView({ behavior: "smooth", block: "start" });
+    });
+  }
+
   function openQuickCapture(target: "place" | "photo" | "note") {
+    setMobileEditorStep(target === "photo" ? 2 : 1);
     if (target === "photo") {
-      document.getElementById("travel-photo-editor")?.scrollIntoView({ behavior: "smooth", block: "start" });
-      if (uploadConfig?.configured) photoInputRef.current?.click();
+      window.setTimeout(() => {
+        document.getElementById("travel-photo-editor")?.scrollIntoView({ behavior: "smooth", block: "start" });
+        if (uploadConfig?.configured) photoInputRef.current?.click();
+      }, 0);
       return;
     }
 
     const targetId = target === "note" ? "travel-note-editor" : "travel-place-editor";
-    document.getElementById(targetId)?.scrollIntoView({ behavior: "smooth", block: "start" });
     window.setTimeout(() => {
+      document.getElementById(targetId)?.scrollIntoView({ behavior: "smooth", block: "start" });
       if (target === "note") {
         document.getElementById("travel-note-editor")?.focus();
       } else {
         document.querySelector<HTMLInputElement>("#travel-place-editor input[aria-label='방문할 장소 검색']")?.focus();
       }
-    }, 350);
+    }, 50);
   }
 
   return (
     <form className={`travel-editor${draftHydrated ? "" : " is-restoring"}`} onSubmit={handleSubmit} onChange={() => setDirty(true)} aria-busy={!draftHydrated}>
       {planningMode ? (
-        <section className={`travel-conversion${conversionReady ? " is-ready" : ""}`} aria-labelledby="travel-conversion-heading">
+        <section className={`travel-conversion${conversionReady ? " is-ready" : ""}`} data-mobile-active={mobileEditorStep === 2} aria-labelledby="travel-conversion-heading">
           <div>
             <p className="eyebrow">Plan to memory</p>
             <h2 id="travel-conversion-heading">{tripFinished ? "이 계획을 여행 기록으로 완성하세요." : "다녀온 뒤, 같은 여행이 기록이 됩니다."}</h2>
@@ -801,7 +857,7 @@ export function TravelEditor({
           </button>
         </section>
       ) : null}
-      <nav id="travel-quick-actions" className="mobile-travel-quick-nav" aria-label="여행 중 빠른 입력">
+      <nav id="travel-quick-actions" className={`mobile-travel-quick-nav${travelActive ? " is-travel-mode" : ""}`} aria-label="여행 중 빠른 입력">
         <div>
           <small>Quick capture</small>
           <strong>{planningMode && activePlanDate ? `${formatPlanDay(activePlanDate)} 일정` : "여행 기록"}</strong>
@@ -813,7 +869,14 @@ export function TravelEditor({
           <button type="submit" className="is-save" aria-label="여행 저장" disabled={pending}><span aria-hidden="true">✓</span>저장</button>
         </div>
       </nav>
-      <section className="travel-editor__section">
+      <header id="mobile-travel-editor-progress" className="travel-editor__mobile-progress">
+        <div><span>STEP {mobileEditorStep + 1} / {MOBILE_EDITOR_STEPS.length}</span><strong>{MOBILE_EDITOR_STEPS[mobileEditorStep]}</strong></div>
+        <span role="progressbar" aria-label="여행 편집 진행률" aria-valuemin={1} aria-valuemax={MOBILE_EDITOR_STEPS.length} aria-valuenow={mobileEditorStep + 1}>
+          <i style={{ width: `${((mobileEditorStep + 1) / MOBILE_EDITOR_STEPS.length) * 100}%` }} />
+        </span>
+      </header>
+      {status ? <p className="travel-editor__mobile-status" role="alert">{status}</p> : null}
+      <section className="travel-editor__section" data-mobile-active={mobileEditorStep === 0}>
         <div className="travel-editor__section-heading"><span>01</span><div><p className="eyebrow">Journey</p><h2>{planningMode ? "계획 기본 정보" : "여행 기본 정보"}</h2></div></div>
         <div className="travel-editor__fields">
           <label className="is-wide"><span>여행 제목</span><input name="title" value={title} onChange={(event) => setTitle(event.target.value)} maxLength={120} placeholder={planningMode ? "다음 여행의 이름" : "기억하고 싶은 이름을 붙여 주세요"} required /></label>
@@ -845,7 +908,7 @@ export function TravelEditor({
         </div>
       </section>
 
-      <section id="travel-place-editor" className="travel-editor__section">
+      <section id="travel-place-editor" className="travel-editor__section" data-mobile-active={mobileEditorStep === 1}>
         <div className="travel-editor__section-heading"><span>02</span><div><p className="eyebrow">Itinerary</p><h2>{planningMode ? "일차별 일정" : "방문 장소"}</h2><p>{planningMode ? "자동 초안을 간단히 훑거나 시간표로 열어 장소와 체류 시간을 조정하세요." : "입력한 순서대로 상세 지도의 경로가 이어집니다."}</p></div></div>
         <div className="travel-editor__itinerary-content">
         {planningMode && planDays.length > 0 ? (
@@ -950,7 +1013,7 @@ export function TravelEditor({
         </div>
       </section>
 
-      <section id="travel-photo-editor" className="travel-editor__section">
+      <section id="travel-photo-editor" className="travel-editor__section" data-mobile-active={mobileEditorStep === 2}>
         <div className="travel-editor__section-heading"><span>03</span><div><p className="eyebrow">Scenes</p><h2>여행 사진</h2><p>사진을 바로 올리고, 순서를 정하고, 방문 장소와 연결해 보세요.</p></div></div>
         <label
           className={`travel-editor__dropzone${uploadConfig?.configured ? " is-ready" : ""}`}
@@ -1023,6 +1086,15 @@ export function TravelEditor({
         </div>
         <div><Link href={editing && initialTravel?.visibility === "PUBLIC" ? travelPath(username, initialTravel.id) : "/studio"}>취소</Link><button type="submit" disabled={pending}>{pending ? "저장 중…" : planningMode && visibility === "PUBLIC" ? "기록으로 전환하기" : planningMode ? "계획 저장" : editing ? "변경 내용 저장" : "여행 기록 저장"}</button></div>
       </footer>
+      <nav className="travel-editor__mobile-nav" aria-label="여행 편집 단계 이동">
+        <button type="button" className="is-previous" onClick={() => moveMobileEditorStep(-1)} disabled={mobileEditorStep === 0 || pending}>이전</button>
+        <span><small>{mobileEditorStep + 1} / {MOBILE_EDITOR_STEPS.length}</small><strong>{MOBILE_EDITOR_STEPS[mobileEditorStep]}</strong></span>
+        {mobileEditorStep < MOBILE_EDITOR_STEPS.length - 1 ? (
+          <button key="next-editor-step" type="button" className="is-next" onClick={(event) => { event.preventDefault(); moveMobileEditorStep(1); }}>다음</button>
+        ) : (
+          <button key="submit-editor" type="submit" className="is-next" disabled={pending}>{pending ? "저장 중…" : planningMode && visibility === "PUBLIC" ? "기록으로 전환하기" : planningMode ? "계획 저장" : editing ? "변경 내용 저장" : "여행 기록 저장"}</button>
+        )}
+      </nav>
     </form>
   );
 }

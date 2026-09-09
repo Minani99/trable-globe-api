@@ -26,6 +26,7 @@ const ANCHOR_MODES = [
   { id: "stay", label: "숙소", placeholder: "숙소 이름 또는 Google 지도 링크" },
   { id: "content", label: "꼭 갈 곳", placeholder: "랜드마크·공연장 또는 Google 지도 링크" },
 ] as const;
+const MOBILE_PLAN_STEPS = ["여행지", "날짜", "취향", "만드는 방식", "확인"] as const;
 
 type BuildMode = (typeof BUILD_MODES)[number]["id"];
 type AnchorMode = (typeof ANCHOR_MODES)[number]["id"];
@@ -92,6 +93,7 @@ export function PlanBuilder({ countries, today, initialCountryCode = "" }: { cou
   const [buildMode, setBuildMode] = useState<BuildMode>("auto");
   const [anchorMode, setAnchorMode] = useState<AnchorMode>("center");
   const [anchorInput, setAnchorInput] = useState("");
+  const [mobileStep, setMobileStep] = useState(0);
   const [pending, setPending] = useState(false);
   const [pendingLabel, setPendingLabel] = useState("계획 만드는 중…");
   const [error, setError] = useState<string | null>(null);
@@ -106,6 +108,32 @@ export function PlanBuilder({ countries, today, initialCountryCode = "" }: { cou
     setStyles((current) => current.includes(style)
       ? current.filter((item) => item !== style)
       : current.length < 3 ? [...current, style] : current);
+  }
+
+  function validateMobileStep(step: number): boolean {
+    if (step === 0 && !selectedCountry) {
+      setError("여행할 나라를 먼저 골라 주세요.");
+      return false;
+    }
+    if (step === 1 && !startDate) {
+      setError("출발일을 선택해 주세요.");
+      return false;
+    }
+    if (step === 3 && buildMode === "auto" && anchorMode !== "center" && anchorInput.trim().length < 2) {
+      setError(anchorMode === "stay" ? "동선의 기준이 될 숙소를 입력해 주세요." : "반드시 갈 장소를 입력해 주세요.");
+      return false;
+    }
+    return true;
+  }
+
+  function moveMobileStep(direction: -1 | 1) {
+    if (direction > 0 && !validateMobileStep(mobileStep)) return;
+    const nextStep = Math.max(0, Math.min(MOBILE_PLAN_STEPS.length - 1, mobileStep + direction));
+    setMobileStep(nextStep);
+    setError(null);
+    window.requestAnimationFrame(() => {
+      document.getElementById("mobile-plan-progress")?.scrollIntoView({ behavior: "smooth", block: "start" });
+    });
   }
 
   async function createPlan() {
@@ -180,8 +208,14 @@ export function PlanBuilder({ countries, today, initialCountryCode = "" }: { cou
 
   return (
     <div className="plan-builder">
+      <header id="mobile-plan-progress" className="plan-builder__mobile-progress">
+        <div><span>STEP {mobileStep + 1} / {MOBILE_PLAN_STEPS.length}</span><strong>{MOBILE_PLAN_STEPS[mobileStep]}</strong></div>
+        <span role="progressbar" aria-label="여행 계획 작성 진행률" aria-valuemin={1} aria-valuemax={MOBILE_PLAN_STEPS.length} aria-valuenow={mobileStep + 1}>
+          <i style={{ width: `${((mobileStep + 1) / MOBILE_PLAN_STEPS.length) * 100}%` }} />
+        </span>
+      </header>
       <div className="plan-builder__main">
-        <section className="plan-step" aria-labelledby="plan-country-heading">
+        <section className="plan-step" data-mobile-active={mobileStep === 0} aria-labelledby="plan-country-heading">
           <div className="plan-step__heading"><span>01</span><div><p className="eyebrow">Destination</p><h2 id="plan-country-heading">어디로 떠날까요?</h2></div></div>
           <label className="plan-country-select">
             <span className="sr-only">여행할 나라</span>
@@ -199,7 +233,7 @@ export function PlanBuilder({ countries, today, initialCountryCode = "" }: { cou
           </div>
         </section>
 
-        <section className="plan-step" aria-labelledby="plan-date-heading">
+        <section className="plan-step" data-mobile-active={mobileStep === 1} aria-labelledby="plan-date-heading">
           <div className="plan-step__heading"><span>02</span><div><p className="eyebrow">When</p><h2 id="plan-date-heading">언제, 며칠 동안 갈까요?</h2></div></div>
           <div className="plan-date-row">
             <label><span>출발일</span><input type="date" min={today} value={startDate} onChange={(event) => { setStartDate(event.target.value); setError(null); }} /></label>
@@ -207,14 +241,14 @@ export function PlanBuilder({ countries, today, initialCountryCode = "" }: { cou
           </div>
         </section>
 
-        <section className="plan-step" aria-labelledby="plan-style-heading">
+        <section className="plan-step" data-mobile-active={mobileStep === 2} aria-labelledby="plan-style-heading">
           <div className="plan-step__heading"><span>03</span><div><p className="eyebrow">Mood</p><h2 id="plan-style-heading">누구와, 어떤 여행인가요?</h2></div></div>
           <div className="plan-option-group"><span>동행</span><div className="plan-choice-row">{COMPANIONS.map((item) => <button key={item} type="button" className={companion === item ? "is-selected" : ""} onClick={() => setCompanion(item)}>{item}</button>)}</div></div>
           <div className="plan-option-group"><span>취향 · 최대 3개</span><div className="plan-choice-row">{STYLES.map((item) => <button key={item} type="button" className={styles.includes(item) ? "is-selected" : ""} onClick={() => toggleStyle(item)} aria-pressed={styles.includes(item)}>{item}</button>)}</div></div>
           <div className="plan-pace-grid">{PACES.map((item) => <button key={item.id} type="button" className={pace === item.id ? "is-selected" : ""} onClick={() => setPace(item.id)}><strong>{item.label}</strong><span>{item.description}</span></button>)}</div>
         </section>
 
-        <section className="plan-step" aria-labelledby="plan-build-heading">
+        <section className="plan-step" data-mobile-active={mobileStep === 3} aria-labelledby="plan-build-heading">
           <div className="plan-step__heading"><span>04</span><div><p className="eyebrow">Start point</p><h2 id="plan-build-heading">어디까지 맡길까요?</h2></div></div>
           <div className="plan-build-mode" role="group" aria-label="계획 생성 방식">
             {BUILD_MODES.map((item) => (
@@ -246,7 +280,7 @@ export function PlanBuilder({ countries, today, initialCountryCode = "" }: { cou
         </section>
       </div>
 
-      <aside className="plan-summary" aria-label="여행 계획 요약">
+      <aside className="plan-summary" data-mobile-active={mobileStep === 4} aria-label="여행 계획 요약">
         <p className="eyebrow">Your next world</p>
         <span className="plan-summary__number">{selectedCountry ? selectedCountry.iso2Code : "––"}</span>
         <h2>{selectedCountry ? `${selectedCountry.nameKo} 여행` : "다음 여행을 골라보세요"}</h2>
@@ -264,15 +298,16 @@ export function PlanBuilder({ countries, today, initialCountryCode = "" }: { cou
         <small>계획은 나에게만 보이며, 다녀온 뒤 기록으로 공개할 수 있어요.</small>
       </aside>
 
-      <div className="plan-builder__mobile-submit" aria-live="polite">
-        <span>
-          <small>{selectedCountry ? selectedCountry.nameKo : "여행지를 선택해 주세요"}</small>
-          <strong>{tripDays === 1 ? "당일 여행" : `${tripDays - 1}박 ${tripDays}일`} · {styles.length ? styles.join(" · ") : "자유롭게"}</strong>
-        </span>
-        <button type="button" onClick={createPlan} disabled={pending}>
-          {pending ? "만드는 중…" : buildMode === "auto" ? "자동 일정" : "일정 만들기"}
-        </button>
-      </div>
+      {error ? <p className="plan-builder__mobile-error" role="alert">{error}</p> : null}
+      <nav className="plan-builder__mobile-nav" aria-label="여행 계획 단계 이동">
+        <button type="button" className="is-previous" onClick={() => moveMobileStep(-1)} disabled={mobileStep === 0 || pending}>이전</button>
+        <span><small>{mobileStep + 1} / {MOBILE_PLAN_STEPS.length}</small><strong>{MOBILE_PLAN_STEPS[mobileStep]}</strong></span>
+        {mobileStep < MOBILE_PLAN_STEPS.length - 1 ? (
+          <button type="button" className="is-next" onClick={() => moveMobileStep(1)}>다음</button>
+        ) : (
+          <button type="button" className="is-next" onClick={createPlan} disabled={pending}>{pending ? "만드는 중…" : buildMode === "auto" ? "자동 일정 만들기" : "일정 만들기"}</button>
+        )}
+      </nav>
     </div>
   );
 }

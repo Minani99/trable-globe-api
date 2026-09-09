@@ -1,0 +1,327 @@
+/* Mobile authoring uses focused steps; desktop keeps the full editable overview. */
+
+.plan-builder__mobile-progress,
+.plan-builder__mobile-nav,
+.plan-builder__mobile-error,
+.travel-editor__mobile-progress,
+.travel-editor__mobile-nav,
+.travel-editor__mobile-status {
+  display: none;
+}
+
+@media (max-width: 800px) {
+  .plan-builder {
+    display: block;
+  }
+
+  .plan-builder__mobile-progress,
+  .travel-editor__mobile-progress {
+    position: sticky;
+    top: 4rem;
+    z-index: 24;
+    display: grid;
+    gap: 0.6rem;
+    margin-bottom: 0.75rem;
+    padding: 0.8rem 0.9rem;
+    border: 1px solid color-mix(in srgb, var(--border-strong) 78%, transparent);
+    border-radius: 0.95rem;
+    background: color-mix(in srgb, var(--surface) 94%, transparent);
+    box-shadow: 0 0.65rem 1.8rem rgba(17, 40, 48, 0.08);
+    backdrop-filter: blur(18px) saturate(1.08);
+  }
+
+  .plan-builder__mobile-progress > div,
+  .travel-editor__mobile-progress > div {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+  }
+
+  .plan-builder__mobile-progress > div span,
+  .travel-editor__mobile-progress > div span {
+    color: var(--accent-strong);
+    font-family: var(--font-mono);
+    font-size: 0.55rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+  }
+
+  .plan-builder__mobile-progress > div strong,
+  .travel-editor__mobile-progress > div strong {
+    font-size: 0.76rem;
+    letter-spacing: -0.025em;
+  }
+
+  .plan-builder__mobile-progress > span,
+  .travel-editor__mobile-progress > span {
+    height: 0.25rem;
+    overflow: hidden;
+    border-radius: 999px;
+    background: var(--surface-muted);
+  }
+
+  .plan-builder__mobile-progress i,
+  .travel-editor__mobile-progress i {
+    display: block;
+    height: 100%;
+    border-radius: inherit;
+    background: var(--accent);
+    transition: width 220ms ease;
+  }
+
+  .plan-builder__main {
+    overflow: visible;
+  }
+
+  .plan-step,
+  .plan-summary {
+    display: none;
+  }
+
+  .plan-step[data-mobile-active="true"] {
+    display: block;
+    min-height: min(38rem, calc(100svh - 13.5rem));
+    border-top: 0;
+    animation: mobile-step-enter 180ms ease-out both;
+  }
+
+  .plan-summary[data-mobile-active="true"] {
+    position: static;
+    display: grid;
+    min-height: min(34rem, calc(100svh - 13.5rem));
+    align-content: start;
+    animation: mobile-step-enter 180ms ease-out both;
+  }
+
+  .plan-summary[data-mobile-active="true"] .plan-summary__number {
+    margin-top: 0.4rem;
+  }
+
+  .plan-summary .plan-summary__submit,
+  .plan-summary .plan-builder__error,
+  .plan-builder__mobile-submit {
+    display: none !important;
+  }
+
+  .plan-builder__mobile-error,
+  .travel-editor__mobile-status {
+    position: fixed;
+    right: max(1rem, env(safe-area-inset-right));
+    bottom: calc(var(--mobile-bottom-nav-height) + env(safe-area-inset-bottom) + 5.3rem);
+    left: max(1rem, env(safe-area-inset-left));
+    z-index: 58;
+    display: block;
+    padding: 0.7rem 0.85rem;
+    border: 1px solid color-mix(in srgb, var(--accent) 45%, var(--border));
+    border-radius: 0.8rem;
+    background: color-mix(in srgb, var(--surface) 96%, transparent);
+    box-shadow: 0 0.8rem 2rem rgba(49, 30, 22, 0.14);
+    color: var(--accent-strong);
+    font-size: 0.7rem;
+    line-height: 1.45;
+    backdrop-filter: blur(16px);
+  }
+
+  .plan-builder__mobile-nav,
+  .travel-editor__mobile-nav {
+    position: fixed;
+    right: max(0.8rem, env(safe-area-inset-right));
+    bottom: calc(var(--mobile-bottom-nav-height) + env(safe-area-inset-bottom) + 0.55rem);
+    left: max(0.8rem, env(safe-area-inset-left));
+    z-index: 57;
+    display: grid;
+    grid-template-columns: minmax(4.6rem, auto) minmax(0, 1fr) minmax(4.6rem, auto);
+    align-items: center;
+    gap: 0.45rem;
+    max-width: 34rem;
+    margin-inline: auto;
+    padding: 0.45rem;
+    border: 1px solid color-mix(in srgb, var(--border-strong) 82%, transparent);
+    border-radius: 1rem;
+    background: color-mix(in srgb, var(--surface) 94%, transparent);
+    box-shadow: 0 1rem 2.8rem rgba(17, 40, 48, 0.18);
+    backdrop-filter: blur(20px) saturate(1.1);
+  }
+
+  .plan-builder__mobile-nav > span,
+  .travel-editor__mobile-nav > span {
+    display: grid;
+    min-width: 0;
+    gap: 0.08rem;
+    text-align: center;
+  }
+
+  .plan-builder__mobile-nav small,
+  .travel-editor__mobile-nav small {
+    color: var(--text-tertiary);
+    font-family: var(--font-mono);
+    font-size: 0.5rem;
+  }
+
+  .plan-builder__mobile-nav strong,
+  .travel-editor__mobile-nav strong {
+    overflow: hidden;
+    font-size: 0.65rem;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .plan-builder__mobile-nav button,
+  .travel-editor__mobile-nav button {
+    min-height: 2.85rem;
+    padding-inline: 0.8rem;
+    border-radius: 0.72rem;
+    font-size: 0.7rem;
+    font-weight: 720;
+  }
+
+  .plan-builder__mobile-nav .is-previous,
+  .travel-editor__mobile-nav .is-previous {
+    background: var(--surface-muted);
+    color: var(--text-secondary);
+  }
+
+  .plan-builder__mobile-nav .is-next,
+  .travel-editor__mobile-nav .is-next {
+    background: var(--accent);
+    color: #1d0d07;
+  }
+
+  .plan-builder__mobile-nav button:disabled,
+  .travel-editor__mobile-nav button:disabled {
+    cursor: not-allowed;
+    opacity: 0.42;
+  }
+}
+
+@media (max-width: 700px) {
+  .plan-shell,
+  .travel-editor-shell {
+    padding-bottom: calc(10rem + env(safe-area-inset-bottom));
+  }
+
+  .mobile-travel-quick-nav {
+    display: none;
+  }
+
+  .mobile-travel-quick-nav.is-travel-mode {
+    display: grid;
+  }
+
+  .mobile-travel-quick-nav.is-travel-mode + .travel-editor__mobile-progress {
+    top: 8rem;
+  }
+
+  .travel-conversion[data-mobile-active="false"],
+  .travel-editor__section[data-mobile-active="false"] {
+    display: none;
+  }
+
+  .travel-editor__section[data-mobile-active="true"] {
+    display: grid;
+    min-height: min(40rem, calc(100svh - 13.5rem));
+    align-content: start;
+    gap: 1.2rem;
+    padding-block: 1.25rem 6rem;
+    border-bottom: 0;
+    animation: mobile-step-enter 180ms ease-out both;
+  }
+
+  .travel-editor__section-heading {
+    grid-template-columns: 1.5rem minmax(0, 1fr);
+    gap: 0.55rem;
+  }
+
+  .travel-editor__section-heading > span {
+    line-height: 1.5;
+  }
+
+  .travel-editor__section-heading .eyebrow {
+    display: none;
+  }
+
+  .travel-editor__section-heading h2 {
+    margin-top: 0;
+    font-family: inherit;
+    font-size: 1.35rem;
+    font-weight: 650;
+  }
+
+  .travel-editor__section-heading div > p:last-child {
+    margin-top: 0.35rem;
+  }
+
+  .travel-editor__footer {
+    padding: 0 0 5rem;
+  }
+
+  .travel-editor__footer > div:last-child {
+    display: none;
+  }
+
+  .travel-editor > .travel-editor__error {
+    display: none;
+  }
+
+  body:has(.plan-builder) .plan-hero {
+    margin-bottom: 0.6rem;
+    padding-block: 0.2rem 0.7rem;
+  }
+
+  body:has(.plan-builder) .plan-hero .eyebrow,
+  body:has(.plan-builder) .plan-hero > p:last-child,
+  body:has(.plan-builder) .site-footer,
+  body:has(.travel-editor) .site-footer {
+    display: none;
+  }
+
+  body:has(.plan-builder :is(input, textarea, select):focus) .plan-builder__mobile-nav,
+  body:has(.travel-editor :is(input, textarea, select):focus) .travel-editor__mobile-nav {
+    visibility: hidden;
+  }
+}
+
+@media (min-width: 701px) and (max-width: 800px) {
+  .travel-editor__mobile-progress,
+  .travel-editor__mobile-nav,
+  .travel-editor__mobile-status {
+    display: none;
+  }
+}
+
+@media (max-width: 430px) {
+  .plan-builder__mobile-nav,
+  .travel-editor__mobile-nav {
+    grid-template-columns: 4.4rem minmax(0, 1fr) minmax(4.4rem, auto);
+  }
+
+  .plan-builder__mobile-nav .is-next,
+  .travel-editor__mobile-nav .is-next {
+    padding-inline: 0.65rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .plan-step[data-mobile-active="true"],
+  .plan-summary[data-mobile-active="true"],
+  .travel-editor__section[data-mobile-active="true"] {
+    animation: none;
+  }
+
+  .plan-builder__mobile-progress i,
+  .travel-editor__mobile-progress i {
+    transition: none;
+  }
+}
+
+@keyframes mobile-step-enter {
+  from {
+    opacity: 0;
+    transform: translateX(0.6rem);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
