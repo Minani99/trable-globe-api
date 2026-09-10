@@ -507,7 +507,7 @@
   .travel-editor__mobile-nav,
   .mobile-planning-workspace__nav {
     right: var(--mobile-gutter);
-    bottom: calc(var(--mobile-tabbar-total-height) + var(--mobile-context-nav-gap));
+    bottom: calc(var(--mobile-safe-bottom) + var(--mobile-context-nav-gap));
     left: var(--mobile-gutter);
     grid-template-columns: minmax(4.9rem, auto) minmax(0, 1fr) minmax(4.9rem, auto);
     min-height: var(--mobile-context-nav-height);
@@ -526,17 +526,26 @@
   body:has(.travel-editor) .travel-editor-shell,
   body:has(.mobile-planning-workspace) .travel-editor-shell {
     padding-bottom: calc(
-      var(--mobile-tabbar-total-height) +
       var(--mobile-context-nav-height) +
       var(--mobile-context-nav-gap) +
+      var(--mobile-safe-bottom) +
       1.5rem
     );
   }
 
+  body:has(.plan-builder) .site-mobile-bottom-nav,
+  body:has(.travel-editor) .site-mobile-bottom-nav,
+  body:has(.mobile-planning-workspace) .site-mobile-bottom-nav,
   body:has(.plan-builder) .site-footer,
   body:has(.travel-editor) .site-footer,
   body:has(.mobile-planning-workspace) .site-footer {
     display: none;
+  }
+
+  body:has(.plan-builder),
+  body:has(.travel-editor),
+  body:has(.mobile-planning-workspace) {
+    padding-bottom: 0;
   }
 
   .plan-step[data-mobile-active="true"],
