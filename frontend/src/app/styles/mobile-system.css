@@ -14,6 +14,11 @@
     --mobile-section-title: clamp(1.35rem, 6.4vw, 1.65rem);
     --mobile-card-radius: 1rem;
     --mobile-control-height: 3rem;
+    --mobile-tabbar-height: 4.55rem;
+    --mobile-context-nav-height: 4.15rem;
+    --mobile-context-nav-gap: 0.55rem;
+    --mobile-safe-bottom: env(safe-area-inset-bottom, 0px);
+    --mobile-tabbar-total-height: calc(var(--mobile-tabbar-height) + var(--mobile-safe-bottom));
   }
 
   html {
@@ -115,6 +120,8 @@
   }
 
   .site-mobile-bottom-nav {
+    min-height: var(--mobile-tabbar-total-height);
+    box-sizing: border-box;
     padding-top: 0.32rem;
   }
 
@@ -497,17 +504,39 @@
   }
 
   .plan-builder__mobile-nav,
-  .travel-editor__mobile-nav {
+  .travel-editor__mobile-nav,
+  .mobile-planning-workspace__nav {
     right: var(--mobile-gutter);
+    bottom: calc(var(--mobile-tabbar-total-height) + var(--mobile-context-nav-gap));
     left: var(--mobile-gutter);
     grid-template-columns: minmax(4.9rem, auto) minmax(0, 1fr) minmax(4.9rem, auto);
+    min-height: var(--mobile-context-nav-height);
+    max-width: min(34rem, calc(100vw - (var(--mobile-gutter) * 2)));
     padding: 0.4rem;
   }
 
   .plan-builder__mobile-nav button,
-  .travel-editor__mobile-nav button {
+  .travel-editor__mobile-nav button,
+  .mobile-planning-workspace__nav button {
     min-height: 3rem;
     font-size: 0.78rem;
+  }
+
+  body:has(.plan-builder) .plan-shell,
+  body:has(.travel-editor) .travel-editor-shell,
+  body:has(.mobile-planning-workspace) .travel-editor-shell {
+    padding-bottom: calc(
+      var(--mobile-tabbar-total-height) +
+      var(--mobile-context-nav-height) +
+      var(--mobile-context-nav-gap) +
+      1.5rem
+    );
+  }
+
+  body:has(.plan-builder) .site-footer,
+  body:has(.travel-editor) .site-footer,
+  body:has(.mobile-planning-workspace) .site-footer {
+    display: none;
   }
 
   .plan-step[data-mobile-active="true"],

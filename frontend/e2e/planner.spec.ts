@@ -104,7 +104,8 @@ test("몇 번의 선택으로 여행 계획을 만들고 일차별 일정으로 
   await expect(page.getByRole("heading", { name: "언제, 며칠 동안 갈까요?" })).toBeHidden();
   const stepNavigationBox = await planStepNavigation.boundingBox();
   const primaryNavigationBox = await page.getByRole("navigation", { name: "모바일 주요 메뉴" }).boundingBox();
-  expect((stepNavigationBox?.y ?? 0) + (stepNavigationBox?.height ?? 0)).toBeLessThanOrEqual((primaryNavigationBox?.y ?? 844) + 1);
+  expect((stepNavigationBox?.y ?? 0) + (stepNavigationBox?.height ?? 0)).toBeLessThanOrEqual((primaryNavigationBox?.y ?? 844) - 6);
+  await expect(page.locator(".site-footer")).toBeHidden();
   await page.getByRole("button", { name: "일본", exact: true }).click();
   await planStepNavigation.getByRole("button", { name: "다음" }).click();
   await expect(page.getByRole("heading", { name: "언제, 며칠 동안 갈까요?" })).toBeVisible();
@@ -130,6 +131,9 @@ test("몇 번의 선택으로 여행 계획을 만들고 일차별 일정으로 
   await page.getByText("전체 계획 및 기록 편집", { exact: true }).click();
   const preparationStepNavigation = page.getByRole("navigation", { name: "여행 준비 단계 이동" });
   await expect(preparationStepNavigation).toBeVisible();
+  const preparationNavigationBox = await preparationStepNavigation.boundingBox();
+  const preparationPrimaryNavigationBox = await page.getByRole("navigation", { name: "모바일 주요 메뉴" }).boundingBox();
+  expect((preparationNavigationBox?.y ?? 0) + (preparationNavigationBox?.height ?? 0)).toBeLessThanOrEqual((preparationPrimaryNavigationBox?.y ?? 844) - 6);
   await expect(page.getByRole("progressbar", { name: "여행 준비 진행률" })).toHaveAttribute("aria-valuenow", "1");
   await expect(page.getByRole("heading", { name: "여행 준비 체크리스트" })).toBeHidden();
   await expect(page.getByRole("heading", { name: "예약부터 변수 대응까지, 한곳에서" })).toBeVisible();

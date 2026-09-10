@@ -12,6 +12,7 @@ import "./globals.css";
 export const maxDuration = 60;
 
 export const viewport: Viewport = {
+  viewportFit: "cover",
   colorScheme: "light dark",
   themeColor: [
     { media: "(prefers-color-scheme: light)", color: "#f6f7f4" },
