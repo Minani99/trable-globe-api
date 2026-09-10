@@ -50,7 +50,7 @@
   margin: 0;
   padding: 1.5rem 1.75rem;
   border: 1px solid var(--border);
-  border-radius: 1rem;
+  border-radius: 0;
   background: var(--surface);
   color: var(--text-primary);
 }
@@ -118,7 +118,7 @@
   top: 1.5rem;
   right: 1.75rem;
   padding: 0.25rem 0.6rem;
-  border-radius: 0.35rem;
+  border-radius: 0;
   background: var(--surface-raised);
   color: var(--text-secondary);
   font-size: 0.6875rem;
@@ -206,7 +206,7 @@
 }
 
 .link:focus-visible {
-  border-radius: 0.25rem;
+  border-radius: 0;
   outline: 2px solid var(--accent-strong);
   outline-offset: 4px;
 }

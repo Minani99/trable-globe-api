@@ -18,7 +18,7 @@ export function MemberWorldPreview({
     y: ((90 - country.latitude) / 180) * 150,
   }));
   const route = points.map((point) => `${point.x.toFixed(1)},${point.y.toFixed(1)}`).join(" ");
-  const gradientId = `world-${safeId(id)}`;
+  const previewId = safeId(id);
 
   return (
     <svg
@@ -27,14 +27,8 @@ export function MemberWorldPreview({
       role="img"
       aria-label={`${displayName}님의 방문 국가 ${points.length}곳 미리보기`}
     >
-      <title>{`${displayName}님의 여행 세계`}</title>
-      <defs>
-        <linearGradient id={gradientId} x1="0" y1="0" x2="1" y2="1">
-          <stop offset="0" stopColor="var(--globe-ocean)" stopOpacity="0.28" />
-          <stop offset="1" stopColor="var(--accent)" stopOpacity="0.11" />
-        </linearGradient>
-      </defs>
-      <rect width="300" height="150" rx="18" fill={`url(#${gradientId})`} />
+      <title id={previewId}>{`${displayName}님의 여행 세계`}</title>
+      <rect width="300" height="150" fill="var(--surface-raised)" />
       <path className="member-world-preview__grid" d="M0 50h300M0 100h300M75 0v150M150 0v150M225 0v150" />
       <path className="member-world-preview__land" d={WORLD_OUTLINE} />
       {points.length > 1 ? <polyline className="member-world-preview__route" points={route} /> : null}
