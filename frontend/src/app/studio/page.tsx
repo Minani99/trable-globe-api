@@ -181,7 +181,7 @@ function ActiveTravelCard({ plan, today }: { plan: OwnedTravelSummary; today: st
         <h2 id="studio-live-heading">{plan.travel.title}</h2>
         <p>오늘 일정과 다음 장소를 확인하고, 사진과 메모를 바로 남길 수 있어요.</p>
       </div>
-      <Link href={`/studio/travels/${plan.travel.id}/edit#travel-day-view`} className="studio-live__action">
+      <Link href={`/studio/travels/${plan.travel.id}/go`} className="studio-live__action">
         오늘 여행 열기 <span aria-hidden="true">→</span>
       </Link>
     </section>
@@ -198,30 +198,33 @@ function countdownLabel(today: string, startDate: string): string {
 function RecentPlanCard({ plan, today }: { plan: OwnedTravelSummary; today: string }) {
   const progress = planProgress(plan.travel);
   return (
-    <Link href={`/studio/travels/${plan.travel.id}/edit?plan=1`} className="studio-resume-card">
-      <div className="studio-resume-card__topline">
-        <span>최근 작업</span>
-        <time dateTime={plan.updatedAt}>{formatUpdatedAt(plan.updatedAt)}</time>
-      </div>
-      <div className="studio-resume-card__content">
-        <div className="studio-resume-card__country" aria-hidden="true">
-          <strong>{plan.travel.primaryCountry?.iso2Code ?? "TR"}</strong>
-          <span>{countdownLabel(today, plan.travel.startDate)}</span>
+    <div className="studio-resume-card-wrap">
+      <Link href={`/studio/travels/${plan.travel.id}/edit?plan=1`} className="studio-resume-card">
+        <div className="studio-resume-card__topline">
+          <span>최근 작업</span>
+          <time dateTime={plan.updatedAt}>{formatUpdatedAt(plan.updatedAt)}</time>
         </div>
-        <div>
-          <small>{plan.travel.primaryCountry?.nameKo ?? "다음 여행"} · {formatDateRange(plan.travel.startDate, plan.travel.endDate)}</small>
-          <h3>{plan.travel.title}</h3>
-          <p>일정 {plan.travel.durationDays}일 · 장소 {plan.travel.placeCount}곳</p>
+        <div className="studio-resume-card__content">
+          <div className="studio-resume-card__country" aria-hidden="true">
+            <strong>{plan.travel.primaryCountry?.iso2Code ?? "TR"}</strong>
+            <span>{countdownLabel(today, plan.travel.startDate)}</span>
+          </div>
+          <div>
+            <small>{plan.travel.primaryCountry?.nameKo ?? "다음 여행"} · {formatDateRange(plan.travel.startDate, plan.travel.endDate)}</small>
+            <h3>{plan.travel.title}</h3>
+            <p>일정 {plan.travel.durationDays}일 · 장소 {plan.travel.placeCount}곳</p>
+          </div>
         </div>
-      </div>
-      <div className="studio-plan-progress">
-        <div><span>장소 채우기</span><strong>{progress.completed} / {progress.total}</strong></div>
-        <span className="studio-plan-progress__track" role="progressbar" aria-label={`${plan.travel.title} 장소 작성 진행률`} aria-valuemin={0} aria-valuemax={100} aria-valuenow={progress.percentage}>
-          <i style={{ width: `${progress.percentage}%` }} />
-        </span>
-      </div>
-      <span className="studio-resume-card__action">이어서 작성하기 <b aria-hidden="true">→</b></span>
-    </Link>
+        <div className="studio-plan-progress">
+          <div><span>장소 채우기</span><strong>{progress.completed} / {progress.total}</strong></div>
+          <span className="studio-plan-progress__track" role="progressbar" aria-label={`${plan.travel.title} 장소 작성 진행률`} aria-valuemin={0} aria-valuemax={100} aria-valuenow={progress.percentage}>
+            <i style={{ width: `${progress.percentage}%` }} />
+          </span>
+        </div>
+        <span className="studio-resume-card__action">이어서 작성하기 <b aria-hidden="true">→</b></span>
+      </Link>
+      <Link href={`/studio/travels/${plan.travel.id}/go`} className="studio-travel-view-action">여행용 보기 <span aria-hidden="true">→</span></Link>
+    </div>
   );
 }
 
@@ -234,6 +237,7 @@ function PlanListItem({ plan, today }: { plan: OwnedTravelSummary; today: string
         <div><span>{plan.travel.primaryCountry?.nameKo ?? "다음 여행"}</span><h3>{plan.travel.title}</h3><p>장소 {progress.completed}/{progress.total} · {formatUpdatedAt(plan.updatedAt)}</p></div>
         <span className="studio-plan-list__action">계속 작성하기 →</span>
       </Link>
+      <Link href={`/studio/travels/${plan.travel.id}/go`} className="studio-plan-list__travel-view">여행용 보기 →</Link>
     </li>
   );
 }
