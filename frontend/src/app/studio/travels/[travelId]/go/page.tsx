@@ -36,7 +36,7 @@ export default async function TravelDayPage(props: PageProps<"/studio/travels/[t
         <div className="site-shell travel-day-shell">
           <nav className="travel-day-page__nav" aria-label="여행용 보기 메뉴">
             <Link href="/studio">← 여행 허브</Link>
-            <Link href={`/studio/travels/${travel.id}/edit?plan=1`}>계획 편집</Link>
+            <Link href={`/studio/travels/${travel.id}/edit?plan=1#travel-preparation`}>계획 편집</Link>
           </nav>
           <header className="travel-day-page__hero">
             <div>
