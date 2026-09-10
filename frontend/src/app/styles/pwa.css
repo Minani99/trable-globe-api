@@ -10,7 +10,7 @@
   gap: 0.75rem;
   padding: 0.75rem;
   border: 1px solid var(--border-strong);
-  border-radius: 1rem;
+  border-radius: var(--radius-md);
   background: color-mix(in srgb, var(--surface) 94%, transparent);
   box-shadow: 0 1rem 3rem rgba(18, 43, 51, 0.16);
   backdrop-filter: blur(20px);
@@ -21,7 +21,7 @@
   width: 2.35rem;
   height: 2.35rem;
   place-items: center;
-  border-radius: 0.75rem;
+  border-radius: var(--radius-sm);
   background: var(--accent-soft);
   color: var(--accent-strong);
   font-size: 1.15rem;
@@ -37,13 +37,13 @@
 }
 
 .pwa-install strong {
-  font-size: 0.75rem;
+  font-size: var(--text-sm);
 }
 
 .pwa-install p {
   margin-top: 0.2rem;
   color: var(--text-tertiary);
-  font-size: 0.62rem;
+  font-size: var(--text-xs);
   line-height: 1.45;
   word-break: keep-all;
 }
@@ -51,19 +51,19 @@
 .pwa-install > button:not(.pwa-install__close) {
   min-height: 2.35rem;
   padding-inline: 0.85rem;
-  border-radius: 999px;
+  border-radius: var(--radius-sm);
   background: var(--text-primary);
   color: var(--background);
-  font-size: 0.68rem;
+  font-size: var(--text-xs);
   font-weight: 700;
 }
 
 .pwa-install__close {
   width: 2rem;
   height: 2rem;
-  border-radius: 50%;
+  border-radius: var(--radius-xs);
   color: var(--text-tertiary);
-  font-size: 1rem;
+  font-size: var(--text-md);
 }
 
 .offline-page {
@@ -80,7 +80,7 @@
   width: min(31rem, 100%);
   padding: clamp(1.5rem, 5vw, 3rem);
   border: 1px solid var(--border);
-  border-radius: 1.35rem;
+  border-radius: var(--radius-lg);
   background: var(--surface);
   box-shadow: 0 1.5rem 4rem rgba(23, 51, 59, 0.08);
   text-align: center;
@@ -92,7 +92,7 @@
   height: 3.5rem;
   margin: 0 auto 1rem;
   place-items: center;
-  border-radius: 1rem;
+  border-radius: var(--radius-md);
   background: var(--accent-soft);
   color: var(--accent-strong);
   font-size: 1.65rem;
@@ -109,7 +109,7 @@
   max-width: 38rem;
   margin: 0.85rem auto 0;
   color: var(--text-secondary);
-  font-size: 0.78rem;
+  font-size: var(--text-sm);
   line-height: 1.7;
   word-break: keep-all;
 }
@@ -127,8 +127,8 @@
   align-items: center;
   justify-content: center;
   padding-inline: 1rem;
-  border-radius: 999px;
-  font-size: 0.72rem;
+  border-radius: var(--radius-sm);
+  font-size: var(--text-xs);
   font-weight: 700;
 }
 
@@ -167,9 +167,9 @@
   height: 2.5rem;
   place-items: center;
   border: 1px solid var(--border);
-  border-radius: 50%;
+  border-radius: var(--radius-xs);
   background: var(--surface);
-  font-size: 1rem;
+  font-size: var(--text-md);
 }
 
 .offline-trip-header > div {
@@ -181,23 +181,23 @@
 .offline-trip-header > div span {
   color: var(--text-tertiary);
   font-family: var(--font-mono);
-  font-size: 0.5rem;
+  font-size: var(--text-xs);
   letter-spacing: 0.1em;
 }
 
 .offline-trip-header > div strong {
   overflow: hidden;
-  font-size: 0.8rem;
+  font-size: var(--text-sm);
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
 .offline-trip-header__state {
   padding: 0.4rem 0.55rem;
-  border-radius: 999px;
+  border-radius: var(--radius-sm);
   background: color-mix(in srgb, var(--warning, #d28a32) 12%, var(--surface));
   color: var(--text-secondary);
-  font-size: 0.58rem;
+  font-size: var(--text-xs);
   font-weight: 700;
 }
 
@@ -211,7 +211,7 @@
   margin-top: clamp(1rem, 5vh, 3rem);
   padding: 2rem;
   border: 1px solid var(--border);
-  border-radius: 1.25rem;
+  border-radius: var(--radius-lg);
   background: var(--surface);
   box-shadow: 0 1rem 3rem rgba(23, 51, 59, 0.08);
 }
@@ -225,7 +225,7 @@
 .offline-trip-desktop > p:not(.eyebrow) {
   margin-top: 0.65rem;
   color: var(--text-secondary);
-  font-size: 0.74rem;
+  font-size: var(--text-xs);
 }
 
 .offline-trip-desktop ol {
@@ -245,7 +245,7 @@
 .offline-trip-desktop time {
   color: var(--accent-strong);
   font-family: var(--font-mono);
-  font-size: 0.68rem;
+  font-size: var(--text-xs);
 }
 
 .offline-trip-desktop li > div {
@@ -255,7 +255,7 @@
 
 .offline-trip-desktop small {
   color: var(--text-tertiary);
-  font-size: 0.66rem;
+  font-size: var(--text-xs);
 }
 
 .offline-trip-empty {
@@ -273,7 +273,7 @@
   height: 3.2rem;
   margin-bottom: 1rem;
   place-items: center;
-  border-radius: 1rem;
+  border-radius: var(--radius-md);
   background: var(--accent-soft);
   color: var(--accent-strong);
   font-size: 1.4rem;
@@ -290,7 +290,7 @@
   max-width: 24rem;
   margin-top: 0.75rem;
   color: var(--text-secondary);
-  font-size: 0.72rem;
+  font-size: var(--text-xs);
   line-height: 1.7;
   word-break: keep-all;
 }
@@ -301,10 +301,10 @@
   align-items: center;
   margin-top: 1.15rem;
   padding-inline: 1rem;
-  border-radius: 999px;
+  border-radius: var(--radius-sm);
   background: var(--text-primary);
   color: var(--background);
-  font-size: 0.7rem;
+  font-size: var(--text-xs);
   font-weight: 700;
 }
 

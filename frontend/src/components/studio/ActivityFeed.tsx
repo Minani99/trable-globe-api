@@ -15,7 +15,7 @@ export function ActivityFeed({ events }: { events: ActivityEvent[] }) {
         <ol className="studio-activity__list">
           {events.map((event) => (
             <li key={event.id}>
-              <Link href={event.type === "FOLLOW" ? `/${event.actor.username}` : `/studio/travels/${event.travelId}/edit`}>
+              <Link prefetch={false} href={event.type === "FOLLOW" ? `/${event.actor.username}` : `/studio/travels/${event.travelId}/edit`}>
                 <TravelImage src={event.actor.profileImageUrl} alt="" fallbackLabel={event.actor.username.slice(0, 2)} className="studio-activity__avatar" />
                 <span>
                   <strong>{publicDisplayName(event.actor.displayName)}</strong>

@@ -188,7 +188,7 @@
   }
 
   .landing-intro {
-    font-size: 0.92rem;
+    font-size: var(--text-base);
     line-height: 1.68;
   }
 
@@ -229,7 +229,7 @@
 
   .landing-archive__visual {
     min-height: 122vw;
-    border-radius: 1.4rem;
+    border-radius: var(--radius-lg);
   }
 
   .landing-archive__photo--one {
@@ -242,7 +242,7 @@
 
   .landing-archive__photo strong {
     padding: 0.85rem;
-    font-size: 1rem;
+    font-size: var(--text-md);
     line-height: 1.35;
     word-break: keep-all;
   }

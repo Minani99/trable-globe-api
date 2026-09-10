@@ -7,7 +7,7 @@
   margin-top: clamp(5rem, 10vw, 9rem);
   padding: clamp(1.4rem, 4vw, 3rem);
   border: 1px solid var(--border);
-  border-radius: 1.6rem;
+  border-radius: var(--radius-lg);
   background: color-mix(in srgb, var(--surface) 92%, var(--accent-soft));
 }
 
@@ -41,9 +41,9 @@
   gap: 0.5rem;
   padding-inline: 1rem;
   border: 1px solid var(--border-strong);
-  border-radius: 999px;
+  border-radius: var(--radius-sm);
   color: var(--text-secondary);
-  font-size: 0.72rem;
+  font-size: var(--text-xs);
   transition: border-color 0.2s ease, color 0.2s ease, background-color 0.2s ease;
 }
 
@@ -56,7 +56,7 @@
 
 .travel-social__comment-toggle span {
   width: 0.8rem;
-  font-size: 1rem;
+  font-size: var(--text-md);
   line-height: 1;
   text-align: center;
 }
@@ -72,15 +72,15 @@
   gap: 0.55rem;
   padding-inline: 1rem;
   border: 1px solid var(--border-strong);
-  border-radius: 999px;
+  border-radius: var(--radius-sm);
   color: var(--text-secondary);
-  font-size: 0.72rem;
+  font-size: var(--text-xs);
   transition: border-color 0.2s ease, color 0.2s ease, background-color 0.2s ease, transform 0.2s ease;
 }
 
 .travel-social__like span {
   color: var(--accent-strong);
-  font-size: 1rem;
+  font-size: var(--text-md);
 }
 
 .travel-social__like:hover,
@@ -109,7 +109,7 @@
   width: 2.65rem;
   height: 2.65rem;
   border: 1px solid var(--border);
-  border-radius: 50%;
+  border-radius: var(--radius-xs);
   object-fit: cover;
 }
 
@@ -118,10 +118,10 @@
   min-height: 4.5rem;
   padding: 0.8rem 0.9rem;
   border: 1px solid var(--border-strong);
-  border-radius: 0.85rem;
+  border-radius: var(--radius-md);
   background: var(--surface);
   color: var(--text-primary);
-  font-size: 0.8rem;
+  font-size: var(--text-sm);
   line-height: 1.55;
   resize: vertical;
   outline: none;
@@ -135,10 +135,10 @@
 .travel-social__composer > button {
   min-height: 2.75rem;
   padding-inline: 1rem;
-  border-radius: 999px;
+  border-radius: var(--radius-sm);
   background: var(--accent);
   color: #1c0d07;
-  font-size: 0.7rem;
+  font-size: var(--text-xs);
   font-weight: 650;
 }
 
@@ -155,7 +155,7 @@
   padding: 1.25rem 0;
   border-bottom: 1px solid var(--border);
   color: var(--text-tertiary);
-  font-size: 0.74rem;
+  font-size: var(--text-xs);
 }
 
 .travel-social__guest a {
@@ -167,10 +167,10 @@
 .travel-social__status {
   margin-top: 1rem;
   padding: 0.7rem 0.8rem;
-  border-radius: 0.7rem;
+  border-radius: var(--radius-sm);
   background: var(--accent-soft);
   color: var(--accent-strong);
-  font-size: 0.7rem;
+  font-size: var(--text-xs);
 }
 
 .travel-social__comments {
@@ -182,7 +182,7 @@
   align-items: baseline;
   gap: 0.45rem;
   color: var(--text-tertiary);
-  font-size: 0.7rem;
+  font-size: var(--text-xs);
 }
 
 .travel-social__count strong {
@@ -194,7 +194,7 @@
 
 .travel-social__count small {
   margin-left: auto;
-  font-size: 0.62rem;
+  font-size: var(--text-xs);
 }
 
 .travel-social__comments ol {
@@ -225,19 +225,19 @@
 
 .travel-social__comment-meta strong {
   color: var(--text-primary);
-  font-size: 0.78rem;
+  font-size: var(--text-sm);
 }
 
 .travel-social__comment-meta span,
 .travel-social__comment-meta time {
   color: var(--text-tertiary);
-  font-size: 0.62rem;
+  font-size: var(--text-xs);
 }
 
 .travel-social__comments li > div > p {
   margin-top: 0.45rem;
   color: var(--text-secondary);
-  font-size: 0.78rem;
+  font-size: var(--text-sm);
   line-height: 1.65;
   white-space: pre-wrap;
   word-break: break-word;
@@ -246,7 +246,7 @@
 .travel-social__comments li > button {
   align-self: start;
   color: var(--text-tertiary);
-  font-size: 0.62rem;
+  font-size: var(--text-xs);
 }
 
 .travel-social__comments li > button:hover {
@@ -256,7 +256,7 @@
 .travel-social__empty {
   padding: 3rem 1rem;
   color: var(--text-tertiary);
-  font-size: 0.75rem;
+  font-size: var(--text-sm);
   text-align: center;
 }
 
@@ -284,7 +284,7 @@
   .travel-social {
     margin-inline: -0.25rem;
     padding: 1.25rem;
-    border-radius: 1.2rem;
+    border-radius: var(--radius-lg);
   }
 
   .travel-social__heading,

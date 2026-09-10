@@ -1,8 +1,10 @@
 import type { Metadata } from "next";
+import { redirect } from "next/navigation";
 
 import { AuthForm } from "@/components/auth/AuthForm";
 import { SiteFooter } from "@/components/layout/SiteFooter";
 import { SiteHeader } from "@/components/layout/SiteHeader";
+import { getCurrentMember } from "@/lib/api/server-session";
 
 export const metadata: Metadata = { title: "계정 만들기" };
 
@@ -11,9 +13,13 @@ export default async function RegisterPage({
 }: {
   searchParams: Promise<{ next?: string }>;
 }) {
-  const { next } = await searchParams;
+  const [{ next }, member] = await Promise.all([
+    searchParams,
+    getCurrentMember().catch(() => null),
+  ]);
   const nextPath =
     next?.startsWith("/") && !next.startsWith("//") && !next.includes("\\") ? next : undefined;
+  if (member) redirect(nextPath ?? "/studio");
   return (
     <>
       <SiteHeader />

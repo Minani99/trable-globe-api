@@ -27,7 +27,7 @@
     margin-bottom: 0.75rem;
     padding: 0.8rem 0.9rem;
     border: 1px solid color-mix(in srgb, var(--border-strong) 78%, transparent);
-    border-radius: 0.95rem;
+    border-radius: var(--radius-md);
     background: color-mix(in srgb, var(--surface) 94%, transparent);
     box-shadow: 0 0.65rem 1.8rem rgba(17, 40, 48, 0.08);
     backdrop-filter: blur(18px) saturate(1.08);
@@ -45,14 +45,14 @@
   .travel-editor__mobile-progress > div span {
     color: var(--accent-strong);
     font-family: var(--font-mono);
-    font-size: 0.55rem;
+    font-size: var(--text-xs);
     font-weight: 700;
     letter-spacing: 0.08em;
   }
 
   .plan-builder__mobile-progress > div strong,
   .travel-editor__mobile-progress > div strong {
-    font-size: 0.76rem;
+    font-size: var(--text-sm);
     letter-spacing: -0.025em;
   }
 
@@ -60,7 +60,7 @@
   .travel-editor__mobile-progress > span {
     height: 0.25rem;
     overflow: hidden;
-    border-radius: 999px;
+    border-radius: var(--radius-sm);
     background: var(--surface-muted);
   }
 
@@ -117,11 +117,11 @@
     display: block;
     padding: 0.7rem 0.85rem;
     border: 1px solid color-mix(in srgb, var(--accent) 45%, var(--border));
-    border-radius: 0.8rem;
+    border-radius: var(--radius-sm);
     background: color-mix(in srgb, var(--surface) 96%, transparent);
     box-shadow: 0 0.8rem 2rem rgba(49, 30, 22, 0.14);
     color: var(--accent-strong);
-    font-size: 0.7rem;
+    font-size: var(--text-xs);
     line-height: 1.45;
     backdrop-filter: blur(16px);
   }
@@ -141,7 +141,7 @@
     margin-inline: auto;
     padding: 0.45rem;
     border: 1px solid color-mix(in srgb, var(--border-strong) 82%, transparent);
-    border-radius: 1rem;
+    border-radius: var(--radius-md);
     background: color-mix(in srgb, var(--surface) 94%, transparent);
     box-shadow: 0 1rem 2.8rem rgba(17, 40, 48, 0.18);
     backdrop-filter: blur(20px) saturate(1.1);
@@ -159,13 +159,13 @@
   .travel-editor__mobile-nav small {
     color: var(--text-tertiary);
     font-family: var(--font-mono);
-    font-size: 0.5rem;
+    font-size: var(--text-xs);
   }
 
   .plan-builder__mobile-nav strong,
   .travel-editor__mobile-nav strong {
     overflow: hidden;
-    font-size: 0.65rem;
+    font-size: var(--text-xs);
     text-overflow: ellipsis;
     white-space: nowrap;
   }
@@ -174,8 +174,8 @@
   .travel-editor__mobile-nav button {
     min-height: 2.85rem;
     padding-inline: 0.8rem;
-    border-radius: 0.72rem;
-    font-size: 0.7rem;
+    border-radius: var(--radius-sm);
+    font-size: var(--text-xs);
     font-weight: 720;
   }
 
@@ -188,7 +188,7 @@
   .plan-builder__mobile-nav .is-next,
   .travel-editor__mobile-nav .is-next {
     background: var(--accent);
-    color: #1d0d07;
+    color: var(--accent-ink);
   }
 
   .plan-builder__mobile-nav button:disabled,
@@ -293,7 +293,7 @@
     margin-bottom: 0.75rem;
     padding: 0.8rem 0.9rem;
     border: 1px solid color-mix(in srgb, var(--border-strong) 78%, transparent);
-    border-radius: 0.95rem;
+    border-radius: var(--radius-md);
     background: color-mix(in srgb, var(--surface) 94%, transparent);
     box-shadow: 0 0.65rem 1.8rem rgba(17, 40, 48, 0.08);
     backdrop-filter: blur(18px) saturate(1.08);
@@ -313,20 +313,20 @@
   .mobile-planning-workspace__progress > div span {
     color: var(--accent-strong);
     font-family: var(--font-mono);
-    font-size: 0.55rem;
+    font-size: var(--text-xs);
     font-weight: 700;
     letter-spacing: 0.08em;
   }
 
   .mobile-planning-workspace__progress > div strong {
-    font-size: 0.76rem;
+    font-size: var(--text-sm);
     letter-spacing: -0.025em;
   }
 
   .mobile-planning-workspace__progress > span {
     height: 0.25rem;
     overflow: hidden;
-    border-radius: 999px;
+    border-radius: var(--radius-sm);
     background: var(--surface-muted);
   }
 
@@ -363,10 +363,10 @@
     margin-bottom: 0.7rem;
     padding: 0.45rem 0.7rem;
     border: 1px solid var(--border);
-    border-radius: 999px;
+    border-radius: var(--radius-sm);
     background: var(--surface);
     color: var(--text-secondary);
-    font-size: 0.68rem;
+    font-size: var(--text-xs);
     font-weight: 650;
   }
 
@@ -384,7 +384,7 @@
     margin-inline: auto;
     padding: 0.45rem;
     border: 1px solid color-mix(in srgb, var(--border-strong) 82%, transparent);
-    border-radius: 1rem;
+    border-radius: var(--radius-md);
     background: color-mix(in srgb, var(--surface) 94%, transparent);
     box-shadow: 0 1rem 2.8rem rgba(17, 40, 48, 0.18);
     backdrop-filter: blur(20px) saturate(1.1);
@@ -400,12 +400,12 @@
   .mobile-planning-workspace__nav small {
     color: var(--text-tertiary);
     font-family: var(--font-mono);
-    font-size: 0.5rem;
+    font-size: var(--text-xs);
   }
 
   .mobile-planning-workspace__nav strong {
     overflow: hidden;
-    font-size: 0.65rem;
+    font-size: var(--text-xs);
     text-overflow: ellipsis;
     white-space: nowrap;
   }
@@ -413,8 +413,8 @@
   .mobile-planning-workspace__nav button {
     min-height: 2.85rem;
     padding-inline: 0.8rem;
-    border-radius: 0.72rem;
-    font-size: 0.7rem;
+    border-radius: var(--radius-sm);
+    font-size: var(--text-xs);
     font-weight: 720;
   }
 
@@ -425,7 +425,7 @@
 
   .mobile-planning-workspace__nav .is-next {
     background: var(--accent);
-    color: #1d0d07;
+    color: var(--accent-ink);
   }
 
   .mobile-planning-workspace__nav button:disabled {

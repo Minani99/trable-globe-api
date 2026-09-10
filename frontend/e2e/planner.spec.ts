@@ -170,7 +170,9 @@ test("몇 번의 선택으로 여행 계획을 만들고 일차별 일정으로 
   await page.getByText("＋ 비용 추가", { exact: true }).click();
   await page.getByRole("textbox", { name: "새 비용 이름" }).fill("왕복 항공권");
   await page.getByRole("spinbutton", { name: "예상 비용" }).fill("450000");
-  await page.getByRole("button", { name: "추가", exact: true }).first().click();
+  const expenseButton = page.getByRole("button", { name: "비용 추가", exact: true });
+  await expenseButton.evaluate((button) => button.scrollIntoView({ block: "center" }));
+  await expenseButton.click();
   await expect(page.getByText("왕복 항공권", { exact: true })).toBeVisible();
   await page.getByRole("button", { name: "왕복 항공권 수정" }).click();
   await page.getByRole("textbox", { name: "비용 이름 수정" }).fill("왕복 항공권·수하물");
@@ -180,7 +182,9 @@ test("몇 번의 선택으로 여행 계획을 만들고 일차별 일정으로 
   await page.getByRole("button", { name: "왕복 항공권·수하물 결제 완료로 변경" }).click();
   await page.getByText("＋ 예약 추가", { exact: true }).click();
   await page.getByRole("textbox", { name: "새 예약 이름" }).fill("도쿄 호텔 체크인");
-  await page.getByRole("button", { name: "추가", exact: true }).last().click();
+  const reservationButton = page.getByRole("button", { name: "예약 추가", exact: true });
+  await reservationButton.evaluate((button) => button.scrollIntoView({ block: "center" }));
+  await reservationButton.click();
   await expect(page.getByText("도쿄 호텔 체크인", { exact: true })).toBeVisible();
   await page.getByRole("button", { name: "도쿄 호텔 체크인 수정" }).click();
   await page.getByRole("textbox", { name: "예약 이름 수정" }).fill("시부야 호텔 체크인");

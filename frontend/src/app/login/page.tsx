@@ -1,15 +1,21 @@
 import type { Metadata } from "next";
+import { redirect } from "next/navigation";
 
 import { AuthForm } from "@/components/auth/AuthForm";
 import { SiteFooter } from "@/components/layout/SiteFooter";
 import { SiteHeader } from "@/components/layout/SiteHeader";
+import { getCurrentMember } from "@/lib/api/server-session";
 
 export const metadata: Metadata = { title: "로그인" };
 
 export default async function LoginPage({ searchParams }: { searchParams: Promise<{ reset?: string; next?: string }> }) {
-  const { reset, next } = await searchParams;
+  const [{ reset, next }, member] = await Promise.all([
+    searchParams,
+    getCurrentMember().catch(() => null),
+  ]);
   const nextPath =
     next?.startsWith("/") && !next.startsWith("//") && !next.includes("\\") ? next : undefined;
+  if (member && reset !== "1") redirect(nextPath ?? "/studio");
   return (
     <>
       <SiteHeader />

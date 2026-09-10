@@ -25,8 +25,8 @@ export function subscribeToAuthState(listener: Listener) {
   };
 }
 
-export async function loadAuthMember(): Promise<AuthMember | null> {
-  if (cachedMember !== undefined) return cachedMember;
+export async function loadAuthMember({ force = false }: { force?: boolean } = {}): Promise<AuthMember | null> {
+  if (!force && cachedMember !== undefined) return cachedMember;
   if (currentRequest) return currentRequest;
 
   currentRequest = fetch("/api/auth/me", {

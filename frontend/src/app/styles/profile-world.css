@@ -30,7 +30,7 @@
 .profile-world__summary > p {
   max-width: 34rem;
   color: var(--text-secondary);
-  font-size: 0.92rem;
+  font-size: var(--text-base);
   line-height: 1.8;
   text-wrap: pretty;
   word-break: keep-all;
@@ -51,9 +51,9 @@
   gap: 0.55rem;
   padding-inline: 0.9rem;
   border: 1px solid var(--border-strong);
-  border-radius: 999px;
+  border-radius: var(--radius-sm);
   color: var(--text-primary);
-  font-size: 0.72rem;
+  font-size: var(--text-xs);
   font-weight: 600;
   transition:
     border-color 0.25s ease,
@@ -72,5 +72,5 @@
 
 .profile-share__status {
   color: var(--text-tertiary);
-  font-size: 0.68rem;
+  font-size: var(--text-xs);
 }

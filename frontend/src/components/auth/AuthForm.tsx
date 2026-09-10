@@ -1,8 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { FormEvent, useEffect, useState } from "react";
+import { FormEvent, useState } from "react";
 
 import { showFeedback } from "@/components/common/AppFeedback";
 import { setCachedAuthMember } from "@/lib/auth-state";
@@ -12,7 +11,6 @@ import { useUsernameAvailability } from "@/lib/useUsernameAvailability";
 import type { AuthMember } from "@/types";
 
 export function AuthForm({ mode, nextPath }: { mode: "login" | "register"; nextPath?: string }) {
-  const router = useRouter();
   const [error, setError] = useState<string | null>(null);
   const [pending, setPending] = useState(false);
   const [completed, setCompleted] = useState(false);
@@ -26,10 +24,6 @@ export function AuthForm({ mode, nextPath }: { mode: "login" | "register"; nextP
   const switchHref = `${isRegister ? "/login" : "/register"}${
     nextPath ? `?next=${encodeURIComponent(nextPath)}` : ""
   }`;
-
-  useEffect(() => {
-    router.prefetch(destination);
-  }, [destination, router]);
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -67,8 +61,11 @@ export function AuthForm({ mode, nextPath }: { mode: "login" | "register"; nextP
         isRegister ? "계정을 만들었습니다." : "로그인했습니다.",
         "success",
       );
-      router.replace(destination);
-      router.refresh();
+      // Authentication changes an HttpOnly cookie. A client transition can reuse a
+      // protected page that Next prefetched before that cookie existed and incorrectly
+      // render its logged-out redirect. A document navigation clears that router cache
+      // and guarantees the destination is rendered with the newly issued session.
+      window.location.replace(destination);
     } catch (caught) {
       if (caught instanceof ApiError) {
         const nextFieldErrors = Object.fromEntries(caught.fieldErrors.map(({ field, message }) => [field, message]));

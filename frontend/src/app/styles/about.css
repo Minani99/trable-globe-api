@@ -34,7 +34,7 @@
   max-width: 56ch;
   margin-top: 2rem;
   color: var(--text-secondary);
-  font-size: 1rem;
+  font-size: var(--text-md);
   line-height: 1.85;
   word-break: keep-all;
 }
@@ -71,7 +71,7 @@
 
 .about-section-heading > p {
   color: var(--text-secondary);
-  font-size: 0.92rem;
+  font-size: var(--text-base);
   line-height: 1.8;
   text-wrap: pretty;
   word-break: keep-all;
@@ -87,7 +87,7 @@
   min-height: 13rem;
   padding: 1.5rem;
   border: 1px solid var(--border);
-  border-radius: 1.3rem;
+  border-radius: var(--radius-lg);
   background: var(--surface);
   transition: border-color 0.16s ease;
 }
@@ -99,7 +99,7 @@
 .about-capability-grid li > span {
   color: var(--accent-strong);
   font-family: var(--font-mono);
-  font-size: 0.68rem;
+  font-size: var(--text-xs);
 }
 
 .about-capability-grid h3 {
@@ -114,7 +114,7 @@
 .about-capability-grid p {
   margin-top: 0.9rem;
   color: var(--text-secondary);
-  font-size: 0.8rem;
+  font-size: var(--text-sm);
   line-height: 1.75;
   text-wrap: pretty;
   word-break: keep-all;

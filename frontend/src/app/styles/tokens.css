@@ -1,31 +1,45 @@
 /* Design tokens and the Tailwind theme bridge
  *
- * Part of the ordered stylesheet - see globals.css. Later files override this one.
- */
-/*
- * Travel Globe design tokens.
+ * Part of the ordered stylesheet - see globals.css. Later files override this one,
+ * and design-system.css (last) normalises every legacy component onto these tokens.
  *
- * Light is the first-visit default, with a dark archive mode kept one tap away. Both
- * palettes share the same warm accent so visited places remain the strongest signal.
+ * System summary
+ * - Canvas: warm paper. Surfaces: white. Depth comes from tint + hairline, not shadow.
+ * - Geometry: ONE radius scale (xs 6 · sm 10 · md 14 · lg 20 · xl 28). Circles are
+ *   reserved for avatars and status dots. No pills.
+ * - Type: 15px body, 13px secondary, 12px caption floor. Headings tight, 650 weight.
+ * - Colour: one accent (terracotta) for actions, ocean for informational links, the
+ *   globe keeps its own palette because it is the visual identity.
  */
 :root {
-  --background: #f7f8f5;
-  --background-elevated: #eef4f5;
+  --background: #f7f6f2;
+  --background-elevated: #f1f0eb;
   --surface: #ffffff;
-  --surface-raised: #f5f7f4;
-  --surface-hover: #eaf1f1;
+  --surface-raised: #f6f5f1;
+  --surface-hover: #efeeea;
+  --surface-muted: #ebeae5;
 
-  --border: #dce4e3;
-  --border-strong: #bdccca;
+  --border: #e4e3de;
+  --border-strong: #cfcdc6;
 
-  --text-primary: #13252d;
-  --text-secondary: #5f7075;
-  --text-tertiary: #89979a;
+  --text-primary: #16191d;
+  --text-secondary: #5c636b;
+  --text-tertiary: #8b929a;
 
-  --accent: #e8703a;
-  --accent-strong: #c94f20;
-  --accent-soft: rgba(232, 112, 58, 0.12);
-  --accent-border: rgba(201, 79, 32, 0.34);
+  --accent: #e2612c;
+  --accent-strong: #c24d1e;
+  --accent-soft: #fbeee7;
+  --accent-border: #f0b9a0;
+  --accent-ink: #ffffff;
+
+  --ocean: #2f7fa6;
+  --ocean-soft: #e7f1f6;
+  --success: #2f8f5b;
+  --success-soft: #e6f4ec;
+  --warning: #b97c0c;
+  --warning-soft: #fbf3df;
+  --danger: #cf3f3f;
+  --danger-soft: #fbe9e9;
 
   --globe-ocean: #78c4e2;
   --globe-land: #e3eadb;
@@ -37,36 +51,69 @@
   --map-land: #eef0df;
   --map-land-stroke: #9eb8b1;
   --map-marker: #fffaf4;
-  --map-marker-border: #c94f20;
+  --map-marker-border: #c24d1e;
 
-  --radius-sm: 6px;
-  --radius-md: 10px;
-  --radius-lg: 16px;
+  --radius-xs: 6px;
+  --radius-sm: 10px;
+  --radius-md: 14px;
+  --radius-lg: 20px;
+  --radius-xl: 28px;
+
+  --shadow-sm: 0 1px 2px rgba(22, 25, 29, 0.05), 0 1px 1px rgba(22, 25, 29, 0.03);
+  --shadow-md: 0 10px 30px -14px rgba(22, 25, 29, 0.22), 0 2px 6px -2px rgba(22, 25, 29, 0.06);
+  --shadow-lg: 0 24px 60px -24px rgba(22, 25, 29, 0.32), 0 6px 16px -8px rgba(22, 25, 29, 0.1);
+
+  --control-h: 2.75rem;
+  --control-h-sm: 2.25rem;
+  --control-h-lg: 3.25rem;
+
+  --text-xs: 0.75rem;
+  --text-sm: 0.8125rem;
+  --text-base: 0.9375rem;
+  --text-md: 1.0625rem;
+  --text-lg: 1.25rem;
+  --text-xl: 1.5rem;
+  --text-2xl: 2rem;
+  --text-3xl: 2.5rem;
+
+  --ease: cubic-bezier(0.2, 0.8, 0.2, 1);
+  --dur: 160ms;
+
+  --mobile-bottom-nav-height: 4.25rem;
   --font-editorial: var(--font-geist-sans), var(--font-noto-sans-kr), "Pretendard",
     "Apple SD Gothic Neo", "Malgun Gothic", system-ui, sans-serif;
 }
 
 :root[data-theme="dark"] {
-  --background: #05070a;
-  --background-elevated: #080b11;
-  --surface: #0b1017;
-  --surface-raised: #111823;
-  --surface-hover: #16202d;
+  --background: #0f1113;
+  --background-elevated: #131619;
+  --surface: #16191c;
+  --surface-raised: #1b1f23;
+  --surface-hover: #22272c;
+  --surface-muted: #262b30;
 
-  --border: #1b2431;
-  --border-strong: #2a3746;
+  --border: #272c31;
+  --border-strong: #3a4148;
 
-  --text-primary: #f4f6f8;
-  --text-secondary: #929caa;
-  --text-tertiary: #626d7c;
+  --text-primary: #f2f3f4;
+  --text-secondary: #a3aab2;
+  --text-tertiary: #6f777f;
 
-  /* Warm amber against the cold ocean sphere - a visited country reads instantly. */
-  --accent: #e8703a;
-  --accent-strong: #ff8a52;
-  --accent-soft: rgba(232, 112, 58, 0.14);
-  --accent-border: rgba(232, 112, 58, 0.38);
+  --accent: #f0743f;
+  --accent-strong: #ff8c5c;
+  --accent-soft: #2e1c14;
+  --accent-border: #6b3a26;
+  --accent-ink: #1a0d07;
 
-  /* Globe body colours, shared between the WebGL scene and its CSS surroundings. */
+  --ocean: #63b0d3;
+  --ocean-soft: #14242d;
+  --success: #5cc48a;
+  --success-soft: #14261c;
+  --warning: #e0a63a;
+  --warning-soft: #2b2212;
+  --danger: #ef6b6b;
+  --danger-soft: #2c1717;
+
   --globe-ocean: #102838;
   --globe-land: #2a3d47;
   --globe-land-hover: #3b5662;
@@ -77,8 +124,11 @@
   --map-land: #182630;
   --map-land-stroke: #38505e;
   --map-marker: #111b24;
-  --map-marker-border: #ff8a52;
+  --map-marker-border: #ff8c5c;
 
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.4);
+  --shadow-md: 0 10px 30px -14px rgba(0, 0, 0, 0.7), 0 2px 6px -2px rgba(0, 0, 0, 0.4);
+  --shadow-lg: 0 24px 60px -24px rgba(0, 0, 0, 0.8), 0 6px 16px -8px rgba(0, 0, 0, 0.5);
 }
 
 @theme inline {
@@ -113,14 +163,13 @@ body {
   background: var(--background);
   color: var(--text-primary);
   font-family: var(--font-sans);
+  font-size: var(--text-base);
   letter-spacing: -0.012em;
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
-  transition:
-    background-color 0.35s ease,
-    color 0.35s ease;
 }
 
+/* Toast ------------------------------------------------------------------ */
 .app-feedback-region {
   position: fixed;
   right: clamp(1rem, 3vw, 2rem);
@@ -137,40 +186,49 @@ body {
   align-items: center;
   gap: 0.7rem;
   padding: 0.75rem 0.8rem;
-  border: 1px solid var(--border-strong);
-  border-radius: 0.9rem;
-  background: color-mix(in srgb, var(--surface) 96%, transparent);
-  box-shadow: 0 1rem 3rem rgba(20, 42, 49, 0.18);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--surface);
+  box-shadow: var(--shadow-lg);
   color: var(--text-primary);
-  font-size: 0.78rem;
+  font-size: var(--text-sm);
   line-height: 1.5;
   pointer-events: auto;
-  backdrop-filter: blur(20px);
-  animation: feedback-enter 0.2s cubic-bezier(0.22, 1, 0.36, 1) both;
+  animation: feedback-enter 0.2s var(--ease) both;
 }
 
 .app-feedback__icon {
   display: grid;
-  width: 1.65rem;
-  height: 1.65rem;
+  width: 1.75rem;
+  height: 1.75rem;
   place-items: center;
-  border-radius: 50%;
+  border-radius: var(--radius-xs);
   background: var(--accent-soft);
   color: var(--accent-strong);
-  font-size: 0.72rem;
-  font-weight: 750;
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+
+.app-feedback.is-success .app-feedback__icon {
+  background: var(--success-soft);
+  color: var(--success);
 }
 
 .app-feedback.is-error {
-  border-color: var(--accent-border);
+  border-color: var(--danger);
+}
+
+.app-feedback.is-error .app-feedback__icon {
+  background: var(--danger-soft);
+  color: var(--danger);
 }
 
 .app-feedback > button {
   display: grid;
-  width: 1.8rem;
-  height: 1.8rem;
+  width: 1.9rem;
+  height: 1.9rem;
   place-items: center;
-  border-radius: 50%;
+  border-radius: var(--radius-xs);
   color: var(--text-tertiary);
   font-size: 1rem;
 }
@@ -186,6 +244,7 @@ body {
   to { opacity: 1; transform: translateY(0) scale(1); }
 }
 
+/* Session expiry dialog -------------------------------------------------- */
 .session-expiry {
   position: fixed;
   inset: 0;
@@ -193,7 +252,7 @@ body {
   display: grid;
   place-items: center;
   padding: 1rem;
-  background: rgba(10, 24, 29, 0.42);
+  background: rgba(22, 25, 29, 0.42);
   backdrop-filter: blur(8px);
 }
 
@@ -201,20 +260,20 @@ body {
   display: grid;
   width: min(26rem, 100%);
   gap: 1rem;
-  padding: 1.35rem;
-  border: 1px solid var(--border-strong);
-  border-radius: 1.2rem;
+  padding: 1.5rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
   background: var(--surface);
-  box-shadow: 0 1.5rem 4rem rgba(8, 24, 30, 0.24);
-  animation: feedback-enter 0.2s cubic-bezier(0.22, 1, 0.36, 1) both;
+  box-shadow: var(--shadow-lg);
+  animation: feedback-enter 0.2s var(--ease) both;
 }
 
 .session-expiry__icon {
   display: grid;
-  width: 2.4rem;
-  height: 2.4rem;
+  width: 2.5rem;
+  height: 2.5rem;
   place-items: center;
-  border-radius: 50%;
+  border-radius: var(--radius-sm);
   background: var(--accent-soft);
   color: var(--accent-strong);
   font-size: 1.1rem;
@@ -227,19 +286,19 @@ body {
 
 .session-expiry > section p:first-child {
   color: var(--accent-strong);
-  font-size: 0.68rem;
-  font-weight: 750;
+  font-size: var(--text-xs);
+  font-weight: 700;
 }
 
 .session-expiry h2 {
-  font-size: 1.3rem;
-  letter-spacing: -0.04em;
+  font-size: var(--text-lg);
+  letter-spacing: -0.03em;
 }
 
 .session-expiry h2 + p {
   color: var(--text-secondary);
-  font-size: 0.76rem;
-  line-height: 1.65;
+  font-size: var(--text-sm);
+  line-height: 1.6;
 }
 
 .session-expiry__actions {
@@ -250,11 +309,11 @@ body {
 
 .session-expiry__actions :is(button, a) {
   display: grid;
-  min-height: 2.9rem;
+  min-height: var(--control-h);
   place-items: center;
-  border-radius: 0.75rem;
-  font-size: 0.72rem;
-  font-weight: 750;
+  border-radius: var(--radius-sm);
+  font-size: var(--text-sm);
+  font-weight: 650;
 }
 
 .session-expiry__actions button {
@@ -264,17 +323,13 @@ body {
 
 .session-expiry__actions a {
   background: var(--accent);
-  color: #1d0d07;
+  color: var(--accent-ink);
 }
 
 @media (max-width: 700px) {
   .session-expiry {
     align-items: end;
     padding: 0.7rem 0.7rem calc(var(--mobile-bottom-nav-height) + env(safe-area-inset-bottom) + 0.7rem);
-  }
-
-  .session-expiry > section {
-    border-radius: 1.15rem;
   }
 }
 

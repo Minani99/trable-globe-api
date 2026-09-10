@@ -2,9 +2,9 @@
 .site-footer__beta {
   padding: 0.2rem 0.38rem;
   border: 1px solid var(--accent-border);
-  border-radius: 999px;
+  border-radius: var(--radius-sm);
   color: var(--accent-strong);
-  font-size: 0.5rem;
+  font-size: var(--text-xs);
   font-weight: 800;
   letter-spacing: 0.08em;
 }
@@ -18,10 +18,10 @@
 .site-header__beta-link {
   padding: 0.22rem 0.4rem;
   border: 1px solid var(--accent-border);
-  border-radius: 999px;
+  border-radius: var(--radius-sm);
   color: var(--accent-strong);
   font-family: var(--font-mono);
-  font-size: 0.5rem;
+  font-size: var(--text-xs);
   font-weight: 800;
   letter-spacing: 0.08em;
   transition: background-color 0.18s ease, border-color 0.18s ease;
@@ -35,7 +35,7 @@
 
 .auth-form__legal {
   color: var(--text-tertiary);
-  font-size: 0.67rem;
+  font-size: var(--text-xs);
   line-height: 1.65;
   word-break: keep-all;
 }
@@ -60,7 +60,7 @@
   min-height: auto;
   border: 0;
   border-radius: 0;
-  font-size: 0.66rem;
+  font-size: var(--text-xs);
   font-weight: 600;
 }
 
@@ -99,7 +99,7 @@
   max-width: 45ch;
   margin-top: 1.5rem;
   color: var(--text-secondary);
-  font-size: 0.88rem;
+  font-size: var(--text-base);
   line-height: 1.85;
   word-break: keep-all;
 }
@@ -113,7 +113,7 @@
 .beta-info__notice {
   padding: clamp(1.35rem, 3vw, 2.1rem);
   border: 1px solid var(--border);
-  border-radius: 1.2rem;
+  border-radius: var(--radius-lg);
   background: color-mix(in srgb, var(--surface) 95%, transparent);
 }
 
@@ -128,7 +128,7 @@
 .beta-info__content li,
 .beta-info__notice p {
   color: var(--text-secondary);
-  font-size: 0.8rem;
+  font-size: var(--text-sm);
   line-height: 1.85;
   word-break: keep-all;
 }
@@ -153,7 +153,7 @@
 
 .beta-info__notice strong {
   color: var(--accent-strong);
-  font-size: 0.78rem;
+  font-size: var(--text-sm);
 }
 
 .beta-feedback-form {
@@ -169,7 +169,7 @@
 
 .beta-feedback-form label > span {
   color: var(--text-primary);
-  font-size: 0.72rem;
+  font-size: var(--text-xs);
   font-weight: 700;
 }
 
@@ -181,11 +181,11 @@
   min-height: 3rem;
   padding: 0.75rem 0.85rem;
   border: 1px solid var(--border-strong);
-  border-radius: 0.8rem;
+  border-radius: var(--radius-sm);
   outline: none;
   background: var(--surface);
   color: var(--text-primary);
-  font-size: 0.76rem;
+  font-size: var(--text-sm);
   line-height: 1.6;
 }
 
@@ -209,10 +209,10 @@
 
 .beta-feedback-form__safety {
   padding: 0.8rem 0.9rem;
-  border-radius: 0.75rem;
+  border-radius: var(--radius-sm);
   background: var(--accent-soft);
   color: var(--accent-strong) !important;
-  font-size: 0.68rem !important;
+  font-size: var(--text-xs)!important;
 }
 
 .beta-feedback-form__actions {
@@ -224,8 +224,8 @@
 .beta-feedback-form__actions button {
   min-height: 3.2rem;
   padding-inline: 1.15rem;
-  border-radius: 0.85rem;
-  font-size: 0.74rem;
+  border-radius: var(--radius-md);
+  font-size: var(--text-xs);
   font-weight: 750;
 }
 
@@ -256,7 +256,7 @@
 
 .beta-feedback-result strong,
 .beta-feedback-result button {
-  font-size: 0.68rem;
+  font-size: var(--text-xs);
 }
 
 .beta-feedback-result button {
@@ -289,7 +289,7 @@
 
   .site-header__beta-link {
     padding-inline: 0.34rem;
-    font-size: 0.46rem;
+    font-size: var(--text-xs);
   }
 
   .site-footer .site-shell {
@@ -299,7 +299,7 @@
   .beta-info__content > section,
   .beta-info__notice {
     padding: 1.15rem;
-    border-radius: 1rem;
+    border-radius: var(--radius-md);
   }
 
   .beta-feedback-form__row {

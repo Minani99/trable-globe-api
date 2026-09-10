@@ -9,7 +9,7 @@
   margin-bottom: 1.15rem;
   padding: 1.25rem;
   border: 1px solid var(--border);
-  border-radius: 1.2rem;
+  border-radius: var(--radius-lg);
   background:
     radial-gradient(circle at 100% 0, color-mix(in srgb, var(--accent) 8%, transparent), transparent 32%),
     var(--surface);
@@ -32,7 +32,7 @@
 .travel-planning-board > header > div > p:last-child {
   margin-top: 0.35rem;
   color: var(--text-secondary);
-  font-size: 0.65rem;
+  font-size: var(--text-xs);
 }
 
 .travel-budget-form {
@@ -49,7 +49,7 @@
 
 .travel-budget-form label > span {
   color: var(--text-tertiary);
-  font-size: 0.54rem;
+  font-size: var(--text-xs);
   font-weight: 700;
 }
 
@@ -61,10 +61,10 @@
 .travel-plan-composer button {
   min-height: 2.55rem;
   border: 1px solid var(--border-strong);
-  border-radius: 0.72rem;
+  border-radius: var(--radius-sm);
   background: var(--surface);
   color: var(--text-primary);
-  font-size: 0.62rem;
+  font-size: var(--text-xs);
 }
 
 .travel-budget-form input,
@@ -97,7 +97,7 @@
   grid-template-columns: repeat(3, minmax(0, 1fr)) minmax(10rem, 1.35fr);
   overflow: hidden;
   border: 1px solid var(--border);
-  border-radius: 0.95rem;
+  border-radius: var(--radius-md);
   background: var(--surface-soft);
 }
 
@@ -115,14 +115,14 @@
 
 .travel-budget-summary small {
   color: var(--text-tertiary);
-  font-size: 0.52rem;
+  font-size: var(--text-xs);
 }
 
 .travel-budget-summary strong {
   overflow: hidden;
   color: var(--text-primary);
   font-family: var(--font-mono);
-  font-size: 0.72rem;
+  font-size: var(--text-xs);
   text-overflow: ellipsis;
   white-space: nowrap;
 }
@@ -140,7 +140,7 @@
   display: block;
   height: 0.35rem;
   overflow: hidden;
-  border-radius: 999px;
+  border-radius: var(--radius-sm);
   background: color-mix(in srgb, var(--text-primary) 9%, transparent);
 }
 
@@ -164,7 +164,7 @@
   min-width: 0;
   padding: 1rem;
   border: 1px solid var(--border);
-  border-radius: 1rem;
+  border-radius: var(--radius-md);
   background: color-mix(in srgb, var(--surface-soft) 76%, transparent);
 }
 
@@ -178,13 +178,13 @@
 
 .travel-planning-panel h3 {
   color: var(--text-primary);
-  font-size: 0.82rem;
+  font-size: var(--text-sm);
 }
 
 .travel-planning-panel header p {
   margin-top: 0.22rem;
   color: var(--text-tertiary);
-  font-size: 0.56rem;
+  font-size: var(--text-xs);
 }
 
 .travel-planning-panel > header > span {
@@ -192,11 +192,11 @@
   place-items: center;
   min-width: 1.75rem;
   height: 1.75rem;
-  border-radius: 999px;
+  border-radius: var(--radius-sm);
   background: color-mix(in srgb, var(--accent) 12%, var(--surface));
   color: var(--accent-strong);
   font-family: var(--font-mono);
-  font-size: 0.58rem;
+  font-size: var(--text-xs);
 }
 
 .travel-expense-list,
@@ -216,7 +216,7 @@
   min-height: 3.4rem;
   padding: 0.62rem;
   border: 1px solid var(--border);
-  border-radius: 0.78rem;
+  border-radius: var(--radius-sm);
   background: var(--surface);
 }
 
@@ -240,7 +240,7 @@
   width: 2.75rem;
   height: 2.75rem;
   border: 0;
-  border-radius: 999px;
+  border-radius: var(--radius-sm);
   background: transparent;
   color: transparent;
 }
@@ -270,14 +270,14 @@
 .travel-expense-list small,
 .travel-reservation-list small {
   color: var(--text-tertiary);
-  font-size: 0.5rem;
+  font-size: var(--text-xs);
 }
 
 .travel-expense-list strong,
 .travel-reservation-list strong {
   overflow: hidden;
   color: var(--text-primary);
-  font-size: 0.64rem;
+  font-size: var(--text-xs);
   text-overflow: ellipsis;
   white-space: nowrap;
 }
@@ -285,14 +285,14 @@
 .travel-expense-list b {
   color: var(--text-secondary);
   font-family: var(--font-mono);
-  font-size: 0.58rem;
+  font-size: var(--text-xs);
   white-space: nowrap;
 }
 
 .travel-reservation-list p {
   overflow: hidden;
   color: var(--text-tertiary);
-  font-size: 0.53rem;
+  font-size: var(--text-xs);
   text-overflow: ellipsis;
   white-space: nowrap;
 }
@@ -303,10 +303,10 @@
   width: 2.75rem;
   height: 2.75rem;
   border: 0;
-  border-radius: 999px;
+  border-radius: var(--radius-sm);
   background: transparent;
   color: var(--text-tertiary);
-  font-size: 0.85rem;
+  font-size: var(--text-base);
 }
 
 .travel-plan-delete:hover,
@@ -321,9 +321,9 @@
   margin-bottom: 0.75rem;
   padding: 0.9rem;
   border: 1px dashed var(--border-strong);
-  border-radius: 0.78rem;
+  border-radius: var(--radius-sm);
   color: var(--text-tertiary);
-  font-size: 0.58rem;
+  font-size: var(--text-xs);
   line-height: 1.55;
 }
 
@@ -336,7 +336,7 @@
   padding: 0.35rem 0;
   color: var(--accent-strong);
   cursor: pointer;
-  font-size: 0.6rem;
+  font-size: var(--text-xs);
   font-weight: 800;
   list-style: none;
 }
@@ -364,10 +364,10 @@
 
 .travel-planning-board__error {
   padding: 0.72rem 0.85rem;
-  border-radius: 0.75rem;
+  border-radius: var(--radius-sm);
   background: color-mix(in srgb, #d75330 8%, transparent);
   color: #b94224;
-  font-size: 0.6rem;
+  font-size: var(--text-xs);
 }
 
 @media (max-width: 900px) {

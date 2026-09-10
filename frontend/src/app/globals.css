@@ -2,12 +2,10 @@
  * Stylesheet entry point.
  *
  * The sections below are imported in a fixed order because the cascade depends on
- * it - refinement-2026.css exists precisely to override what comes before it, and
- * reordering these lines silently changes the rendered result. Add a new section at
- * the end unless it is genuinely meant to be overridden by the ones after it.
- *
- * Everything here was one 13k-line file; splitting it changed the grouping only, not
- * a single rule.
+ * it - later files override earlier ones. tokens.css defines the system (colours,
+ * radius scale, type scale); every legacy section has been normalised onto those
+ * tokens; design-system.css is intentionally last and owns the shared chrome.
+ * Add a new feature section BEFORE design-system.css.
  */
 @import "tailwindcss";
 
@@ -26,7 +24,6 @@
 @import "./styles/refinement-2026.css";
 @import "./styles/globe-focus.css";
 @import "./styles/first-run.css";
-@import "./styles/plan-lifecycle.css";
 @import "./styles/route-states.css";
 @import "./styles/checklist.css";
 @import "./styles/activity.css";
@@ -47,4 +44,5 @@
 @import "./styles/travel-finish.css";
 @import "./styles/mobile-step-flow.css";
 @import "./styles/mobile-system.css";
-@import "./styles/human-design-pass.css";
+@import "./styles/plan-builder.css";
+@import "./styles/design-system.css";

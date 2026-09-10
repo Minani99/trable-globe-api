@@ -39,6 +39,9 @@ const privatePageHeaders = [
 
 const nextConfig: NextConfig = {
   poweredByHeader: false,
+  // The development toolbar overlaps the fixed mobile Previous button in browser
+  // journey tests. It is not part of the product UI, so keep it out of local UX runs.
+  devIndicators: false,
   // Next.js 16 blocks dev assets requested from a LAN origin unless it is explicitly allowed.
   allowedDevOrigins: [
     ...new Set(["localhost", "127.0.0.1", ...configuredDevOrigins, ...localNetworkOrigins]),

@@ -26,8 +26,8 @@ export default async function NewPlanPage({ searchParams }: { searchParams: Prom
         <div className="site-shell plan-shell">
           <nav className="studio-breadcrumb" aria-label="현재 위치"><Link href="/studio">← 여행 허브</Link></nav>
           <header className="plan-hero">
-            <h1>빈 페이지 없이,<br />다음 여행을 시작하세요.</h1>
-            <p>나라와 날짜, 취향에 동선 기준 하나만 더하면 실제 주변 장소와 시간표가 먼저 만들어집니다. 마음에 들지 않는 곳만 나중에 바꾸세요.</p>
+            <h1>빈 페이지 없이, 다음 여행을 시작하세요.</h1>
+            <p>나라·날짜·취향을 고르면 날짜별 일정표가 바로 만들어집니다. 자동 초안을 받거나 빈 일정으로 시작해도 좋아요. 모든 내용은 저장 뒤에 자유롭게 바꿀 수 있습니다.</p>
           </header>
           <PlanBuilder countries={countryOptions} today={today} initialCountryCode={initialCountryCode} />
         </div>

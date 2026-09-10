@@ -81,9 +81,7 @@ export function TravelPlanningBoard({
     await mutate(`${basePath}/budget`, "PATCH", { targetAmount: amount, currency });
   }
 
-  async function addExpense(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    const form = event.currentTarget;
+  async function addExpenseFromForm(form: HTMLFormElement) {
     const data = new FormData(form);
     const amount = Number(data.get("amount"));
     if (!Number.isFinite(amount) || amount < 0) {
@@ -97,6 +95,11 @@ export function TravelPlanningBoard({
       paid: false,
     });
     if (saved) form.reset();
+  }
+
+  function addExpense(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    void addExpenseFromForm(event.currentTarget);
   }
 
   async function toggleExpense(expense: TravelExpense) {
@@ -120,9 +123,7 @@ export function TravelPlanningBoard({
     if (saved) setEditingExpenseId(null);
   }
 
-  async function addReservation(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    const form = event.currentTarget;
+  async function addReservationFromForm(form: HTMLFormElement) {
     const data = new FormData(form);
     const saved = await mutate(`${basePath}/reservations`, "POST", {
       title: String(data.get("title") ?? ""),
@@ -132,6 +133,11 @@ export function TravelPlanningBoard({
       confirmed: false,
     });
     if (saved) form.reset();
+  }
+
+  function addReservation(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    void addReservationFromForm(event.currentTarget);
   }
 
   async function toggleReservation(reservation: TravelReservation) {
@@ -198,7 +204,15 @@ export function TravelPlanningBoard({
             <input name="title" aria-label="새 비용 이름" placeholder="예: 왕복 항공권" maxLength={120} required />
             <input name="amount" aria-label="예상 비용" type="number" min="0" step="0.01" placeholder="금액" required />
             <select name="category" aria-label="비용 분류">{EXPENSE_CATEGORIES.map((item) => <option key={item.value} value={item.value}>{item.label}</option>)}</select>
-            <button type="submit" disabled={pending}>추가</button>
+            <button
+              type="button"
+              aria-label="비용 추가"
+              disabled={pending}
+              onClick={(event) => {
+                const form = event.currentTarget.form;
+                if (form?.reportValidity()) void addExpenseFromForm(form);
+              }}
+            >추가</button>
           </form></details>
         </PlanningPanel>
 
@@ -225,7 +239,15 @@ export function TravelPlanningBoard({
             <input name="reservationDate" aria-label="예약 이용 날짜" type="date" min={startDate} max={endDate} defaultValue={startDate} required />
             <select name="category" aria-label="예약 분류">{RESERVATION_CATEGORIES.map((item) => <option key={item.value} value={item.value}>{item.label}</option>)}</select>
             <input name="memo" aria-label="예약 메모" placeholder="시간이나 준비물 (선택)" maxLength={500} />
-            <button type="submit" disabled={pending}>추가</button>
+            <button
+              type="button"
+              aria-label="예약 추가"
+              disabled={pending}
+              onClick={(event) => {
+                const form = event.currentTarget.form;
+                if (form?.reportValidity()) void addReservationFromForm(form);
+              }}
+            >추가</button>
           </form></details>
         </PlanningPanel>
       </div>

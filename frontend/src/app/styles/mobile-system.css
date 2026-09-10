@@ -12,7 +12,7 @@
     --mobile-caption: 0.75rem;
     --mobile-title: clamp(1.85rem, 8.5vw, 2.25rem);
     --mobile-section-title: clamp(1.35rem, 6.4vw, 1.65rem);
-    --mobile-card-radius: 1rem;
+    --mobile-card-radius: var(--radius-lg);
     --mobile-control-height: 3rem;
     --mobile-tabbar-height: 4.55rem;
     --mobile-context-nav-height: 4.15rem;
@@ -23,7 +23,7 @@
 
   html {
     overflow-x: clip;
-    font-size: 16px;
+    font-size: var(--text-md);
     text-size-adjust: 100%;
     -webkit-text-size-adjust: 100%;
   }
@@ -31,7 +31,7 @@
   body {
     min-width: 0;
     overflow-x: clip;
-    font-size: 1rem;
+    font-size: var(--text-md);
     line-height: 1.55;
   }
 
@@ -64,13 +64,13 @@
   }
 
   main:not(.landing-main) small {
-    font-size: var(--mobile-caption) !important;
+    font-size: var(--mobile-caption)!important;
     line-height: 1.45;
   }
 
   main :where(input, textarea, select) {
     max-width: 100%;
-    font-size: 1rem !important;
+    font-size: var(--text-md)!important;
   }
 
   main :where(input:not([type="checkbox"]):not([type="radio"]):not([type="file"]), select) {
@@ -88,7 +88,7 @@
   }
 
   .eyebrow {
-    font-size: 0.68rem !important;
+    font-size: var(--text-xs)!important;
     letter-spacing: 0.11em !important;
   }
 
@@ -98,7 +98,7 @@
   }
 
   .site-wordmark {
-    font-size: 0.72rem;
+    font-size: var(--text-xs);
     letter-spacing: 0.105em;
   }
 
@@ -110,7 +110,7 @@
   .site-header__beta-link {
     min-height: 2rem;
     padding-inline: 0.55rem;
-    font-size: 0.62rem;
+    font-size: var(--text-xs);
   }
 
   .site-header .theme-toggle {
@@ -128,8 +128,8 @@
   .site-mobile-bottom-nav__item {
     min-height: 3.75rem;
     gap: 0.18rem;
-    border-radius: 0.75rem;
-    font-size: 0.68rem;
+    border-radius: var(--radius-sm);
+    font-size: var(--text-xs);
   }
 
   .site-mobile-bottom-nav__item svg {
@@ -160,7 +160,7 @@
     .profile-world__intro
   ) h1 {
     max-width: 15ch !important;
-    font-size: var(--mobile-title) !important;
+    font-size: var(--mobile-title)!important;
     font-weight: 650;
     line-height: 1.1;
     letter-spacing: -0.052em;
@@ -175,7 +175,7 @@
     .settings-card .studio-account__heading,
     .travel-editor__section-heading
   ) h2 {
-    font-size: var(--mobile-section-title) !important;
+    font-size: var(--mobile-section-title)!important;
     line-height: 1.18;
     letter-spacing: -0.04em;
   }
@@ -195,7 +195,7 @@
   .travel-editor-hero > p:last-child,
   .plan-hero > p:last-child {
     max-width: 38rem;
-    font-size: var(--mobile-copy) !important;
+    font-size: var(--mobile-copy)!important;
     line-height: 1.62;
   }
 
@@ -224,7 +224,7 @@
 
   .auth-card__intro {
     margin-top: 0.45rem;
-    font-size: var(--mobile-copy) !important;
+    font-size: var(--mobile-copy)!important;
   }
 
   .auth-form {
@@ -236,13 +236,13 @@
   .auth-form__field > label > span,
   .settings-profile label > span,
   .studio-account label > span {
-    font-size: var(--mobile-copy-small) !important;
+    font-size: var(--mobile-copy-small)!important;
   }
 
   .auth-form label small,
   .auth-form__field > small,
   .settings-field-help {
-    font-size: var(--mobile-caption) !important;
+    font-size: var(--mobile-caption)!important;
     line-height: 1.55;
   }
 
@@ -253,7 +253,7 @@
   .studio-form-actions button,
   .studio-account__identity-actions button {
     min-height: 3rem;
-    font-size: 0.82rem;
+    font-size: var(--text-sm);
   }
 
   .settings-shell {
@@ -281,7 +281,7 @@
     flex: 0 0 auto;
     min-width: 6.6rem;
     min-height: 2.75rem;
-    font-size: 0.78rem;
+    font-size: var(--text-sm);
   }
 
   .settings-layout .settings-card {
@@ -306,7 +306,7 @@
   }
 
   .landing-kicker {
-    font-size: 0.62rem;
+    font-size: var(--text-xs);
   }
 
   .landing-title {
@@ -317,18 +317,18 @@
 
   .landing-primary-cta {
     min-height: 2.75rem;
-    font-size: 0.78rem;
+    font-size: var(--text-sm);
   }
 
   .landing-globe-stats dt,
   .landing-globe-context span {
-    font-size: 0.58rem;
+    font-size: var(--text-xs);
   }
 
   .landing-globe-stats dd,
   .landing-globe-context strong,
   .landing-landmark-card :is(strong, span, a) {
-    font-size: 0.7rem;
+    font-size: var(--text-xs);
   }
 
   .landing-landmark-card__action {
@@ -348,7 +348,7 @@
   .discover-search {
     margin-top: 1.15rem;
     padding: 0.55rem;
-    border-radius: 0.95rem;
+    border-radius: var(--radius-md);
   }
 
   .discover-search__field,
@@ -395,7 +395,7 @@
 
   .profile-archive__mobile-nav button {
     min-height: 3rem;
-    font-size: 0.78rem;
+    font-size: var(--text-sm);
   }
 
   /* Travel hub and cards. */
@@ -426,7 +426,7 @@
     min-width: 0;
     min-height: 2.85rem;
     padding-inline: 0.75rem;
-    font-size: 0.76rem;
+    font-size: var(--text-sm);
   }
 
   .studio-live,
@@ -449,7 +449,7 @@
 
   .studio-resume-card__action,
   .studio-plan-list__action {
-    font-size: 0.78rem;
+    font-size: var(--text-sm);
   }
 
   .studio-plan-list {
@@ -463,12 +463,12 @@
 
   .studio-plan-list__travel-view {
     min-height: 2.35rem !important;
-    font-size: 0.72rem;
+    font-size: var(--text-xs);
   }
 
   .activity-feed__item :is(strong, p, time),
   .studio-travel-list :is(strong, p, span) {
-    font-size: var(--mobile-copy-small) !important;
+    font-size: var(--mobile-copy-small)!important;
   }
 
   /* Planning and editing are focused, one step at a time. */
@@ -493,14 +493,14 @@
   .travel-editor__mobile-progress > div strong,
   .plan-builder__mobile-nav strong,
   .travel-editor__mobile-nav strong {
-    font-size: 0.76rem;
+    font-size: var(--text-sm);
   }
 
   .plan-builder__mobile-nav small,
   .travel-editor__mobile-nav small,
   .plan-builder__mobile-progress > div span,
   .travel-editor__mobile-progress > div span {
-    font-size: 0.68rem !important;
+    font-size: var(--text-xs)!important;
   }
 
   .plan-builder__mobile-nav,
@@ -519,7 +519,7 @@
   .travel-editor__mobile-nav button,
   .mobile-planning-workspace__nav button {
     min-height: 3rem;
-    font-size: 0.78rem;
+    font-size: var(--text-sm);
   }
 
   body:has(.plan-builder) .plan-shell,
@@ -560,13 +560,13 @@
   }
 
   .travel-editor__section-heading h2 {
-    font-size: 1.35rem !important;
+    font-size: 1.35rem!important;
   }
 
   .travel-editor__section-heading div > p:last-child,
   .plan-step__intro,
   .plan-summary__promise {
-    font-size: var(--mobile-copy-small) !important;
+    font-size: var(--mobile-copy-small)!important;
     line-height: 1.55;
   }
 
@@ -591,7 +591,7 @@
   .travel-editor__add-row button,
   .travel-editor__footer button {
     min-height: 3rem;
-    font-size: 0.8rem;
+    font-size: var(--text-sm);
   }
 
   /* In-trip view and public travel detail. */
@@ -613,7 +613,7 @@
   }
 
   .mobile-trip-companion__next > strong {
-    font-size: 0.9rem;
+    font-size: var(--text-base);
   }
 
   .mobile-trip-companion__timeline li {
@@ -621,13 +621,13 @@
   }
 
   .mobile-trip-companion__timeline li > a strong {
-    font-size: 0.82rem;
+    font-size: var(--text-sm);
   }
 
   .mobile-trip-companion__timeline li > a small,
   .mobile-trip-companion__next > small,
   .mobile-trip-companion__empty p {
-    font-size: 0.72rem !important;
+    font-size: var(--text-xs)!important;
   }
 
   .mobile-trip-companion__actions :is(a, button) {
@@ -635,7 +635,7 @@
   }
 
   .mobile-trip-companion__actions :is(a, button) > strong {
-    font-size: 0.72rem;
+    font-size: var(--text-xs);
   }
 
   .travel-detail-page > .site-shell {
@@ -644,7 +644,7 @@
 
   .travel-detail-breadcrumb {
     min-height: 3.25rem;
-    font-size: 0.75rem;
+    font-size: var(--text-sm);
   }
 
   .travel-detail-hero {
@@ -661,12 +661,12 @@
   }
 
   .travel-detail-hero__content h1 {
-    font-size: clamp(1.8rem, 8.5vw, 2.2rem) !important;
+    font-size: clamp(1.8rem, 8.5vw, 2.2rem)!important;
   }
 
   .travel-detail-hero__description,
   .travel-detail-section__heading > p {
-    font-size: var(--mobile-copy) !important;
+    font-size: var(--mobile-copy)!important;
     line-height: 1.62;
   }
 
@@ -706,7 +706,7 @@
 
   .site-wordmark__text {
     display: inline;
-    font-size: 0.66rem;
+    font-size: var(--text-xs);
   }
 
   .studio-hero__actions {

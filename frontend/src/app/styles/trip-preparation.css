@@ -9,7 +9,7 @@
   margin: 0 0 1rem;
   padding: clamp(1rem, 2.5vw, 1.5rem);
   border: 1px solid var(--border);
-  border-radius: 1.35rem;
+  border-radius: var(--radius-lg);
   background:
     radial-gradient(circle at 0 0, color-mix(in srgb, var(--globe-ocean) 10%, transparent), transparent 28rem),
     var(--surface);
@@ -33,7 +33,7 @@
 .trip-preparation__heading > p {
   color: var(--text-secondary);
   font-family: var(--font-mono);
-  font-size: 0.62rem;
+  font-size: var(--text-xs);
   white-space: nowrap;
 }
 
@@ -51,7 +51,7 @@
   gap: 0.85rem;
   padding: 1.05rem;
   border: 1px solid var(--border);
-  border-radius: 1.05rem;
+  border-radius: var(--radius-md);
   background: color-mix(in srgb, var(--surface-raised) 68%, var(--surface));
 }
 
@@ -66,21 +66,21 @@
   height: 2rem;
   place-items: center;
   border: 1px solid var(--border-strong);
-  border-radius: 50%;
+  border-radius: var(--radius-xs);
   color: var(--accent-strong);
-  font-size: 0.8rem;
+  font-size: var(--text-sm);
 }
 
 .trip-action-card__copy > span {
   color: var(--accent-strong);
-  font-size: 0.58rem;
+  font-size: var(--text-xs);
   font-weight: 750;
   letter-spacing: 0.1em;
 }
 
 .trip-action-card__copy h3 {
   margin-top: 0.3rem;
-  font-size: 1rem;
+  font-size: var(--text-md);
   font-weight: 680;
   letter-spacing: -0.035em;
   word-break: keep-all;
@@ -90,7 +90,7 @@
 .trip-action-card__notice {
   margin-top: 0.42rem;
   color: var(--text-secondary);
-  font-size: 0.66rem;
+  font-size: var(--text-xs);
   line-height: 1.55;
   word-break: keep-all;
 }
@@ -98,7 +98,7 @@
 .trip-action-card > small {
   margin-top: auto;
   color: var(--text-tertiary);
-  font-size: 0.55rem;
+  font-size: var(--text-xs);
   line-height: 1.5;
 }
 
@@ -116,7 +116,7 @@
   gap: 0.45rem;
   padding: 0.7rem;
   border: 1px solid var(--border);
-  border-radius: 0.85rem;
+  border-radius: var(--radius-md);
   background: var(--surface);
 }
 
@@ -127,7 +127,7 @@
 
 .trip-flight-route label > span {
   color: var(--text-tertiary);
-  font-size: 0.52rem;
+  font-size: var(--text-xs);
 }
 
 .trip-flight-route input {
@@ -138,7 +138,7 @@
   background: transparent;
   color: var(--text-primary);
   padding-right: 2.5rem;
-  font-size: 0.62rem;
+  font-size: var(--text-xs);
   font-weight: 650;
   text-overflow: ellipsis;
 }
@@ -146,7 +146,7 @@
 .trip-flight-route > span {
   padding-top: 1.65rem;
   color: var(--text-tertiary);
-  font-size: 0.7rem;
+  font-size: var(--text-xs);
 }
 
 .airport-search {
@@ -167,7 +167,7 @@
   right: 0.15rem;
   color: var(--accent-strong);
   font-family: var(--font-mono);
-  font-size: 0.56rem;
+  font-size: var(--text-xs);
   transform: translateY(-50%);
   pointer-events: none;
 }
@@ -180,7 +180,7 @@
   width: min(17rem, calc(100vw - 3rem));
   overflow: hidden;
   border: 1px solid var(--border-strong);
-  border-radius: 0.82rem;
+  border-radius: var(--radius-sm);
   background: var(--surface);
   box-shadow: 0 1.2rem 3rem rgba(20, 42, 49, 0.2);
 }
@@ -217,7 +217,7 @@
 .airport-search__popover li > button:focus-visible,
 .airport-search__direct:hover,
 .airport-search__direct:focus-visible {
-  border-radius: 0.58rem;
+  border-radius: var(--radius-sm);
   background: var(--surface-hover);
 }
 
@@ -228,7 +228,7 @@
 }
 
 .airport-search__popover strong {
-  font-size: 0.65rem;
+  font-size: var(--text-xs);
   font-weight: 720;
 }
 
@@ -237,7 +237,7 @@
 .airport-search__popover > p {
   overflow: hidden;
   color: var(--text-secondary);
-  font-size: 0.54rem;
+  font-size: var(--text-xs);
   text-overflow: ellipsis;
   white-space: nowrap;
 }
@@ -246,11 +246,11 @@
 .airport-search__direct b {
   flex: 0 0 auto;
   padding: 0.3rem 0.4rem;
-  border-radius: 0.45rem;
+  border-radius: var(--radius-sm);
   background: var(--accent-soft);
   color: var(--accent-strong);
   font-family: var(--font-mono);
-  font-size: 0.58rem;
+  font-size: var(--text-xs);
 }
 
 .airport-search__direct {
@@ -269,10 +269,10 @@
   justify-content: space-between;
   gap: 0.7rem;
   padding: 0.7rem 0.8rem;
-  border-radius: 0.78rem;
+  border-radius: var(--radius-sm);
   background: var(--text-primary);
   color: var(--surface);
-  font-size: 0.64rem;
+  font-size: var(--text-xs);
   font-weight: 720;
   transition: transform 0.18s ease, opacity 0.18s ease;
 }
@@ -295,7 +295,7 @@
 
 .trip-weather-skeleton {
   height: 4.4rem;
-  border-radius: 0.8rem;
+  border-radius: var(--radius-sm);
   background: linear-gradient(90deg, var(--surface-hover), var(--surface), var(--surface-hover));
   background-size: 200% 100%;
   animation: trip-weather-loading 1.5s ease infinite;
@@ -317,7 +317,7 @@
   gap: 0.65rem;
   padding: 0.55rem 0.6rem;
   border: 1px solid color-mix(in srgb, var(--accent) 25%, var(--border));
-  border-radius: 0.72rem;
+  border-radius: var(--radius-sm);
   background: var(--surface);
 }
 
@@ -328,14 +328,14 @@
 
 .trip-weather-days b {
   font-family: var(--font-mono);
-  font-size: 0.62rem;
+  font-size: var(--text-xs);
 }
 
 .trip-weather-days small,
 .trip-weather-days p {
   overflow: hidden;
   color: var(--text-secondary);
-  font-size: 0.55rem;
+  font-size: var(--text-xs);
   text-overflow: ellipsis;
   white-space: nowrap;
 }
@@ -346,17 +346,17 @@
   align-items: center;
   gap: 0.3rem;
   padding: 0.8rem 0.6rem;
-  border-radius: 0.85rem;
+  border-radius: var(--radius-md);
   background: var(--surface);
   color: var(--text-secondary);
-  font-size: 0.58rem;
+  font-size: var(--text-xs);
   text-align: center;
 }
 
 .trip-flow span {
   padding: 0.42rem 0.25rem;
   border: 1px solid var(--border);
-  border-radius: 999px;
+  border-radius: var(--radius-sm);
 }
 
 .trip-flow i {
@@ -385,10 +385,10 @@
   min-width: 13rem;
   padding: 0.78rem 0.95rem;
   border: 1px solid var(--accent-border);
-  border-radius: 999px;
+  border-radius: var(--radius-sm);
   background: var(--accent-soft);
   color: var(--accent-strong);
-  font-size: 0.75rem;
+  font-size: var(--text-sm);
   font-weight: 720;
 }
 
@@ -403,19 +403,19 @@
   gap: 0.75rem;
   padding: 0.9rem;
   border: 1px solid var(--border);
-  border-radius: 0.95rem;
+  border-radius: var(--radius-md);
   background: var(--surface-raised);
 }
 
 .shared-itinerary-save__panel strong {
-  font-size: 0.75rem;
+  font-size: var(--text-sm);
 }
 
 .shared-itinerary-save__panel p,
 .shared-itinerary-save__panel small {
   margin-top: 0.22rem;
   color: var(--text-secondary);
-  font-size: 0.58rem;
+  font-size: var(--text-xs);
   line-height: 1.55;
   word-break: keep-all;
 }
@@ -427,25 +427,25 @@
 
 .shared-itinerary-save__panel label > span {
   color: var(--text-tertiary);
-  font-size: 0.55rem;
+  font-size: var(--text-xs);
 }
 
 .shared-itinerary-save__panel input {
   min-height: 2.7rem;
   padding-inline: 0.75rem;
   border: 1px solid var(--border-strong);
-  border-radius: 0.72rem;
+  border-radius: var(--radius-sm);
   background: var(--surface);
   color: var(--text-primary);
-  font-size: 0.68rem;
+  font-size: var(--text-xs);
 }
 
 .shared-itinerary-save__panel > button {
   min-height: 2.75rem;
-  border-radius: 0.72rem;
+  border-radius: var(--radius-sm);
   background: var(--text-primary);
   color: var(--surface);
-  font-size: 0.65rem;
+  font-size: var(--text-xs);
   font-weight: 720;
 }
 
@@ -462,7 +462,7 @@
   grid-column: 2;
   margin: -0.45rem 0 1rem;
   color: var(--accent-strong);
-  font-size: 0.66rem;
+  font-size: var(--text-xs);
   font-weight: 650;
   line-height: 1.55;
 }
@@ -486,7 +486,7 @@
 
   .trip-preparation {
     padding: 0.8rem;
-    border-radius: 1.1rem;
+    border-radius: var(--radius-md);
   }
 
   .trip-preparation__heading {
@@ -534,14 +534,14 @@
   margin-bottom: 0.85rem;
   padding: 0.4rem 0.45rem 0.4rem 1rem;
   border: 1px solid var(--border);
-  border-radius: 999px;
+  border-radius: var(--radius-sm);
   background: color-mix(in srgb, var(--surface) 88%, transparent);
 }
 
 .travel-year-filter__label {
   flex: 0 0 auto;
   color: var(--text-tertiary);
-  font-size: 0.66rem;
+  font-size: var(--text-xs);
   font-weight: 650;
   letter-spacing: 0.09em;
 }
@@ -567,10 +567,10 @@
   min-height: 2.35rem;
   flex: 0 0 auto;
   padding-inline: 0.75rem;
-  border-radius: 999px;
+  border-radius: var(--radius-sm);
   color: var(--text-secondary);
   font-family: var(--font-mono);
-  font-size: 0.67rem;
+  font-size: var(--text-xs);
   font-weight: 650;
   transition: background-color 0.18s ease, color 0.18s ease, transform 0.18s ease;
 }
@@ -591,7 +591,7 @@
   min-height: clamp(39rem, 66vw, 45rem);
   overflow: hidden;
   border: 1px solid var(--border);
-  border-radius: 1.75rem;
+  border-radius: var(--radius-lg);
   background:
     radial-gradient(circle at 58% 48%, color-mix(in srgb, var(--globe-ocean) 18%, transparent), transparent 32%),
     linear-gradient(150deg, var(--surface), var(--background-elevated));
@@ -636,7 +636,7 @@
   gap: 1rem;
   color: var(--text-tertiary);
   font-family: var(--font-mono);
-  font-size: 0.58rem;
+  font-size: var(--text-xs);
   letter-spacing: 0.14em;
 }
 
@@ -670,7 +670,7 @@
   z-index: 5;
   color: var(--text-tertiary);
   font-family: var(--font-mono);
-  font-size: 0.58rem;
+  font-size: var(--text-xs);
   letter-spacing: 0.15em;
 }
 
@@ -687,7 +687,7 @@
   overflow: hidden;
   margin-bottom: clamp(3.25rem, 6vw, 5rem);
   border: 1px solid var(--border);
-  border-radius: 1.4rem;
+  border-radius: var(--radius-lg);
   background:
     linear-gradient(135deg, color-mix(in srgb, var(--surface) 96%, transparent), color-mix(in srgb, var(--background-elevated) 86%, transparent));
   box-shadow: 0 1rem 3.5rem rgba(35, 64, 71, 0.06);
@@ -714,7 +714,7 @@
 
 .travel-recap__summary > p {
   color: var(--text-secondary);
-  font-size: 0.84rem;
+  font-size: var(--text-sm);
   line-height: 1.75;
   word-break: keep-all;
 }
@@ -747,10 +747,10 @@
   gap: 0.48rem;
   padding-inline: 0.9rem;
   border: 1px solid var(--border-strong);
-  border-radius: 999px;
+  border-radius: var(--radius-sm);
   background: color-mix(in srgb, var(--surface) 74%, transparent);
   color: var(--text-primary);
-  font-size: 0.7rem;
+  font-size: var(--text-xs);
   font-weight: 650;
   transition:
     border-color 0.22s ease,
@@ -790,7 +790,7 @@
 .recap-actions__status {
   min-height: 1em;
   color: var(--text-tertiary);
-  font-size: 0.66rem;
+  font-size: var(--text-xs);
 }
 
 .travel-recap__edit-trigger {
@@ -799,10 +799,10 @@
   margin-top: 0.5rem;
   padding-inline: 0.9rem;
   border: 1px solid var(--border-strong);
-  border-radius: 999px;
+  border-radius: var(--radius-sm);
   background: var(--surface);
   color: var(--text-primary);
-  font-size: 0.7rem;
+  font-size: var(--text-xs);
   font-weight: 700;
   cursor: pointer;
 }
@@ -819,7 +819,7 @@
   margin: 0 1.7rem 1.5rem;
   padding: 1.35rem;
   border: 1px solid var(--border);
-  border-radius: 1.1rem;
+  border-radius: var(--radius-md);
   background: color-mix(in srgb, var(--surface) 92%, var(--accent-soft));
 }
 
@@ -835,7 +835,7 @@
 .travel-recap-editor__narrative > span,
 .travel-recap-editor legend {
   color: var(--text-primary);
-  font-size: 0.82rem;
+  font-size: var(--text-sm);
   font-weight: 750;
 }
 
@@ -844,7 +844,7 @@
 .travel-recap-editor legend small {
   margin: 0.25rem 0 0;
   color: var(--text-tertiary);
-  font-size: 0.68rem;
+  font-size: var(--text-xs);
   font-weight: 500;
 }
 
@@ -859,11 +859,11 @@
   resize: vertical;
   padding: 0.8rem 0.9rem;
   border: 1px solid var(--border-strong);
-  border-radius: 0.8rem;
+  border-radius: var(--radius-sm);
   background: var(--surface);
   color: var(--text-primary);
   font: inherit;
-  font-size: 0.86rem;
+  font-size: var(--text-base);
   line-height: 1.6;
 }
 
@@ -897,7 +897,7 @@
   min-width: 0;
   padding: 0.45rem;
   border: 1px solid var(--border);
-  border-radius: 0.8rem;
+  border-radius: var(--radius-sm);
   background: var(--surface);
   cursor: pointer;
 }
@@ -926,7 +926,7 @@
 .travel-recap-editor__travels label > div {
   width: 3.5rem;
   height: 3rem;
-  border-radius: 0.55rem;
+  border-radius: var(--radius-sm);
   object-fit: cover;
 }
 
@@ -945,18 +945,18 @@
 
 .travel-recap-editor__travels strong {
   color: var(--text-primary);
-  font-size: 0.76rem;
+  font-size: var(--text-sm);
 }
 
 .travel-recap-editor__travels small {
   color: var(--text-tertiary);
-  font-size: 0.65rem;
+  font-size: var(--text-xs);
 }
 
 .travel-recap-editor__error {
   margin: -0.35rem 0 0;
   color: #b54832;
-  font-size: 0.74rem;
+  font-size: var(--text-xs);
 }
 
 .travel-recap-editor__actions {
@@ -967,10 +967,10 @@
   min-height: 2.5rem;
   padding-inline: 1rem;
   border: 1px solid var(--border-strong);
-  border-radius: 999px;
+  border-radius: var(--radius-sm);
   background: var(--surface);
   color: var(--text-primary);
-  font-size: 0.74rem;
+  font-size: var(--text-xs);
   font-weight: 750;
   cursor: pointer;
 }
@@ -1004,7 +1004,7 @@
 
 .travel-recap__stats dt {
   color: var(--text-tertiary);
-  font-size: 0.63rem;
+  font-size: var(--text-xs);
   font-weight: 600;
   letter-spacing: 0.06em;
 }
@@ -1050,7 +1050,7 @@
 
 .travel-recap__insight-heading > p {
   color: var(--text-tertiary);
-  font-size: 0.64rem;
+  font-size: var(--text-xs);
   line-height: 1.5;
   text-align: right;
   word-break: keep-all;
@@ -1078,7 +1078,7 @@
   display: block;
   width: 100%;
   min-height: 0.25rem;
-  border-radius: 999px 999px 0.2rem 0.2rem;
+  border-radius: var(--radius-sm) var(--radius-sm) var(--radius-xs) var(--radius-xs);
   background: color-mix(in srgb, var(--border-strong) 54%, transparent);
   transition: height 0.45s cubic-bezier(0.22, 1, 0.36, 1);
 }
@@ -1090,7 +1090,7 @@
 .travel-recap__month-chart small {
   color: var(--text-tertiary);
   font-family: var(--font-mono);
-  font-size: 0.54rem;
+  font-size: var(--text-xs);
   text-align: center;
 }
 
@@ -1107,7 +1107,7 @@
 .travel-recap__cities-empty {
   margin-top: 1rem;
   color: var(--text-tertiary);
-  font-size: 0.72rem;
+  font-size: var(--text-xs);
   line-height: 1.65;
   word-break: keep-all;
 }
@@ -1134,7 +1134,7 @@
 .travel-recap__cities a > span:first-child {
   color: var(--text-tertiary);
   font-family: var(--font-mono);
-  font-size: 0.57rem;
+  font-size: var(--text-xs);
 }
 
 .travel-recap__cities a > span:nth-child(2) {
@@ -1152,14 +1152,14 @@
 
 .travel-recap__cities strong {
   color: var(--text-primary);
-  font-size: 0.78rem;
+  font-size: var(--text-sm);
   font-weight: 650;
 }
 
 .travel-recap__cities small,
 .travel-recap__cities a > span:last-child {
   color: var(--text-tertiary);
-  font-size: 0.6rem;
+  font-size: var(--text-xs);
 }
 
 .travel-recap__comparison {
@@ -1188,7 +1188,7 @@
   max-width: 36rem;
   margin-top: 0.7rem;
   color: var(--text-secondary);
-  font-size: 0.76rem;
+  font-size: var(--text-sm);
   line-height: 1.75;
   text-wrap: pretty;
   word-break: keep-all;
@@ -1204,10 +1204,10 @@
 .travel-recap__comparison-intro li {
   padding: 0.3rem 0.58rem;
   border: 1px solid var(--accent-border);
-  border-radius: 999px;
+  border-radius: var(--radius-sm);
   background: color-mix(in srgb, var(--accent-soft) 70%, transparent);
   color: var(--accent-strong);
-  font-size: 0.61rem;
+  font-size: var(--text-xs);
   font-weight: 650;
 }
 
@@ -1231,7 +1231,7 @@
 
 .travel-recap__comparison-stats dt {
   color: var(--text-tertiary);
-  font-size: 0.61rem;
+  font-size: var(--text-xs);
 }
 
 .travel-recap__comparison-stats dd {
@@ -1316,7 +1316,7 @@
 .travel-recap__memory-copy small {
   overflow: hidden;
   color: rgba(255, 255, 255, 0.68);
-  font-size: 0.62rem;
+  font-size: var(--text-xs);
   text-overflow: ellipsis;
   white-space: nowrap;
 }
@@ -1428,13 +1428,13 @@
   }
 
   .profile-globe-card {
-    border-radius: 1.25rem;
+    border-radius: var(--radius-lg);
   }
 
   .travel-year-filter {
     min-height: 3rem;
     padding: 0.35rem;
-    border-radius: 0.9rem;
+    border-radius: var(--radius-md);
   }
 
   .travel-year-filter__label {
@@ -1456,7 +1456,7 @@
 
   .travel-year-filter__mobile > span {
     color: var(--text-tertiary);
-    font-size: 0.62rem;
+    font-size: var(--text-xs);
     font-weight: 650;
   }
 
@@ -1465,16 +1465,16 @@
     min-height: 2.35rem;
     padding: 0.35rem 2rem 0.35rem 0.8rem;
     border: 0;
-    border-radius: 0.68rem;
+    border-radius: var(--radius-sm);
     background: var(--text-primary);
     color: var(--background);
     font-family: var(--font-mono);
-    font-size: 1rem;
+    font-size: var(--text-md);
     font-weight: 700;
   }
 
   .travel-recap {
-    border-radius: 1.1rem;
+    border-radius: var(--radius-md);
   }
 
   .travel-recap__heading {
@@ -1493,7 +1493,7 @@
     gap: 1rem;
     margin: 0 0.85rem 1.1rem;
     padding: 1rem;
-    border-radius: 0.95rem;
+    border-radius: var(--radius-md);
   }
 
   .travel-recap-editor__travels {

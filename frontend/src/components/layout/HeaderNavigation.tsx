@@ -39,8 +39,11 @@ export function HeaderNavigation({ initialMember }: HeaderNavigationProps) {
   }, [initialMember]);
 
   useEffect(() => {
-    if (initialMember === undefined && cachedMember === undefined) void loadAuthMember();
-  }, [cachedMember, initialMember]);
+    // Public layouts do not have an authoritative server-side member prop. Revalidate
+    // after every route change so an expired/revoked cookie cannot leave a stale avatar
+    // and authenticated navigation visible in the persistent header.
+    if (initialMember === undefined) void loadAuthMember({ force: true });
+  }, [initialMember, pathname]);
 
   const globeActive = pathname === globePath;
   const discoverActive = pathname === "/discover";
@@ -53,13 +56,13 @@ export function HeaderNavigation({ initialMember }: HeaderNavigationProps) {
       <nav aria-label="주요 메뉴" className="site-desktop-nav">
         {member ? (
           <>
-            <Link href={globePath} className="site-nav-link site-nav-link--globe" aria-current={globeActive ? "page" : undefined}>
+            <Link prefetch={false} href={globePath} className="site-nav-link site-nav-link--globe" aria-current={globeActive ? "page" : undefined}>
               내 지구본
             </Link>
-            <Link href="/studio" className="site-nav-link" aria-current={journeysActive ? "page" : undefined}>
+            <Link prefetch={false} href="/studio" className="site-nav-link" aria-current={journeysActive ? "page" : undefined}>
               여행
             </Link>
-            <Link href="/studio/plans/new" className="site-nav-link" aria-current={planActive ? "page" : undefined}>
+            <Link prefetch={false} href="/studio/plans/new" className="site-nav-link" aria-current={planActive ? "page" : undefined}>
               계획
             </Link>
             <Link href="/discover" className="site-nav-link" aria-current={discoverActive ? "page" : undefined}>
@@ -158,6 +161,7 @@ function MobileNavLink({
   return (
     <Link
       href={href}
+      prefetch={false}
       className={`site-mobile-bottom-nav__item${emphasized ? " is-emphasized" : ""}${avatar ? " has-avatar" : ""}`}
       aria-current={active ? "page" : undefined}
     >

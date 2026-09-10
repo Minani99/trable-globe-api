@@ -1,0 +1,581 @@
+/* Travel Globe — design system (final layer) ------------------------------
+ *
+ * Every legacy stylesheet before this one has been normalised onto the tokens in
+ * tokens.css (radius scale, type scale). This file sets the shared rules that make
+ * the product read as one hand: geometry guards, typography, focus, chrome
+ * (header / bottom nav / footer), controls and card surfaces.
+ *
+ * Principles
+ * 1. One geometry: rounded rectangles on a 6/10/14/20/28 scale. Circles only for
+ *    avatars, dots and spinners. Never a pill.
+ * 2. Depth by tint and hairline. Shadows only on floating layers (menus, sheets,
+ *    toasts, fixed bars).
+ * 3. Type never below 12px. Body 15px. Headings 650-700, tight tracking.
+ * 4. One action colour. Hover changes background, never position.
+ */
+
+/* Base ------------------------------------------------------------------- */
+html {
+  font-size: 16px;
+  scroll-behavior: smooth;
+}
+
+body {
+  font-size: var(--text-base);
+  line-height: 1.55;
+  letter-spacing: -0.012em;
+  transition: none;
+}
+
+::selection {
+  background: color-mix(in srgb, var(--accent) 22%, transparent);
+}
+
+:where(h1, h2, h3, h4) {
+  color: var(--text-primary);
+  font-family: var(--font-sans);
+  font-weight: 650;
+  letter-spacing: -0.024em;
+  text-wrap: balance;
+}
+
+:where(h1) {
+  font-weight: 700;
+}
+
+:where(p, li, dd, label, small) {
+  text-wrap: pretty;
+}
+
+:where(a, button, input, select, textarea, summary) {
+  transition:
+    color var(--dur) var(--ease),
+    background-color var(--dur) var(--ease),
+    border-color var(--dur) var(--ease),
+    box-shadow var(--dur) var(--ease),
+    opacity var(--dur) var(--ease);
+}
+
+:where(button, a):hover {
+  transform: none !important;
+}
+
+:focus-visible {
+  outline: 2px solid var(--text-primary);
+  outline-offset: 2px;
+}
+
+:where(input, select, textarea):focus-visible {
+  outline-offset: 0;
+}
+
+:where(button, [role="button"], summary) {
+  cursor: pointer;
+}
+
+:where(button:disabled) {
+  cursor: not-allowed;
+}
+
+.eyebrow,
+.landing-kicker {
+  display: none !important;
+}
+
+.site-shell {
+  max-width: 1240px;
+}
+
+/* Geometry guards ---------------------------------------------------------- */
+/* The codemod turned every circle into --radius-xs; put back the few that must
+ * stay round. */
+:where(
+  [class*="avatar"],
+  .profile-image,
+  [class*="__dot"],
+  [class*="-dot"],
+  [class*="spinner"],
+  [class*="__thumb"],
+  [class*="__pulse"],
+  [class*="__marker"],
+  .globe-loader__sphere,
+  .globe-loader__orbit,
+  .place-map-dialog__pin
+) {
+  border-radius: 50% !important;
+}
+
+.theme-toggle__track {
+  border-radius: var(--radius-sm) !important;
+}
+
+/* Surfaces ------------------------------------------------------------------ */
+/* Content cards are flat: tint + hairline. Gradients and glass belong to the
+ * globe scene only. */
+:where(main) :where(section, article, aside, form, details, figure, dialog, li) {
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+}
+
+:where(main) :where(section, article, aside, form, details, dialog) {
+  background-image: none !important;
+}
+
+:where(main, header.site-header, footer.site-footer)::before,
+:where(main, header.site-header, footer.site-footer)::after {
+  box-shadow: none !important;
+}
+
+/* Floating layers get exactly one shadow. */
+:where(
+  [role="dialog"],
+  [role="menu"],
+  [role="listbox"],
+  [class*="popover"],
+  [class*="__sheet"],
+  [class*="-dialog"],
+  .site-mobile-menu,
+  .site-account-popover,
+  .app-feedback
+) {
+  box-shadow: var(--shadow-lg) !important;
+}
+
+:where(
+  .plan-builder__mobile-nav,
+  .travel-editor__mobile-nav,
+  .mobile-planning-workspace__nav,
+  .travel-editor__mobile-status,
+  .plan-builder__mobile-error
+) {
+  border-color: var(--border) !important;
+  background: var(--surface) !important;
+  box-shadow: var(--shadow-lg) !important;
+  backdrop-filter: none !important;
+}
+
+:where(
+  .travel-editor__mobile-progress,
+  .mobile-planning-workspace__progress
+) {
+  border: 0 !important;
+  border-bottom: 1px solid var(--border) !important;
+  border-radius: 0 !important;
+  background: var(--background) !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+}
+
+/* Controls ------------------------------------------------------------------ */
+main :where(input:not([type="checkbox"], [type="radio"], [type="range"], [type="file"]), select, textarea) {
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+  color: var(--text-primary);
+  font-size: var(--text-base);
+}
+
+main :where(input:not([type="checkbox"], [type="radio"], [type="range"], [type="file"]), select, textarea):focus {
+  border-color: var(--text-primary);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--text-primary) 10%, transparent);
+  outline: none;
+}
+
+main :where(input, select, textarea)::placeholder {
+  color: var(--text-tertiary);
+}
+
+main :where(button) {
+  font-weight: 600;
+}
+
+/* Header ------------------------------------------------------------------- */
+.site-header {
+  position: sticky;
+  top: 0;
+  border-bottom: 1px solid var(--border) !important;
+  background: color-mix(in srgb, var(--surface) 88%, transparent) !important;
+  box-shadow: none !important;
+  backdrop-filter: blur(16px) saturate(1.2) !important;
+}
+
+.site-header__inner {
+  height: 3.75rem;
+}
+
+.site-wordmark {
+  gap: 0.6rem;
+  font-size: var(--text-sm);
+  font-weight: 700;
+  letter-spacing: 0.06em;
+}
+
+.site-wordmark__mark,
+.site-wordmark:hover .site-wordmark__mark {
+  transform: none !important;
+}
+
+.site-wordmark:hover {
+  color: var(--text-primary);
+}
+
+.site-header__beta-link {
+  display: inline-flex;
+  min-height: 1.5rem;
+  align-items: center;
+  padding-inline: 0.45rem;
+  border: 1px solid var(--border-strong) !important;
+  border-radius: var(--radius-xs) !important;
+  background: transparent !important;
+  color: var(--text-tertiary) !important;
+  font-size: 0.65rem !important;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+}
+
+.site-header__beta-link:hover {
+  border-color: var(--text-primary) !important;
+  color: var(--text-primary) !important;
+}
+
+.site-desktop-nav {
+  gap: 0.25rem;
+  font-size: var(--text-sm);
+}
+
+.site-nav-link {
+  display: inline-flex;
+  min-height: var(--control-h-sm);
+  align-items: center;
+  padding: 0 0.75rem;
+  border-radius: var(--radius-sm);
+  color: var(--text-secondary);
+  font-weight: 600;
+}
+
+.site-nav-link::after {
+  display: none !important;
+}
+
+.site-nav-link:hover {
+  background: var(--surface-hover);
+  color: var(--text-primary);
+}
+
+.site-nav-link[aria-current="page"] {
+  background: var(--surface-muted);
+  color: var(--text-primary);
+}
+
+.site-account-entry {
+  margin-left: 0.5rem;
+  padding: 0 !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+}
+
+.site-account-login {
+  min-height: var(--control-h-sm);
+  padding-inline: 0.75rem;
+  border-radius: var(--radius-sm) !important;
+  color: var(--text-secondary);
+  font-size: var(--text-sm);
+  font-weight: 600;
+}
+
+.site-profile-link,
+.site-profile-link--accent {
+  min-height: var(--control-h-sm);
+  border-radius: var(--radius-sm) !important;
+  font-size: var(--text-sm);
+  font-weight: 650;
+}
+
+.site-profile-link--accent {
+  background: var(--text-primary);
+  color: var(--surface);
+}
+
+.site-profile-link--accent:hover,
+.site-profile-link--accent:focus-visible {
+  background: var(--accent);
+  color: var(--accent-ink);
+}
+
+.site-account-popover {
+  border: 1px solid var(--border) !important;
+  border-radius: var(--radius-md) !important;
+  background: var(--surface) !important;
+}
+
+.theme-toggle {
+  font-size: var(--text-xs);
+}
+
+/* Mobile bottom navigation ------------------------------------------------- */
+.site-mobile-bottom-nav {
+  border-top: 1px solid var(--border) !important;
+  background: color-mix(in srgb, var(--surface) 94%, transparent) !important;
+  box-shadow: none !important;
+  backdrop-filter: blur(16px) saturate(1.2) !important;
+}
+
+.site-mobile-bottom-nav__item {
+  border-radius: var(--radius-sm) !important;
+  color: var(--text-tertiary);
+  font-size: 0.7rem !important;
+  font-weight: 600;
+}
+
+.site-mobile-bottom-nav__item svg {
+  stroke-width: 1.75;
+}
+
+.site-mobile-bottom-nav__item[aria-current="page"] {
+  color: var(--text-primary);
+}
+
+.site-mobile-bottom-nav__item[aria-current="page"] svg {
+  color: var(--accent);
+}
+
+.site-mobile-bottom-nav__item.is-emphasized[aria-current="page"] {
+  color: var(--text-primary);
+}
+
+/* Footer -------------------------------------------------------------------- */
+.site-footer {
+  border-top: 1px solid var(--border) !important;
+  background: var(--surface) !important;
+  color: var(--text-secondary);
+  font-size: var(--text-sm);
+}
+
+/* Page hierarchy ------------------------------------------------------------- */
+:where(.studio-page, .discover-page, .plan-page, .settings-page, .travel-detail-page, .auth-page, .about-page) {
+  background: var(--background) !important;
+}
+
+:where(.studio-shell, .discover-shell, .settings-shell, .travel-detail-shell) {
+  padding-top: clamp(1.75rem, 4vw, 3rem) !important;
+}
+
+:where(.studio-hero, .discover-hero, .settings-hero, .travel-editor-hero, .about-hero) {
+  margin-bottom: clamp(1.5rem, 3vw, 2.5rem) !important;
+  padding-bottom: clamp(1.25rem, 2.5vw, 1.75rem) !important;
+  border-bottom: 1px solid var(--border) !important;
+  background: transparent !important;
+}
+
+:where(.studio-hero, .discover-hero, .settings-hero, .travel-editor-hero, .about-hero) h1 {
+  max-width: 22ch !important;
+  font-size: clamp(1.75rem, 3.2vw, 2.5rem) !important;
+  font-weight: 700 !important;
+  line-height: 1.12 !important;
+  letter-spacing: -0.035em !important;
+}
+
+:where(.studio-hero, .discover-hero, .settings-hero, .travel-editor-hero, .about-hero) p {
+  max-width: 40rem !important;
+  color: var(--text-secondary) !important;
+  font-size: var(--text-base) !important;
+  line-height: 1.65 !important;
+}
+
+.studio-section-heading h2,
+.discover-results h2,
+.travel-detail-section__heading h2,
+.travel-editor__section-heading h2,
+.trip-preparation__heading h2 {
+  font-size: var(--text-xl) !important;
+  letter-spacing: -0.03em !important;
+}
+
+.studio-breadcrumb a {
+  display: inline-flex;
+  min-height: var(--control-h-sm);
+  align-items: center;
+  padding-inline: 0.6rem;
+  margin-left: -0.6rem;
+  border-radius: var(--radius-sm);
+  color: var(--text-secondary);
+  font-size: var(--text-sm);
+  font-weight: 600;
+}
+
+.studio-breadcrumb a:hover {
+  background: var(--surface-hover);
+  color: var(--text-primary);
+}
+
+/* Landing -------------------------------------------------------------------- */
+.landing-main,
+.landing-hero {
+  background: var(--background) !important;
+}
+
+.landing-hero::before,
+.landing-globe-vignette {
+  display: none !important;
+}
+
+.landing-title {
+  font-weight: 700 !important;
+  line-height: 1.02 !important;
+  letter-spacing: -0.045em !important;
+}
+
+.landing-intro {
+  color: var(--text-secondary) !important;
+  font-size: var(--text-md) !important;
+  line-height: 1.7 !important;
+}
+
+.landing-globe-frame {
+  overflow: hidden;
+  border: 1px solid var(--border) !important;
+  border-radius: var(--radius-lg) !important;
+  background: var(--surface) !important;
+  box-shadow: none !important;
+}
+
+:where(.landing-globe-stats, .landing-globe-context, .landing-landmark-card) {
+  border: 1px solid var(--border) !important;
+  border-radius: var(--radius-md) !important;
+  background: color-mix(in srgb, var(--surface) 92%, transparent) !important;
+  box-shadow: none !important;
+  backdrop-filter: blur(12px) !important;
+}
+
+/* Lists as rows: hub, discover, checklists --------------------------------- */
+.studio-plan-list,
+.studio-travel-list,
+.member-grid {
+  gap: 0.6rem !important;
+}
+
+.member-card {
+  border: 1px solid var(--border) !important;
+  border-radius: var(--radius-md) !important;
+  background: var(--surface) !important;
+  box-shadow: none !important;
+}
+
+.member-card:hover {
+  border-color: var(--border-strong) !important;
+  background: var(--surface-raised) !important;
+}
+
+.member-card__reason {
+  border: 0 !important;
+  border-top: 1px solid var(--border) !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+}
+
+.discover-search__field {
+  min-height: var(--control-h-lg) !important;
+  border: 1px solid var(--border-strong) !important;
+  border-radius: var(--radius-sm) !important;
+}
+
+/* Authentication ------------------------------------------------------------- */
+.auth-card {
+  border: 1px solid var(--border) !important;
+  border-radius: var(--radius-lg) !important;
+  background: var(--surface) !important;
+  box-shadow: none !important;
+}
+
+.auth-card h1 {
+  font-size: clamp(1.6rem, 3vw, 2rem) !important;
+  font-weight: 700 !important;
+  letter-spacing: -0.03em !important;
+}
+
+/* Travel detail / profile ---------------------------------------------------- */
+.travel-detail-hero {
+  overflow: hidden;
+  border: 1px solid var(--border) !important;
+  border-radius: var(--radius-lg) !important;
+}
+
+.travel-detail-hero__veil {
+  background: linear-gradient(90deg, rgba(0, 0, 0, 0.6), transparent) !important;
+}
+
+.profile-globe-card,
+.profile-globe-card__canvas,
+.travel-route-map,
+.travel-gallery,
+.journey-summary {
+  border-radius: var(--radius-lg) !important;
+}
+
+/* Mobile ------------------------------------------------------------------------ */
+@media (max-width: 700px) {
+  :root {
+    --mobile-title: 1.625rem;
+    --mobile-section-title: 1.3rem;
+    --mobile-copy: var(--text-base);
+    --mobile-copy-small: var(--text-sm);
+    --mobile-caption: var(--text-xs);
+    --mobile-card-radius: var(--radius-lg);
+  }
+
+  .site-header__inner {
+    height: 3.5rem;
+  }
+
+  /* The bottom navigation is rendered inside the header. A backdrop-filter on
+   * that ancestor makes position: fixed resolve against the sticky header in
+   * Chromium, which pins the navigation to the top of mobile screens. Keep the
+   * compact header opaque on mobile so the tab bar stays viewport-fixed. */
+  .site-header {
+    background: var(--surface) !important;
+    backdrop-filter: none !important;
+  }
+
+  .site-wordmark {
+    font-size: var(--text-xs);
+  }
+
+  :where(.studio-shell, .discover-shell, .settings-shell, .travel-detail-shell) {
+    padding-top: 1.25rem !important;
+  }
+
+  :where(.studio-hero, .discover-hero, .settings-hero, .travel-editor-hero, .about-hero) {
+    margin-bottom: 1.25rem !important;
+    padding-bottom: 1rem !important;
+  }
+
+  :where(.studio-hero, .discover-hero, .settings-hero, .travel-editor-hero, .about-hero) h1 {
+    font-size: 1.625rem !important;
+    line-height: 1.15 !important;
+  }
+
+  .landing-globe-frame {
+    border-radius: var(--radius-md) !important;
+  }
+
+  .auth-card h1 {
+    font-size: 1.625rem !important;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+
