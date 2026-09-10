@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { ChangeEvent, DragEvent, useCallback, useEffect, useMemo, useRef, useState } from "react";
 
+import { TravelActionIcon } from "@/components/common/TravelActionIcon";
 import { ApiError, apiMutation } from "@/lib/api/client";
 import { travelPath } from "@/lib/config";
 import type { CountryOption } from "@/lib/countries";
@@ -175,6 +176,7 @@ export function TravelEditor({
     initialTravel?.places.some((place) => Boolean(place.startTime)) ? "timeline" : "simple",
   );
   const [mobileEditorStep, setMobileEditorStep] = useState(0);
+  const [activeQuickAction, setActiveQuickAction] = useState<"place" | "photo" | "note" | null>(null);
   const countryMap = useMemo(() => new Map(countries.map((country) => [country.iso2Code, country])), [countries]);
   const travelPreferences = useMemo(() => recommendationPreferences(`${title} ${description}`), [description, title]);
   const planDays = useMemo(() => {
@@ -810,6 +812,7 @@ export function TravelEditor({
     if (direction > 0 && !validateMobileEditorStep(mobileEditorStep)) return;
     const nextStep = Math.max(0, Math.min(MOBILE_EDITOR_STEPS.length - 1, mobileEditorStep + direction));
     setMobileEditorStep(nextStep);
+    setActiveQuickAction(null);
     setStatus(null);
     window.requestAnimationFrame(() => {
       document.getElementById("mobile-travel-editor-progress")?.scrollIntoView({ behavior: "smooth", block: "start" });
@@ -817,6 +820,7 @@ export function TravelEditor({
   }
 
   function openQuickCapture(target: "place" | "photo" | "note") {
+    setActiveQuickAction(target);
     setMobileEditorStep(target === "photo" ? 2 : 1);
     if (target === "photo") {
       window.setTimeout(() => {
@@ -861,10 +865,10 @@ export function TravelEditor({
           <strong>{planningMode && activePlanDate ? `${formatPlanDay(activePlanDate)} 일정` : "여행 기록"}</strong>
         </div>
         <div>
-          <button type="button" onClick={() => openQuickCapture("place")}><span aria-hidden="true">⌖</span>장소</button>
-          <button type="button" onClick={() => openQuickCapture("photo")}><span aria-hidden="true">▧</span>사진</button>
-          <button type="button" onClick={() => openQuickCapture("note")}><span aria-hidden="true">≡</span>메모</button>
-          <button type="button" onClick={() => void handleSubmit()} className="is-save" aria-label="여행 저장" disabled={pending}><span aria-hidden="true">✓</span>저장</button>
+          <button type="button" aria-pressed={activeQuickAction === "place"} onClick={() => openQuickCapture("place")}><TravelActionIcon name="schedule" />일정</button>
+          <button type="button" aria-pressed={activeQuickAction === "photo"} onClick={() => openQuickCapture("photo")}><TravelActionIcon name="photo" />사진</button>
+          <button type="button" aria-pressed={activeQuickAction === "note"} onClick={() => openQuickCapture("note")}><TravelActionIcon name="note" />메모</button>
+          <button type="button" onClick={() => void handleSubmit()} className="is-save" aria-label="여행 저장" disabled={pending}><TravelActionIcon name="save" />{pending ? "저장 중" : "저장"}</button>
         </div>
       </nav>
       <header id="mobile-travel-editor-progress" className="travel-editor__mobile-progress">

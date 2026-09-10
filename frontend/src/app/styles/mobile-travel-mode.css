@@ -921,6 +921,13 @@
     border-radius: var(--radius-md);
     background: var(--surface-muted);
     color: var(--text-secondary);
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .mobile-trip-companion__actions button[aria-pressed="true"] {
+    border-color: var(--accent);
+    background: var(--accent-soft);
+    color: var(--accent-strong);
   }
 
   .mobile-trip-companion__actions :is(a, button) > svg {
@@ -940,6 +947,9 @@
 
   .mobile-trip-companion__actions :is(a, button) > strong {
     font-size: var(--text-xs);
+    letter-spacing: -0.02em;
+    line-height: 1.2;
+    white-space: nowrap;
   }
 
   .mobile-trip-companion__actions button:disabled {

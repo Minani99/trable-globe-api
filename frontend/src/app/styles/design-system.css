@@ -53,7 +53,8 @@ body {
     background-color var(--dur) var(--ease),
     border-color var(--dur) var(--ease),
     box-shadow var(--dur) var(--ease),
-    opacity var(--dur) var(--ease);
+    opacity var(--dur) var(--ease),
+    transform 90ms var(--ease);
 }
 
 :where(button, a):hover {
@@ -71,6 +72,11 @@ body {
 
 :where(button, [role="button"], summary) {
   cursor: pointer;
+}
+
+:where(button:not(:disabled), a[href], summary):active {
+  opacity: 0.72;
+  transform: scale(0.98) !important;
 }
 
 :where(button:disabled) {
@@ -228,7 +234,7 @@ main :where(button) {
   border-radius: var(--radius-xs) !important;
   background: transparent !important;
   color: var(--text-tertiary) !important;
-  font-size: 0.65rem !important;
+  font-size: var(--text-xs) !important;
   font-weight: 700;
   letter-spacing: 0.06em;
 }
@@ -324,7 +330,7 @@ main :where(button) {
 .site-mobile-bottom-nav__item {
   border-radius: var(--radius-sm) !important;
   color: var(--text-tertiary);
-  font-size: 0.7rem !important;
+  font-size: var(--text-xs) !important;
   font-weight: 600;
 }
 

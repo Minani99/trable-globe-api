@@ -227,12 +227,28 @@
     color: var(--text-tertiary);
     font-size: var(--text-xs);
     font-weight: 650;
+    line-height: 1.2;
+    white-space: nowrap;
   }
 
-  .mobile-travel-quick-nav button > span {
+  .mobile-travel-quick-nav button > svg {
+    width: 1.05rem;
+    height: 1.05rem;
     color: var(--text-secondary);
-    font-size: var(--text-base);
-    line-height: 1;
+    fill: none;
+    stroke: currentColor;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    stroke-width: 1.7;
+  }
+
+  .mobile-travel-quick-nav button[aria-pressed="true"] {
+    background: var(--accent-soft);
+    color: var(--accent-strong);
+  }
+
+  .mobile-travel-quick-nav button[aria-pressed="true"] > svg {
+    color: currentColor;
   }
 
   .mobile-travel-quick-nav button.is-save {
@@ -240,7 +256,7 @@
     color: var(--background);
   }
 
-  .mobile-travel-quick-nav button.is-save > span {
+  .mobile-travel-quick-nav button.is-save > svg {
     color: currentColor;
   }
 

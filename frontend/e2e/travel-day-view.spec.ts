@@ -1,6 +1,6 @@
 import { expect, test } from "@playwright/test";
 
-test("미래 여행도 여행용 보기에서 날짜별로 확인할 수 있다", async ({ page }) => {
+test("미래 여행도 여행용 보기에서 날짜별로 확인할 수 있다", async ({ page }, testInfo) => {
   const suffix = Date.now().toString(36);
   const username = `dayview_${suffix}`;
   const today = new Date().toLocaleDateString("en-CA", { timeZone: "Asia/Seoul" });
@@ -48,6 +48,9 @@ test("미래 여행도 여행용 보기에서 날짜별로 확인할 수 있다"
   await expect(page.getByRole("heading", { name: "도쿄 2일 여행" })).toBeVisible();
   await expect(page.getByRole("heading", { name: "1일차 일정" })).toBeVisible();
   await expect(page.getByRole("list", { name: "도쿄 2일 여행 1일차 일정" })).toContainText("도쿄역");
+  const tripActions = page.getByRole("navigation", { name: "여행 중 바로 기록" });
+  await expect(tripActions.getByRole("link", { name: "일정 편집" })).toBeVisible();
+  await expect(tripActions.getByRole("link", { name: "계획 편집" })).toBeVisible();
 
   await page.getByRole("button", { name: /DAY 2/ }).click();
   await expect(page.getByRole("heading", { name: "2일차 일정" })).toBeVisible();
@@ -59,6 +62,12 @@ test("미래 여행도 여행용 보기에서 날짜별로 확인할 수 있다"
     documentWidth: document.documentElement.scrollWidth,
   }));
   expect(layout.documentWidth).toBeLessThanOrEqual(layout.viewportWidth + 1);
+  const actionLabels = await tripActions.locator("strong").evaluateAll((labels) => labels.map((label) => ({
+    fontSize: Number.parseFloat(getComputedStyle(label).fontSize),
+    whiteSpace: getComputedStyle(label).whiteSpace,
+  })));
+  expect(actionLabels.every(({ fontSize, whiteSpace }) => fontSize >= 12 && whiteSpace === "nowrap")).toBe(true);
+  await page.screenshot({ path: testInfo.outputPath("travel-day-mobile.png"), fullPage: true });
 });
 
 function place(placeName: string, visitedAt: string, startTime: string, latitude: number, longitude: number) {

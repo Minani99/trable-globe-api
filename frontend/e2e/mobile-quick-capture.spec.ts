@@ -1,6 +1,6 @@
 import { expect, test } from "@playwright/test";
 
-test("진행 중인 여행은 모바일 어디서나 장소·사진·메모로 바로 이어진다", async ({ page }) => {
+test("진행 중인 여행은 모바일 어디서나 장소·사진·메모로 바로 이어진다", async ({ page }, testInfo) => {
   const suffix = Date.now().toString(36);
   const username = `capture_${suffix}`;
   const today = new Date().toLocaleDateString("en-CA", { timeZone: "Asia/Seoul" });
@@ -72,8 +72,14 @@ test("진행 중인 여행은 모바일 어디서나 장소·사진·메모로 �
   await expect(capture.getByRole("heading", { name: "오늘 일정" })).toBeVisible();
   await expect(capture.getByRole("list", { name: "오늘의 서울 산책 오늘 일정" })).toContainText("서울숲");
   await expect(capture.getByRole("link", { name: /지도에서 위치 보기/ })).toHaveAttribute("href", /google\.com\/maps\/search/);
-  await expect(capture.getByRole("link", { name: /장소/ })).toHaveAttribute("href", `/studio/travels/${travelId}/edit#travel-place-editor`);
-  await capture.getByRole("button", { name: "메모" }).click();
+  await expect(capture.getByRole("link", { name: "일정 편집" })).toHaveAttribute("href", `/studio/travels/${travelId}/edit#travel-place-editor`);
+  await expect(capture.getByRole("link", { name: "계획 편집" })).toHaveAttribute("href", `/studio/travels/${travelId}/edit#travel-editor`);
+  const tripActions = capture.getByRole("navigation", { name: "여행 중 바로 기록" });
+  const noteAction = tripActions.getByRole("button", { name: "메모" });
+  await expect(noteAction).toHaveAttribute("aria-pressed", "false");
+  await noteAction.click();
+  await expect(noteAction).toHaveAttribute("aria-pressed", "true");
+  await page.screenshot({ path: testInfo.outputPath("quick-note-selected.png"), fullPage: true });
   const quickNote = capture.getByRole("group", { name: "빠른 메모" });
   await expect(quickNote.getByRole("textbox", { name: "한 줄 메모" })).toHaveValue("나무 그늘에서 잠시 쉬기");
   await quickNote.getByRole("textbox", { name: "한 줄 메모" }).fill("서울숲에서 바로 남긴 현장 메모");
@@ -90,7 +96,9 @@ test("진행 중인 여행은 모바일 어디서나 장소·사진·메모로 �
   await expect(capture.getByRole("list", { name: "오늘의 서울 산책 오늘 일정" })).toContainText("서울숲에서 바로 남긴 현장 메모");
   await page.unroute("**/api/private/travels");
 
-  await capture.getByRole("button", { name: "사진" }).click();
+  const photoAction = tripActions.getByRole("button", { name: "사진" });
+  await photoAction.click();
+  await expect(photoAction).toHaveAttribute("aria-pressed", "true");
   const quickPhoto = capture.getByRole("group", { name: "빠른 사진 기록" });
   await expect(quickPhoto.locator('input[type="file"]')).toHaveAttribute("capture", "environment");
   const tinyPng = Buffer.from("iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=", "base64");
@@ -121,13 +129,18 @@ test("진행 중인 여행은 모바일 어디서나 장소·사진·메모로 �
   expect(savedTravel.status()).toBe(200);
   expect((await savedTravel.json()).data.places[0].completedAt).not.toBeNull();
 
-  await capture.getByRole("link", { name: /장소/ }).click();
+  await capture.getByRole("link", { name: "일정 편집" }).click();
   await expect(page).toHaveURL(new RegExp(`/studio/travels/${travelId}/edit#travel-place-editor$`));
   await expect(page.locator("#travel-place-editor")).toBeVisible();
   await expect(page.locator("#travel-day-view").getByRole("heading", { name: "오늘 일정" })).toBeVisible();
 
   const quickNavigation = page.getByRole("navigation", { name: "여행 중 빠른 입력" });
   await expect(quickNavigation).toBeVisible();
+  const quickLabels = await quickNavigation.getByRole("button").evaluateAll((buttons) => buttons.map((button) => ({
+    fontSize: Number.parseFloat(getComputedStyle(button).fontSize),
+    whiteSpace: getComputedStyle(button).whiteSpace,
+  })));
+  expect(quickLabels.every(({ fontSize, whiteSpace }) => fontSize >= 12 && whiteSpace === "nowrap")).toBe(true);
   await expect(page.getByRole("tab", { name: /DAY 1/ })).toHaveAttribute("aria-selected", "true");
   await expect(page.locator("#travel-photo-editor input[type=file]")).toHaveAttribute("multiple", "");
 
@@ -146,6 +159,7 @@ test("진행 중인 여행은 모바일 어디서나 장소·사진·메모로 �
   await expect(importedPhoto.getByLabel("연결할 장소")).toHaveValue("0");
 
   await quickNavigation.getByRole("button", { name: "메모" }).click();
+  await expect(quickNavigation.getByRole("button", { name: "메모" })).toHaveAttribute("aria-pressed", "true");
   await expect.poll(() => page.evaluate(() => document.activeElement?.id)).toBe("travel-note-editor");
 
   const layout = await page.evaluate(() => ({

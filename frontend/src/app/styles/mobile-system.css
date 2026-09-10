@@ -23,7 +23,7 @@
 
   html {
     overflow-x: clip;
-    font-size: var(--text-md);
+    font-size: 16px;
     text-size-adjust: 100%;
     -webkit-text-size-adjust: 100%;
   }
@@ -31,7 +31,7 @@
   body {
     min-width: 0;
     overflow-x: clip;
-    font-size: var(--text-md);
+    font-size: var(--mobile-copy);
     line-height: 1.55;
   }
 
@@ -55,8 +55,9 @@
     padding-inline: var(--mobile-gutter);
   }
 
-  main :where(h1, h2, h3, p, li, dd, dt, label, strong, span, small) {
-    overflow-wrap: anywhere;
+  main :where(h1, h2, h3, p, li, dd, dt, label, strong, span, small, button, a) {
+    overflow-wrap: break-word;
+    word-break: keep-all;
   }
 
   main :where(h1, h2, h3, p) {
@@ -130,6 +131,14 @@
     gap: 0.18rem;
     border-radius: var(--radius-sm);
     font-size: var(--text-xs);
+    white-space: nowrap;
+  }
+
+  .site-mobile-bottom-nav__item span {
+    overflow: hidden;
+    max-width: 100%;
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
 
   .site-mobile-bottom-nav__item svg {

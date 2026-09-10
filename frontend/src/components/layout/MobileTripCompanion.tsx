@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useEffect, useMemo, useRef, useState } from "react";
 
+import { TravelActionIcon } from "@/components/common/TravelActionIcon";
 import { ApiError, apiMutation } from "@/lib/api/client";
 import {
   applyPlaceUpdate,
@@ -355,7 +356,7 @@ export function MobileTripCompanion({
       ) : (
         <div className="mobile-trip-companion__empty">
           <strong>{viewingToday ? "오늘 정해진 장소가 없어요." : `${dayNumber}일차에 정해진 장소가 없어요.`}</strong>
-          <p>현재 위치에서 장소를 추가하거나 전체 계획을 확인하세요.</p>
+          <p>아래에서 일정을 편집하거나 전체 계획을 확인할 수 있어요.</p>
         </div>
       )}
 
@@ -381,10 +382,10 @@ export function MobileTripCompanion({
       ) : null}
 
       <nav className="mobile-trip-companion__actions" aria-label="여행 중 바로 기록">
-        <Link href={`${editPath}#travel-place-editor`}><QuickActionIcon name="place" /><strong>장소</strong></Link>
-        <button type="button" onClick={() => openComposer("photo")} disabled={!dayPlaces.length || pendingAction !== null}><QuickActionIcon name="photo" /><strong>사진</strong></button>
-        <button type="button" onClick={() => openComposer("note")} disabled={!dayPlaces.length || pendingAction !== null}><QuickActionIcon name="note" /><strong>메모</strong></button>
-        <Link href={editPath}><QuickActionIcon name="more" /><strong>전체</strong></Link>
+        <Link href={`${editPath}#travel-place-editor`} aria-label="일정 편집"><TravelActionIcon name="schedule" /><strong>일정 편집</strong></Link>
+        <button type="button" aria-pressed={composer === "photo"} onClick={() => openComposer("photo")} disabled={!dayPlaces.length || pendingAction !== null}><TravelActionIcon name="photo" /><strong>사진</strong></button>
+        <button type="button" aria-pressed={composer === "note"} onClick={() => openComposer("note")} disabled={!dayPlaces.length || pendingAction !== null}><TravelActionIcon name="note" /><strong>메모</strong></button>
+        <Link href={`${editPath}#travel-editor`} aria-label="계획 편집"><TravelActionIcon name="edit" /><strong>계획 편집</strong></Link>
       </nav>
 
       {composer ? (
@@ -403,19 +404,6 @@ export function MobileTripCompanion({
       {status ? <p className="mobile-trip-companion__status" role="status" aria-live="polite">{status}</p> : null}
     </section>
   );
-}
-
-function QuickActionIcon({ name }: { name: "place" | "photo" | "note" | "more" }) {
-  if (name === "place") {
-    return <svg aria-hidden="true" viewBox="0 0 24 24"><path d="M12 21s6-5.2 6-11a6 6 0 1 0-12 0c0 5.8 6 11 6 11Z" /><circle cx="12" cy="10" r="2" /></svg>;
-  }
-  if (name === "photo") {
-    return <svg aria-hidden="true" viewBox="0 0 24 24"><rect x="3.5" y="5" width="17" height="14" rx="2" /><circle cx="9" cy="10" r="1.7" /><path d="m5.5 17 4.3-4 2.9 2.5 2.4-2.2 3.4 3.7" /></svg>;
-  }
-  if (name === "note") {
-    return <svg aria-hidden="true" viewBox="0 0 24 24"><path d="M5 4.5h14v15H5z" /><path d="M8 9h8M8 12.5h8M8 16h5" /></svg>;
-  }
-  return <svg aria-hidden="true" viewBox="0 0 24 24"><circle cx="6" cy="12" r="1.3" /><circle cx="12" cy="12" r="1.3" /><circle cx="18" cy="12" r="1.3" /></svg>;
 }
 
 function placesForDay(places: TravelPlace[], today: string): TravelPlace[] {
