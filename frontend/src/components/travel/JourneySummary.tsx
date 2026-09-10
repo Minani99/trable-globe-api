@@ -20,10 +20,9 @@ export function JourneySummary({ travel, ownerName, locationLabel }: JourneySumm
   return (
     <section className="journey-summary" aria-labelledby="journey-summary-heading">
       <div className="journey-summary__copy">
-        <p className="eyebrow">Journey summary</p>
-        <h2 id="journey-summary-heading">이 Journey가 {ownerName}님의 세계에 남았습니다.</h2>
+        <h2 id="journey-summary-heading">{ownerName}님의 여행 기록</h2>
         <p>
-          {locationLabel || "여행지"}에서 {formatDuration(travel.durationDays)} 동안 {journeyActions.join(" ") || "기억을 쌓은"} Journey입니다.
+          {locationLabel || "여행지"}에서 {formatDuration(travel.durationDays)} 동안 {journeyActions.join(" ") || "기록한"} 여행입니다.
           {travel.photos.length === 0 ? " 사진이 없어도 경로와 장소의 기억은 그대로 이어집니다." : ""}
         </p>
       </div>
@@ -36,7 +35,7 @@ export function JourneySummary({ travel, ownerName, locationLabel }: JourneySumm
           className="journey-summary__avatar"
         />
         <span>
-          <small>Explore this world</small>
+          <small>프로필 보기</small>
           <strong>{ownerName}의 여행 세계</strong>
         </span>
         <i aria-hidden="true">→</i>

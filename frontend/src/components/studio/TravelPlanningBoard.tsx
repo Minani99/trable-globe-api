@@ -158,7 +158,6 @@ export function TravelPlanningBoard({
     <section className="travel-planning-board" aria-labelledby="travel-planning-heading">
       <header>
         <div>
-          <p className="eyebrow">Budget & bookings</p>
           <h2 id="travel-planning-heading">예산과 예약</h2>
           <p>흩어진 결제 내역과 예약 일정을 여행 하나에 모아보세요.</p>
         </div>

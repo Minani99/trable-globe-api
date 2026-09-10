@@ -68,7 +68,6 @@ export function TravelSocialPanel({
     <section className="travel-social" aria-labelledby="travel-social-heading">
       <div className="travel-social__heading">
         <div>
-          <p className="eyebrow">Travel conversation</p>
           <h2 id="travel-social-heading">여행 이야기를 나눠요</h2>
         </div>
         <div className="travel-social__actions">

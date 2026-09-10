@@ -18,14 +18,14 @@ export function SaveSharedItinerary({ travel, signedIn, isOwner, today }: { trav
   const ownerName = publicDisplayName(travel.owner.displayName);
 
   if (isOwner) {
-    return <Link href={`/studio/travels/${travel.id}/edit`} className="shared-itinerary-cta is-owner">내 Journey 편집하기 <span aria-hidden="true">→</span></Link>;
+    return <Link href={`/studio/travels/${travel.id}/edit`} className="shared-itinerary-cta is-owner">내 여행 편집하기 <span aria-hidden="true">→</span></Link>;
   }
 
   if (!signedIn) {
     return (
       <div className="shared-itinerary-save">
         <Link href={`/login?next=${encodeURIComponent(`/${travel.owner.username}/travel/${travel.id}`)}`} className="shared-itinerary-cta">
-          로그인하고 이 Journey로 계획 만들기 <span aria-hidden="true">＋</span>
+          로그인하고 이 일정 가져오기 <span aria-hidden="true">＋</span>
         </Link>
         <p className="shared-itinerary-save__note">공개된 장소와 일정만 가져오며 사진과 개인 기록은 포함하지 않습니다.</p>
       </div>
@@ -75,10 +75,10 @@ export function SaveSharedItinerary({ travel, signedIn, isOwner, today }: { trav
 
   return (
     <div className="shared-itinerary-save">
-      <button type="button" className="shared-itinerary-cta" onClick={() => setOpen((current) => !current)} aria-expanded={open}>이 Journey로 여행 계획 만들기 <span aria-hidden="true">＋</span></button>
+      <button type="button" className="shared-itinerary-cta" onClick={() => setOpen((current) => !current)} aria-expanded={open}>이 일정으로 계획 만들기 <span aria-hidden="true">＋</span></button>
       {!open ? <p className="shared-itinerary-save__note">장소와 일정만 내 날짜에 맞춰 가져옵니다.</p> : null}
       {open ? <div className="shared-itinerary-save__panel">
-        <div><strong>내 날짜로 Journey 시작하기</strong><p>{travel.places.length}개 장소와 공개 일정을 같은 순서로 가져옵니다. 사진·메모·개인 예약정보는 복사하지 않습니다.</p></div>
+        <div><strong>내 날짜로 일정 가져오기</strong><p>{travel.places.length}개 장소와 공개 일정을 같은 순서로 가져옵니다. 사진·메모·개인 예약정보는 복사하지 않습니다.</p></div>
         <label><span>새 출발일</span><input type="date" min={today} value={startDate} onChange={(event) => setStartDate(event.target.value)} /></label>
         <button type="button" onClick={saveToMyPlans} disabled={pending || !startDate}>{pending ? "계획에 담는 중…" : `${travel.durationDays}일 일정 담기`}</button>
         {error ? <p className="shared-itinerary-save__error" role="alert">{error}</p> : null}

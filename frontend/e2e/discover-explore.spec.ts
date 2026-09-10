@@ -1,6 +1,6 @@
 import { expect, test } from "@playwright/test";
 
-test("Discover는 공개 Journey가 있는 Travel World만 추천하고 새 친구는 검색으로 찾는다", async ({ page }) => {
+test("둘러보기는 공개 여행이 있는 프로필만 추천하고 새 친구는 검색으로 찾는다", async ({ page }) => {
   const suffix = Date.now().toString(36);
   const activeUsername = `world_${suffix}`;
   const emptyUsername = `empty_${suffix}`;
@@ -70,7 +70,7 @@ test("Discover는 공개 Journey가 있는 Travel World만 추천하고 새 친�
   });
   await expect(activeCard).toBeVisible();
   await expect(activeCard.locator(".member-world-preview")).toBeVisible();
-  await expect(activeCard).toContainText("2 Countries · 2 Cities");
+  await expect(activeCard).toContainText("나라 2 · 도시 2");
   await expect(activeCard).toContainText("최근 여행 도쿄 · 타이베이");
   await expect(page.locator(".member-card").filter({
     has: page.locator(`a[href="/${emptyUsername}"]`),
@@ -81,7 +81,7 @@ test("Discover는 공개 Journey가 있는 Travel World만 추천하고 새 친�
     has: page.locator(`a[href="/${emptyUsername}"]`),
   });
   await expect(emptyCard).toBeVisible();
-  await expect(emptyCard).toContainText("첫 Journey를 준비하고 있어요.");
+  await expect(emptyCard).toContainText("첫 여행을 준비하고 있습니다.");
 
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto("/discover");

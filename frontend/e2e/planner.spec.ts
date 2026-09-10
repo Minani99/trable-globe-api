@@ -136,7 +136,7 @@ test("몇 번의 선택으로 여행 계획을 만들고 일차별 일정으로 
   expect((preparationNavigationBox?.y ?? 0) + (preparationNavigationBox?.height ?? 0)).toBeLessThanOrEqual(836);
   await expect(page.getByRole("progressbar", { name: "여행 준비 진행률" })).toHaveAttribute("aria-valuenow", "1");
   await expect(page.getByRole("heading", { name: "여행 준비 체크리스트" })).toBeHidden();
-  await expect(page.getByRole("heading", { name: "예약부터 변수 대응까지, 한곳에서" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "예약과 여행 준비" })).toBeVisible();
   await expect(page.getByRole("combobox", { name: "출발 공항 검색" })).toHaveValue("서울 · 서울 모든 공항");
   const destinationAirport = page.getByRole("combobox", { name: "도착 공항 검색" });
   await expect(destinationAirport).toHaveValue("도쿄 · 도쿄 모든 공항");
@@ -155,7 +155,8 @@ test("몇 번의 선택으로 여행 계획을 만들고 일차별 일정으로 
   await expect(page.locator(".travel-checklist__items li")).toHaveCount(6);
   await page.getByRole("button", { name: "항공·교통편 확인 완료로 변경" }).click();
   await expect(page.locator(".travel-checklist__items li").first()).toHaveClass(/is-complete/);
-  await page.getByRole("textbox", { name: "새 준비 항목" }).fill("공항철도 예약");
+  const newChecklistItem = page.getByRole("textbox", { name: "새 준비 항목" });
+  await newChecklistItem.fill("공항철도 예약");
   const addChecklistItem = page.getByRole("button", { name: "＋ 추가" });
   await expect(addChecklistItem).toBeEnabled();
   await addChecklistItem.click();

@@ -38,7 +38,6 @@ export function OfflineTripShell() {
         ) : activeTravel ? (
           <>
             <section className="offline-trip-desktop" aria-labelledby="offline-trip-desktop-heading">
-              <p className="eyebrow">Saved itinerary</p>
               <h1 id="offline-trip-desktop-heading">{activeTravel.cached.travel.title}</h1>
               <p>{today} 일정입니다. 모바일에서는 완료 체크와 메모도 연결 없이 저장할 수 있습니다.</p>
               <ol>
@@ -60,7 +59,6 @@ export function OfflineTripShell() {
         ) : (
           <section className="offline-trip-empty">
             <span className="offline-trip-empty__mark" aria-hidden="true">◎</span>
-            <p className="eyebrow">Offline</p>
             <h1>저장된 오늘 일정이 없어요</h1>
             <p>온라인에서 진행 중인 여행을 한 번 열면 다음부터 연결이 끊겨도 일정과 메모를 확인할 수 있습니다.</p>
             <a href="/studio">연결 후 내 여행 열기</a>

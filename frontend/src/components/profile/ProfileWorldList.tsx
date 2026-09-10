@@ -26,7 +26,6 @@ export function ProfileWorldList({
       <div className="profile-world-list__countries">
         <div className="profile-world-list__heading">
           <div>
-            <p className="eyebrow">Countries</p>
             <h2>나라별로 둘러보기</h2>
           </div>
           <span>{countries.length}개 나라</span>
@@ -57,7 +56,6 @@ export function ProfileWorldList({
       <aside className="profile-world-list__recent" aria-labelledby="recent-travel-heading">
         <div className="profile-world-list__heading">
           <div>
-            <p className="eyebrow">Recent trips</p>
             <h2 id="recent-travel-heading">최근 여행</h2>
           </div>
         </div>

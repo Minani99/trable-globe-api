@@ -1,0 +1,359 @@
+/* Human design pass -------------------------------------------------------
+ * One restrained visual language for the product. Content, maps and photos
+ * carry the personality; UI chrome stays quiet and predictable.
+ */
+
+:root {
+  --background: #f8f8f6;
+  --background-elevated: #f1f3f0;
+  --surface-raised: #f4f5f2;
+  --surface-hover: #eef1ee;
+  --border: #dfe3df;
+  --border-strong: #c7cfca;
+  --text-primary: #172a31;
+  --text-secondary: #617177;
+  --text-tertiary: #8a9699;
+  --accent: #e76532;
+  --accent-strong: #c94e20;
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+}
+
+body {
+  letter-spacing: -0.018em;
+  transition: none;
+}
+
+.eyebrow {
+  display: none !important;
+}
+
+:is(h1, h2, h3) {
+  font-family: var(--font-sans) !important;
+  font-weight: 650;
+  text-wrap: balance;
+}
+
+:is(.site-header, .site-mobile-bottom-nav) {
+  background: color-mix(in srgb, var(--surface) 97%, transparent) !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+}
+
+.site-header {
+  border-bottom-color: var(--border) !important;
+}
+
+.site-wordmark:hover .site-wordmark__mark,
+.globe-page-profile-link:hover span,
+.globe-page-profile-link:focus-visible span {
+  transform: none;
+}
+
+:is(
+  .site-account-entry,
+  .site-account-menu,
+  .site-account-popover,
+  .site-mobile-menu,
+  .auth-card,
+  .settings-card,
+  .studio-resume-card,
+  .studio-plan-launch,
+  .studio-memory-ready,
+  .studio-onboarding,
+  .studio-live,
+  .activity-feed,
+  .discover-search,
+  .discover-results,
+  .member-card,
+  .plan-builder,
+  .plan-step,
+  .plan-summary,
+  .trip-preparation,
+  .travel-checklist,
+  .travel-planning-board,
+  .travel-editor__section,
+  .travel-finish,
+  .mobile-trip-companion,
+  .journey-summary,
+  .travel-social,
+  .travel-detail-hero,
+  .profile-globe-dock,
+  .profile-globe-empty,
+  .profile-connections
+) {
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+  background-image: none !important;
+}
+
+:is(
+  .auth-card,
+  .settings-card,
+  .studio-resume-card,
+  .studio-plan-launch,
+  .studio-memory-ready,
+  .studio-onboarding,
+  .studio-live,
+  .activity-feed,
+  .discover-search,
+  .discover-results,
+  .member-card,
+  .plan-builder,
+  .plan-step,
+  .plan-summary,
+  .trip-preparation,
+  .travel-checklist,
+  .travel-planning-board,
+  .travel-editor__section,
+  .travel-finish,
+  .mobile-trip-companion,
+  .journey-summary,
+  .travel-social,
+  .travel-detail-hero
+) {
+  border-color: var(--border) !important;
+  border-radius: var(--radius-lg) !important;
+  background-color: var(--surface) !important;
+}
+
+:is(
+  .auth-form input,
+  .auth-form textarea,
+  .auth-form select,
+  .settings-page input,
+  .settings-page textarea,
+  .settings-page select,
+  .travel-editor input,
+  .travel-editor textarea,
+  .travel-editor select,
+  .place-picker input,
+  .discover-search input
+) {
+  border-radius: var(--radius-md) !important;
+  box-shadow: none !important;
+}
+
+:is(
+  .landing-primary-cta,
+  .studio-primary-action,
+  .studio-secondary-action,
+  .studio-live__action,
+  .studio-resume-card__action,
+  .auth-form > button,
+  .travel-editor__footer button,
+  .plan-summary__submit,
+  .shared-itinerary-cta,
+  .globe-page-profile-link,
+  .settings-session-logout
+) {
+  border-radius: var(--radius-md) !important;
+  box-shadow: none !important;
+  transform: none !important;
+}
+
+.landing-hero::before {
+  display: none;
+}
+
+.landing-reveal,
+.landing-title-line,
+.landing-globe-link {
+  animation: none !important;
+  transition-duration: 120ms !important;
+}
+
+.landing-kicker {
+  display: none;
+}
+
+.landing-title {
+  max-width: 12ch !important;
+  font-size: clamp(3.4rem, 6.4vw, 6.4rem) !important;
+  font-weight: 650 !important;
+  line-height: 0.98 !important;
+  letter-spacing: -0.065em !important;
+}
+
+.landing-intro {
+  max-width: 35rem !important;
+  color: var(--text-secondary);
+  font-size: 0.98rem !important;
+  line-height: 1.7;
+}
+
+.landing-globe-frame {
+  border-color: var(--border-strong) !important;
+  box-shadow: none !important;
+  background: var(--surface) !important;
+}
+
+:is(.landing-globe-stats, .landing-globe-context, .landing-landmark-card) {
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+}
+
+.auth-page {
+  background: var(--background) !important;
+}
+
+.auth-card {
+  padding: clamp(1.75rem, 4vw, 3rem) !important;
+}
+
+.auth-card h1 {
+  font-size: clamp(2rem, 5vw, 3.25rem) !important;
+  font-weight: 650 !important;
+}
+
+.studio-hero,
+.discover-hero,
+.settings-hero,
+.plan-hero,
+.travel-editor-hero,
+.about-hero {
+  border-bottom: 1px solid var(--border);
+}
+
+.studio-hero {
+  padding-bottom: clamp(1.75rem, 3vw, 2.5rem);
+}
+
+.studio-hero h1,
+.discover-hero h1,
+.settings-hero h1,
+.plan-hero h1,
+.travel-editor-hero h1,
+.about-hero h1 {
+  font-size: clamp(2.2rem, 4.6vw, 4.25rem) !important;
+  font-weight: 650 !important;
+  line-height: 1.05 !important;
+}
+
+.studio-plan-launch,
+.studio-memory-ready,
+.studio-onboarding,
+.activity-feed,
+.discover-results {
+  padding: clamp(1.25rem, 2.5vw, 2rem) !important;
+}
+
+.studio-resume-card,
+.member-card {
+  transition: border-color 120ms ease, background-color 120ms ease !important;
+}
+
+.studio-resume-card:hover,
+.member-card:hover {
+  border-color: var(--border-strong) !important;
+  transform: none !important;
+}
+
+.discover-page {
+  background: var(--background) !important;
+}
+
+.discover-results {
+  padding-inline: 0 !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+}
+
+.discover-results__eyebrow {
+  font-family: var(--font-sans) !important;
+  font-size: 0.72rem !important;
+  letter-spacing: -0.01em !important;
+}
+
+.member-card__world {
+  border-radius: var(--radius-md) !important;
+}
+
+.member-card__world > span,
+.member-card .follow-button {
+  border-radius: var(--radius-sm) !important;
+  backdrop-filter: none !important;
+}
+
+.member-card__reason {
+  padding: 0.75rem 0 0 !important;
+  border: 0 !important;
+  border-top: 1px solid var(--border) !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+}
+
+.profile-world-summary,
+.travel-recap__details,
+.about-capabilities {
+  border-color: var(--border) !important;
+}
+
+.profile-globe-empty {
+  border-radius: var(--radius-md) !important;
+  background: color-mix(in srgb, var(--surface) 96%, transparent) !important;
+}
+
+.plan-builder__mobile-progress,
+.travel-editor__mobile-progress,
+.mobile-planning-workspace__progress,
+.plan-builder__mobile-nav,
+.travel-editor__mobile-nav,
+.mobile-planning-workspace__nav {
+  border-radius: var(--radius-md) !important;
+  box-shadow: none !important;
+  background: var(--surface) !important;
+  backdrop-filter: none !important;
+}
+
+.about-capability-grid li {
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  background: transparent !important;
+}
+
+@media (max-width: 700px) {
+  .landing-title {
+    max-width: 11ch !important;
+    font-size: clamp(2.2rem, 10vw, 3rem) !important;
+    line-height: 1.04 !important;
+  }
+
+  .landing-intro {
+    max-width: 30rem !important;
+    font-size: 0.875rem !important;
+  }
+
+  .studio-hero,
+  .discover-hero,
+  .settings-hero,
+  .plan-hero,
+  .travel-editor-hero,
+  .about-hero {
+    padding-bottom: 1.25rem;
+  }
+
+  .studio-hero h1,
+  .discover-hero h1,
+  .settings-hero h1,
+  .plan-hero h1,
+  .travel-editor-hero h1,
+  .about-hero h1 {
+    font-size: clamp(1.8rem, 8vw, 2.2rem) !important;
+    line-height: 1.1 !important;
+  }
+
+  :is(.studio-plan-launch, .studio-memory-ready, .studio-onboarding, .activity-feed, .discover-results) {
+    padding: 1rem !important;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+  }
+}

@@ -94,7 +94,7 @@ export function MobilePlanningWorkspace({ travelId, preparation, checklist, budg
           <button className="is-previous" type="button" disabled={activeStep === 0} onClick={() => moveTo(activeStep - 1)}>
             이전
           </button>
-          <span><small>STEP {activeStep + 1}</small><strong>{WORKSPACE_STEPS[activeStep]}</strong></span>
+          <span><small>{activeStep + 1} / {WORKSPACE_STEPS.length}</small><strong>{WORKSPACE_STEPS[activeStep]}</strong></span>
           <button className="is-next" type="button" onClick={() => moveTo(activeStep + 1)}>
             다음
           </button>

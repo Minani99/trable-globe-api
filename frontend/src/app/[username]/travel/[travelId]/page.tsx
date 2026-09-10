@@ -44,7 +44,7 @@ export async function generateMetadata(
     const countryLabel = travel.countries.map((country) => country.nameKo).join(" · ");
     const title = countryLabel ? `${travel.title} · ${countryLabel}` : travel.title;
     const description = travel.description
-      ?? `${countryLabel || "여행지"}에서 보낸 ${formatDuration(travel.durationDays)} Journey`;
+      ?? `${countryLabel || "여행지"}에서 보낸 ${formatDuration(travel.durationDays)} 여행 기록`;
     const canonical = travelPath(travel.owner.username, travel.id);
     const image = travel.coverImageUrl || "/opengraph-image.png";
     return {
@@ -60,7 +60,7 @@ export async function generateMetadata(
         url: canonical,
         publishedTime: travel.startDate,
         modifiedTime: travel.endDate,
-        images: [{ url: image, alt: `${travel.title} Journey 대표 장면` }],
+        images: [{ url: image, alt: `${travel.title} 대표 사진` }],
       },
       twitter: {
         card: "summary_large_image",
@@ -171,7 +171,7 @@ export default async function TravelDetailPage(
               {ownerName}의 지구본
             </Link>
             <span aria-hidden="true">/</span>
-            <span>Journey</span>
+            <span>여행 기록</span>
           </nav>
 
           <header className="travel-detail-hero">
@@ -192,7 +192,7 @@ export default async function TravelDetailPage(
 
             <div className="travel-detail-hero__content">
               <div>
-                <p className="eyebrow">Journey · {countryNames.join(" / ")}</p>
+                <p className="travel-detail-hero__location">{countryNames.join(" · ")}</p>
                 <h1>{travel.title}</h1>
                 <p className="travel-detail-hero__date">
                   {formatDateRange(travel.startDate, travel.endDate)}
@@ -236,7 +236,6 @@ export default async function TravelDetailPage(
           <section id="route" aria-labelledby="route-heading" className="travel-detail-section">
             <div className="travel-detail-section__heading">
               <div>
-                <p className="eyebrow">Route &amp; daily itinerary</p>
                 <h2 id="route-heading">경로와 하루의 흐름</h2>
               </div>
               <p>
@@ -255,8 +254,7 @@ export default async function TravelDetailPage(
           <section aria-labelledby="photos-heading" className="travel-detail-section">
             <div className="travel-detail-section__heading">
               <div>
-                <p className="eyebrow">Memories</p>
-                <h2 id="photos-heading">Journey의 장면</h2>
+                <h2 id="photos-heading">여행 사진</h2>
               </div>
               <p>경로의 순서에서 잠시 벗어나, 오래 남기고 싶은 순간만 모았습니다.</p>
             </div>
@@ -274,7 +272,6 @@ export default async function TravelDetailPage(
 
           <section className="travel-detail-more" aria-labelledby="more-travel-heading">
             <div>
-              <p className="eyebrow">More journeys</p>
               <h2 id="more-travel-heading">다음 여행을 이어서 보세요</h2>
             </div>
             <nav aria-label="이전·다음 여행" className="travel-detail-navigation">

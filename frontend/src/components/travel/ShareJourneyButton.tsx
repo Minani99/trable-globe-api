@@ -21,10 +21,10 @@ export function ShareJourneyButton({ title, ownerName }: ShareJourneyButtonProps
         try {
           await navigator.share({
             title: `${title} · Travel Globe`,
-            text: `${ownerName}님의 Journey를 지도와 사진으로 둘러보세요.`,
+            text: `${ownerName}님의 여행 기록을 지도와 사진으로 확인해 보세요.`,
             url,
           });
-          setStatus("Journey를 공유했습니다.");
+          setStatus("여행 기록을 공유했습니다.");
           return;
         } catch (error) {
           if (error instanceof DOMException && error.name === "AbortError") return;
@@ -32,7 +32,7 @@ export function ShareJourneyButton({ title, ownerName }: ShareJourneyButtonProps
       }
 
       await navigator.clipboard.writeText(url);
-      setStatus("Journey 링크를 복사했습니다.");
+      setStatus("여행 링크를 복사했습니다.");
     } catch {
       setStatus("주소창의 링크를 복사해 주세요.");
     } finally {
@@ -44,7 +44,7 @@ export function ShareJourneyButton({ title, ownerName }: ShareJourneyButtonProps
     <div className="journey-share">
       <button type="button" onClick={shareJourney} disabled={pending} aria-busy={pending}>
         <span aria-hidden="true">↗</span>
-        {pending ? "공유 준비 중" : "Journey 공유"}
+        {pending ? "공유 준비 중" : "여행 공유"}
       </button>
       <span className="journey-share__status" role="status" aria-live="polite">
         {status}

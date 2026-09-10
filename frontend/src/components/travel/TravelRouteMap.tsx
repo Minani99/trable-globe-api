@@ -178,7 +178,6 @@ export function TravelRouteMap({ places }: TravelRouteMapProps) {
       <div className="travel-route-map-shell">
         <div className="travel-route-map-toolbar">
           <div>
-            <p className="eyebrow">City route</p>
             <p className="travel-route-map-toolbar__hint">지도를 움직이고 확대해 경로를 살펴보세요</p>
           </div>
           <div className="travel-route-map-controls" role="toolbar" aria-label="여행 경로 지도 확대·축소">
@@ -332,8 +331,7 @@ export function TravelRouteMap({ places }: TravelRouteMapProps) {
       <aside className="travel-itinerary" aria-label="방문 장소 일정">
         <div className="travel-itinerary__header">
           <div>
-            <p className="eyebrow">Itinerary</p>
-            <h3>일차별 Journey</h3>
+            <h3>일차별 일정</h3>
           </div>
           <span>{String(places.length).padStart(2, "0")}곳</span>
         </div>

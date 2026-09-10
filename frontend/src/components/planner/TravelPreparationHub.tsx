@@ -82,7 +82,7 @@ export function TravelPreparationHub({
   return (
     <section className="trip-preparation" aria-labelledby="trip-preparation-heading">
       <header className="trip-preparation__heading">
-        <div><p className="eyebrow">Trip assistant</p><h2 id="trip-preparation-heading">예약부터 변수 대응까지, 한곳에서</h2></div>
+        <div><h2 id="trip-preparation-heading">예약과 여행 준비</h2></div>
         <p>{formatDateRange(startDate, endDate)} · {destinationLabel}</p>
       </header>
 

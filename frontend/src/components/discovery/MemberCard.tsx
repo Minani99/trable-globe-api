@@ -18,7 +18,7 @@ export function MemberCard({ member, viewerAuthenticated }: { member: MemberDisc
     <article className="member-card">
       <Link href={`/${member.username}`} className="member-card__world" aria-label={`${displayName}님의 여행 세계 보기`}>
         <MemberWorldPreview countries={worldCountries} displayName={displayName} id={member.username} />
-        <span>{formatCount(member.travelCount)} JOURNEYS</span>
+        <span>여행 {formatCount(member.travelCount)}회</span>
       </Link>
 
       <Link href={`/${member.username}`} className="member-card__identity" aria-label={`${displayName} 프로필 보기`}>
@@ -36,13 +36,13 @@ export function MemberCard({ member, viewerAuthenticated }: { member: MemberDisc
 
       <div className="member-card__footprint">
         <strong>
-          {formatCount(member.countryCount)} Countries <span aria-hidden="true">·</span> {formatCount(cityCount)} Cities
+          나라 {formatCount(member.countryCount)} <span aria-hidden="true">·</span> 도시 {formatCount(cityCount)}
         </strong>
         <p>
           {recentDestinations.length > 0 ? (
             <>최근 여행 <b>{recentDestinations.join(" · ")}</b></>
           ) : (
-            "첫 Journey를 준비하고 있어요."
+            "첫 여행을 준비하고 있습니다."
           )}
         </p>
       </div>
@@ -52,7 +52,7 @@ export function MemberCard({ member, viewerAuthenticated }: { member: MemberDisc
       </div>
 
       <div className="member-card__actions">
-        <Link href={`/${member.username}`}>Travel World 보기 <span aria-hidden="true">→</span></Link>
+        <Link href={`/${member.username}`}>프로필 보기 <span aria-hidden="true">→</span></Link>
         {viewerAuthenticated ? (
           <FollowButton
             username={member.username}

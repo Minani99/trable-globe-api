@@ -42,7 +42,6 @@ export default function AboutPage() {
         <div className="site-shell">
           <header className="about-hero">
             <div className="about-hero__copy">
-              <p className="eyebrow">PLAN · TRAVEL · RECORD</p>
               <h1>여행 계획과 기록을<br />한곳에서 관리하세요.</h1>
               <p>
                 {siteConfig.name}에서 여행 일정을 만들고, 다녀온 국가와 도시, 이동 경로,

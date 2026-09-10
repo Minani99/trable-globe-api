@@ -44,8 +44,8 @@ test("다른 여행자의 공개 일정을 새 날짜의 내 계획으로 가져
   expect(registerResponse.status()).toBe(200);
 
   await page.goto(`/${owner}/travel/${sourceId}`);
-  await page.getByRole("button", { name: /이 Journey로 여행 계획 만들기/ }).click();
-  await expect(page.getByText("내 날짜로 Journey 시작하기")).toBeVisible();
+  await page.getByRole("button", { name: /이 일정으로 계획 만들기/ }).click();
+  await expect(page.getByText("내 날짜로 일정 가져오기")).toBeVisible();
   const newStartDate = "2026-10-10";
   await page.getByLabel("새 출발일").fill(newStartDate);
   await page.getByRole("button", { name: "2일 일정 담기" }).click();

@@ -331,8 +331,8 @@ export function ProfileExperience({
             <p>
               {globeOnly
                 ? selectedYear
-                  ? `${selectedYear}년에 쌓인 ${recap.countryCount}개 나라와 ${recap.travelCount}번의 Journey입니다.`
-                  : "지구본을 돌리고 나라를 선택해 그곳에 쌓인 Journey와 기억을 탐색하세요."
+                  ? `${selectedYear}년에 기록한 ${recap.countryCount}개 나라와 ${recap.travelCount}번의 여행입니다.`
+                  : "지구본에서 나라를 선택하면 그곳의 여행 기록을 확인할 수 있습니다."
                 : demoProfile
                 ? "여러 나라의 여행이 계획에서 기록으로 바뀌어 지구본에 쌓이는 모습을 체험해 보세요."
                 : selectedYear
@@ -379,12 +379,12 @@ export function ProfileExperience({
           {worldView === "globe" ? (
           <div className={`profile-globe-card${timelineControlsExpanded ? " has-expanded-timeline" : ""}`}>
             <div className="profile-globe-card__meta" aria-hidden="true">
-              <span>TRAVEL GLOBE · LIVE ARCHIVE</span>
+              <span>여행 기록</span>
               <span>
-                {String(globeCountries.length).padStart(2, "0")} COUNTRIES
+                나라 {String(globeCountries.length).padStart(2, "0")}
                 {timelineEngaged && activeMoment
                   ? ` · ${activeMoment.year}`
-                  : ` · ${String(selectedYear ? recap.cityCount : profile.statistics.cityCount).padStart(2, "0")} CITIES`}
+                  : ` · 도시 ${String(selectedYear ? recap.cityCount : profile.statistics.cityCount).padStart(2, "0")}`}
               </span>
             </div>
 
@@ -402,9 +402,9 @@ export function ProfileExperience({
 
               {scopedCountries.length === 0 ? (
                 <div className="profile-globe-empty" role="status">
-                  <span>Empty world</span>
+                  <span>여행 기록</span>
                   <strong>아직 여행 기록이 없습니다</strong>
-                  <p>첫 Journey를 남기면 방문한 나라와 기억이 이 지구본에 쌓입니다.</p>
+                  <p>첫 여행을 기록하면 방문한 나라가 지구본에 표시됩니다.</p>
                 </div>
               ) : null}
 
@@ -587,7 +587,6 @@ export function ProfileExperience({
             className={`profile-country-filter profile-archive__panel${mobileArchiveView === "countries" ? " is-mobile-active" : ""}`}
           >
             <div>
-              <p className="eyebrow">Country index</p>
               <h2 id="visited-heading">{selectedYear ? `${selectedYear}년에 방문한 나라` : "방문한 나라"}</h2>
             </div>
             <CountryKeyboardList

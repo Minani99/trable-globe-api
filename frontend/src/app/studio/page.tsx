@@ -41,9 +41,8 @@ export default async function StudioPage() {
         <div className="site-shell studio-shell">
           <header className="studio-hero">
             <div>
-              <p className="eyebrow">Travel studio · @{member.username}</p>
               <h1>다음 여행부터 지난 기록까지</h1>
-              <p>계획은 가볍게 시작하고, 다녀온 뒤 그대로 나의 여행 세계에 남겨보세요.</p>
+              <p>계획을 만들고, 여행 중 확인하고, 다녀온 뒤 기록으로 남기세요.</p>
             </div>
             <div className="studio-hero__actions">
               <Link href={`/${member.username}`} className="studio-secondary-action">공개 프로필</Link>
@@ -58,7 +57,6 @@ export default async function StudioPage() {
             <section className="studio-plans" aria-labelledby="studio-plans-heading">
               <div className="studio-section-heading">
                 <div>
-                  <p className="eyebrow">Continue planning</p>
                   <h2 id="studio-plans-heading">작성 중인 여행 계획</h2>
                   <small>최근 수정한 계획부터 이어서 작성할 수 있어요.</small>
                 </div>
@@ -74,9 +72,8 @@ export default async function StudioPage() {
           ) : (
             <section className="studio-plan-launch" aria-labelledby="studio-plan-launch-heading">
               <div>
-                <p className="eyebrow">One-click planner</p>
-                <h2 id="studio-plan-launch-heading">템플릿을 찾지 말고, 선택만 하세요.</h2>
-                <p>나라·날짜·여행 취향을 고르면 일차별 뼈대가 만들어집니다. 여행이 끝나면 사진과 메모만 더해 기록으로 바꿀 수 있어요.</p>
+                <h2 id="studio-plan-launch-heading">새 여행 계획 만들기</h2>
+                <p>나라와 날짜, 여행 취향을 고르면 일차별 일정이 만들어집니다.</p>
               </div>
               <ol aria-label="여행 계획 흐름">
                 <li><span>01</span>나라와 날짜</li>
@@ -90,7 +87,7 @@ export default async function StudioPage() {
           {readyToRemember.length > 0 ? (
             <section className="studio-memory-ready" aria-labelledby="studio-memory-ready-heading">
               <div className="studio-section-heading">
-                <div><p className="eyebrow">Ready to remember</p><h2 id="studio-memory-ready-heading">기록으로 완성할 여행</h2></div>
+                <div><h2 id="studio-memory-ready-heading">기록으로 완성할 여행</h2></div>
                 <span>{readyToRemember.length}개</span>
               </div>
               <p className="studio-memory-ready__intro">여행이 끝난 계획입니다. 실제로 다녀온 장소와 사진을 확인하면 같은 여행이 지구본의 기록이 됩니다.</p>
@@ -110,7 +107,6 @@ export default async function StudioPage() {
             <section aria-labelledby="getting-started-heading" className="studio-onboarding">
               <header>
                 <div>
-                  <p className="eyebrow">Getting started</p>
                   <h2 id="getting-started-heading">내 여행 세계를 완성하는 순서</h2>
                 </div>
                 <span>{profileReady ? "1" : "0"} / 3</span>
@@ -146,7 +142,7 @@ export default async function StudioPage() {
             <div className="studio-layout studio-layout--records">
               <section aria-labelledby="studio-travels-heading" className="studio-travels">
                 <div className="studio-section-heading">
-                  <div><p className="eyebrow">Archive</p><h2 id="studio-travels-heading">공개한 여행</h2></div>
+                  <div><h2 id="studio-travels-heading">공개한 여행</h2></div>
                   <span>{records.length}개</span>
                 </div>
                 <ol className="studio-travel-list">

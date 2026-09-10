@@ -32,7 +32,7 @@ test("회원가입부터 프로필 완성, 첫 여행 공개와 공유까지 이
   await expect(page.locator(".profile-globe-card canvas")).toBeVisible({ timeout: 30_000 });
   await expect(page.locator(".profile-world-summary")).toContainText("아직 기록된 여행이 없습니다.");
   await expect(page.locator(".profile-world-summary")).not.toContainText("0km");
-  await expect(page.getByRole("link", { name: "첫 Journey 만들기" })).toBeVisible();
+  await expect(page.getByRole("link", { name: "첫 여행 기록하기" }).first()).toBeVisible();
 
   const createResponse = await page.request.post("/api/private/travels", {
     data: {

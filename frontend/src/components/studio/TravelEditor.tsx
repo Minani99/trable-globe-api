@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { ChangeEvent, DragEvent, FormEvent, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { ChangeEvent, DragEvent, useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import { ApiError, apiMutation } from "@/lib/api/client";
 import { travelPath } from "@/lib/config";
@@ -712,11 +712,10 @@ export function TravelEditor({
     window.location.reload();
   }
 
-  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
+  async function handleSubmit() {
+    if (!validateMobileEditorStep(0) || !validateMobileEditorStep(1)) return;
     setPending(true);
     setStatus(null);
-    const formData = new FormData(event.currentTarget);
 
     try {
       if (photos.some((photo) => photo.uploadState === "uploading")) {
@@ -732,10 +731,10 @@ export function TravelEditor({
         throw new ApiError(400, "여행이 끝난 뒤 계획을 기록으로 전환할 수 있어요.");
       }
       const payload: TravelWriteInput = {
-        title: String(formData.get("title") ?? ""),
-        description: nullable(String(formData.get("description") ?? "")),
-        startDate: String(formData.get("startDate") ?? ""),
-        endDate: String(formData.get("endDate") ?? ""),
+        title,
+        description: nullable(description),
+        startDate,
+        endDate,
         coverImageUrl: nullable(coverImageUrl),
         visibility,
         places: places.map((place) => toPlaceInput(place, countryMap)),
@@ -839,11 +838,10 @@ export function TravelEditor({
   }
 
   return (
-    <form className={`travel-editor${draftHydrated ? "" : " is-restoring"}`} onSubmit={handleSubmit} onChange={() => setDirty(true)} aria-busy={!draftHydrated}>
+    <div className={`travel-editor${draftHydrated ? "" : " is-restoring"}`} onChange={() => setDirty(true)} aria-busy={!draftHydrated}>
       {planningMode ? (
         <section className={`travel-conversion${conversionReady ? " is-ready" : ""}`} data-mobile-active={mobileEditorStep === 2} aria-labelledby="travel-conversion-heading">
           <div>
-            <p className="eyebrow">Plan to memory</p>
             <h2 id="travel-conversion-heading">{tripFinished ? "이 계획을 여행 기록으로 완성하세요." : "다녀온 뒤, 같은 여행이 기록이 됩니다."}</h2>
             <p>{tripFinished ? "실제로 다녀온 장소와 사진을 확인한 뒤 한 번에 지구본에 남길 수 있습니다." : `${formatPlanDay(endDate)}까지는 나만 보는 계획으로 안전하게 보관됩니다.`}</p>
           </div>
@@ -859,25 +857,25 @@ export function TravelEditor({
       ) : null}
       <nav id="travel-quick-actions" className={`mobile-travel-quick-nav${travelActive ? " is-travel-mode" : ""}`} aria-label="여행 중 빠른 입력">
         <div>
-          <small>Quick capture</small>
+          <small>빠른 기록</small>
           <strong>{planningMode && activePlanDate ? `${formatPlanDay(activePlanDate)} 일정` : "여행 기록"}</strong>
         </div>
         <div>
           <button type="button" onClick={() => openQuickCapture("place")}><span aria-hidden="true">⌖</span>장소</button>
           <button type="button" onClick={() => openQuickCapture("photo")}><span aria-hidden="true">▧</span>사진</button>
           <button type="button" onClick={() => openQuickCapture("note")}><span aria-hidden="true">≡</span>메모</button>
-          <button type="submit" className="is-save" aria-label="여행 저장" disabled={pending}><span aria-hidden="true">✓</span>저장</button>
+          <button type="button" onClick={() => void handleSubmit()} className="is-save" aria-label="여행 저장" disabled={pending}><span aria-hidden="true">✓</span>저장</button>
         </div>
       </nav>
       <header id="mobile-travel-editor-progress" className="travel-editor__mobile-progress">
-        <div><span>STEP {mobileEditorStep + 1} / {MOBILE_EDITOR_STEPS.length}</span><strong>{MOBILE_EDITOR_STEPS[mobileEditorStep]}</strong></div>
+        <div><span>{mobileEditorStep + 1} / {MOBILE_EDITOR_STEPS.length}</span><strong>{MOBILE_EDITOR_STEPS[mobileEditorStep]}</strong></div>
         <span role="progressbar" aria-label="여행 편집 진행률" aria-valuemin={1} aria-valuemax={MOBILE_EDITOR_STEPS.length} aria-valuenow={mobileEditorStep + 1}>
           <i style={{ width: `${((mobileEditorStep + 1) / MOBILE_EDITOR_STEPS.length) * 100}%` }} />
         </span>
       </header>
       {status ? <p className="travel-editor__mobile-status" role="alert">{status}</p> : null}
       <section className="travel-editor__section" data-mobile-active={mobileEditorStep === 0}>
-        <div className="travel-editor__section-heading"><span>01</span><div><p className="eyebrow">Journey</p><h2>{planningMode ? "계획 기본 정보" : "여행 기본 정보"}</h2></div></div>
+        <div className="travel-editor__section-heading"><span>01</span><div><h2>{planningMode ? "계획 기본 정보" : "여행 기본 정보"}</h2></div></div>
         <div className="travel-editor__fields">
           <label className="is-wide"><span>여행 제목</span><input name="title" value={title} onChange={(event) => setTitle(event.target.value)} maxLength={120} placeholder={planningMode ? "다음 여행의 이름" : "기억하고 싶은 이름을 붙여 주세요"} required /></label>
           <label><span>시작일</span><input name="startDate" type="date" value={startDate} onChange={(event) => setStartDate(event.target.value)} required /></label>
@@ -909,7 +907,7 @@ export function TravelEditor({
       </section>
 
       <section id="travel-place-editor" className="travel-editor__section" data-mobile-active={mobileEditorStep === 1}>
-        <div className="travel-editor__section-heading"><span>02</span><div><p className="eyebrow">Itinerary</p><h2>{planningMode ? "일차별 일정" : "방문 장소"}</h2><p>{planningMode ? "자동 초안을 간단히 훑거나 시간표로 열어 장소와 체류 시간을 조정하세요." : "입력한 순서대로 상세 지도의 경로가 이어집니다."}</p></div></div>
+        <div className="travel-editor__section-heading"><span>02</span><div><h2>{planningMode ? "일차별 일정" : "방문 장소"}</h2><p>{planningMode ? "장소와 체류 시간을 확인하고 필요한 부분만 수정하세요." : "입력한 순서대로 지도에 경로가 표시됩니다."}</p></div></div>
         <div className="travel-editor__itinerary-content">
         {planningMode && planDays.length > 0 ? (
           <div className="plan-itinerary">
@@ -920,7 +918,7 @@ export function TravelEditor({
             <section className="weather-replan" aria-labelledby="weather-replan-heading">
               <div className="weather-replan__intro">
                 <span className="weather-replan__icon" aria-hidden="true">☂</span>
-                <div><small>Weather replan · automatic preview</small><h3 id="weather-replan-heading">비가 오면, 변경안을 먼저 준비해요</h3><p>계획을 열 때 예보를 자동 확인하고, 적용 전에는 항상 직접 비교할 수 있습니다.</p></div>
+                <div><small>날씨에 맞춘 일정</small><h3 id="weather-replan-heading">비 예보가 있는 날을 확인하세요</h3><p>실내 장소로 바꾼 일정을 비교한 뒤 직접 적용할 수 있습니다.</p></div>
                 <button type="button" onClick={() => void buildWeatherReplanProposal()} disabled={weatherPlannerState === "loading" || pending}>{weatherPlannerState === "loading" ? "예보 확인 중…" : "예보 다시 확인"}</button>
               </div>
               {weatherPlannerMessage ? <div className="weather-replan__message" role="status"><span>{weatherPlannerMessage}</span>{weatherUndo ? <button type="button" onClick={undoWeatherProposal}>변경 전으로 되돌리기</button> : null}</div> : null}
@@ -1014,7 +1012,7 @@ export function TravelEditor({
       </section>
 
       <section id="travel-photo-editor" className="travel-editor__section" data-mobile-active={mobileEditorStep === 2}>
-        <div className="travel-editor__section-heading"><span>03</span><div><p className="eyebrow">Scenes</p><h2>여행 사진</h2><p>사진을 바로 올리고, 순서를 정하고, 방문 장소와 연결해 보세요.</p></div></div>
+        <div className="travel-editor__section-heading"><span>03</span><div><h2>여행 사진</h2><p>사진을 추가하고 방문 장소와 연결할 수 있습니다.</p></div></div>
         <label
           className={`travel-editor__dropzone${uploadConfig?.configured ? " is-ready" : ""}`}
           onDragOver={(event) => event.preventDefault()}
@@ -1084,7 +1082,7 @@ export function TravelEditor({
           <span aria-live="polite">{draftStatus}</span>
           {draftRestored ? <button type="button" onClick={discardDraft} disabled={pending}>임시 저장본 버리기</button> : null}
         </div>
-        <div><Link href={editing && initialTravel?.visibility === "PUBLIC" ? travelPath(username, initialTravel.id) : "/studio"}>취소</Link><button type="submit" disabled={pending}>{pending ? "저장 중…" : planningMode && visibility === "PUBLIC" ? "기록으로 전환하기" : planningMode ? "계획 저장" : editing ? "변경 내용 저장" : "여행 기록 저장"}</button></div>
+        <div><Link href={editing && initialTravel?.visibility === "PUBLIC" ? travelPath(username, initialTravel.id) : "/studio"}>취소</Link><button type="button" onClick={() => void handleSubmit()} disabled={pending}>{pending ? "저장 중…" : planningMode && visibility === "PUBLIC" ? "기록으로 전환하기" : planningMode ? "계획 저장" : editing ? "변경 내용 저장" : "여행 기록 저장"}</button></div>
       </footer>
       <nav className="travel-editor__mobile-nav" aria-label="여행 편집 단계 이동">
         <button type="button" className="is-previous" onClick={() => moveMobileEditorStep(-1)} disabled={mobileEditorStep === 0 || pending}>이전</button>
@@ -1092,10 +1090,10 @@ export function TravelEditor({
         {mobileEditorStep < MOBILE_EDITOR_STEPS.length - 1 ? (
           <button key="next-editor-step" type="button" className="is-next" onClick={(event) => { event.preventDefault(); moveMobileEditorStep(1); }}>다음</button>
         ) : (
-          <button key="submit-editor" type="submit" className="is-next" disabled={pending}>{pending ? "저장 중…" : planningMode && visibility === "PUBLIC" ? "기록으로 전환하기" : planningMode ? "계획 저장" : editing ? "변경 내용 저장" : "여행 기록 저장"}</button>
+          <button key="submit-editor" type="button" onClick={() => void handleSubmit()} className="is-next" disabled={pending}>{pending ? "저장 중…" : planningMode && visibility === "PUBLIC" ? "기록으로 전환하기" : planningMode ? "계획 저장" : editing ? "변경 내용 저장" : "여행 기록 저장"}</button>
         )}
       </nav>
-    </form>
+    </div>
   );
 }
 

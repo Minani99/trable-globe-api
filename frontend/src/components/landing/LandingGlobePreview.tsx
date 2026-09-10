@@ -115,11 +115,11 @@ export function LandingGlobePreview() {
             <GlobeStat label="국가" value={formatStat(statistics?.countryCount)} />
             <GlobeStat label="도시" value={formatStat(statistics?.cityCount)} />
             <GlobeStat label="여행" value={formatStat(statistics?.travelCount)} />
-            <GlobeStat label="Memories" value={formatStat(statistics?.placeCount)} />
+            <GlobeStat label="장소" value={formatStat(statistics?.placeCount)} />
           </dl>
 
           <p className="landing-globe-context" aria-live="polite">
-            <small>{member === undefined ? "LOADING WORLD" : isOwnWorld ? "MY WORLD" : "SAMPLE WORLD"}</small>
+            <small>{member === undefined ? "불러오는 중" : isOwnWorld ? "내 지구본" : "샘플 지구본"}</small>
             <strong>
               {member === undefined
                 ? "계정 확인 중"
@@ -145,7 +145,7 @@ export function LandingGlobePreview() {
                 </div>
                 <div className="min-w-0 max-w-[52%] text-right">
                   <p className="text-content-faint text-[0.58rem] font-semibold tracking-[0.13em] uppercase">
-                    Landmark
+                    대표 장소
                   </p>
                   <p className="text-content-muted mt-1 truncate text-[0.72rem] font-medium">
                     {activePlace.place}

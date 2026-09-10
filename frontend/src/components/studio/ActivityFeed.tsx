@@ -8,7 +8,7 @@ export function ActivityFeed({ events }: { events: ActivityEvent[] }) {
   return (
     <section id="activity" className="studio-activity" aria-labelledby="studio-activity-heading">
       <div className="studio-section-heading">
-        <div><p className="eyebrow">Activity</p><h2 id="studio-activity-heading">최근 활동</h2></div>
+        <div><h2 id="studio-activity-heading">최근 활동</h2></div>
         <Link href="/discover">여행자 찾기 →</Link>
       </div>
       {events.length ? (

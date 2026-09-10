@@ -54,8 +54,8 @@ export function TravelYearRecap({
       ? `${recap.topCountry.nameKo}을 ${recap.topCountryVisits}번 찾았고, ${numberFormatter.format(recap.distanceKm)}km의 여정이 세계에 남았습니다.`
       : `${numberFormatter.format(recap.distanceKm)}km의 여정이 세계에 남았습니다.`
     : recap.travelCount === 1
-      ? "첫 Journey를 기록하며 나의 여행 세계를 시작했습니다."
-      : `${recap.travelCount}번의 Journey가 나의 여행 세계에 기록되었습니다.`;
+      ? "첫 여행을 기록했습니다."
+      : `${recap.travelCount}번의 여행을 기록했습니다.`;
   const narrative = customization?.narrative || defaultNarrative;
   const busiestMonth = [...recap.monthSummaries].sort((left, right) => (
     right.travelCount - left.travelCount || right.travelDays - left.travelDays
@@ -69,7 +69,6 @@ export function TravelYearRecap({
     <section className="travel-recap" aria-labelledby="travel-recap-heading">
       <div className="travel-recap__heading">
         <div>
-          <p className="eyebrow">World recap</p>
           <h2 id="travel-recap-heading">{scopeLabel}, 내가 만든 여행 세계</h2>
         </div>
         <div className="travel-recap__summary">
@@ -231,7 +230,6 @@ export function TravelYearRecap({
           <section aria-labelledby="travel-recap-months-heading" className="travel-recap__rhythm">
             <div className="travel-recap__insight-heading">
               <div>
-                <p className="eyebrow">Travel rhythm</p>
                 <h3 id="travel-recap-months-heading">
                   {recap.year ? "그해의 여행 리듬" : "계절마다 쌓인 여행 리듬"}
                 </h3>
@@ -269,7 +267,6 @@ export function TravelYearRecap({
           <section aria-labelledby="travel-recap-cities-heading" className="travel-recap__cities">
             <div className="travel-recap__insight-heading">
               <div>
-                <p className="eyebrow">City memories</p>
                 <h3 id="travel-recap-cities-heading">기억이 쌓인 대표 도시</h3>
               </div>
               <p>각 여행의 대표 도시를 기준으로 모았습니다.</p>
@@ -300,7 +297,6 @@ export function TravelYearRecap({
         {comparison && comparisonNarrative ? (
           <section className="travel-recap__comparison" aria-labelledby="travel-recap-comparison-heading">
             <div className="travel-recap__comparison-intro">
-              <p className="eyebrow">World comparison</p>
               <h3 id="travel-recap-comparison-heading">
                 {comparison.previousYear}년과 {comparison.currentYear}년 비교
               </h3>

@@ -80,7 +80,6 @@ export function TravelFinishEditor({ username, travel }: { username: string; tra
     <section className="travel-finish" aria-labelledby="travel-finish-heading">
       <header className="travel-finish__overview">
         <div>
-          <p className="eyebrow">Finish trip</p>
           <h2 id="travel-finish-heading">여행 마무리</h2>
           <p>{formatDateRange(travel.startDate, travel.endDate)} · 장소 {travel.places.length}곳 · 사진 {travel.photos.length}장</p>
         </div>

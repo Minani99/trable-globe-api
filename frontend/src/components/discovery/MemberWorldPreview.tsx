@@ -44,7 +44,7 @@ export function MemberWorldPreview({
           <circle className="member-world-preview__point" cx={point.x} cy={point.y} r={index === 0 ? 3.2 : 2.6} />
         </g>
       ))}
-      {points.length === 0 ? <text x="150" y="80">FIRST JOURNEY</text> : null}
+      {points.length === 0 ? <text x="150" y="80">첫 여행</text> : null}
     </svg>
   );
 }

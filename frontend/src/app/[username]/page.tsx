@@ -45,7 +45,7 @@ export async function generateMetadata(props: PageProps<"/[username]">): Promise
     const title = sharedYear
       ? `${sharedYear} 여행 세계 · ${displayName} (@${profile.username})`
       : `${displayName} (@${profile.username})`;
-    const identitySummary = `${profile.statistics.countryCount}개 나라 · ${profile.statistics.cityCount}개 도시 · ${profile.statistics.travelCount}개 Journey`;
+    const identitySummary = `${profile.statistics.countryCount}개 나라 · ${profile.statistics.cityCount}개 도시 · ${profile.statistics.travelCount}번의 여행`;
     const description = sharedYear
       ? `${displayName}님이 ${sharedYear}년에 기록한 여행 동선과 기억을 지구본에서 만나보세요.`
       : `${identitySummary}. ${profile.bio ?? `${displayName}님의 여행 동선과 기억을 지구본에서 만나보세요.`}`;
@@ -147,7 +147,7 @@ export default async function ProfilePage(props: PageProps<"/[username]">) {
             name: publicDisplayName(profile.displayName),
             identifier: profile.username,
             description: profile.bio
-              ?? `${profile.statistics.countryCount}개 나라와 ${profile.statistics.travelCount}개 Journey가 기록된 여행 세계`,
+              ?? `${profile.statistics.countryCount}개 나라와 ${profile.statistics.travelCount}번의 여행 기록`,
             image: profile.profileImageUrl ?? undefined,
           },
         }}

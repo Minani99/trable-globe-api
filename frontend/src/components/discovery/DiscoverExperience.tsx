@@ -94,17 +94,17 @@ export function DiscoverExperience({
           />
           {query ? <button type="button" onClick={() => changeQuery("")} aria-label="검색어 지우기">×</button> : null}
         </div>
-        <p>추천에는 공개 Journey와 프로필 소개가 있는 여행자만 표시됩니다. 검색에서는 새로 가입한 친구도 찾을 수 있어요.</p>
+        <p>추천에는 공개 여행과 프로필 소개가 있는 사용자만 표시됩니다. 검색으로 새로 가입한 친구도 찾을 수 있습니다.</p>
       </form>
 
       <section className="discover-results" aria-labelledby="discover-results-heading" aria-busy={loading}>
         <header>
           <div>
-            <p className="discover-results__eyebrow">{searching ? "SEARCH RESULTS" : "FEATURED TRAVELERS"}</p>
+            <p className="discover-results__eyebrow">{searching ? "검색 결과" : "추천 여행자"}</p>
             <h2 id="discover-results-heading">
               {searching ? `“${submittedQuery || query.trim()}” 검색 결과` : "기록이 있는 여행자"}
             </h2>
-            {!searching ? <p>프로필과 최근 Journey가 갖춰진 Travel World만 모았습니다.</p> : null}
+            {!searching ? <p>프로필과 최근 공개 여행이 있는 사용자를 모았습니다.</p> : null}
           </div>
           <span aria-live="polite">{loading ? "찾는 중…" : `${visible.length}명`}</span>
         </header>
@@ -112,8 +112,8 @@ export function DiscoverExperience({
         {error ? <div className="discover-empty" role="alert"><strong>검색을 완료하지 못했습니다</strong><p>{error}</p></div> : null}
         {!error && !loading && visible.length === 0 ? (
           <div className="discover-empty">
-            <strong>{searching ? "일치하는 여행자가 없습니다" : "아직 소개할 Travel World가 없어요"}</strong>
-            <p>{searching ? "사용자명 일부나 보여질 이름으로 다시 검색해 보세요." : "공개 Journey가 쌓이면 이곳에서 새로운 여행 세계로 소개됩니다. 위 검색으로 친구를 먼저 찾아볼 수도 있어요."}</p>
+            <strong>{searching ? "일치하는 여행자가 없습니다" : "아직 소개할 공개 여행이 없습니다"}</strong>
+            <p>{searching ? "사용자명이나 보여질 이름으로 다시 검색해 보세요." : "공개 여행이 생기면 이곳에 표시됩니다. 위 검색으로 친구를 직접 찾을 수도 있습니다."}</p>
           </div>
         ) : null}
         {!error && visible.length > 0 ? (

@@ -209,14 +209,14 @@ export function PlanBuilder({ countries, today, initialCountryCode = "" }: { cou
   return (
     <div className="plan-builder">
       <header id="mobile-plan-progress" className="plan-builder__mobile-progress">
-        <div><span>STEP {mobileStep + 1} / {MOBILE_PLAN_STEPS.length}</span><strong>{MOBILE_PLAN_STEPS[mobileStep]}</strong></div>
+        <div><span>{mobileStep + 1} / {MOBILE_PLAN_STEPS.length}</span><strong>{MOBILE_PLAN_STEPS[mobileStep]}</strong></div>
         <span role="progressbar" aria-label="여행 계획 작성 진행률" aria-valuemin={1} aria-valuemax={MOBILE_PLAN_STEPS.length} aria-valuenow={mobileStep + 1}>
           <i style={{ width: `${((mobileStep + 1) / MOBILE_PLAN_STEPS.length) * 100}%` }} />
         </span>
       </header>
       <div className="plan-builder__main">
         <section className="plan-step" data-mobile-active={mobileStep === 0} aria-labelledby="plan-country-heading">
-          <div className="plan-step__heading"><span>01</span><div><p className="eyebrow">Destination</p><h2 id="plan-country-heading">어디로 떠날까요?</h2></div></div>
+          <div className="plan-step__heading"><span>01</span><div><h2 id="plan-country-heading">어디로 떠날까요?</h2></div></div>
           <label className="plan-country-select">
             <span className="sr-only">여행할 나라</span>
             <select value={countryCode} onChange={(event) => { setCountryCode(event.target.value); setError(null); }}>
@@ -234,7 +234,7 @@ export function PlanBuilder({ countries, today, initialCountryCode = "" }: { cou
         </section>
 
         <section className="plan-step" data-mobile-active={mobileStep === 1} aria-labelledby="plan-date-heading">
-          <div className="plan-step__heading"><span>02</span><div><p className="eyebrow">When</p><h2 id="plan-date-heading">언제, 며칠 동안 갈까요?</h2></div></div>
+          <div className="plan-step__heading"><span>02</span><div><h2 id="plan-date-heading">언제, 며칠 동안 갈까요?</h2></div></div>
           <div className="plan-date-row">
             <label><span>출발일</span><input type="date" min={today} value={startDate} onChange={(event) => { setStartDate(event.target.value); setError(null); }} /></label>
             <div><span>여행 기간</span><div className="plan-choice-row is-compact">{[1, 2, 3, 4, 5, 7].map((days) => <button key={days} type="button" className={tripDays === days ? "is-selected" : ""} onClick={() => setTripDays(days)}>{days === 1 ? "당일" : `${days - 1}박 ${days}일`}</button>)}</div></div>
@@ -242,14 +242,14 @@ export function PlanBuilder({ countries, today, initialCountryCode = "" }: { cou
         </section>
 
         <section className="plan-step" data-mobile-active={mobileStep === 2} aria-labelledby="plan-style-heading">
-          <div className="plan-step__heading"><span>03</span><div><p className="eyebrow">Mood</p><h2 id="plan-style-heading">누구와, 어떤 여행인가요?</h2></div></div>
+          <div className="plan-step__heading"><span>03</span><div><h2 id="plan-style-heading">누구와, 어떤 여행인가요?</h2></div></div>
           <div className="plan-option-group"><span>동행</span><div className="plan-choice-row">{COMPANIONS.map((item) => <button key={item} type="button" className={companion === item ? "is-selected" : ""} onClick={() => setCompanion(item)}>{item}</button>)}</div></div>
           <div className="plan-option-group"><span>취향 · 최대 3개</span><div className="plan-choice-row">{STYLES.map((item) => <button key={item} type="button" className={styles.includes(item) ? "is-selected" : ""} onClick={() => toggleStyle(item)} aria-pressed={styles.includes(item)}>{item}</button>)}</div></div>
           <div className="plan-pace-grid">{PACES.map((item) => <button key={item.id} type="button" className={pace === item.id ? "is-selected" : ""} onClick={() => setPace(item.id)}><strong>{item.label}</strong><span>{item.description}</span></button>)}</div>
         </section>
 
         <section className="plan-step" data-mobile-active={mobileStep === 3} aria-labelledby="plan-build-heading">
-          <div className="plan-step__heading"><span>04</span><div><p className="eyebrow">Start point</p><h2 id="plan-build-heading">어디까지 맡길까요?</h2></div></div>
+          <div className="plan-step__heading"><span>04</span><div><h2 id="plan-build-heading">어디까지 맡길까요?</h2></div></div>
           <div className="plan-build-mode" role="group" aria-label="계획 생성 방식">
             {BUILD_MODES.map((item) => (
               <button key={item.id} type="button" className={buildMode === item.id ? "is-selected" : ""} onClick={() => { setBuildMode(item.id); setError(null); }} aria-pressed={buildMode === item.id}>
@@ -281,7 +281,6 @@ export function PlanBuilder({ countries, today, initialCountryCode = "" }: { cou
       </div>
 
       <aside className="plan-summary" data-mobile-active={mobileStep === 4} aria-label="여행 계획 요약">
-        <p className="eyebrow">Your next world</p>
         <span className="plan-summary__number">{selectedCountry ? selectedCountry.iso2Code : "––"}</span>
         <h2>{selectedCountry ? `${selectedCountry.nameKo} 여행` : "다음 여행을 골라보세요"}</h2>
         <dl>

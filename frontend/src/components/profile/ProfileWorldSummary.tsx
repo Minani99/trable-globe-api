@@ -17,22 +17,21 @@ export function ProfileWorldSummary({ recap, isOwnProfile, cityCount }: ProfileW
   return (
     <section className="profile-world-summary" aria-labelledby="profile-world-summary-heading">
       <div className="profile-world-summary__copy">
-        <p className="eyebrow">My world</p>
         <h2 id="profile-world-summary-heading">
           {recap.year ? `${recap.year}년의 여행 세계` : "여행으로 만들어진 나의 세계"}
         </h2>
         <p>{narrative}</p>
         {recap.travelCount === 0 && isOwnProfile ? (
-          <Link href="/studio/travels/new">첫 Journey 만들기</Link>
+          <Link href="/studio/travels/new">첫 여행 기록하기</Link>
         ) : null}
       </div>
 
       <dl className="profile-world-summary__stats">
-        <WorldStat label="Countries" value={formatStat(recap.countryCount)} />
-        <WorldStat label="Cities" value={formatStat(cityCount)} />
-        <WorldStat label="Journeys" value={formatStat(recap.travelCount)} />
+        <WorldStat label="나라" value={formatStat(recap.countryCount)} />
+        <WorldStat label="도시" value={formatStat(cityCount)} />
+        <WorldStat label="여행" value={formatStat(recap.travelCount)} />
         <WorldStat
-          label="Distance"
+          label="이동 거리"
           value={recap.distanceKm > 0 ? numberFormatter.format(recap.distanceKm) : "—"}
           unit={recap.distanceKm > 0 ? "km" : undefined}
         />
@@ -49,10 +48,10 @@ export function buildWorldSummaryNarrative(recap: TravelRecap): string {
     return "첫 여행 기록을 시작했습니다.";
   }
   if (recap.travelCount === 1) {
-    return "첫 번째 Journey가 이 세계에 기록되었습니다.";
+    return "첫 번째 여행이 기록되었습니다.";
   }
   if (recap.distanceKm === 0) {
-    return `${recap.travelCount}번의 Journey가 이 세계에 기록되었습니다.`;
+  return `${recap.travelCount}번의 여행이 기록되었습니다.`;
   }
   return `${numberFormatter.format(recap.distanceKm)}km의 여행이 이 세계에 기록되었습니다.`;
 }
