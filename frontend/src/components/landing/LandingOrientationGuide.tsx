@@ -15,7 +15,8 @@ function subscribeToGuideState(callback: () => void) {
 }
 
 function getGuideState() {
-  return window.localStorage.getItem(GUIDE_STORAGE_KEY) === "1";
+  try { return window.localStorage.getItem(GUIDE_STORAGE_KEY) === "1"; }
+  catch { return false; }
 }
 
 export function LandingOrientationGuide() {
@@ -23,7 +24,7 @@ export function LandingOrientationGuide() {
   const seen = useSyncExternalStore(subscribeToGuideState, getGuideState, () => true);
 
   const openGuide = () => {
-    window.localStorage.setItem(GUIDE_STORAGE_KEY, "1");
+    try { window.localStorage.setItem(GUIDE_STORAGE_KEY, "1"); } catch { /* The guide also works with storage disabled. */ }
     window.dispatchEvent(new Event(GUIDE_CHANGE_EVENT));
     dialogRef.current?.showModal();
   };

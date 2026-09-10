@@ -120,7 +120,7 @@ function MobileBottomNavigation({
 
   return (
     <nav className="site-mobile-bottom-nav" aria-label="모바일 주요 메뉴">
-      <MobileNavLink href={globePath} label="세계" icon="globe" active={globeActive} emphasized />
+      <MobileNavLink href={globePath} label="세계" icon="globe" active={globeActive} />
       <MobileNavLink
         href={journeyHref}
         label="기록"

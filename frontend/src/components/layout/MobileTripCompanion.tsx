@@ -35,11 +35,13 @@ export function MobileTripCompanion({
   today,
   username,
   variant = "sheet",
+  initialDate,
 }: {
   travel: TravelDetail;
   today: string;
   username: string;
   variant?: "sheet" | "page";
+  initialDate?: string;
 }) {
   const [currentTravel, setCurrentTravel] = useState(travel);
   const [forecast, setForecast] = useState<ForecastDay | null>(null);
@@ -52,15 +54,24 @@ export function MobileTripCompanion({
   const [online, setOnline] = useState(true);
   const [syncing, setSyncing] = useState(false);
   const [pendingSyncCount, setPendingSyncCount] = useState(0);
-  const [viewDate, setViewDate] = useState(() => clampDateToTravel(today, travel.startDate, travel.endDate));
+  const [viewDate, setViewDate] = useState(() => clampDateToTravel(initialDate ?? today, travel.startDate, travel.endDate));
+  const [pendingPlaceId, setPendingPlaceId] = useState<number | null>(null);
+  const mutationLock = useRef(false);
+  const composerRef = useRef<HTMLFieldSetElement>(null);
   const photoInputRef = useRef<HTMLInputElement>(null);
   const travelDates = useMemo(() => datesBetween(currentTravel.startDate, currentTravel.endDate), [currentTravel.endDate, currentTravel.startDate]);
   const dayNumber = Math.max(1, Math.min(currentTravel.durationDays, differenceInDays(currentTravel.startDate, viewDate) + 1));
   const dayPlaces = useMemo(() => placesForDay(currentTravel.places, viewDate), [viewDate, currentTravel.places]);
   const viewingToday = viewDate === today;
-  const nextPlace = useMemo(() => findNextPlace(dayPlaces, viewingToday), [dayPlaces, viewingToday]);
+  const nextPlace = dayPlaces.find((place) => !place.completedAt) ?? null;
   const selectedPlace = dayPlaces.find((place) => place.id === selectedPlaceId) ?? nextPlace ?? dayPlaces[0] ?? null;
   const location = dayPlaces[0] ?? currentTravel.places[0];
+  const visibleForecast = forecast?.date === viewDate ? forecast : null;
+  const completedCount = dayPlaces.filter((place) => place.completedAt).length;
+
+  useEffect(() => {
+    if (composer) composerRef.current?.scrollIntoView({ block: "nearest", behavior: "instant" });
+  }, [composer]);
 
   useEffect(() => {
     if (!location) return;
@@ -74,9 +85,8 @@ export function MobileTripCompanion({
     fetch(`/api/weather/forecast?${params}`, { signal: controller.signal })
       .then(async (response) => {
         const body = await response.json() as ForecastResponse;
-        if (response.ok && body.success && body.data?.available) {
-          setForecast(body.data.days.find((day) => day.date === viewDate) ?? null);
-        }
+        if (!controller.signal.aborted) setForecast(response.ok && body.success && body.data?.available
+          ? body.data.days.find((day) => day.date === viewDate) ?? null : null);
       })
       .catch((error) => {
         if (!(error instanceof Error && error.name === "AbortError")) setForecast(null);
@@ -181,12 +191,17 @@ export function MobileTripCompanion({
   }
 
   async function updatePlace(place: TravelPlace, completed: boolean, nextMemo = place.memo ?? "") {
+    if (mutationLock.current) return;
+    mutationLock.current = true;
+    setPendingPlaceId(place.id);
     setPendingAction("place");
     setStatus(null);
     const normalizedMemo = nextMemo.trim() || null;
     if (!navigator.onLine) {
       saveOfflinePlaceUpdate(place, completed, normalizedMemo, completed ? "완료 상태를 기기에 저장했습니다." : "일정을 다시 열었습니다.");
       setPendingAction(null);
+      setPendingPlaceId(null);
+      mutationLock.current = false;
       return;
     }
     try {
@@ -207,6 +222,8 @@ export function MobileTripCompanion({
       }
     } finally {
       setPendingAction(null);
+      setPendingPlaceId(null);
+      mutationLock.current = false;
     }
   }
 
@@ -219,7 +236,8 @@ export function MobileTripCompanion({
   }
 
   async function saveNote() {
-    if (!selectedPlace) return;
+    if (!selectedPlace || mutationLock.current) return;
+    mutationLock.current = true;
     setPendingAction("note");
     setStatus(null);
     const normalizedMemo = note.trim() || null;
@@ -227,6 +245,7 @@ export function MobileTripCompanion({
       saveOfflinePlaceUpdate(selectedPlace, Boolean(selectedPlace.completedAt), normalizedMemo, "메모를 기기에 저장했습니다.");
       setComposer(null);
       setPendingAction(null);
+      mutationLock.current = false;
       return;
     }
     try {
@@ -249,15 +268,18 @@ export function MobileTripCompanion({
       }
     } finally {
       setPendingAction(null);
+      mutationLock.current = false;
     }
   }
 
   async function addPhoto(file: File) {
+    if (mutationLock.current) return;
     if (!navigator.onLine) {
       setOnline(false);
       setStatus("사진은 연결된 상태에서 올릴 수 있습니다. 완료와 메모는 오프라인에서도 저장됩니다.");
       return;
     }
+    mutationLock.current = true;
     setPendingAction("photo");
     setUploadProgress(0);
     setStatus(null);
@@ -287,6 +309,7 @@ export function MobileTripCompanion({
     } finally {
       setPendingAction(null);
       setUploadProgress(0);
+      mutationLock.current = false;
       if (photoInputRef.current) photoInputRef.current.value = "";
     }
   }
@@ -299,10 +322,10 @@ export function MobileTripCompanion({
           <span>DAY {dayNumber} · {formatShortDate(viewDate)}</span>
           <h2 id={`mobile-trip-${variant}-${currentTravel.id}`}>{viewingToday ? "오늘 일정" : `${dayNumber}일차 일정`}</h2>
         </div>
-        {forecast ? (
-          <p className={isRain(forecast) ? "has-rain" : undefined}>
-            <strong>{weatherIcon(forecast.weatherCode)}</strong>
-            <span>{formatTemperature(forecast)} · 비 {forecast.precipitationProbability}%</span>
+        {visibleForecast ? (
+          <p className={isRain(visibleForecast) ? "has-rain" : undefined}>
+            <strong>{weatherIcon(visibleForecast.weatherCode)}</strong>
+            <span>{formatTemperature(visibleForecast)} · 비 {visibleForecast.precipitationProbability}%</span>
           </p>
         ) : null}
       </header>
@@ -315,11 +338,15 @@ export function MobileTripCompanion({
               type="button"
               className={date === viewDate ? "is-active" : undefined}
               aria-current={date === viewDate ? "date" : undefined}
+              disabled={pendingAction !== null}
               onClick={() => {
                 setViewDate(date);
                 setSelectedPlaceId(null);
                 setComposer(null);
                 setStatus(null);
+                const url = new URL(window.location.href);
+                url.searchParams.set("date", date);
+                window.history.replaceState(null, "", url);
               }}
             >
               <strong>DAY {index + 1}</strong>
@@ -328,6 +355,14 @@ export function MobileTripCompanion({
             </button>
           ))}
         </nav>
+      ) : null}
+
+      {dayPlaces.length > 0 ? (
+        <div className="mobile-trip-companion__progress" aria-label="일정 완료 현황">
+          <span>장소 {dayPlaces.length}곳</span>
+          <span>{completedCount} / {dayPlaces.length} 완료</span>
+          <progress max={dayPlaces.length} value={completedCount} aria-label="완료한 일정" />
+        </div>
       ) : null}
 
       {!online || pendingSyncCount > 0 || syncing ? (
@@ -344,7 +379,7 @@ export function MobileTripCompanion({
 
       {nextPlace ? (
         <a className="mobile-trip-companion__next" href={googleMapsUrl(nextPlace)} target="_blank" rel="noreferrer">
-          <span>{!viewingToday || isFuturePlace(nextPlace) ? "다음 일정" : "마지막 일정"}</span>
+          <span>다음 일정</span>
           <strong>{formatTime(nextPlace.startTime) ?? "시간 미정"} · {nextPlace.placeName}</strong>
           <small>지도에서 위치 보기 <b aria-hidden="true">↗</b></small>
         </a>
@@ -356,7 +391,7 @@ export function MobileTripCompanion({
       ) : (
         <div className="mobile-trip-companion__empty">
           <strong>{viewingToday ? "오늘 정해진 장소가 없어요." : `${dayNumber}일차에 정해진 장소가 없어요.`}</strong>
-          <p>아래에서 일정을 편집하거나 전체 계획을 확인할 수 있어요.</p>
+          <p>일정 편집에서 이 날짜에 갈 장소를 추가하세요.</p>
         </div>
       )}
 
@@ -371,7 +406,8 @@ export function MobileTripCompanion({
                 aria-pressed={Boolean(place.completedAt)}
                 disabled={pendingAction !== null}
                 onClick={() => void updatePlace(place, !place.completedAt)}
-              >{place.completedAt ? "✓" : ""}</button>
+                aria-busy={pendingPlaceId === place.id}
+              ><span aria-hidden="true">{pendingPlaceId === place.id ? "…" : place.completedAt ? "✓" : ""}</span><small>{pendingPlaceId === place.id ? "저장 중" : place.completedAt ? "완료됨" : "완료"}</small></button>
               <a href={googleMapsUrl(place)} target="_blank" rel="noreferrer">
                 <strong>{place.placeName}</strong>
                 <small>{place.city?.nameKo ?? place.country.nameKo}{place.durationMinutes ? ` · ${formatDuration(place.durationMinutes)}` : ""}{place.memo ? ` · ${place.memo}` : ""}</small>
@@ -382,14 +418,14 @@ export function MobileTripCompanion({
       ) : null}
 
       <nav className="mobile-trip-companion__actions" aria-label="여행 중 바로 기록">
-        <Link href={`${editPath}#travel-place-editor`} aria-label="일정 편집"><TravelActionIcon name="schedule" /><strong>일정 편집</strong></Link>
+        <Link href={`${editPath}?date=${viewDate}#travel-place-editor`} aria-label="일정 편집" aria-disabled={pendingAction !== null} onClick={(event) => { if (mutationLock.current) event.preventDefault(); }}><TravelActionIcon name="schedule" /><strong>일정 편집</strong></Link>
         <button type="button" aria-pressed={composer === "photo"} onClick={() => openComposer("photo")} disabled={!dayPlaces.length || pendingAction !== null}><TravelActionIcon name="photo" /><strong>사진</strong></button>
         <button type="button" aria-pressed={composer === "note"} onClick={() => openComposer("note")} disabled={!dayPlaces.length || pendingAction !== null}><TravelActionIcon name="note" /><strong>메모</strong></button>
-        <Link href={`${editPath}#travel-editor`} aria-label="계획 편집"><TravelActionIcon name="edit" /><strong>계획 편집</strong></Link>
       </nav>
+      {variant === "sheet" ? <Link className="mobile-trip-companion__all-days" href={`/studio/travels/${currentTravel.id}/go`}>다른 날짜 일정 보기 <span aria-hidden="true">→</span></Link> : null}
 
       {composer ? (
-        <div className="mobile-trip-companion__composer" role="group" aria-label={composer === "note" ? "빠른 메모" : "빠른 사진 기록"}>
+        <fieldset ref={composerRef} disabled={pendingAction !== null} className="mobile-trip-companion__composer" aria-label={composer === "note" ? "빠른 메모" : "빠른 사진 기록"}>
           <header><strong>{composer === "note" ? "메모 남기기" : "사진 기록하기"}</strong><button type="button" onClick={() => setComposer(null)} aria-label="빠른 기록 닫기">×</button></header>
           {dayPlaces.length > 1 ? (
             <label><span>연결할 일정</span><select value={selectedPlace?.id ?? ""} onChange={(event) => { const id = Number(event.target.value); const place = dayPlaces.find((item) => item.id === id); setSelectedPlaceId(id); if (composer === "note") setNote(place?.memo ?? ""); }}>{dayPlaces.map((place) => <option key={place.id} value={place.id}>{formatTime(place.startTime) ?? "시간 미정"} · {place.placeName}</option>)}</select></label>
@@ -399,7 +435,7 @@ export function MobileTripCompanion({
           ) : (
             <><input ref={photoInputRef} type="file" accept="image/jpeg,image/png,image/webp" capture="environment" onChange={(event) => { const file = event.target.files?.[0]; if (file) void addPhoto(file); }} /><button className="mobile-trip-companion__composer-submit" type="button" disabled={pendingAction !== null || !online} onClick={() => photoInputRef.current?.click()}>{pendingAction === "photo" ? `업로드 ${uploadProgress}%` : online ? "카메라 또는 사진 선택" : "연결 후 사진 올리기"}</button><small>{online ? "선택한 사진은 이 일정에 바로 저장됩니다." : "완료 체크와 메모는 지금도 저장할 수 있습니다."}</small></>
           )}
-        </div>
+        </fieldset>
       ) : null}
       {status ? <p className="mobile-trip-companion__status" role="status" aria-live="polite">{status}</p> : null}
     </section>
@@ -410,24 +446,6 @@ function placesForDay(places: TravelPlace[], today: string): TravelPlace[] {
   return places
     .filter((place) => place.visitedAt === today && !isPlaceholderPlaceName(place.placeName))
     .sort((left, right) => (formatTime(left.startTime) ?? "99:99").localeCompare(formatTime(right.startTime) ?? "99:99") || left.sortOrder - right.sortOrder);
-}
-
-function findNextPlace(places: TravelPlace[], useCurrentTime: boolean): TravelPlace | null {
-  const remaining = places.filter((place) => !place.completedAt);
-  if (!remaining.length) return null;
-  if (!useCurrentTime) return remaining[0];
-  const now = new Date();
-  const currentTime = `${String(now.getHours()).padStart(2, "0")}:${String(now.getMinutes()).padStart(2, "0")}`;
-  return remaining.find((place) => {
-    const startTime = formatTime(place.startTime);
-    return startTime && startTime >= currentTime;
-  }) ?? remaining.at(-1) ?? null;
-}
-
-function isFuturePlace(place: TravelPlace): boolean {
-  if (!place.startTime) return true;
-  const now = new Date();
-  return (formatTime(place.startTime) ?? "99:99") >= `${String(now.getHours()).padStart(2, "0")}:${String(now.getMinutes()).padStart(2, "0")}`;
 }
 
 function formatTime(value: string | null): string | null {

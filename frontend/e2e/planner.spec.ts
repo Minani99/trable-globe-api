@@ -170,6 +170,8 @@ test("몇 번의 선택으로 여행 계획을 만들고 일차별 일정으로 
   await page.getByText("＋ 비용 추가", { exact: true }).click();
   await page.getByRole("textbox", { name: "새 비용 이름" }).fill("왕복 항공권");
   await page.getByRole("spinbutton", { name: "예상 비용" }).fill("450000");
+  // Focusing an input must not hide a toolbar that reappears under the submit tap.
+  await expect(preparationStepNavigation).toBeVisible();
   const expenseButton = page.getByRole("button", { name: "비용 추가", exact: true });
   await expenseButton.evaluate((button) => button.scrollIntoView({ block: "center" }));
   await expenseButton.click();

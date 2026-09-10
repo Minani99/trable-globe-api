@@ -1040,7 +1040,7 @@
     min-width: 7rem;
   }
 
-  body:has(.plan-builder .pb-field input:focus) .pb-mobile-nav {
+  html[data-mobile-keyboard] .pb-mobile-nav {
     visibility: hidden;
   }
 }

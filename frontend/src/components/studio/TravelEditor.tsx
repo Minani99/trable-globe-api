@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { ChangeEvent, DragEvent, useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import { TravelActionIcon } from "@/components/common/TravelActionIcon";
@@ -105,6 +105,7 @@ export function TravelEditor({
   today = "",
 }: TravelEditorProps) {
   const router = useRouter();
+  const requestedDate = useSearchParams().get("date");
   const editing = Boolean(initialTravel);
   const draftStorageKey = `travel-globe:draft:${username}:${initialTravel?.id ?? "new"}`;
   const draftReady = useRef(false);
@@ -135,6 +136,8 @@ export function TravelEditor({
       : [emptyPlace(initialCountryCode)],
   );
   const [activePlanDate, setActivePlanDate] = useState(() => {
+    if (requestedDate && /^\d{4}-\d{2}-\d{2}$/.test(requestedDate)
+      && initialTravel && requestedDate >= initialTravel.startDate && requestedDate <= initialTravel.endDate) return requestedDate;
     if (planningMode && today && initialTravel?.startDate && initialTravel.endDate
       && initialTravel.startDate <= today && today <= initialTravel.endDate) {
       return today;

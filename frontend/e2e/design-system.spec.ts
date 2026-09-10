@@ -23,7 +23,7 @@ test("데스크톱 주요 화면은 하나의 라운드 스케일과 평평한 �
     documentWidth: document.documentElement.scrollWidth,
     viewportWidth: window.innerWidth,
   }));
-  expect(homeStyle.bodyBackground).toBe("rgb(247, 246, 242)");
+  expect(homeStyle.bodyBackground).toBe("rgb(255, 255, 255)");
   expect(onScale(homeStyle.radius)).toBe(true);
   expect(homeStyle.shadow).toBe("none");
   expect(homeStyle.documentWidth).toBeLessThanOrEqual(homeStyle.viewportWidth + 1);

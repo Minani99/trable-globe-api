@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono, Noto_Sans_KR } from "next/font/google";
 
 import { AppFeedback } from "@/components/common/AppFeedback";
+import { MobileViewport } from "@/components/common/MobileViewport";
 import { BackendWarmup } from "@/components/common/BackendWarmup";
 import { PwaManager } from "@/components/common/PwaManager";
 import { SessionExpiryNotice } from "@/components/common/SessionExpiryNotice";
@@ -15,7 +16,7 @@ export const viewport: Viewport = {
   viewportFit: "cover",
   colorScheme: "light dark",
   themeColor: [
-    { media: "(prefers-color-scheme: light)", color: "#f7f6f2" },
+    { media: "(prefers-color-scheme: light)", color: "#ffffff" },
     { media: "(prefers-color-scheme: dark)", color: "#0f1113" },
   ],
 };
@@ -95,6 +96,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         <BackendWarmup />
         <PwaManager />
         <AppFeedback />
+        <MobileViewport />
         <SessionExpiryNotice />
         {children}
       </body>

@@ -4,7 +4,7 @@
  * and design-system.css (last) normalises every legacy component onto these tokens.
  *
  * System summary
- * - Canvas: warm paper. Surfaces: white. Depth comes from tint + hairline, not shadow.
+ * - Canvas: white. Neutral separators distinguish work areas, not nested cards.
  * - Geometry: ONE radius scale (xs 6 · sm 10 · md 14 · lg 20 · xl 28). Circles are
  *   reserved for avatars and status dots. No pills.
  * - Type: 15px body, 13px secondary, 12px caption floor. Headings tight, 650 weight.
@@ -12,21 +12,21 @@
  *   globe keeps its own palette because it is the visual identity.
  */
 :root {
-  --background: #f7f6f2;
-  --background-elevated: #f1f0eb;
+  --background: #ffffff;
+  --background-elevated: #f6f7f8;
   --surface: #ffffff;
-  --surface-raised: #f6f5f1;
-  --surface-hover: #efeeea;
-  --surface-muted: #ebeae5;
+  --surface-raised: #f7f8f9;
+  --surface-hover: #f0f2f4;
+  --surface-muted: #eef0f2;
 
-  --border: #e4e3de;
-  --border-strong: #cfcdc6;
+  --border: #e4e7eb;
+  --border-strong: #b8bec6;
 
   --text-primary: #16191d;
   --text-secondary: #5c636b;
-  --text-tertiary: #8b929a;
+  --text-tertiary: #68717c;
 
-  --accent: #e2612c;
+  --accent: #bc481e;
   --accent-strong: #c24d1e;
   --accent-soft: #fbeee7;
   --accent-border: #f0b9a0;
@@ -97,7 +97,7 @@
 
   --text-primary: #f2f3f4;
   --text-secondary: #a3aab2;
-  --text-tertiary: #6f777f;
+  --text-tertiary: #9aa3ad;
 
   --accent: #f0743f;
   --accent-strong: #ff8c5c;

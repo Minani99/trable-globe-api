@@ -7,6 +7,7 @@ type Listener = (member: AuthState) => void;
 
 let cachedMember: AuthState;
 let currentRequest: Promise<AuthMember | null> | null = null;
+let revision = 0;
 const listeners = new Set<Listener>();
 
 export function getCachedAuthMember(): AuthState {
@@ -14,6 +15,8 @@ export function getCachedAuthMember(): AuthState {
 }
 
 export function setCachedAuthMember(member: AuthMember | null) {
+  revision += 1;
+  currentRequest = null;
   cachedMember = member;
   listeners.forEach((listener) => listener(member));
 }
@@ -29,24 +32,30 @@ export async function loadAuthMember({ force = false }: { force?: boolean } = {}
   if (!force && cachedMember !== undefined) return cachedMember;
   if (currentRequest) return currentRequest;
 
-  currentRequest = fetch("/api/auth/me", {
+  const requestRevision = revision;
+  const request = fetch("/api/auth/me", {
     credentials: "same-origin",
     headers: { Accept: "application/json" },
     cache: "no-store",
   })
     .then(async (response) => {
-      if (!response.ok) return null;
+      if (response.status === 401) return null;
+      if (!response.ok) throw new Error("Session check unavailable");
       const body = (await response.json()) as { data?: AuthMember };
       return body.data ?? null;
     })
-    .catch(() => null)
+    // A temporarily unavailable backend is not a logout.
+    .catch(() => cachedMember ?? null)
     .then((member) => {
+      // Login/logout may have completed while this request was in flight.
+      if (requestRevision !== revision) return cachedMember ?? null;
       setCachedAuthMember(member);
       return member;
     })
     .finally(() => {
-      currentRequest = null;
+      if (currentRequest === request) currentRequest = null;
     });
 
-  return currentRequest;
+  currentRequest = request;
+  return request;
 }

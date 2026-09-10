@@ -20,12 +20,12 @@ export default function LandingPage() {
           <div className="landing-copy relative z-10">
             <h1 id="landing-title" className="landing-title text-content max-w-[13ch]">
               <span className="landing-title-line landing-title-line--one">여행 계획부터</span>{" "}
-              <span className="landing-title-line landing-title-line--two">기록까지, 한곳에서.</span>
+              <span className="landing-title-line landing-title-line--two">기록까지 한곳에.</span>
             </h1>
 
             <p className="text-body landing-intro landing-reveal landing-reveal--body mt-7 max-w-[40ch]">
-              나라와 날짜를 고르면 일정이 만들어집니다. 여행이 끝난 뒤에는 사진과 메모를
-              더해 그대로 기록할 수 있습니다.
+              가고 싶은 곳을 날짜별로 정리하고, 여행 중엔 일정만 꺼내 보세요.
+              다녀온 곳은 내 지구본에 남습니다.
             </p>
 
             <div className="landing-reveal landing-reveal--actions mt-10 flex flex-wrap items-center gap-3">

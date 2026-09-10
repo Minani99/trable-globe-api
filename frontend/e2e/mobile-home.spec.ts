@@ -6,7 +6,7 @@ test("모바일 메인은 한 화면 안에서 탐색과 국가 선택을 제공
 
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto("/", { waitUntil: "domcontentloaded" });
-  await expect(page.getByRole("heading", { name: "여행 계획부터 기록까지, 한곳에서." })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "여행 계획부터 기록까지 한곳에." })).toBeVisible();
   await expect(page.locator(".landing-globe-live")).toBeVisible();
   await page.waitForTimeout(800);
   await expect(page.locator(".landing-globe-live [data-render-quality='mobile']")).toHaveAttribute("data-pixel-ratio-limit", "1.25");

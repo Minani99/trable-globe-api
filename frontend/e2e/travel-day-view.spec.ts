@@ -50,11 +50,26 @@ test("미래 여행도 여행용 보기에서 날짜별로 확인할 수 있다"
   await expect(page.getByRole("list", { name: "도쿄 2일 여행 1일차 일정" })).toContainText("도쿄역");
   const tripActions = page.getByRole("navigation", { name: "여행 중 바로 기록" });
   await expect(tripActions.getByRole("link", { name: "일정 편집" })).toBeVisible();
-  await expect(tripActions.getByRole("link", { name: "계획 편집" })).toBeVisible();
+  await expect(tripActions.getByRole("link", { name: "계획 편집" })).toHaveCount(0);
+  await expect(page.getByRole("navigation", { name: "여행용 보기 메뉴" }).getByRole("link", { name: "계획 편집" })).toBeVisible();
 
   await page.getByRole("button", { name: /DAY 2/ }).click();
   await expect(page.getByRole("heading", { name: "2일차 일정" })).toBeVisible();
   await expect(page.getByRole("list", { name: "도쿄 2일 여행 2일차 일정" })).toContainText("시부야 스카이");
+  await expect(page).toHaveURL(new RegExp(`date=${secondDay}`));
+  await page.reload();
+  await expect(page.getByRole("heading", { name: "2일차 일정" })).toBeVisible();
+  await expect(tripActions.getByRole("link", { name: "일정 편집" })).toHaveAttribute("href", `/studio/travels/${travelId}/edit?date=${secondDay}#travel-place-editor`);
+  await expect(page.getByRole("progressbar", { name: "완료한 일정" })).toHaveAttribute("value", "0");
+  const complete = page.getByRole("button", { name: "시부야 스카이 완료", exact: true });
+  const checkSize = await complete.boundingBox();
+  expect(checkSize!.width).toBeGreaterThanOrEqual(44);
+  expect(checkSize!.height).toBeGreaterThanOrEqual(44);
+  await complete.click();
+  await expect(page.getByRole("button", { name: "시부야 스카이 미완료로 변경" })).toHaveAttribute("aria-pressed", "true");
+  await expect(page.getByRole("progressbar", { name: "완료한 일정" })).toHaveAttribute("value", "1");
+  await page.getByRole("button", { name: "시부야 스카이 미완료로 변경" }).click();
+  await expect(complete).toHaveAttribute("aria-pressed", "false");
   await expect(page.getByRole("link", { name: /지도에서 위치 보기/ })).toHaveAttribute("href", /google\.com\/maps\/search/);
 
   const layout = await page.evaluate(() => ({

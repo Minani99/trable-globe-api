@@ -34,7 +34,7 @@ export default async function EditTravelPage(props: PageProps<"/studio/travels/[
   if (!travel) notFound();
   const today = todayInKorea();
   const hasPlanningData = Boolean(tasks?.length || planning?.targetAmount || planning?.expenses.length || planning?.reservations.length);
-  const planningMode = travel.visibility === "PRIVATE" && (travel.endDate > today || hasPlanningData);
+  const planningMode = travel.visibility === "PRIVATE" && (travel.endDate >= today || hasPlanningData);
   const travelMode = travel.startDate <= today && today <= travel.endDate;
   const finishMode = searchParams.finish === "1" && travel.visibility === "PRIVATE" && travel.endDate <= today;
   const editor = finishMode ? <TravelFinishEditor username={member.username} travel={travel} /> : (

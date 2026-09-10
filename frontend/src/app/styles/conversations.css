@@ -137,7 +137,7 @@
   padding-inline: 1rem;
   border-radius: var(--radius-sm);
   background: var(--accent);
-  color: #1c0d07;
+  color: var(--accent-ink);
   font-size: var(--text-xs);
   font-weight: 650;
 }

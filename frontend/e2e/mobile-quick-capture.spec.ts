@@ -72,8 +72,8 @@ test("진행 중인 여행은 모바일 어디서나 장소·사진·메모로 �
   await expect(capture.getByRole("heading", { name: "오늘 일정" })).toBeVisible();
   await expect(capture.getByRole("list", { name: "오늘의 서울 산책 오늘 일정" })).toContainText("서울숲");
   await expect(capture.getByRole("link", { name: /지도에서 위치 보기/ })).toHaveAttribute("href", /google\.com\/maps\/search/);
-  await expect(capture.getByRole("link", { name: "일정 편집" })).toHaveAttribute("href", `/studio/travels/${travelId}/edit#travel-place-editor`);
-  await expect(capture.getByRole("link", { name: "계획 편집" })).toHaveAttribute("href", `/studio/travels/${travelId}/edit#travel-editor`);
+  await expect(capture.getByRole("link", { name: "일정 편집" })).toHaveAttribute("href", `/studio/travels/${travelId}/edit?date=${today}#travel-place-editor`);
+  await expect(capture.getByRole("link", { name: "다른 날짜 일정 보기" })).toHaveAttribute("href", `/studio/travels/${travelId}/go`);
   const tripActions = capture.getByRole("navigation", { name: "여행 중 바로 기록" });
   const noteAction = tripActions.getByRole("button", { name: "메모" });
   await expect(noteAction).toHaveAttribute("aria-pressed", "false");
@@ -130,7 +130,7 @@ test("진행 중인 여행은 모바일 어디서나 장소·사진·메모로 �
   expect((await savedTravel.json()).data.places[0].completedAt).not.toBeNull();
 
   await capture.getByRole("link", { name: "일정 편집" }).click();
-  await expect(page).toHaveURL(new RegExp(`/studio/travels/${travelId}/edit#travel-place-editor$`));
+  await expect(page).toHaveURL(new RegExp(`/studio/travels/${travelId}/edit\\?date=${today}#travel-place-editor$`));
   await expect(page.locator("#travel-place-editor")).toBeVisible();
   await expect(page.locator("#travel-day-view").getByRole("heading", { name: "오늘 일정" })).toBeVisible();
 

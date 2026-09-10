@@ -279,8 +279,8 @@
     display: none;
   }
 
-  body:has(.plan-builder :is(input, textarea, select):focus) .plan-builder__mobile-nav,
-  body:has(.travel-editor :is(input, textarea, select):focus) .travel-editor__mobile-nav {
+  html[data-mobile-keyboard] .plan-builder__mobile-nav,
+  html[data-mobile-keyboard] .travel-editor__mobile-nav {
     visibility: hidden;
   }
 
@@ -433,7 +433,7 @@
     opacity: 0.42;
   }
 
-  body:has(.mobile-planning-workspace :is(input, textarea, select):focus) .mobile-planning-workspace__nav {
+  html[data-mobile-keyboard] .mobile-planning-workspace__nav {
     visibility: hidden;
   }
 }

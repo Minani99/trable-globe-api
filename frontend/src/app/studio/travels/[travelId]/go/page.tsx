@@ -16,6 +16,9 @@ export const metadata: Metadata = {
 
 export default async function TravelDayPage(props: PageProps<"/studio/travels/[travelId]/go">) {
   const { travelId } = await props.params;
+  const { date } = await props.searchParams;
+  const initialDate = typeof date === "string" && /^\d{4}-\d{2}-\d{2}$/.test(date) &&
+    Number.isFinite(Date.parse(date)) && new Date(date).toISOString().slice(0, 10) === date ? date : undefined;
   const id = Number(travelId);
   if (!Number.isInteger(id) || id <= 0) notFound();
 
@@ -42,11 +45,10 @@ export default async function TravelDayPage(props: PageProps<"/studio/travels/[t
             <div>
               <p>{phase}</p>
               <h1>{travel.title}</h1>
-              <span>{formatDateRange(travel.startDate, travel.endDate)}</span>
+              <span>{formatDateRange(travel.startDate, travel.endDate)} · {travel.durationDays}일</span>
             </div>
-            <small>날짜를 선택해 일정을 확인하고, 여행 중에는 완료·사진·메모를 바로 남길 수 있습니다.</small>
           </header>
-          <MobileTripCompanion travel={travel} today={today} username={member.username} variant="page" />
+          <MobileTripCompanion travel={travel} today={today} username={member.username} variant="page" initialDate={initialDate} />
         </div>
       </main>
     </>

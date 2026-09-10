@@ -471,7 +471,7 @@
 .landing-primary-cta {
   gap: 1.1rem;
   padding: 0.2rem 0.32rem 0.2rem 1.05rem;
-  color: #190b05;
+  color: var(--accent-ink);
   background: var(--accent);
 }
 
@@ -694,7 +694,7 @@
   padding: 0.2rem 0.35rem 0.2rem 0.75rem;
   border-radius: var(--radius-sm);
   background: var(--accent);
-  color: #190b05;
+  color: var(--accent-ink);
   font-size: var(--text-xs);
   font-weight: 650;
   transition: background-color 0.16s ease, transform 0.16s ease;
@@ -774,7 +774,7 @@
   place-items: center;
   border-radius: var(--radius-xs);
   background: var(--accent);
-  color: #190b05;
+  color: var(--accent-ink);
   font-size: var(--text-sm);
   transition: transform 0.35s ease;
 }
