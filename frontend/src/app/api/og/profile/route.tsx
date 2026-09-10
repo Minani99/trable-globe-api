@@ -43,33 +43,33 @@ export async function GET(request: NextRequest) {
             display: "flex",
             position: "relative",
             overflow: "hidden",
-            color: "#f4f7f2",
-            background: "linear-gradient(135deg, #07161c 0%, #0d2830 58%, #123b43 100%)",
+            color: "#142b34",
+            background: "linear-gradient(135deg, #fbfcf9 0%, #f6f7f4 58%, #eaf2f0 100%)",
             fontFamily: "sans-serif",
           }}
         >
-          <div style={{ position: "absolute", width: 560, height: 560, right: -80, top: -30, border: "2px solid rgba(149, 204, 207, 0.2)", borderRadius: 999, display: "flex" }} />
-          <div style={{ position: "absolute", width: 430, height: 430, right: -15, top: 35, border: "1px solid rgba(149, 204, 207, 0.16)", borderRadius: 999, display: "flex" }} />
-          <div style={{ position: "absolute", width: 300, height: 300, right: 50, top: 100, border: "1px solid rgba(149, 204, 207, 0.12)", borderRadius: 999, display: "flex" }} />
-          <div style={{ position: "absolute", width: 390, height: 180, right: 20, top: 190, borderTop: "4px solid #f06b35", borderRadius: "50%", transform: "rotate(-8deg)", display: "flex" }} />
+          <div style={{ position: "absolute", width: 560, height: 560, right: -80, top: -30, border: "2px solid rgba(57, 119, 140, 0.28)", borderRadius: 999, background: "#8fd0e5", boxShadow: "0 30px 70px rgba(23, 51, 61, 0.14)", display: "flex" }} />
+          <div style={{ position: "absolute", width: 430, height: 430, right: -15, top: 35, border: "2px solid rgba(221, 243, 248, 0.72)", borderRadius: 999, display: "flex" }} />
+          <div style={{ position: "absolute", width: 300, height: 300, right: 50, top: 100, border: "1px solid rgba(221, 243, 248, 0.64)", borderRadius: 999, display: "flex" }} />
+          <div style={{ position: "absolute", width: 390, height: 180, right: 20, top: 190, borderTop: "5px solid #e85f2b", borderRadius: "50%", transform: "rotate(-8deg)", display: "flex" }} />
           {[{ right: 365, top: 235 }, { right: 205, top: 310 }, { right: 42, top: 210 }].map((point, index) => (
-            <div key={index} style={{ position: "absolute", width: 22, height: 22, right: point.right, top: point.top, border: "5px solid #f06b35", borderRadius: 999, background: "#fff5eb", boxShadow: "0 0 28px rgba(240,107,53,0.65)", display: "flex" }} />
+            <div key={index} style={{ position: "absolute", width: 22, height: 22, right: point.right, top: point.top, border: "5px solid #e85f2b", borderRadius: 999, background: "#fffaf6", boxShadow: "0 0 24px rgba(232,95,43,0.36)", display: "flex" }} />
           ))}
 
           <div style={{ width: 780, height: "100%", display: "flex", flexDirection: "column", padding: "62px 0 52px 70px" }}>
-            <div style={{ display: "flex", alignItems: "center", color: "#f58a59", fontSize: 19, fontWeight: 700, letterSpacing: "0.22em" }}>
-              <span style={{ width: 18, height: 18, marginRight: 18, display: "flex", alignItems: "center", justifyContent: "center", border: "2px solid #f58a59", borderRadius: 999 }}>
-                <span style={{ width: 5, height: 5, display: "flex", background: "#f58a59", borderRadius: 999 }} />
+            <div style={{ display: "flex", alignItems: "center", color: "#17303a", fontSize: 19, fontWeight: 700, letterSpacing: "0.22em" }}>
+              <span style={{ width: 18, height: 18, marginRight: 18, display: "flex", alignItems: "center", justifyContent: "center", border: "2px solid #e85f2b", borderRadius: 999 }}>
+                <span style={{ width: 5, height: 5, display: "flex", background: "#e85f2b", borderRadius: 999 }} />
               </span>
               {siteConfig.wordmark}
             </div>
-            <div style={{ display: "flex", marginTop: 62, color: "rgba(220,235,232,0.7)", fontSize: 21 }}>
+            <div style={{ display: "flex", marginTop: 62, color: "#71848a", fontSize: 21 }}>
               @{profile.username} · {scope}
             </div>
             <div style={{ display: "flex", maxWidth: 700, marginTop: 12, fontSize: 58, fontWeight: 700, lineHeight: 1.16, letterSpacing: "-0.04em" }}>
               {cardName}님이<br />지구본에 쌓은 여행
             </div>
-            <div style={{ display: "flex", marginTop: 28, color: "rgba(220,235,232,0.76)", fontSize: 20 }}>
+            <div style={{ display: "flex", marginTop: 28, color: "#657a81", fontSize: 20 }}>
               {topCountries.length > 0 ? topCountries.join(" · ") : "첫 여행을 기다리는 지구본"}
             </div>
 
@@ -81,8 +81,8 @@ export async function GET(request: NextRequest) {
             </div>
           </div>
 
-          <div style={{ position: "absolute", right: 62, bottom: 46, display: "flex", color: "rgba(220,235,232,0.56)", fontSize: 17 }}>
-            다녀온 세계를 오래 기억하는 방법
+          <div style={{ position: "absolute", right: 62, bottom: 46, display: "flex", color: "#5d747b", fontSize: 17 }}>
+            여행 계획과 기록을 한곳에서
           </div>
         </div>
       ),
@@ -96,10 +96,10 @@ export async function GET(request: NextRequest) {
   } catch {
     return new ImageResponse(
       (
-        <div lang="ko-KR" style={{ width: "100%", height: "100%", display: "flex", flexDirection: "column", justifyContent: "center", padding: 72, color: "#f4f7f2", background: "linear-gradient(135deg, #07161c, #123b43)", fontFamily: "sans-serif" }}>
-          <div style={{ display: "flex", color: "#f58a59", fontSize: 20, fontWeight: 700, letterSpacing: "0.2em" }}>{siteConfig.wordmark}</div>
+        <div lang="ko-KR" style={{ width: "100%", height: "100%", display: "flex", flexDirection: "column", justifyContent: "center", padding: 72, color: "#142b34", background: "linear-gradient(135deg, #fbfcf9, #eaf2f0)", fontFamily: "sans-serif" }}>
+          <div style={{ display: "flex", color: "#d95527", fontSize: 20, fontWeight: 700, letterSpacing: "0.2em" }}>{siteConfig.wordmark}</div>
           <div style={{ display: "flex", marginTop: 52, fontSize: 64, fontWeight: 700 }}>여행 세계를 펼치는 중</div>
-          <div style={{ display: "flex", marginTop: 22, color: "rgba(220,235,232,0.7)", fontSize: 24 }}>잠시 후 지구본에 쌓인 기록을 만나보세요.</div>
+          <div style={{ display: "flex", marginTop: 22, color: "#6d8087", fontSize: 24 }}>잠시 후 지구본에 쌓인 기록을 만나보세요.</div>
         </div>
       ),
       { ...size, headers: { "Cache-Control": "no-store" } },
@@ -109,9 +109,9 @@ export async function GET(request: NextRequest) {
 
 function Stat({ value, label, wide = false }: { value: string; label: string; wide?: boolean }) {
   return (
-    <div style={{ minWidth: wide ? 180 : 112, display: "flex", flexDirection: "column", padding: "14px 18px", border: "1px solid rgba(204,230,228,0.18)", borderRadius: 14, background: "rgba(255,255,255,0.055)" }}>
+    <div style={{ minWidth: wide ? 180 : 112, display: "flex", flexDirection: "column", padding: "14px 18px", border: "1px solid #cedbda", borderRadius: 14, background: "rgba(255,255,255,0.74)" }}>
       <span style={{ display: "flex", fontSize: wide ? 25 : 30, fontWeight: 650 }}>{value}</span>
-      <span style={{ display: "flex", marginTop: 3, color: "rgba(220,235,232,0.54)", fontSize: 13 }}>{label}</span>
+      <span style={{ display: "flex", marginTop: 3, color: "#71848a", fontSize: 13 }}>{label}</span>
     </div>
   );
 }

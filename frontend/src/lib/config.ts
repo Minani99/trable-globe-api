@@ -49,7 +49,7 @@ export function profilePath(username: string): string {
 
 /** Dynamic social preview for a profile or one of its yearly recaps. */
 export function profileRecapImagePath(username: string, year: number | null): string {
-  const params = new URLSearchParams({ username });
+  const params = new URLSearchParams({ username, v: "2" });
   if (year !== null) params.set("year", String(year));
   return `/api/og/profile?${params.toString()}`;
 }

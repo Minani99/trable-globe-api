@@ -12,7 +12,8 @@
     "geo:build": "node scripts/build-geo-data.mjs",
     "airports:build": "node scripts/build-airport-data.mjs",
     "placeholders:build": "node scripts/build-placeholders.mjs",
-    "pwa:icons": "node scripts/build-pwa-icons.mjs"
+    "pwa:icons": "node scripts/build-pwa-icons.mjs",
+    "brand:og": "node scripts/build-social-card.mjs"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.1109.0",
