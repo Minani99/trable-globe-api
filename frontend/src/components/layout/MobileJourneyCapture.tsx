@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useId, useState } from "react";
+import { useEffect, useId, useRef, useState } from "react";
 
 import { MobileTripCompanion } from "@/components/layout/MobileTripCompanion";
 import { apiSessionGet } from "@/lib/api/client";
@@ -22,6 +22,8 @@ export function MobileJourneyCapture({ member, pathname }: MobileJourneyCaptureP
     cached: boolean;
   } | null>(null);
   const [open, setOpen] = useState(false);
+  const dialogRef = useRef<HTMLDialogElement>(null);
+  const triggerRef = useRef<HTMLButtonElement>(null);
 
   useEffect(() => {
     if (!member || pathname.includes("/studio/travels/") || !window.matchMedia("(max-width: 700px)").matches) {
@@ -69,11 +71,21 @@ export function MobileJourneyCapture({ member, pathname }: MobileJourneyCaptureP
 
   useEffect(() => {
     if (!open) return;
-    const closeOnEscape = (event: KeyboardEvent) => {
-      if (event.key === "Escape") setOpen(false);
+    const dialog = dialogRef.current;
+    if (!dialog) return;
+    dialog.showModal();
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    const media = window.matchMedia("(max-width: 700px)");
+    const closeOnDesktop = () => { if (!media.matches) setOpen(false); };
+    media.addEventListener("change", closeOnDesktop);
+    const trigger = triggerRef.current;
+    return () => {
+      dialog.close();
+      document.body.style.overflow = previousOverflow;
+      media.removeEventListener("change", closeOnDesktop);
+      trigger?.focus({ preventScroll: true });
     };
-    window.addEventListener("keydown", closeOnEscape);
-    return () => window.removeEventListener("keydown", closeOnEscape);
   }, [open]);
 
   const currentTravel = member && travelState?.username === member.username ? travelState.travel : null;
@@ -87,12 +99,18 @@ export function MobileJourneyCapture({ member, pathname }: MobileJourneyCaptureP
   return (
     <aside className={`mobile-journey-capture${open ? " is-open" : ""}`} aria-label="여행 중 빠른 기록">
       {open ? (
-        <div className="mobile-journey-capture__panel" id={panelId} role="region" aria-label={`${travel.title} 빠른 기록`}>
+        <dialog ref={dialogRef} className="mobile-journey-capture__panel" id={panelId} aria-label={`${travel.title} 빠른 기록`}
+          onCancel={() => setOpen(false)}
+          onClick={(event) => {
+            if (event.target !== event.currentTarget) return;
+            const bounds = event.currentTarget.getBoundingClientRect();
+            if (event.clientX < bounds.left || event.clientX > bounds.right || event.clientY < bounds.top || event.clientY > bounds.bottom) setOpen(false);
+          }}>
           <header>
             <div>
-              <small>NOW · {country}</small>
+              <small>여행 중 · {country}</small>
               <strong>{travel.title}</strong>
-              <span>{travelState?.cached ? "기기에 저장된 일정을 표시하고 있어요." : "오늘 진행 중인 여행을 자동으로 선택했어요."}</span>
+              {travelState?.cached ? <span>기기에 저장된 일정</span> : null}
             </div>
             <button type="button" onClick={() => setOpen(false)} aria-label="빠른 기록 닫기">×</button>
           </header>
@@ -106,13 +124,15 @@ export function MobileJourneyCapture({ member, pathname }: MobileJourneyCaptureP
               <a href={`/studio/travels/${travel.id}/edit`}>전체 계획에서 확인</a>
             </div>
           )}
-        </div>
+        </dialog>
       ) : null}
       <button
+        ref={triggerRef}
         type="button"
         className="mobile-journey-capture__trigger"
         aria-expanded={open}
         aria-controls={panelId}
+        aria-haspopup="dialog"
         onClick={() => setOpen((current) => !current)}
       >
         <span aria-hidden="true">＋</span>

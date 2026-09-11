@@ -242,6 +242,16 @@
  * These elements are built with document.createElement inside globe.gl's CSS3D layer, so
  * Tailwind's class scanner never sees them - they are styled here instead.
  */
+/* CSS2DRenderer assigns depth-based z-indices to HTML markers. Keep those
+ * indices inside the globe, below page chrome and sibling information panels. */
+.tg-globe,
+.tg-globe__scene {
+  position: relative;
+  isolation: isolate;
+  z-index: 0;
+}
+.tg-globe__scene { overflow: hidden; }
+
 .tg-marker {
   display: flex;
   flex-direction: column;

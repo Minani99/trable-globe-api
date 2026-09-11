@@ -66,9 +66,9 @@ test("진행 중인 여행은 모바일 어디서나 장소·사진·메모로 �
   await expect(trigger).toBeVisible();
   await trigger.click();
 
-  const capture = page.getByRole("region", { name: "오늘의 서울 산책 빠른 기록" });
+  const capture = page.getByRole("dialog", { name: "오늘의 서울 산책 빠른 기록" });
   await expect(capture).toBeVisible();
-  await expect(capture).toContainText("오늘 진행 중인 여행을 자동으로 선택했어요.");
+  await expect(capture).toContainText("여행 중 · 대한민국");
   await expect(capture.getByRole("heading", { name: "오늘 일정" })).toBeVisible();
   await expect(capture.getByRole("list", { name: "오늘의 서울 산책 오늘 일정" })).toContainText("서울숲");
   await expect(capture.getByRole("link", { name: /지도에서 위치 보기/ })).toHaveAttribute("href", /google\.com\/maps\/search/);
@@ -92,7 +92,7 @@ test("진행 중인 여행은 모바일 어디서나 장소·사진·메모로 �
   await page.reload();
   await expect(trigger).toBeVisible();
   await trigger.click();
-  await expect(capture).toContainText("기기에 저장된 일정을 표시하고 있어요.");
+  await expect(capture).toContainText("기기에 저장된 일정");
   await expect(capture.getByRole("list", { name: "오늘의 서울 산책 오늘 일정" })).toContainText("서울숲에서 바로 남긴 현장 메모");
   await page.unroute("**/api/private/travels");
 

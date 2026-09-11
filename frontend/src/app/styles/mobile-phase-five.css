@@ -35,7 +35,7 @@
     color: #fff;
   }
 
-  .mobile-journey-capture__trigger > span {
+  .mobile-journey-capture__trigger > span:first-child {
     display: grid;
     width: 2.2rem;
     height: 2.2rem;

@@ -862,7 +862,7 @@ export const TravelGlobe = memo(function TravelGlobe({
   );
 
   return (
-    <div className="relative h-full w-full">
+    <div className="tg-globe relative h-full w-full">
       <div
         ref={containerRef}
         tabIndex={0}
@@ -875,7 +875,7 @@ export const TravelGlobe = memo(function TravelGlobe({
           ? "세계 랜드마크 지구본. 모든 국가에 마우스를 올려 대표 장소를 확인할 수 있습니다. 방향키로 회전하고 플러스·마이너스 키로 확대·축소합니다."
           : "여행 지구본. 방향키로 회전, 플러스·마이너스 키로 확대·축소, 0 키로 초기화합니다. 국가 선택은 아래 목록에서도 할 수 있습니다."}
         onKeyDown={handleKeyDown}
-        className={`h-full w-full ${isWorldExplorer ? "cursor-pointer active:cursor-grabbing" : "cursor-grab active:cursor-grabbing"}`}
+        className={`tg-globe__scene h-full w-full ${isWorldExplorer ? "cursor-pointer active:cursor-grabbing" : "cursor-grab active:cursor-grabbing"}`}
       >
         {size.width > 0 && size.height > 0 ? (
           <Globe

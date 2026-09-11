@@ -108,24 +108,18 @@ export function LandingGlobePreview() {
           </div>
           <span className="landing-globe-vignette" aria-hidden="true" />
 
-          <dl
-            className={`landing-globe-stats${world || resolvedRequest?.failed ? " is-ready" : ""}`}
+          <header className="landing-world-summary">
+          <p className="landing-world-summary__identity">
+            <span>{member === undefined ? "불러오는 중" : isOwnWorld ? "내 지구본" : "샘플 지구본"}</span>
+            {isOwnWorld ? <strong>{world?.profile.displayName ?? member?.displayName}</strong> : null}
+          </p>
+          <dl className="landing-world-summary__stats"
             aria-label={worldLabel}
           >
             <GlobeStat label="국가" value={formatStat(statistics?.countryCount)} />
-            <GlobeStat label="도시" value={formatStat(statistics?.cityCount)} />
             <GlobeStat label="여행" value={formatStat(statistics?.travelCount)} />
-            <GlobeStat label="장소" value={formatStat(statistics?.placeCount)} />
           </dl>
-
-          <p className="landing-globe-context" aria-live="polite">
-            <small>{member === undefined ? "불러오는 중" : isOwnWorld ? "내 지구본" : "샘플 지구본"}</small>
-            <strong>
-              {member === undefined
-                ? "계정 확인 중"
-                : world?.profile.displayName ?? member?.displayName ?? "샘플 여행자"}
-            </strong>
-          </p>
+          </header>
 
           <div className="landing-landmark-card" aria-live="polite">
             {activeCountry && activePlace ? (
