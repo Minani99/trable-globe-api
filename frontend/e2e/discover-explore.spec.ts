@@ -109,3 +109,38 @@ async function register(
   });
   expect(response.status()).toBe(200);
 }
+
+test("검색어를 바꾸거나 지우면 늦게 도착한 이전 결과가 다시 표시되지 않는다", async ({ page }) => {
+  let releaseOld!: () => void;
+  let releaseNew!: () => void;
+  const oldResponse = new Promise<void>((resolve) => { releaseOld = resolve; });
+  const newResponse = new Promise<void>((resolve) => { releaseNew = resolve; });
+  await page.route("**/api/discovery/search?**", async (route) => {
+    const query = new URL(route.request().url()).searchParams.get("query");
+    await (query === "old" ? oldResponse : newResponse);
+    await route.fulfill({ json: { success: true, data: [{
+      username: query, displayName: query === "old" ? "이전 검색 사용자" : "새 검색 사용자",
+      profileImageUrl: null, bio: null, travelCount: 0, cityCount: 0, countryCount: 0,
+      recentDestinations: [], worldCountries: [], recommendationReason: "검색 결과", following: false,
+    }] } });
+  });
+  await page.goto("/discover");
+  const search = page.getByRole("searchbox", { name: "다른 여행자 검색" });
+  const oldRequest = page.waitForRequest("**/api/discovery/search?query=old&*");
+  await search.fill("old");
+  await oldRequest;
+  const newRequest = page.waitForRequest("**/api/discovery/search?query=new&*");
+  await search.fill("new");
+  const oldFinished = page.waitForResponse("**/api/discovery/search?query=old&*");
+  releaseOld();
+  await oldFinished;
+  await expect(page.getByText("이전 검색 사용자", { exact: true })).toHaveCount(0);
+  await expect(page.getByText("일치하는 여행자가 없습니다", { exact: true })).toHaveCount(0);
+  await newRequest;
+  await page.getByRole("button", { name: "검색어 지우기" }).click();
+  const newFinished = page.waitForResponse("**/api/discovery/search?query=new&*");
+  releaseNew();
+  await newFinished;
+  await expect(page.getByRole("heading", { name: "기록이 있는 여행자" })).toBeVisible();
+  await expect(page.getByText("새 검색 사용자", { exact: true })).toHaveCount(0);
+});

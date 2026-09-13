@@ -15,7 +15,6 @@ export function DiscoverExperience({
   viewerAuthenticated: boolean;
 }) {
   const [query, setQuery] = useState("");
-  const [submittedQuery, setSubmittedQuery] = useState("");
   const [results, setResults] = useState<MemberDiscovery[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -39,7 +38,6 @@ export function DiscoverExperience({
       const next = await searchMembers(value, viewerAuthenticated);
       if (requestId.current === currentRequest) {
         setResults(next);
-        setSubmittedQuery(value);
       }
     } catch (caught) {
       if (requestId.current === currentRequest) {
@@ -57,14 +55,13 @@ export function DiscoverExperience({
   }
 
   function changeQuery(value: string) {
+    // Invalidate immediately, not after the debounce: an older response can
+    // otherwise put the wrong person under a newly typed search term.
+    requestId.current += 1;
     setQuery(value);
-    if (!value.trim()) {
-      requestId.current += 1;
-      setSubmittedQuery("");
-      setResults([]);
-      setError(null);
-      setLoading(false);
-    }
+    setResults([]);
+    setError(null);
+    setLoading(Boolean(value.trim()));
   }
 
   const searching = Boolean(query.trim());
@@ -102,7 +99,7 @@ export function DiscoverExperience({
           <div>
             <p className="discover-results__eyebrow">{searching ? "검색 결과" : "추천 여행자"}</p>
             <h2 id="discover-results-heading">
-              {searching ? `“${submittedQuery || query.trim()}” 검색 결과` : "기록이 있는 여행자"}
+              {searching ? `“${query.trim()}” 검색 결과` : "기록이 있는 여행자"}
             </h2>
             {!searching ? <p>프로필과 최근 공개 여행이 있는 사용자를 모았습니다.</p> : null}
           </div>

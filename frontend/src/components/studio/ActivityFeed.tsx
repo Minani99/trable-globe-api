@@ -1,4 +1,6 @@
-import Link from "next/link";
+"use client";
+
+import Link, { useLinkStatus } from "next/link";
 
 import { TravelImage } from "@/components/common/TravelImage";
 import { publicDisplayName } from "@/lib/utils/profile";
@@ -15,15 +17,24 @@ export function ActivityFeed({ events }: { events: ActivityEvent[] }) {
         <ol className="studio-activity__list">
           {events.map((event) => (
             <li key={event.id}>
-              <Link prefetch={false} href={event.type === "FOLLOW" ? `/${event.actor.username}` : `/studio/travels/${event.travelId}/edit`}>
+              <Link className="studio-activity__profile" href={`/${encodeURIComponent(event.actor.username)}`} aria-label={`${publicDisplayName(event.actor.displayName)} 프로필 보기`}>
                 <TravelImage src={event.actor.profileImageUrl} alt="" fallbackLabel={event.actor.username.slice(0, 2)} className="studio-activity__avatar" />
-                <span>
+                <div className="studio-activity__content">
                   <strong>{publicDisplayName(event.actor.displayName)}</strong>
+                  <small>@{event.actor.username}</small>
                   <p>{activityCopy(event)}</p>
                   {event.preview ? <q>{event.preview}</q> : null}
-                </span>
-                <time dateTime={event.createdAt}>{formatActivityDate(event.createdAt)}</time>
+                  <ActivityLinkHint label="프로필 보기" />
+                </div>
               </Link>
+              <div className="studio-activity__meta">
+                <time dateTime={event.createdAt}>{formatActivityDate(event.createdAt)}</time>
+                {event.type !== "FOLLOW" && event.travelId != null ? (
+                  <Link className="studio-activity__record" href={`/studio/travels/${event.travelId}/edit`} aria-label={`${event.travelTitle ?? "여행"} 기록 관리`}>
+                    <ActivityLinkHint label="기록 관리" />
+                  </Link>
+                ) : null}
+              </div>
             </li>
           ))}
         </ol>
@@ -36,6 +47,11 @@ export function ActivityFeed({ events }: { events: ActivityEvent[] }) {
       )}
     </section>
   );
+}
+
+function ActivityLinkHint({ label }: { label: string }) {
+  const { pending } = useLinkStatus();
+  return <span className="studio-activity__link-hint" role="status">{pending ? "여는 중…" : <>{label} <span aria-hidden="true">→</span></>}</span>;
 }
 
 function activityCopy(event: ActivityEvent): string {
