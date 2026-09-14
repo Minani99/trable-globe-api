@@ -610,6 +610,14 @@ main :where(button) {
   color: var(--text-secondary);
   font-size: var(--text-sm);
 }
+.studio-page .studio-hero--continuing .studio-hero__actions {
+  flex-direction: row;
+}
+.studio-page .studio-hero--continuing .studio-hero__actions > a {
+  min-width: 0;
+  width: auto;
+  font-size: .8125rem;
+}
 .studio-page .studio-plan-list > li {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
@@ -626,6 +634,7 @@ main :where(button) {
 .studio-page .studio-plan-list > li > a:first-child {
   border: 0;
   background: transparent;
+  min-height: 0;
 }
 .studio-page .studio-live {
   border-radius: var(--radius-xs);

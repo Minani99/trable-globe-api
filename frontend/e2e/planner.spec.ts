@@ -268,7 +268,7 @@ test("몇 번의 선택으로 여행 계획을 만들고 일차별 일정으로 
   await page.goto("/studio");
   const activeTrip = page.getByRole("region", { name: "일본 3일 여행" });
   await expect(activeTrip).toContainText("여행 중");
-  await expect(activeTrip.getByRole("link", { name: /오늘 여행 열기/ })).toBeVisible();
+  await expect(activeTrip.getByRole("link", { name: /오늘 일정 보기/ })).toBeVisible();
   await expect(page.getByRole("navigation", { name: "모바일 주요 메뉴" }).getByRole("link", { name: "기록" })).toHaveAttribute("href", "/studio");
   await expect(page.getByRole("heading", { name: "최근 활동" })).toBeVisible();
 
@@ -303,7 +303,7 @@ test("몇 번의 선택으로 여행 계획을 만들고 일차별 일정으로 
   await page.goto("/studio");
   const finishingTrip = page.getByRole("region", { name: "다녀온 일본 여행" });
   await expect(finishingTrip).toContainText("여행 중");
-  await finishingTrip.getByRole("link", { name: /오늘 여행 열기/ }).click();
+  await finishingTrip.getByRole("link", { name: /오늘 일정 보기/ }).click();
   await page.getByRole("link", { name: "계획 편집", exact: true }).click();
   const finishPreparationNavigation = page.getByRole("navigation", { name: "여행 준비 단계 이동" });
   await finishPreparationNavigation.getByRole("button", { name: "다음" }).click();

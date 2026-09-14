@@ -4,6 +4,8 @@ import { useEffect, useId, useRef, useState } from "react";
 
 import { MobileTripCompanion } from "@/components/layout/MobileTripCompanion";
 import { apiSessionGet } from "@/lib/api/client";
+import { journeyGroups } from "@/lib/journey-next-action";
+import { todayInKorea } from "@/lib/utils/date";
 import { cacheTravel, readCachedCurrentTravel, readCachedTravel } from "@/lib/travel-offline";
 import type { AuthMember, OwnedTravelSummary, TravelDetail } from "@/types";
 
@@ -171,18 +173,5 @@ function summaryFromCachedTravel(travel: TravelDetail, updatedAt: string): Owned
 }
 
 function findCurrentTravel(travels: OwnedTravelSummary[]): OwnedTravelSummary | null {
-  const today = todayInKorea();
-
-  return travels
-    .filter(({ travel }) => travel.startDate <= today && today <= travel.endDate)
-    .sort((left, right) => Date.parse(right.updatedAt) - Date.parse(left.updatedAt))[0] ?? null;
-}
-
-function todayInKorea(): string {
-  return new Intl.DateTimeFormat("en-CA", {
-    timeZone: "Asia/Seoul",
-    year: "numeric",
-    month: "2-digit",
-    day: "2-digit",
-  }).format(new Date());
+  return journeyGroups(travels, todayInKorea()).active[0] ?? null;
 }

@@ -5,6 +5,8 @@ import { redirect } from "next/navigation";
 import { SiteFooter } from "@/components/layout/SiteFooter";
 import { SiteHeader } from "@/components/layout/SiteHeader";
 import { ActivityFeed } from "@/components/studio/ActivityFeed";
+import { JourneyNextCard } from "@/components/studio/JourneyNextCard";
+import { journeyGroups, nextJourneyAction } from "@/lib/journey-next-action";
 import { authenticatedBackendGet, getCurrentMember } from "@/lib/api/server-session";
 import { todayInKorea } from "@/lib/utils/date";
 import { formatDateRange } from "@/lib/utils/format";
@@ -22,16 +24,8 @@ export default async function StudioPage() {
   if (!member) redirect("/login?next=/studio");
   const travels = travelRecords ?? [];
   const today = todayInKorea();
-  const activeTravel = travels
-    .filter(({ travel, visibility }) => visibility === "PRIVATE" && travel.startDate <= today && today <= travel.endDate)
-    .sort((left, right) => Date.parse(right.updatedAt) - Date.parse(left.updatedAt))[0] ?? null;
-  const plans = travels
-    .filter(({ travel, visibility }) => visibility === "PRIVATE" && travel.startDate > today)
-    .sort((left, right) => Date.parse(right.updatedAt) - Date.parse(left.updatedAt));
-  const recentPlan = plans[0] ?? null;
-  const otherPlans = plans.slice(1);
-  const readyToRemember = travels.filter(({ travel, visibility }) => visibility === "PRIVATE" && travel.endDate < today);
-  const records = travels.filter(({ visibility }) => visibility === "PUBLIC");
+  const { active, plans, unfinished: readyToRemember, records } = journeyGroups(travels, today);
+  const nextAction = nextJourneyAction(travels, today);
   const profileReady = Boolean(member.profileImageUrl && member.bio?.trim());
 
   return (
@@ -39,27 +33,34 @@ export default async function StudioPage() {
       <SiteHeader username={member.username} member={member} />
       <main id="main" className="studio-page flex-1">
         <div className="site-shell studio-shell">
-          <header className="studio-hero">
+          <header className={`studio-hero${nextAction ? " studio-hero--continuing" : ""}`}>
             <div>
               <h1>내 여행</h1>
-              <p>작성 중인 계획과 다녀온 여행을 관리하세요.</p>
+              <p>계획부터 여행 중 일정, 다녀온 기록까지.</p>
             </div>
             <div className="studio-hero__actions">
               <Link href="/studio/travels/new" className="studio-secondary-action">지난 여행 기록</Link>
-              <Link href="/studio/plans/new" className="studio-primary-action">새 여행 계획 <span>＋</span></Link>
+              <Link href="/studio/plans/new" className={nextAction ? "studio-secondary-action" : "studio-primary-action"}>새 여행 계획 <span>＋</span></Link>
             </div>
           </header>
 
-          {Number(Boolean(activeTravel)) + Number(plans.length > 0) + Number(readyToRemember.length > 0) + Number(records.length > 0) > 1 ? <nav className="studio-index" aria-label="내 여행 바로가기">
-            {activeTravel ? <a href="#studio-live-heading">여행 중 <span>1</span></a> : null}
+          {nextAction ? <JourneyNextCard action={nextAction} /> : null}
+
+          {Number(active.length > 0) + Number(plans.length > 0) + Number(readyToRemember.length > 0) + Number(records.length > 0) > 1 ? <nav className="studio-index" aria-label="내 여행 바로가기">
+            {active.length > 0 ? <a href="#journey-next-heading">여행 중 <span>{active.length}</span></a> : null}
             {plans.length > 0 ? <a href="#studio-plans-heading">계획 <span>{plans.length}</span></a> : null}
             {readyToRemember.length > 0 ? <a href="#studio-memory-ready-heading">다녀온 여행 <span>{readyToRemember.length}</span></a> : null}
             {records.length > 0 ? <a href="#studio-travels-heading">공개 기록 <span>{records.length}</span></a> : null}
           </nav> : null}
 
-          {activeTravel ? <ActiveTravelCard plan={activeTravel} today={today} /> : null}
+          {active.length > 1 ? <section className="studio-plans" aria-label="여행 중인 다른 일정">
+            <div className="studio-section-heading"><h2>여행 중인 다른 일정</h2></div>
+            <ol className="studio-travel-list">{active.slice(1).map(({ travel }) => <li key={travel.id}>
+              <Link href={`/studio/travels/${travel.id}/go?date=${today}`}><div><strong>{travel.title}</strong><p>{formatDateRange(travel.startDate, travel.endDate)}</p></div><span>오늘 일정 보기 →</span></Link>
+            </li>)}</ol>
+          </section> : null}
 
-          {recentPlan ? (
+          {plans.length > 0 ? (
             <section className="studio-plans" aria-labelledby="studio-plans-heading">
               <div className="studio-section-heading">
                 <div>
@@ -67,14 +68,11 @@ export default async function StudioPage() {
                 </div>
                 <Link href="/studio/plans/new" className="studio-section-heading__action">＋ 새 계획</Link>
               </div>
-              <RecentPlanCard plan={recentPlan} today={today} />
-              {otherPlans.length > 0 ? (
-                <ol className="studio-plan-list" aria-label="나머지 작성 중인 계획">
-                  {otherPlans.map((plan) => <PlanListItem key={plan.travel.id} plan={plan} today={today} />)}
+                <ol className="studio-plan-list" aria-label="작성 중인 계획">
+                  {plans.map((plan) => <PlanListItem key={plan.travel.id} plan={plan} today={today} />)}
                 </ol>
-              ) : null}
             </section>
-          ) : (
+          ) : travels.length === 0 ? (
             <section className="studio-plan-launch" aria-labelledby="studio-plan-launch-heading">
               <div>
                 <h2 id="studio-plan-launch-heading">새 여행 계획 만들기</h2>
@@ -85,9 +83,9 @@ export default async function StudioPage() {
                 <li><span>02</span>취향과 속도</li>
                 <li><span>03</span>일정 자동 생성</li>
               </ol>
-              <Link href="/studio/plans/new">3분 만에 계획 만들기 <span aria-hidden="true">→</span></Link>
+              <Link href="/studio/plans/new">첫 여행 계획하기 <span aria-hidden="true">→</span></Link>
             </section>
-          )}
+          ) : null}
 
           {readyToRemember.length > 0 ? (
             <section className="studio-memory-ready" aria-labelledby="studio-memory-ready-heading">
@@ -101,7 +99,7 @@ export default async function StudioPage() {
                   <li key={travel.id}>
                     <div className="studio-memory-ready__country"><span>{travel.primaryCountry?.iso2Code ?? "TR"}</span><small>{travel.primaryCountry?.nameKo ?? "지난 여행"}</small></div>
                     <div><h3>{travel.title}</h3><p>{formatDateRange(travel.startDate, travel.endDate)} · 장소 {travel.placeCount}곳 · 사진 {travel.photoCount}장</p></div>
-                    <Link href={`/studio/travels/${travel.id}/edit?finish=1`}>기록 완성하기 <span aria-hidden="true">→</span></Link>
+                    <Link href={`/studio/travels/${travel.id}/edit?finish=1`}>여행 기록하기 <span aria-hidden="true">→</span></Link>
                   </li>
                 ))}
               </ol>
@@ -172,61 +170,11 @@ export default async function StudioPage() {
   );
 }
 
-function ActiveTravelCard({ plan, today }: { plan: OwnedTravelSummary; today: string }) {
-  const dayNumber = Math.max(1, Math.min(plan.travel.durationDays, Math.round((Date.parse(`${today}T00:00:00Z`) - Date.parse(`${plan.travel.startDate}T00:00:00Z`)) / 86_400_000) + 1));
-  return (
-    <section className="studio-live" aria-labelledby="studio-live-heading">
-      <div className="studio-live__status"><span aria-hidden="true" /><strong>여행 중</strong><small>DAY {dayNumber}</small></div>
-      <div className="studio-live__copy">
-        <small>{plan.travel.primaryCountry?.nameKo ?? "현재 여행"} · {formatDateRange(plan.travel.startDate, plan.travel.endDate)}</small>
-        <h2 id="studio-live-heading">{plan.travel.title}</h2>
-        <p>오늘 일정과 다음 장소를 확인하고, 사진과 메모를 바로 남길 수 있어요.</p>
-      </div>
-      <Link href={`/studio/travels/${plan.travel.id}/go`} className="studio-live__action">
-        오늘 여행 열기 <span aria-hidden="true">→</span>
-      </Link>
-    </section>
-  );
-}
-
 function countdownLabel(today: string, startDate: string): string {
   const difference = Math.ceil((Date.parse(`${startDate}T00:00:00Z`) - Date.parse(`${today}T00:00:00Z`)) / 86_400_000);
   if (difference === 0) return "D-DAY";
   if (difference < 0) return "여행 중";
   return `D-${difference}`;
-}
-
-function RecentPlanCard({ plan, today }: { plan: OwnedTravelSummary; today: string }) {
-  const progress = planProgress(plan.travel);
-  return (
-    <div className="studio-resume-card-wrap">
-      <Link href={`/studio/travels/${plan.travel.id}/edit?plan=1`} className="studio-resume-card">
-        <div className="studio-resume-card__topline">
-          <span>최근 작업</span>
-          <time dateTime={plan.updatedAt}>{formatUpdatedAt(plan.updatedAt)}</time>
-        </div>
-        <div className="studio-resume-card__content">
-          <div className="studio-resume-card__country" aria-hidden="true">
-            <strong>{plan.travel.primaryCountry?.iso2Code ?? "TR"}</strong>
-            <span>{countdownLabel(today, plan.travel.startDate)}</span>
-          </div>
-          <div>
-            <small>{plan.travel.primaryCountry?.nameKo ?? "다음 여행"} · {formatDateRange(plan.travel.startDate, plan.travel.endDate)}</small>
-            <h3>{plan.travel.title}</h3>
-            <p>일정 {plan.travel.durationDays}일 · 장소 {plan.travel.placeCount}곳</p>
-          </div>
-        </div>
-        <div className="studio-plan-progress">
-          <div><span>장소 채우기</span><strong>{progress.completed} / {progress.total}</strong></div>
-          <span className="studio-plan-progress__track" role="progressbar" aria-label={`${plan.travel.title} 장소 작성 진행률`} aria-valuemin={0} aria-valuemax={100} aria-valuenow={progress.percentage}>
-            <i style={{ width: `${progress.percentage}%` }} />
-          </span>
-        </div>
-        <span className="studio-resume-card__action">이어서 작성하기 <b aria-hidden="true">→</b></span>
-      </Link>
-      <Link href={`/studio/travels/${plan.travel.id}/go`} className="studio-travel-view-action">여행용 보기 <span aria-hidden="true">→</span></Link>
-    </div>
-  );
 }
 
 function PlanListItem({ plan, today }: { plan: OwnedTravelSummary; today: string }) {
@@ -236,7 +184,7 @@ function PlanListItem({ plan, today }: { plan: OwnedTravelSummary; today: string
       <Link href={`/studio/travels/${plan.travel.id}/edit?plan=1`}>
         <div className="studio-plan-list__date"><strong>{countdownLabel(today, plan.travel.startDate)}</strong><span>{formatDateRange(plan.travel.startDate, plan.travel.endDate)}</span></div>
         <div><span>{plan.travel.primaryCountry?.nameKo ?? "다음 여행"}</span><h3>{plan.travel.title}</h3><p>장소 {progress.completed}/{progress.total} · {formatUpdatedAt(plan.updatedAt)}</p></div>
-        <span className="studio-plan-list__action">계속 작성하기 →</span>
+        <span className="studio-plan-list__action">이어서 계획하기 →</span>
       </Link>
       <Link href={`/studio/travels/${plan.travel.id}/go`} className="studio-plan-list__travel-view">여행용 보기 →</Link>
     </li>

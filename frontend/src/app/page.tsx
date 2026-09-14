@@ -1,16 +1,11 @@
-import Link from "next/link";
-
 import { LandingGlobePreview } from "@/components/landing/LandingGlobePreview";
 import { LandingOrientationGuide } from "@/components/landing/LandingOrientationGuide";
 import { LandingOverview } from "@/components/landing/LandingOverview";
 import { LandingStartAction } from "@/components/landing/LandingStartAction";
 import { SiteFooter } from "@/components/layout/SiteFooter";
 import { SiteHeader } from "@/components/layout/SiteHeader";
-import { profilePath, siteConfig } from "@/lib/config";
 
 export default function LandingPage() {
-  const sampleWorldPath = profilePath(siteConfig.demoUsername);
-
   return (
     <>
       <SiteHeader />
@@ -30,9 +25,6 @@ export default function LandingPage() {
 
             <div className="landing-reveal landing-reveal--actions mt-10 flex flex-wrap items-center gap-3">
               <LandingStartAction />
-              <Link href={sampleWorldPath} className="landing-secondary-cta">
-                샘플 지구본 보기
-              </Link>
               <LandingOrientationGuide />
             </div>
           </div>

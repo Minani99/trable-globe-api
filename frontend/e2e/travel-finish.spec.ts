@@ -48,7 +48,7 @@ test("끝난 계획을 모바일 마무리 화면에서 대표 장면과 기록�
 
   await page.setViewportSize({ width: 1365, height: 900 });
   await page.goto("/studio");
-  const finishLink = page.getByRole("link", { name: /기록 완성하기/ });
+  const finishLink = page.getByRole("region", { name: "도쿄 주말 계획", exact: true }).getByRole("link", { name: /여행 기록하기/ });
   await expect(finishLink).toHaveAttribute("href", `/studio/travels/${travelId}/edit?finish=1`);
   await finishLink.click();
 
