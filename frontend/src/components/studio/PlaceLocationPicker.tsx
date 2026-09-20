@@ -5,10 +5,7 @@ import {
   type GeocodingFeature,
   Language,
 } from "@maptiler/client";
-import { Map as MapLibreMap, NavigationControl } from "maplibre-gl";
-// Loaded here rather than in the root layout: this is the only screen that renders a
-// map, and from the layout every page paid for the stylesheet.
-import "maplibre-gl/dist/maplibre-gl.css";
+import dynamic from "next/dynamic";
 import {
   KeyboardEvent,
   PointerEvent,
@@ -81,6 +78,11 @@ const PLACE_IDEA_QUERIES = [
   { label: "카페", query: "카페", icon: "◌", category: "cafe" },
   { label: "숙소", query: "호텔", icon: "⌂", category: "stay" },
 ] as const;
+
+const MapTilerMapCanvas = dynamic(() => import("./MapTilerMapCanvas"), {
+  ssr: false,
+  loading: () => <div role="status" className="place-map-dialog__provider-map">지도를 불러오는 중…</div>,
+});
 
 let mapsConfigPromise: Promise<MapsConfig> | null = null;
 
@@ -578,77 +580,10 @@ export function PlaceLocationPicker({
   );
 }
 
-function MapTilerMapCanvas({
-  apiKey,
-  initialCenter,
-  onCenterChange,
-  onUnavailable,
-}: {
-  apiKey: string;
-  initialCenter: Coordinate;
-  onCenterChange: (coordinate: Coordinate) => void;
-  onUnavailable: () => void;
-}) {
-  const mapElementRef = useRef<HTMLDivElement | null>(null);
-
-  useEffect(() => {
-    if (!mapElementRef.current) return;
-    const map = new MapLibreMap({
-      container: mapElementRef.current,
-      style: `https://api.maptiler.com/maps/streets-v4/style.json?key=${encodeURIComponent(apiKey)}`,
-      center: [initialCenter.longitude, initialCenter.latitude],
-      zoom: 16,
-    });
-    map.addControl(new NavigationControl({ showCompass: false }), "top-right");
-    let loaded = false;
-    let reportedUnavailable = false;
-    const reportUnavailable = () => {
-      if (loaded || reportedUnavailable) return;
-      reportedUnavailable = true;
-      onUnavailable();
-    };
-    const loadTimeout = window.setTimeout(reportUnavailable, 12_000);
-    map.on("load", () => {
-      loaded = true;
-      window.clearTimeout(loadTimeout);
-      localizeMapLabels(map);
-    });
-    map.on("error", reportUnavailable);
-    const updateCenter = () => {
-      const center = map.getCenter();
-      onCenterChange({ latitude: center.lat, longitude: center.lng });
-    };
-    map.on("moveend", updateCenter);
-    return () => {
-      window.clearTimeout(loadTimeout);
-      map.remove();
-    };
-  }, [apiKey, initialCenter.latitude, initialCenter.longitude, onCenterChange, onUnavailable]);
-
-  return <div ref={mapElementRef} className="place-map-dialog__provider-map" aria-label="한국어 MapTiler 지도" />;
-}
-
-/** Prefer Korean labels while keeping English/local names when a translation is absent. */
-function localizeMapLabels(map: MapLibreMap) {
-  for (const layer of map.getStyle().layers ?? []) {
-    if (layer.type !== "symbol" || !layer.layout?.["text-field"]) continue;
-    try {
-      map.setLayoutProperty(layer.id, "text-field", [
-        "coalesce",
-        ["get", "name:ko"],
-        ["get", "name:en"],
-        ["get", "name"],
-      ]);
-    } catch {
-      // A third-party style may lock one label layer; the rest of the map remains usable.
-    }
-  }
-}
-
 function FallbackMapCanvas({ initialCenter, onCenterChange }: { initialCenter: Coordinate; onCenterChange: (coordinate: Coordinate) => void }) {
   const [center, setCenter] = useState(initialCenter);
   const [zoom, setZoom] = useState(15);
-  const [width, setWidth] = useState(900);
+  const [width, setWidth] = useState(0);
   const [dragging, setDragging] = useState(false);
   const mapRef = useRef<HTMLDivElement | null>(null);
   const dragRef = useRef<{ pointerId: number; startX: number; startY: number; centerWorld: { x: number; y: number } } | null>(null);
@@ -692,7 +627,7 @@ function FallbackMapCanvas({ initialCenter, onCenterChange }: { initialCenter: C
   return (
     <div ref={mapRef} className={`place-map-dialog__fallback-map${dragging ? " is-dragging" : ""}`} onPointerDown={startDrag} onPointerMove={moveDrag} onPointerUp={endDrag} onPointerCancel={endDrag} aria-label="위치를 조정하는 기본 지도">
       <div className="place-map-dialog__tiles" aria-hidden="true">
-        {viewport.tiles.map((tile) => (
+        {width > 0 && viewport.tiles.map((tile) => (
           // eslint-disable-next-line @next/next/no-img-element
           <img key={tile.key} src={tile.url} alt="" draggable={false} style={{ left: tile.left, top: tile.top }} />
         ))}

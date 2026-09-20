@@ -46,6 +46,7 @@ export function TravelRouteMap({ places }: TravelRouteMapProps) {
   const [zoom, setZoom] = useState(initialView.zoom);
   const [center, setCenter] = useState({ x: initialView.centerX, y: initialView.centerY });
   const [viewportSize, setViewportSize] = useState(DEFAULT_VIEWPORT);
+  const [measured, setMeasured] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
   const [loadedTileCount, setLoadedTileCount] = useState(0);
   const canvasRef = useRef<HTMLDivElement | null>(null);
@@ -72,6 +73,7 @@ export function TravelRouteMap({ places }: TravelRouteMapProps) {
         height: Math.max(1, Math.round(entry.contentRect.height)),
       };
       setViewportSize(nextSize);
+      setMeasured(true);
 
       const previousWidth = measuredWidthRef.current;
       if (previousWidth === null || Math.abs(previousWidth - nextSize.width) >= 64) {
@@ -200,7 +202,7 @@ export function TravelRouteMap({ places }: TravelRouteMapProps) {
           onPointerCancel={finishPointer}
         >
           <div className="travel-route-map-tiles" aria-hidden="true">
-            {viewport.tiles.map((tile) => (
+            {measured && viewport.tiles.map((tile) => (
               // The OSM policy requires this canonical HTTPS tile URL and browser caching.
               // eslint-disable-next-line @next/next/no-img-element
               <img

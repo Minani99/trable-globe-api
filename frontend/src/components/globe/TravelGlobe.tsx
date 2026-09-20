@@ -7,31 +7,10 @@ import type { GlobeMethods } from "react-globe.gl";
 
 import { GlobeLoadingIndicator } from "@/components/globe/GlobeLoadingIndicator";
 import { globeThemes, visitedColor } from "@/components/globe/globeTheme";
+import { getCachedCountryFeatures, loadCountryFeatures, type CountryFeature } from "@/lib/globe-geo";
 import type { GlobeRouteArc } from "@/lib/globeTimeline";
 import { useColorTheme } from "@/lib/theme";
 import type { VisitedCountry } from "@/types";
-
-/**
- * react-globe.gl touches `window` and creates a WebGL context on import, so it can never
- * run during SSR. Loading it here (inside an already-client component) also keeps three.js
- * out of the initial bundle - the globe chunk only downloads on a profile page.
- */
-const Globe = dynamic(() => import("react-globe.gl"), {
-  ssr: false,
-  // The parent owns the loading state so the bundle fallback and WebGL-ready
-  // fallback never render two stacked indicators.
-  loading: () => null,
-});
-
-interface CountryFeature {
-  type: "Feature";
-  id: string;
-  properties: { iso2: string | null; iso3: string | null; nameEn: string; nameKo: string };
-  geometry: {
-    type: "Polygon" | "MultiPolygon";
-    coordinates: unknown;
-  };
-}
 
 export interface GlobeCountryHover {
   code: string;
@@ -53,7 +32,12 @@ interface TravelGlobeProps {
   mode?: "travel" | "world";
 }
 
-const GEO_URL = "/geo/countries.geo.json";
+// Load browser-only WebGL code and static geography together. Geography is
+// reused across page transitions; a failed request is retried on the next mount.
+const Globe = dynamic(() => {
+  void loadCountryFeatures().catch(() => undefined);
+  return import("react-globe.gl");
+}, { ssr: false, loading: () => null });
 
 /** Camera altitude, in globe radii. */
 const ALTITUDE_DEFAULT = 2.4;
@@ -65,7 +49,6 @@ const MOBILE_INITIAL_VIEW = { lat: 24, lng: 127, altitude: 2.75 } as const;
 const MOBILE_ALTITUDE_FOCUSED = 1.82;
 const MOBILE_MAX_PIXEL_RATIO = 1.25;
 const DESKTOP_MAX_PIXEL_RATIO = 1.75;
-const LOADING_INDICATOR_MINIMUM_MS = 650;
 const AUTO_ROTATE_RESUME_DELAY_MS = 6_000;
 const AUTO_ROTATE_EASE_IN_MS = 1_200;
 const EMPTY_ROUTES: GlobeRouteArc[] = [];
@@ -97,8 +80,6 @@ export const TravelGlobe = memo(function TravelGlobe({
   const globeRef = useRef<GlobeMethods | undefined>(undefined);
   const containerRef = useRef<HTMLDivElement>(null);
   const markerElements = useRef(new Map<string, HTMLElement>());
-  const loadingStartedAt = useRef<number | null>(null);
-  const readyTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const autoRotateTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const autoRotateFrame = useRef<number | null>(null);
   const lastRotationAt = useRef<number | null>(null);
@@ -107,7 +88,7 @@ export const TravelGlobe = memo(function TravelGlobe({
   const compactRef = useRef(false);
 
   const [size, setSize] = useState({ width: 0, height: 0 });
-  const [features, setFeatures] = useState<CountryFeature[]>([]);
+  const [features, setFeatures] = useState<CountryFeature[]>(getCachedCountryFeatures);
   const [geoFailed, setGeoFailed] = useState(false);
   const [ready, setReady] = useState(false);
   const [autoRotating, setAutoRotating] = useState(false);
@@ -245,16 +226,10 @@ export const TravelGlobe = memo(function TravelGlobe({
   useEffect(() => {
     let cancelled = false;
 
-    fetch(GEO_URL)
-      .then((response) => {
-        if (!response.ok) {
-          throw new Error(`HTTP ${response.status}`);
-        }
-        return response.json();
-      })
-      .then((collection: { features: CountryFeature[] }) => {
+    loadCountryFeatures()
+      .then((loadedFeatures) => {
         if (!cancelled) {
-          setFeatures(collection.features);
+          setFeatures(loadedFeatures);
         }
       })
       .catch(() => {
@@ -321,11 +296,7 @@ export const TravelGlobe = memo(function TravelGlobe({
   // --- camera + controls --------------------------------------------------
 
   const handleReady = useCallback(() => {
-    // Keep very fast loads from flashing the indicator for only a single frame.
-    // A short minimum makes the transition readable without making the globe feel slow.
-    const elapsed = loadingStartedAt.current === null ? 0 : Date.now() - loadingStartedAt.current;
-    const remaining = Math.max(0, LOADING_INDICATOR_MINIMUM_MS - elapsed);
-    readyTimer.current = setTimeout(() => setReady(true), remaining);
+    setReady(true);
 
     // A Korean archive should introduce the world from East Asia, not the library's
     // default Greenwich-facing camera.
@@ -390,12 +361,7 @@ export const TravelGlobe = memo(function TravelGlobe({
 
   useEffect(
     () => {
-      loadingStartedAt.current = Date.now();
-
       return () => {
-        if (readyTimer.current) {
-          clearTimeout(readyTimer.current);
-        }
         clearRotationResume();
         cancelAmbientRotation();
       };
@@ -880,6 +846,7 @@ export const TravelGlobe = memo(function TravelGlobe({
         {size.width > 0 && size.height > 0 ? (
           <Globe
             ref={globeRef}
+            animateIn={false}
             width={size.width}
             height={size.height}
             backgroundColor="rgba(0,0,0,0)"
