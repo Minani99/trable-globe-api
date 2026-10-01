@@ -649,7 +649,7 @@
   color: var(--text-tertiary);
   font-family: var(--font-mono);
   font-size: var(--text-xs);
-  letter-spacing: 0.07em;
+  letter-spacing: 0;
 }
 
 .studio-travel-list li {
@@ -1148,7 +1148,7 @@
   color: var(--accent-strong);
   font-family: var(--font-mono);
   font-size: var(--text-xs);
-  letter-spacing: 0.06em;
+  letter-spacing: 0;
 }
 
 .place-picker__search {
@@ -1482,7 +1482,7 @@
 .travel-editor__item-head strong {
   font-family: var(--font-mono);
   font-size: var(--text-xs);
-  letter-spacing: 0.08em;
+  letter-spacing: 0;
 }
 
 .travel-editor__item-head button,

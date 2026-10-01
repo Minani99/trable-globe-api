@@ -36,14 +36,14 @@
   gap: 0.65rem;
   padding-inline: 0.95rem;
   border-radius: var(--radius-sm);
-  background: var(--text-primary);
-  color: var(--background);
+  background: var(--accent);
+  color: var(--accent-ink);
   font-size: var(--text-xs);
   font-weight: 700;
 }
 
 .globe-page-profile-link span {
-  color: var(--accent);
+  color: inherit;
   font-size: var(--text-base);
   transition: transform 0.2s ease;
 }

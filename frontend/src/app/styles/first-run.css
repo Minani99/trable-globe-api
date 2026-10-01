@@ -187,9 +187,9 @@
 }
 
 .profile-world-view-switch button.is-active {
-  background: var(--text-primary);
-  color: var(--background);
-  box-shadow: 0 0.45rem 1.2rem rgba(28, 52, 60, 0.12);
+  background: var(--surface-muted);
+  color: var(--text-primary);
+  box-shadow: inset 0 0 0 1px var(--border-strong);
 }
 
 .profile-world-view-switch svg {

@@ -323,7 +323,7 @@
   color: var(--accent-strong);
   font-family: var(--font-mono);
   font-size: var(--text-xs);
-  letter-spacing: 0.05em;
+  letter-spacing: 0;
 }
 
 .weather-replan__intro h3 {

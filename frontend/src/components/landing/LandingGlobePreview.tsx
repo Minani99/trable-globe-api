@@ -138,7 +138,7 @@ export function LandingGlobePreview() {
                   </p>
                 </div>
                 <div className="min-w-0 max-w-[52%] text-right">
-                  <p className="text-content-faint text-[0.58rem] font-semibold tracking-[0.13em] uppercase">
+                  <p className="text-content-faint text-xs font-semibold">
                     대표 장소
                   </p>
                   <p className="text-content-muted mt-1 truncate text-[0.72rem] font-medium">

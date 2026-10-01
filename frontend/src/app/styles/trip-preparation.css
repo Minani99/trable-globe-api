@@ -75,7 +75,7 @@
   color: var(--accent-strong);
   font-size: var(--text-xs);
   font-weight: 750;
-  letter-spacing: 0.1em;
+  letter-spacing: 0;
 }
 
 .trip-action-card__copy h3 {
@@ -543,7 +543,7 @@
   color: var(--text-tertiary);
   font-size: var(--text-xs);
   font-weight: 650;
-  letter-spacing: 0.09em;
+  letter-spacing: 0;
 }
 
 .travel-year-filter__mobile {
@@ -581,9 +581,9 @@
 }
 
 .travel-year-filter__options button.is-active {
-  background: var(--text-primary);
-  color: var(--background);
-  box-shadow: 0 0.45rem 1.2rem rgba(28, 52, 60, 0.13);
+  background: var(--surface-muted);
+  color: var(--text-primary);
+  box-shadow: inset 0 0 0 1px var(--border-strong);
 }
 
 .profile-globe-card {
@@ -637,7 +637,7 @@
   color: var(--text-tertiary);
   font-family: var(--font-mono);
   font-size: var(--text-xs);
-  letter-spacing: 0.14em;
+  letter-spacing: 0;
 }
 
 .profile-globe-card__profile,
@@ -671,7 +671,7 @@
   color: var(--text-tertiary);
   font-family: var(--font-mono);
   font-size: var(--text-xs);
-  letter-spacing: 0.15em;
+  letter-spacing: 0;
 }
 
 .profile-globe-card .globe-view-controls {
@@ -1006,7 +1006,7 @@
   color: var(--text-tertiary);
   font-size: var(--text-xs);
   font-weight: 600;
-  letter-spacing: 0.06em;
+  letter-spacing: 0;
 }
 
 .travel-recap__stats dd {
@@ -1464,13 +1464,12 @@
     width: 100%;
     min-height: 2.35rem;
     padding: 0.35rem 2rem 0.35rem 0.8rem;
-    border: 0;
+    border: 1px solid var(--border-strong);
     border-radius: var(--radius-sm);
-    background: var(--text-primary);
-    color: var(--background);
-    font-family: var(--font-mono);
-    font-size: var(--text-md);
-    font-weight: 700;
+    background-color: var(--surface);
+    color: var(--text-primary);
+    font-size: var(--text-base);
+    font-weight: 650;
   }
 
   .travel-recap {

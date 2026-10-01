@@ -148,7 +148,10 @@
 
   --font-sans: var(--font-geist-sans), var(--font-noto-sans-kr), "Pretendard",
     "Apple SD Gothic Neo", "Malgun Gothic", system-ui, -apple-system, sans-serif;
-  --font-mono: var(--font-geist-mono), var(--font-noto-sans-kr), ui-monospace, monospace;
+  /* Labels used to be set in Geist Mono, but every one of them is Korean, which the
+   * mono face lacks - the mix read as machine output. The token now resolves to the
+   * sans stack so existing font-mono call sites stay put and read as plain labels. */
+  --font-mono: var(--font-sans);
 }
 
 html {

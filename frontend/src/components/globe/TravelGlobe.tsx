@@ -52,6 +52,10 @@ const DESKTOP_MAX_PIXEL_RATIO = 1.75;
 const AUTO_ROTATE_RESUME_DELAY_MS = 6_000;
 const AUTO_ROTATE_EASE_IN_MS = 1_200;
 const EMPTY_ROUTES: GlobeRouteArc[] = [];
+const withAlpha = (hex: string, alpha: number) => {
+  const value = Number.parseInt(hex.slice(1), 16);
+  return `rgba(${(value >> 16) & 255}, ${(value >> 8) & 255}, ${value & 255}, ${alpha})`;
+};
 const ringOpacity = (t: number) => `rgba(232, 112, 58, ${Math.max(0, 1 - t) * 0.32})`;
 const ringColor = () => ringOpacity;
 const setMarkerVisibility = (element: HTMLElement, isVisible: boolean) => {
@@ -503,7 +507,9 @@ export const TravelGlobe = memo(function TravelGlobe({
     (data: object) => {
       const country = data as VisitedCountry;
       const element = document.createElement("div");
-      element.className = "tg-marker";
+      // A single visit reads as a quiet dot; the count badge is kept for countries the
+      // traveller returned to, so repeat destinations stand out instead of 40 "1"s.
+      element.className = country.travelCount > 1 ? "tg-marker" : "tg-marker is-single";
       element.dataset.code = country.iso2Code;
 
       const ring = document.createElement("span");
@@ -748,7 +754,17 @@ export const TravelGlobe = memo(function TravelGlobe({
     const route = arc as GlobeRouteArc;
     return `<div class="tg-tip"><strong>${escapeHtml(route.fromLabel)}</strong><span>→ ${escapeHtml(route.toLabel)}</span></div>`;
   }, []);
-  const arcColors = useMemo(() => [globeTheme.visitedRamp[1], globeTheme.recent], [globeTheme]);
+  // Only the latest journey in view draws at full strength; earlier routes stay as a
+  // faint trace so they add context without covering the visited countries.
+  const latestMomentIndex = useMemo(
+    () => routeArcs.reduce((latest, arc) => Math.max(latest, arc.momentIndex), -1),
+    [routeArcs],
+  );
+  const arcColors = useMemo(() => {
+    const strong = [globeTheme.visitedRamp[1], globeTheme.recent];
+    const faint = [withAlpha(globeTheme.visitedRamp[1], 0.22), withAlpha(globeTheme.recent, 0.3)];
+    return (arc: object) => (arc as GlobeRouteArc).momentIndex === latestMomentIndex ? strong : faint;
+  }, [globeTheme, latestMomentIndex]);
 
   const globeMaterial = useMemo(
     () =>

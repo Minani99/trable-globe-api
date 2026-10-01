@@ -294,13 +294,13 @@ main :where(button) {
 }
 
 .site-profile-link--accent {
-  background: var(--text-primary);
-  color: var(--surface);
+  background: var(--accent);
+  color: var(--accent-ink);
 }
 
 .site-profile-link--accent:hover,
 .site-profile-link--accent:focus-visible {
-  background: var(--accent);
+  background: var(--accent-strong);
   color: var(--accent-ink);
 }
 

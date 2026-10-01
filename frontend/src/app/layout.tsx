@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Geist, Geist_Mono, Noto_Sans_KR } from "next/font/google";
+import { Geist, Noto_Sans_KR } from "next/font/google";
 
 import { AppFeedback } from "@/components/common/AppFeedback";
 import { MobileViewport } from "@/components/common/MobileViewport";
@@ -32,11 +32,6 @@ const themeInitScript = `(() => {
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
   subsets: ["latin"],
 });
 
@@ -86,7 +81,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       lang="ko"
       data-scroll-behavior="smooth"
       suppressHydrationWarning
-      className={`${geistSans.variable} ${geistMono.variable} ${notoSansKr.variable} h-full antialiased`}
+      className={`${geistSans.variable} ${notoSansKr.variable} h-full antialiased`}
     >
       <body className="bg-background text-content flex min-h-full flex-col">
         <script dangerouslySetInnerHTML={{ __html: themeInitScript }} />

@@ -263,7 +263,7 @@
 .studio-resume-card__country strong {
   font-family: var(--font-mono);
   font-size: var(--text-base);
-  letter-spacing: 0.08em;
+  letter-spacing: 0;
 }
 
 .studio-resume-card__country span,

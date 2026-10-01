@@ -525,7 +525,7 @@ export function ProfileExperience({
                   필터 해제
                 </button>
               ) : (
-                <span className="text-content-faint font-mono text-[0.7rem] tracking-[0.08em]">
+                <span className="text-content-faint text-xs tabular-nums">
                   여행 {String(scopedTravels.length).padStart(2, "0")}개
                 </span>
               )

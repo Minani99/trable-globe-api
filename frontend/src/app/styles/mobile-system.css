@@ -90,7 +90,7 @@
 
   .eyebrow {
     font-size: var(--text-xs)!important;
-    letter-spacing: 0.11em !important;
+    letter-spacing: 0 !important;
   }
 
   .site-header__inner {

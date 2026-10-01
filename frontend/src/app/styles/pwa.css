@@ -182,7 +182,7 @@
   color: var(--text-tertiary);
   font-family: var(--font-mono);
   font-size: var(--text-xs);
-  letter-spacing: 0.1em;
+  letter-spacing: 0;
 }
 
 .offline-trip-header > div strong {

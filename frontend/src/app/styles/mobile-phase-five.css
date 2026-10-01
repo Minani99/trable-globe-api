@@ -83,7 +83,7 @@
     font-family: var(--font-mono);
     font-size: var(--text-xs);
     font-weight: 700;
-    letter-spacing: 0.08em;
+    letter-spacing: 0;
     text-transform: uppercase;
   }
 
@@ -197,7 +197,7 @@
     font-family: var(--font-mono);
     font-size: var(--text-xs);
     font-weight: 700;
-    letter-spacing: 0.09em;
+    letter-spacing: 0;
     text-transform: uppercase;
   }
 

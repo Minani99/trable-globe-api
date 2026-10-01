@@ -47,7 +47,7 @@
     font-family: var(--font-mono);
     font-size: var(--text-xs);
     font-weight: 700;
-    letter-spacing: 0.08em;
+    letter-spacing: 0;
   }
 
   .plan-builder__mobile-progress > div strong,
@@ -315,7 +315,7 @@
     font-family: var(--font-mono);
     font-size: var(--text-xs);
     font-weight: 700;
-    letter-spacing: 0.08em;
+    letter-spacing: 0;
   }
 
   .mobile-planning-workspace__progress > div strong {

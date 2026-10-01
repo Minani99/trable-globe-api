@@ -33,7 +33,7 @@ export function TravelTimeline({ travels, username }: TravelTimelineProps) {
         <section key={group.year} aria-labelledby={`timeline-${group.year}`}>
           <h3
             id={`timeline-${group.year}`}
-            className="text-content-faint mb-4 font-mono text-[0.95rem] tracking-[0.2em]"
+            className="text-content-faint mb-4 text-[0.95rem] font-semibold tabular-nums"
           >
             {group.year}
           </h3>
@@ -49,7 +49,7 @@ export function TravelTimeline({ travels, username }: TravelTimelineProps) {
                   href={travelPath(username, travel.id)}
                   className="hover:bg-surface/60 group flex flex-wrap items-baseline gap-x-4 gap-y-1 rounded-r-md py-3 pr-3 pl-6 transition-colors"
                 >
-                  <span className="text-content-faint w-10 shrink-0 font-mono text-[0.7rem] tracking-widest">
+                  <span className="text-content-faint w-10 shrink-0 text-xs tabular-nums">
                     {formatMonthLabel(travel.startDate)}
                   </span>
                   <span className="text-content text-[0.92rem] transition-colors group-hover:text-[var(--accent-strong)]">

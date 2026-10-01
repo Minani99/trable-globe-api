@@ -36,7 +36,7 @@ export function TravelCard({ travel, username, priority }: TravelCardProps) {
             aria-hidden="true"
             className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent"
           />
-          <p className="absolute right-3 bottom-3 left-3 font-mono text-[0.68rem] tracking-[0.12em] text-white/80 uppercase">
+          <p className="absolute right-3 bottom-3 left-3 text-xs font-medium text-white/90">
             {place}
             {extraCountries > 0 ? ` +${extraCountries}` : ""}
           </p>
