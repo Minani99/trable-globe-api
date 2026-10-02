@@ -3,7 +3,9 @@ name: Production smoke
 on:
   workflow_dispatch:
   schedule:
-    - cron: "17,47 * * * *"
+    # DB checks wake Neon compute: use a sparse end-to-end probe. Cloudflare
+    # independently checks the Java process every five minutes without DB I/O.
+    - cron: "17 */2 * * *"
 
 concurrency:
   group: production-smoke

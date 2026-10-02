@@ -14,7 +14,10 @@ spring:
       minimum-idle: ${DB_POOL_MIN_IDLE:0}
       connection-timeout: ${DB_CONNECTION_TIMEOUT_MS:10000}
       validation-timeout: ${DB_VALIDATION_TIMEOUT_MS:3000}
-      idle-timeout: ${DB_IDLE_TIMEOUT_MS:300000}
+      idle-timeout: ${DB_IDLE_TIMEOUT_MS:60000}
+      # Let idle Neon compute suspend; Hikari's background validation pings
+      # would otherwise keep consuming DB compute hours without user traffic.
+      keepalive-time: ${DB_KEEPALIVE_TIME_MS:0}
       max-lifetime: ${DB_MAX_LIFETIME_MS:1500000}
   jpa:
     hibernate:

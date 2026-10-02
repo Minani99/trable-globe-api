@@ -7,11 +7,13 @@ in the repository issue tracker without copying credentials or personal data.
 
 | Probe | Checks | Use |
 | --- | --- | --- |
-| `GET /api/health/live` | Java process can answer HTTP | Distinguish a crashed process from a dependency incident |
-| `GET /api/health` | Java process plus `select 1` against PostgreSQL | Render readiness and public service monitoring |
+| `GET /api/health/live` | Java process can answer HTTP | Render platform health check and five-minute Cloudflare keepalive |
+| `GET /api/health` | Java process plus `select 1` against PostgreSQL | Two-hour end-to-end smoke checks and manual DB diagnostics |
 | Frontend `GET /api/health` | Vercel route, proxy and backend readiness | End-to-end smoke check |
 
-A readiness failure returns HTTP 503. Responses include `X-Request-ID`; use it to correlate a user
+A readiness failure returns HTTP 503. Liveness can stay green during a DB incident;
+it must not be presented as full service availability. Startup Flyway and JPA validation
+still require the database before a new application starts. Responses include `X-Request-ID`; use it to correlate a user
 report with backend logs. If Cloudflare is in front, the slow/error log also includes a sanitized
 `CF-Ray` value. The API logs requests taking at least `SLOW_REQUEST_MS` (default 1000 ms).
 
@@ -68,7 +70,8 @@ A backup is not considered working until it has been restored successfully.
 ## Capacity guardrails
 
 - The production connection pool defaults to five connections per backend instance and no forced
-  idle connections. Increase it only after measuring wait time and Neon connection usage.
+  idle connections, a 60-second idle timeout and background keepalive disabled.
+  Increase it only after measuring wait time and Neon connection usage.
 - Graceful shutdown allows in-flight requests up to 20 seconds; Render is allowed 45 seconds before
   terminating the old instance.
 - Authentication cleanup runs daily and keeps expired or revoked material for seven days by default.
@@ -78,16 +81,21 @@ A backup is not considered working until it has been restored successfully.
 ## Keeping the free instance awake
 
 A Render free web service sleeps after roughly 15 minutes without traffic, and the
-next visitor pays a 50-second wake-up. An external uptime monitor requesting
-`/api/health` on a schedule keeps that timer from ever expiring.
+next visitor can wait about a minute for wake-up. An external uptime monitor
+requesting `/api/health/live` on a schedule reduces idle spin-downs; it cannot prevent
+provider restarts, exhausted quotas or memory-related crashes.
 
-`/api/health` is the right target: it reports database connectivity, so a monitor
-that keeps the service awake also tells us when the database link breaks.
+Use `/api/health/live` for frequent pings and Render's platform health checks.
+DB-backed `/api/health` checks keep Neon compute awake and can exhaust its quota.
+On October 1, 2026, PostgreSQL error 53000 (account/project quota exceeded) caused
+a repeated startup failure; the incident was investigated on October 2.
 
 The production beta uses the Cloudflare Cron Worker in
-`ops/render-keepalive-worker`. It runs every ten minutes without consuming private
-GitHub Actions minutes and validates both readiness and the public `traveler`
-profile. `.github/workflows/keep-awake.yml` remains available only as a manual
+`ops/render-keepalive-worker`. It runs every five minutes around the clock without
+consuming private GitHub Actions minutes. It checks only liveness and never the DB
+or public profile. Each request has a 65-second
+deadline and transient failures get one retry after ten seconds.
+`.github/workflows/keep-awake.yml` remains available only as a manual
 incident-response fallback.
 
 ### Settings
@@ -98,13 +106,17 @@ Render service or sample username changes. The fallback GitHub workflow reads
 `API_BASE_URL` and `SAMPLE_PROFILE` repository variables and uses the current
 production values when they are unset.
 
-The fallback runs every five minutes during its awake window. Five minutes rather
-than ten leaves slack because GitHub's scheduler is best-effort and can run late.
+Use exactly one Cloudflare trigger (`*/5 * * * *`), replacing the old trigger.
+The fallback has no schedule. Push its manual-only configuration after verifying
+the Cloudflare schedule to avoid duplicate scheduled pings. Cron updates can take
+up to 15 minutes to propagate.
 
-### It is also the only alarm
+### Monitoring and alarms
 
-The workflow checks two things, and fails the run - which GitHub emails the
-repository owner about - if either breaks:
+The Worker records failures in Cloudflare Observability. It does not itself send
+email alerts. The separate `Production smoke` GitHub workflow checks the backend,
+profile and frontend every two hours; configure GitHub failure notifications.
+The two backend checks cover:
 
 | Check | Catches |
 | --- | --- |
@@ -112,9 +124,8 @@ repository owner about - if either breaks:
 | `/api/profiles/{sample}` returns a profile | a deployment that boots but can no longer serve anyone |
 
 The second matters because readiness alone stays green while the API returns
-nothing useful. Request failures are logged on Render with a correlation ID and
-read by nobody, so until an error tracker is wired up this workflow is what stands
-between a broken deployment and a friend noticing first.
+nothing useful. Request failures are logged on Render with a correlation ID.
+Use those logs to distinguish a sleeping instance from a DB or application fault.
 
 ### The hour budget is the real constraint
 
@@ -133,7 +144,11 @@ the budget stops the service until the month rolls over - strictly worse than th
 cold start we were avoiding. So while this monitor runs, keep exactly one free
 service on the account.
 
-Pausing the monitor overnight restores real margin. Six hours off per day:
+Readiness queries can also keep Neon compute active, so review its compute quota
+as well. Shorter ping intervals do not reduce Render instance-hour usage.
+
+An optional overnight pause reduces consumption but is not the current schedule.
+Six hours off per day (and all other monitors paused too):
 
 ```
 18h x 31 days = 558h used   (192h margin)

@@ -82,7 +82,8 @@ GitHub Actions now runs backend tests and frontend lint, type checks and product
 every pull request and every push to `master`. Wait for the green `CI` check before deploying.
 
 The `Production smoke` workflow checks the site, the same-origin API proxy, backend liveness and
-database readiness every 30 minutes. Add these GitHub repository variables before enabling
+database readiness every two hours. Frequent keepalive and Render platform checks
+use `/api/health/live` so idle Neon compute can sleep. Add these GitHub repository variables before enabling
 notifications:
 
 | Repository variable | Example |
@@ -137,6 +138,8 @@ RESEND_API_KEY=<secret>
 MAIL_FROM=Travel Globe <hello@your-domain.example>
 DB_POOL_MAX_SIZE=5
 DB_POOL_MIN_IDLE=0
+DB_IDLE_TIMEOUT_MS=60000
+DB_KEEPALIVE_TIME_MS=0
 ```
 
 ### Vercel frontend

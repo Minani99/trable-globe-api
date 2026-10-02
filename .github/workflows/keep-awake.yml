@@ -1,27 +1,10 @@
-# Keeps the free Render instance awake, and doubles as the beta's alarm.
-#
-# A free web service sleeps after ~15 minutes and the next visitor pays a 50-second
-# wake-up. This pings often enough that the timer never expires. See docs/operations.md
-# for the hour budget it spends.
-#
-# It also checks that the API still answers correctly, not just that it answers at all.
-# Nothing else watches production: request failures are logged on Render and read by
-# nobody, so a failing run here - which GitHub emails the repository owner about - is the
-# only thing standing between a broken deployment and a friend reporting it.
-#
-# Delete this workflow once the service is on a paid plan and a real error tracker is
-# wired up; keeping it then only burns the free hour budget.
+# Manual incident check of DB readiness and the public profile.
+# Cloudflare owns five-minute process-only pings. Production smoke provides
+# sparse end-to-end checks; recurring DB pings consume Neon's free compute quota.
 name: keep-awake
 
 on:
-  schedule:
-    # Every 5 minutes, but only 22:00-15:59 UTC = 07:00-00:59 KST.
-    # The gap (16:00-21:59 UTC = 01:00-06:59 KST) lets the instance sleep overnight,
-    # which is what keeps the monthly hour budget comfortable rather than marginal.
-    #
-    # Five minutes, not ten: GitHub's scheduler is best-effort and routinely runs late
-    # under load, so the interval has to stay well under the 15-minute timer.
-    - cron: "*/5 0-15,22,23 * * *"
+  # Cloudflare owns the recurring ping. Keep this as a manual recovery tool only.
   workflow_dispatch:
 
 # A late run must never pile up behind the next one.

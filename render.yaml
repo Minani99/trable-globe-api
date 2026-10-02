@@ -5,7 +5,9 @@ services:
     plan: free
     dockerfilePath: ./Dockerfile
     dockerContext: .
-    healthCheckPath: /api/health
+    # Frequent platform probes must not keep Neon's free compute awake.
+    # Startup still runs Flyway/validation; Production smoke checks DB readiness.
+    healthCheckPath: /api/health/live
     # maxShutdownDelaySeconds is rejected on the free plan and fails the whole
     # Blueprint sync, which silently leaves the service on its previous config.
     # Re-add it only together with a paid plan.
