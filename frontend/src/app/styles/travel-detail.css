@@ -966,18 +966,6 @@
     padding-bottom: calc(var(--mobile-bottom-nav-height) + env(safe-area-inset-bottom));
   }
 
-  body:has(.landing-hero) {
-    height: 100svh;
-    min-height: 100svh;
-    overflow: hidden;
-    padding-bottom: 0;
-  }
-
-  body:has(.landing-hero) > main {
-    height: calc(100svh - 3.5rem - var(--mobile-bottom-nav-height) - env(safe-area-inset-bottom));
-    flex: 0 0 auto;
-  }
-
   .site-shell {
     padding-inline: 1rem;
   }

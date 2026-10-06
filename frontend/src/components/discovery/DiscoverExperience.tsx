@@ -91,7 +91,7 @@ export function DiscoverExperience({
           />
           {query ? <button type="button" onClick={() => changeQuery("")} aria-label="검색어 지우기">×</button> : null}
         </div>
-        <p>추천에는 공개 여행과 프로필 소개가 있는 사용자만 표시됩니다. 검색으로 새로 가입한 친구도 찾을 수 있습니다.</p>
+        <p>이름이나 사용자명으로 친구를 찾아보세요.</p>
       </form>
 
       <section className="discover-results" aria-labelledby="discover-results-heading" aria-busy={loading}>

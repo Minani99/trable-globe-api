@@ -89,7 +89,7 @@ export function TravelPreparationHub({
       <div className="trip-preparation__grid">
         <article className="trip-action-card is-flight">
           <div className="trip-action-card__icon" aria-hidden="true">↗</div>
-          <div className="trip-action-card__copy"><span>항공권</span><h3>공항명만 찾으면 날짜까지 자동</h3><p>도시나 공항을 검색해 고르면 저장한 여행 날짜와 함께 스카이스캐너로 넘겨요.</p></div>
+          <div className="trip-action-card__copy"><span>항공권</span><h3>항공권 검색</h3><p>여행 날짜에 맞춰 항공편을 찾아보세요.</p></div>
           <div className="trip-flight-route">
             <AirportSearchField label="출발" value={origin} onChange={setOrigin} placeholder="예: 서울, 인천공항" />
             <span aria-hidden="true">→</span>
@@ -112,13 +112,6 @@ export function TravelPreparationHub({
           <small>예보는 출발 16일 전부터 제공되며 여행지 현지 시간 기준입니다. 날씨 데이터: <a href="https://open-meteo.com/" target="_blank" rel="noreferrer">Open-Meteo</a></small>
         </article>
 
-        <article className="trip-action-card is-share">
-          <div className="trip-action-card__icon" aria-hidden="true">⌘</div>
-          <div className="trip-action-card__copy"><span>함께 만들기</span><h3>계획을 다듬고 기록으로 전환</h3><p>공유받은 일정도 내 날짜에 맞춰 담고, 다녀온 뒤에는 그대로 지구본에 남길 수 있어요.</p></div>
-          <div className="trip-flow" aria-label="여행 계획 흐름"><span>발견</span><i>→</i><span>계획</span><i>→</i><span>기록</span></div>
-          <a className="trip-action-card__button is-secondary" href="#itinerary-editor">일차별 일정 이어서 채우기 <span aria-hidden="true">↓</span></a>
-          <small>공개하기 전까지 계획과 예약 정보는 나에게만 보입니다.</small>
-        </article>
       </div>
     </section>
   );

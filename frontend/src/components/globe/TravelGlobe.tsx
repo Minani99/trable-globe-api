@@ -503,7 +503,7 @@ export const TravelGlobe = memo(function TravelGlobe({
     (data: object) => {
       const country = data as VisitedCountry;
       const element = document.createElement("div");
-      element.className = "tg-marker";
+      element.className = "tg-marker tg-marker--quiet";
       element.dataset.code = country.iso2Code;
 
       const ring = document.createElement("span");

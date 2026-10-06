@@ -35,7 +35,8 @@ test("메인과 내 여행에서 계획·오늘 일정·기록의 다음 행동�
   const upcoming = await createTrip(page, "곧 떠날 여행", offset(today, 5), offset(today, 7));
   await checkAction(page, "이어서 계획하기", `/studio/travels/${upcoming}/edit?plan=1`);
   await page.goto("/studio");
-  await expect(page.getByRole("list", { name: "작성 중인 계획" }).locator("li").first()).toContainText("곧 떠날 여행");
+  await page.getByRole("tab", { name: "계획 중", exact: true }).click();
+  await expect(page.getByRole("list", { name: "여행 목록" }).locator("li").first()).toContainText("곧 떠날 여행");
   await expect(page.locator(`a[href="/studio/travels/${later}/edit?plan=1"]`)).toBeVisible();
   await page.getByRole("region", { name: "곧 떠날 여행", exact: true }).getByRole("link", { name: /이어서 계획하기/ }).click();
   await expect(page).toHaveURL(new RegExp(`/studio/travels/${upcoming}/edit\\?plan=1$`));
@@ -45,7 +46,7 @@ test("메인과 내 여행에서 계획·오늘 일정·기록의 다음 행동�
   await checkAction(page, "오늘 일정 보기", todayHref);
   await page.goto("/studio");
   const card = page.locator('section[data-phase="travel"]');
-  await expect(card.locator('[aria-current="step"]')).toHaveText("여행 중");
+  await expect(card).toContainText("지금 여행 중");
   await expect(page.getByRole("heading", { name: "새 여행 계획 만들기" })).toHaveCount(0);
   for (const width of [320, 390, 1440]) {
     await page.setViewportSize({ width, height: 900 });

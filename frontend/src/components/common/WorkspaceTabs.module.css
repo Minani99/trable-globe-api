@@ -1,0 +1,7 @@
+.tabs { display: flex; gap: 1.5rem; overflow-x: auto; border-bottom: 1px solid var(--border); scrollbar-width: thin; }
+.tabs button { position: relative; flex-shrink: 0; min-height: 3.25rem; padding: .75rem .125rem; border: 0; border-radius: 0; background: transparent; color: var(--text-secondary); font-size: .875rem; font-weight: 500; white-space: nowrap; }
+.tabs button[aria-selected="true"] { color: var(--text-primary); font-weight: 700; }
+.tabs button[aria-selected="true"]::after { position: absolute; right: 0; bottom: 0; left: 0; height: 2px; background: var(--accent); content: ""; }
+.tabs button:hover { color: var(--accent); }
+.tabs button:focus-visible { outline-offset: -4px; }
+@media (max-width: 700px) { .tabs { gap: 1.35rem; } .tabs button { min-height: 3rem; font-size: .8125rem; } }

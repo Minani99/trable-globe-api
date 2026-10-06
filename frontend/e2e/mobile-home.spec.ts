@@ -1,35 +1,27 @@
 import { expect, test } from "@playwright/test";
 
-test("모바일 메인은 한 화면 안에서 탐색과 국가 선택을 제공한다", async ({ page }) => {
+test("모바일 메인은 여행 시작과 국가 탐색을 제공한다", async ({ page }) => {
   const pageErrors: string[] = [];
   page.on("pageerror", (error) => pageErrors.push(error.message));
 
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto("/", { waitUntil: "domcontentloaded" });
-  await expect(page.getByRole("heading", { name: "여행 계획부터 기록까지 한곳에." })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "다음 여행을 펼쳐보세요." })).toBeVisible();
   await expect(page.locator(".landing-globe-live")).toBeVisible();
   await page.waitForTimeout(800);
   await expect(page.locator(".landing-globe-live [data-render-quality='mobile']")).toHaveAttribute("data-pixel-ratio-limit", "1.25");
 
   const layout = await page.evaluate(() => ({
     viewportHeight: window.innerHeight,
-    documentHeight: document.documentElement.scrollHeight,
+    documentWidth: document.documentElement.scrollWidth, viewportWidth: window.innerWidth,
   }));
-  expect(layout.documentHeight).toBeLessThanOrEqual(layout.viewportHeight + 1);
+  expect(layout.documentWidth).toBeLessThanOrEqual(layout.viewportWidth + 1);
 
   const bottomNavigation = page.getByRole("navigation", { name: "모바일 주요 메뉴" });
   await expect(bottomNavigation).toBeVisible();
-  await expect(bottomNavigation.getByRole("link")).toHaveCount(5);
+  await expect(bottomNavigation.getByRole("link")).toHaveCount(4);
   await expect(page.getByRole("button", { name: "메뉴 열기" })).toBeHidden();
   await expect(page.getByRole("region", { name: "계획과 기록", includeHidden: true })).toBeHidden();
-
-  const guideTrigger = page.getByRole("button", { name: /처음 이용하시나요|이용 방법/ });
-  await expect(guideTrigger).toBeVisible();
-  await guideTrigger.click();
-  const guide = page.getByRole("dialog", { name: "계획부터 기록까지" });
-  await expect(guide).toBeVisible();
-  await expect(guide.getByRole("listitem")).toHaveCount(3);
-  await guide.getByRole("button", { name: "확인", exact: true }).click();
 
   const globeCanvas = page.locator(".landing-globe-live canvas").first();
   await expect(globeCanvas).toBeVisible();

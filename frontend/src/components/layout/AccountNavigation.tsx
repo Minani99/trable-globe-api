@@ -105,14 +105,14 @@ export function AccountNavigation({
     ) : (
       <div className="site-account-entry">
         <Link href="/login" className="site-account-login">로그인</Link>
-        <Link href="/register?next=%2Fstudio" className="site-profile-link site-profile-link--accent">지구본 만들기</Link>
+        <Link href="/register?next=%2Fstudio" className="site-profile-link site-profile-link--accent">계정 만들기</Link>
       </div>
     );
   }
   return mobile ? (
     <>
       <Link href="/globe" onClick={onNavigate}><span>내 지구본</span><span aria-hidden="true">→</span></Link>
-      <Link href="/studio" onClick={onNavigate}><span>여행 기록</span><span aria-hidden="true">→</span></Link>
+      <Link href="/studio" onClick={onNavigate}><span>내 여행</span><span aria-hidden="true">→</span></Link>
       <Link href="/studio/plans/new" onClick={onNavigate}><span>새 여행 계획</span><span aria-hidden="true">＋</span></Link>
       <Link href={`/${member.username}`} onClick={onNavigate}><span>공개 프로필</span><span aria-hidden="true">↗</span></Link>
       <Link href="/settings" onClick={onNavigate}><span>내 정보</span><span aria-hidden="true">→</span></Link>
@@ -149,7 +149,7 @@ export function AccountNavigation({
         {menuOpen ? (
           <div className="site-account-popover" role="menu">
             <Link href="/globe" role="menuitem" onClick={() => setMenuOpen(false)}><span>내 지구본</span><span aria-hidden="true">↗</span></Link>
-            <Link href="/studio" role="menuitem" onClick={() => setMenuOpen(false)}><span>여행 기록</span><span aria-hidden="true">→</span></Link>
+            <Link href="/studio" role="menuitem" onClick={() => setMenuOpen(false)}><span>내 여행</span><span aria-hidden="true">→</span></Link>
             <Link href="/studio/plans/new" role="menuitem" onClick={() => setMenuOpen(false)}><span>새 여행 계획</span><span aria-hidden="true">＋</span></Link>
             <Link href={`/${member.username}`} role="menuitem" onClick={() => setMenuOpen(false)}><span>공개 프로필</span><span aria-hidden="true">↗</span></Link>
             <Link href="/settings" role="menuitem" onClick={() => setMenuOpen(false)}><span>내 정보</span><span aria-hidden="true">→</span></Link>

@@ -1,0 +1,62 @@
+/* Editing is a persistent workspace. Section visibility is shared across sizes. */
+.travel-editor.travel-editor { display: block; padding-bottom: 0; }
+.travel-editor .travel-editor__section[hidden], .editor-stop__body[hidden] { display: none !important; }
+.travel-editor .travel-editor__section:not([hidden]) { display: block; min-height: 0; padding: 1.25rem 0 2rem; border: 0; animation: none; }
+.travel-editor .travel-editor__section-heading { display: block; margin-bottom: 1.5rem; }
+.travel-editor .travel-editor__section-heading > span { display: none; }
+.travel-editor .travel-editor__section-heading h2 { font-size: 1.125rem !important; }
+.travel-editor .travel-editor__section-heading p { margin-top: .35rem; font-size: .8125rem; }
+.travel-editor .travel-editor__section--itinerary .travel-editor__section-heading { display: none; }
+.travel-editor .plan-itinerary { display: block; padding: 0; margin: 0 0 1rem; border: 0; border-radius: 0; background: transparent; }
+.travel-editor .plan-itinerary__days { display: flex; gap: .5rem; overflow-x: auto; margin: 0; }
+.travel-editor .plan-itinerary__days button { display: flex; flex-direction: row; align-items: center; gap: .5rem; width: auto; min-width: 6.5rem; min-height: 2.75rem; padding: .6rem .75rem; box-shadow: none; }
+.travel-editor .plan-itinerary__days button small { font-size: .75rem; }
+.travel-editor .plan-itinerary__days button span { display: none; }
+.travel-editor .plan-itinerary__quick-actions { display: flex; flex-wrap: wrap; gap: .5rem; }
+.travel-editor .plan-itinerary__quick-actions button { display: inline-flex; width: auto; min-height: 2.5rem; padding: .5rem .75rem; border: 1px solid var(--border); border-radius: var(--radius-xs); background: var(--surface); }
+.travel-editor .plan-itinerary__toolbar { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: .5rem; }
+.plan-itinerary__weather-check { min-height: 2.75rem; padding-inline: .25rem; color: var(--text-secondary); font-size: .8125rem; text-decoration: underline; text-underline-offset: .2em; }
+.travel-editor .travel-editor__fields { gap: 1rem; }
+.travel-editor .travel-editor__fields input, .travel-editor .travel-editor__fields select, .travel-editor .travel-editor__fields textarea { background: var(--surface); border-radius: var(--radius-xs); }
+.travel-editor .travel-editor__places { display: grid; gap: 0; border-top: 1px solid var(--border); }
+.travel-editor .travel-editor__places > .editor-stop { padding: 0; border: 0; border-bottom: 1px solid var(--border); border-radius: 0; background: transparent; }
+.editor-stop__summary { display: grid; width: 100%; grid-template-columns: 4rem minmax(0, 1fr) auto; align-items: center; gap: 1rem; min-height: 5rem; padding: 1rem .5rem; text-align: left; }
+.editor-stop__summary:hover { background: var(--surface-raised); }
+.editor-stop__time { color: var(--accent); font-size: .875rem; font-variant-numeric: tabular-nums; }
+.editor-stop__summary strong { display: block; font-size: .9375rem; font-weight: 600; }
+.editor-stop__summary small { display: block; margin-top: .3rem; color: var(--text-secondary); font-size: .75rem; }
+.editor-stop__edit { color: var(--text-tertiary); font-size: .75rem; white-space: nowrap; }
+.editor-stop__body { padding: 1.5rem; border-top: 1px solid var(--border); background: var(--surface-raised); }
+.travel-editor .plan-itinerary__progress { display: none; }
+.travel-editor .plan-itinerary__view-switch { padding: .5rem 0; border: 0; background: transparent; }
+.travel-editor .plan-itinerary__view-switch > div:first-child { display: none; }
+.travel-editor .plan-itinerary__toolbar { padding: .75rem 0 1.25rem; border: 0; background: transparent; }
+.travel-editor .plan-itinerary__toolbar > div:first-child { display: none; }
+.travel-editor .plan-itinerary__days { padding: 0 0 .75rem; border: 0; }
+.travel-editor .plan-itinerary__days button { border-radius: var(--radius-xs); }
+.travel-editor .weather-replan { margin: 0 0 1.25rem; padding: .85rem 1rem; border: 1px solid var(--border); border-radius: var(--radius-xs); background: var(--surface-raised); }
+.travel-editor .weather-replan__intro p { display: none; }
+.travel-editor .weather-replan__intro h3 { font-size: .875rem; }
+.editor-notice { margin: .75rem 0; padding: .8rem 1rem; border-left: 3px solid var(--danger); background: var(--danger-soft); color: var(--text-primary); font-size: .875rem; }
+.editor-savebar { position: sticky; bottom: 0; z-index: 28; display: flex; align-items: center; justify-content: space-between; gap: 1rem; padding: 1rem 0; border-top: 1px solid var(--border); background: var(--surface); }
+.editor-savebar__status { display: grid; gap: .2rem; min-width: 0; }
+.editor-savebar__status strong { font-size: .8125rem; font-weight: 500; }
+.editor-savebar__status span { color: var(--text-secondary); font-size: .75rem; }
+.editor-savebar__actions { display: flex; align-items: center; gap: 1.25rem; flex-shrink: 0; font-size: .875rem; }
+.editor-savebar__actions button { min-width: 6rem; min-height: 2.75rem; padding: .65rem 1.25rem; border-radius: var(--radius-xs); background: var(--accent); color: var(--accent-ink); font-weight: 600; }
+.editor-savebar__actions button:disabled { opacity: .6; }
+.editor-manage { display: flex; gap: 1.5rem; padding: 1.25rem 0; color: var(--text-secondary); font-size: .75rem; }
+.editor-manage button:first-child { color: var(--danger); }
+.editor-trip-note { display: grid; gap: .5rem; margin-bottom: 1.5rem; font-size: .8125rem; }
+.editor-trip-note textarea { width: 100%; padding: .85rem; border: 1px solid var(--border); border-radius: var(--radius-xs); background: var(--surface); font-size: .9375rem; resize: vertical; }
+.travel-editor .travel-editor__places.is-timeline > .editor-stop::before, .travel-editor .travel-editor__places.is-timeline > .editor-stop::after { display: none; }
+@media (max-width: 700px) {
+  .travel-editor .mobile-travel-quick-nav { display: none; }
+  .travel-editor .travel-editor__section:not([hidden]) { padding-block: .75rem 1.5rem; }
+  .editor-stop__summary { grid-template-columns: 3rem minmax(0, 1fr) auto; gap: .5rem; padding-inline: 0; }
+  .editor-stop__body { padding: 1rem .75rem; }
+  .editor-savebar { margin-inline: calc(-1 * var(--mobile-gutter)); padding: .75rem var(--mobile-gutter) calc(.75rem + env(safe-area-inset-bottom)); }
+  .editor-savebar__status span { max-width: 12rem; font-size: .75rem; }
+  .editor-savebar__actions { gap: .75rem; }
+  .editor-savebar__actions button { min-width: 4.5rem; }
+}

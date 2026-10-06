@@ -4,8 +4,6 @@ import { notFound, redirect } from "next/navigation";
 
 import { SiteFooter } from "@/components/layout/SiteFooter";
 import { SiteHeader } from "@/components/layout/SiteHeader";
-import { MobileTripCompanion } from "@/components/layout/MobileTripCompanion";
-import { TravelModeEditorPanel } from "@/components/layout/TravelModeEditorPanel";
 import { MobilePlanningWorkspace } from "@/components/planner/MobilePlanningWorkspace";
 import { TravelPreparationHub } from "@/components/planner/TravelPreparationHub";
 import { TravelEditor } from "@/components/studio/TravelEditor";
@@ -14,6 +12,7 @@ import { TravelChecklist } from "@/components/studio/TravelChecklist";
 import { TravelPlanningBoard } from "@/components/studio/TravelPlanningBoard";
 import { authenticatedBackendGet, getCurrentMember } from "@/lib/api/server-session";
 import { countryOptions } from "@/lib/countries";
+import { formatDateRange } from "@/lib/utils/format";
 import { todayInKorea } from "@/lib/utils/date";
 import type { TravelDetail, TravelPlanning, TravelTask } from "@/types";
 
@@ -49,7 +48,21 @@ export default async function EditTravelPage(props: PageProps<"/studio/travels/[
     ) : <div id="itinerary-editor"><TravelEditor username={member.username} countries={countryOptions} initialTravel={travel} planningMode={planningMode} today={today} /></div>
   );
   return (
-    <><SiteHeader username={member.username} member={member} /><main id="main" className="studio-page flex-1"><div className={`site-shell travel-editor-shell${finishMode ? " is-finishing" : ""}`}><nav className="studio-breadcrumb"><Link href="/studio">← 여행 허브</Link><Link href={`/studio/travels/${travel.id}/go`}>여행용 보기</Link>{finishMode ? <Link href={`/studio/travels/${travel.id}/edit?plan=1`}>전체 편집</Link> : null}</nav><header className={`travel-editor-hero${planningMode ? " is-planning" : ""}${finishMode ? " is-finishing" : ""}`}><h1>{finishMode ? "기록으로 남길 준비" : travel.title}</h1><p>{finishMode ? "장소와 대표 사진, 메모를 확인하세요." : travelMode ? "오늘 일정과 다음 장소를 확인하고 사진과 메모를 남길 수 있습니다." : planningMode ? (travel.endDate <= today ? "실제 장소와 사진을 확인한 뒤 여행 기록으로 완성하세요." : "일정과 예약, 예산을 확인하고 필요한 부분만 수정하세요.") : "저장하면 지구본과 공개 페이지에 반영됩니다."}</p></header>{travelMode && !finishMode ? <div id="travel-day-view"><MobileTripCompanion travel={travel} today={today} username={member.username} variant="page" /></div> : null}{travelMode && !finishMode ? <TravelModeEditorPanel>{editor}</TravelModeEditorPanel> : editor}</div></main><SiteFooter /></>
+    <>
+      <SiteHeader username={member.username} member={member} />
+      <main id="main" className="studio-page flex-1">
+        <div className={`site-shell travel-editor-shell${finishMode ? " is-finishing" : ""}`}>
+          <nav className="studio-breadcrumb" aria-label="현재 위치"><Link href="/studio">← 내 여행</Link><Link href={`/studio/travels/${travel.id}/go`}>여행용 보기 ↗</Link>{travel.visibility === "PUBLIC" ? <Link href={`/${member.username}/travel/${travel.id}`}>공개 기록 보기 ↗</Link> : null}{finishMode ? <Link href={`/studio/travels/${travel.id}/edit?plan=1`}>전체 편집</Link> : null}</nav>
+          <header className="travel-editor-hero">
+            <p className="page-caption">{travelMode ? "여행 중" : travel.startDate > today ? "계획 중" : "다녀온 여행"} · {travel.visibility === "PUBLIC" ? "공개" : "비공개"}</p>
+            <h1>{finishMode ? "여행 기록 정리" : travel.title}</h1>
+            <p>{formatDateRange(travel.startDate, travel.endDate)} · {travel.countries.map((country) => country.nameKo).join(" · ")}</p>
+          </header>
+          {editor}
+        </div>
+      </main>
+      <SiteFooter compact />
+    </>
   );
 }
 

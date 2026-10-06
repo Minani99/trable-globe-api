@@ -26,14 +26,14 @@ const MAX_TRIP_DAYS = 30;
 const BUILD_MODES = [
   {
     id: "auto",
-    badge: "추천",
-    label: "자동으로 전부 짜기",
+    badge: "장소 추천",
+    label: "추천 일정으로 시작",
     description: "기준 위치 주변의 실제 장소를 시간대별로 배치한 초안을 만듭니다.",
   },
   {
     id: "skeleton",
-    badge: "직접",
-    label: "일차만 만들기",
+    badge: "빈 일정",
+    label: "직접 일정 채우기",
     description: "날짜별 빈 칸만 만들고 장소·시간·메모를 직접 채웁니다.",
   },
 ] as const;
@@ -42,7 +42,7 @@ const ANCHOR_MODES = [
   { id: "stay", label: "숙소", placeholder: "숙소 이름 또는 Google 지도 링크" },
   { id: "content", label: "꼭 갈 곳", placeholder: "랜드마크·공연장 또는 Google 지도 링크" },
 ] as const;
-const MOBILE_PLAN_STEPS = ["여행지", "날짜", "취향", "만드는 방식", "확인"] as const;
+const MOBILE_PLAN_STEPS = ["여행지와 날짜", "일정 방식", "확인"] as const;
 
 type Companion = (typeof COMPANIONS)[number];
 type Style = (typeof STYLES)[number];
@@ -130,7 +130,7 @@ export function PlanBuilder({
   const [companion, setCompanion] = useState<Companion>("친구와");
   const [styles, setStyles] = useState<Style[]>(["맛집", "여유"]);
   const [pace, setPace] = useState<Pace>("balanced");
-  const [buildMode, setBuildMode] = useState<BuildMode>("auto");
+  const [buildMode, setBuildMode] = useState<BuildMode>("skeleton");
   const [anchorMode, setAnchorMode] = useState<AnchorMode>("center");
   const [anchorInput, setAnchorInput] = useState("");
   const [mobileStep, setMobileStep] = useState(0);
@@ -187,11 +187,11 @@ export function PlanBuilder({
       setError("여행할 나라를 먼저 골라 주세요.");
       return false;
     }
-    if (step === 1 && !startDate) {
+    if (step === 0 && !startDate) {
       setError("출발일을 선택해 주세요.");
       return false;
     }
-    if (step === 3 && buildMode === "auto" && anchorMode !== "center" && anchorInput.trim().length < 2) {
+    if (step === 1 && buildMode === "auto" && anchorMode !== "center" && anchorInput.trim().length < 2) {
       setError(anchorMode === "stay" ? "동선의 기준이 될 숙소를 입력해 주세요." : "반드시 갈 장소를 입력해 주세요.");
       return false;
     }
@@ -209,7 +209,7 @@ export function PlanBuilder({
   }
 
   async function createPlan() {
-    for (const step of [0, 1, 3]) {
+    for (const step of [0, 1]) {
       if (!validateStep(step)) {
         setMobileStep(step);
         return;
@@ -366,7 +366,7 @@ export function PlanBuilder({
         </section>
 
         {/* 02 Dates */}
-        <section className="pb-step" data-mobile-active={mobileStep === 1} aria-labelledby="plan-date-heading">
+        <section className="pb-step" data-mobile-active={mobileStep === 0} aria-labelledby="plan-date-heading">
           <StepHeading index={2} id="plan-date-heading" title="언제, 며칠 동안 갈까요?" hint="출발일과 기간만 정하면 날짜별 일정표가 준비됩니다." />
           <div className="pb-date-grid">
             <label className="pb-field">
@@ -408,8 +408,70 @@ export function PlanBuilder({
           ) : null}
         </section>
 
-        {/* 03 Taste */}
-        <section className="pb-step" data-mobile-active={mobileStep === 2} aria-labelledby="plan-style-heading">
+        {/* 04 Build mode */}
+        <section className="pb-step" data-mobile-active={mobileStep === 1} aria-labelledby="plan-build-heading">
+          <StepHeading index={4} id="plan-build-heading" title="어떻게 시작할까요?" hint="직접 채우거나, 추천 장소로 초안을 받아보세요." />
+          <div className="pb-option-grid pb-option-grid--2" role="group" aria-label="계획 생성 방식">
+            {BUILD_MODES.map((item) => (
+              <button
+                key={item.id}
+                type="button"
+                className={`pb-option pb-option--build${buildMode === item.id ? " is-selected" : ""}`}
+                aria-pressed={buildMode === item.id}
+                onClick={() => { setBuildMode(item.id); setError(null); }}
+              >
+                <span className="pb-option__badge">{item.badge}</span>
+                <strong>{item.label}</strong>
+                <span>{item.description}</span>
+              </button>
+            ))}
+          </div>
+
+          {buildMode === "auto" ? (
+            <div className="pb-anchor">
+              <div className="pb-group">
+                <span className="pb-group__label">동선 기준</span>
+                <div className="pb-segment" role="group" aria-label="동선 기준">
+                  {ANCHOR_MODES.map((item) => (
+                    <button
+                      key={item.id}
+                      type="button"
+                      className={anchorMode === item.id ? "is-selected" : ""}
+                      aria-pressed={anchorMode === item.id}
+                      onClick={() => { setAnchorMode(item.id); setError(null); }}
+                    >
+                      {item.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+              <div className="pb-anchor__row">
+                <label className="pb-field pb-field--search">
+                  <span className="sr-only">{anchorMode === "center" ? "도시·지역" : activeAnchor.label}</span>
+                  <PinIcon />
+                  <input
+                    value={anchorInput}
+                    onChange={(event) => { setAnchorInput(event.target.value); setError(null); }}
+                    placeholder={activeAnchor.placeholder}
+                    inputMode="url"
+                  />
+                </label>
+                <a className="pb-secondary" href={googleMapsSearchUrl} target="_blank" rel="noopener noreferrer">
+                  Google 지도 <span aria-hidden="true">↗</span>
+                </a>
+              </div>
+              <p className="pb-note">
+                <span>선택한 위치 주변의 장소로 일정을 제안합니다. Google 지도 공유 링크도 사용할 수 있어요.</span>
+              </p>
+            </div>
+          ) : (
+            <p className="pb-note">
+              <span>{tripDays}일치 일정표를 만듭니다. 장소는 지도로 찾거나 추천 목록에서 추가할 수 있어요.</span>
+            </p>
+          )}
+        </section>
+        <details className="pb-preferences" data-mobile-active={mobileStep === 1}><summary>취향과 일정 밀도 <span>선택 사항</span></summary>
+        <section className="pb-step" data-mobile-active={mobileStep === 1} aria-labelledby="plan-style-heading">
           <StepHeading index={3} id="plan-style-heading" title="누구와, 어떤 여행인가요?" hint="추천 장소와 하루 일정의 밀도를 정하는 데 사용됩니다." />
 
           <div className="pb-group">
@@ -472,74 +534,11 @@ export function PlanBuilder({
           </div>
         </section>
 
-        {/* 04 Build mode */}
-        <section className="pb-step" data-mobile-active={mobileStep === 3} aria-labelledby="plan-build-heading">
-          <StepHeading index={4} id="plan-build-heading" title="어디까지 맡길까요?" hint="어느 쪽을 골라도 저장 뒤에 자유롭게 수정할 수 있어요." />
-          <div className="pb-option-grid pb-option-grid--2" role="group" aria-label="계획 생성 방식">
-            {BUILD_MODES.map((item) => (
-              <button
-                key={item.id}
-                type="button"
-                className={`pb-option pb-option--build${buildMode === item.id ? " is-selected" : ""}`}
-                aria-pressed={buildMode === item.id}
-                onClick={() => { setBuildMode(item.id); setError(null); }}
-              >
-                <span className="pb-option__badge">{item.badge}</span>
-                <strong>{item.label}</strong>
-                <span>{item.description}</span>
-              </button>
-            ))}
-          </div>
-
-          {buildMode === "auto" ? (
-            <div className="pb-anchor">
-              <div className="pb-group">
-                <span className="pb-group__label">동선 기준</span>
-                <div className="pb-segment" role="group" aria-label="동선 기준">
-                  {ANCHOR_MODES.map((item) => (
-                    <button
-                      key={item.id}
-                      type="button"
-                      className={anchorMode === item.id ? "is-selected" : ""}
-                      aria-pressed={anchorMode === item.id}
-                      onClick={() => { setAnchorMode(item.id); setError(null); }}
-                    >
-                      {item.label}
-                    </button>
-                  ))}
-                </div>
-              </div>
-              <div className="pb-anchor__row">
-                <label className="pb-field pb-field--search">
-                  <span className="sr-only">{anchorMode === "center" ? "도시·지역" : activeAnchor.label}</span>
-                  <PinIcon />
-                  <input
-                    value={anchorInput}
-                    onChange={(event) => { setAnchorInput(event.target.value); setError(null); }}
-                    placeholder={activeAnchor.placeholder}
-                    inputMode="url"
-                  />
-                </label>
-                <a className="pb-secondary" href={googleMapsSearchUrl} target="_blank" rel="noopener noreferrer">
-                  Google 지도 <span aria-hidden="true">↗</span>
-                </a>
-              </div>
-              <p className="pb-note">
-                <SparkIcon />
-                <span>실제 주변 장소와 이동 거리·체류 시간 규칙으로 시간표를 만듭니다. Google 지도 공유 링크를 그대로 붙여넣어도 돼요.</span>
-              </p>
-            </div>
-          ) : (
-            <p className="pb-note">
-              <SparkIcon />
-              <span>{tripDays}일치 빈 일정표만 만들어 둡니다. 일정 편집 화면에서 장소 추천과 지도 검색을 바로 쓸 수 있어요.</span>
-            </p>
-          )}
-        </section>
+        </details>
       </div>
 
       {/* Preview --------------------------------------------------------- */}
-      <aside className="pb-preview" data-mobile-active={mobileStep === 4} aria-label="여행 계획 요약">
+      <aside className="pb-preview" data-mobile-active={mobileStep === 2} aria-label="여행 계획 요약">
         <div className="pb-ticket">
           <div className="pb-ticket__head">
             {selectedCountry ? <Flag code={selectedCountry.iso2Code} size="xl" /> : <span className="pb-ticket__placeholder-flag" aria-hidden="true" />}
@@ -680,10 +679,6 @@ function PinIcon() {
 
 function CalendarIcon() {
   return <svg className="pb-icon" aria-hidden="true" viewBox="0 0 20 20"><rect x="3" y="4.5" width="14" height="12" rx="2" /><path d="M6.5 3v3M13.5 3v3M3 8.5h14" /></svg>;
-}
-
-function SparkIcon() {
-  return <svg className="pb-icon" aria-hidden="true" viewBox="0 0 20 20"><path d="M10 3v4M10 13v4M3 10h4M13 10h4M5.5 5.5l2.5 2.5M12 12l2.5 2.5M14.5 5.5 12 8M8 12l-2.5 2.5" /></svg>;
 }
 
 function CheckIcon() {

@@ -7,18 +7,18 @@
  */
 export const globeThemes = {
   light: {
-    ocean: "#78c4e2",
+    ocean: "#a5c7cb",
     land: "#e3eadb",
     landStroke: "#a8bdc0",
-    atmosphere: "#80d5f3",
+    atmosphere: "#b8d4d2",
     side: "rgba(91, 135, 148, 0.45)",
     emissive: "#09232e",
-    specular: "#e8fbff",
-    shininess: 18,
-    visitedRamp: ["#f2c5ae", "#eda584", "#e98a61", "#e8703a", "#cf5425"],
-    hovered: "#f37f4b",
-    recent: "#f08a56",
-    selected: "#c94619",
+    specular: "#e4ebe8",
+    shininess: 6,
+    visitedRamp: ["#b5cbb1", "#98b699", "#78a083", "#568568", "#35634d"],
+    hovered: "#92b59a",
+    recent: "#729e7c",
+    selected: "#35634d",
   },
   dark: {
     ocean: "#102838",

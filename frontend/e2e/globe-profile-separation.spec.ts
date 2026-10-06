@@ -22,7 +22,7 @@ test("내 지구본과 내 정보가 서로 다른 역할로 열린다", async (
 
   await page.setViewportSize({ width: 390, height: 844 });
   const mobileNav = page.getByRole("navigation", { name: "모바일 주요 메뉴" });
-  await expect(mobileNav.getByRole("link", { name: "세계" })).toHaveAttribute("aria-current", "page");
+  await expect(mobileNav.getByRole("link", { name: "지구본" })).toHaveAttribute("aria-current", "page");
   await expect(mobileNav.getByRole("link", { name: "마이" })).not.toHaveAttribute("aria-current", "page");
 
   await mobileNav.getByRole("link", { name: "마이" }).click();
@@ -31,7 +31,7 @@ test("내 지구본과 내 정보가 서로 다른 역할로 열린다", async (
   await expect(page.locator(".settings-page canvas")).toHaveCount(0);
   await expect(page.getByRole("link", { name: /공개 프로필/ })).toHaveAttribute("href", `/${username}`);
   await expect(mobileNav.getByRole("link", { name: "마이" })).toHaveAttribute("aria-current", "page");
-  await expect(mobileNav.getByRole("link", { name: "세계" })).not.toHaveAttribute("aria-current", "page");
+  await expect(mobileNav.getByRole("link", { name: "지구본" })).not.toHaveAttribute("aria-current", "page");
 
   const security = page.locator("#security");
   await security.getByLabel("현재 비밀번호", { exact: true }).fill("split-world-password-42");
