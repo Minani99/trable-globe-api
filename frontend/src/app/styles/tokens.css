@@ -8,28 +8,28 @@
  * - Geometry: ONE radius scale (xs 6 · sm 10 · md 14 · lg 20 · xl 28). Circles are
  *   reserved for avatars and status dots. No pills.
  * - Type: 15px body, 13px secondary, 12px caption floor. Headings tight, 650 weight.
- * - Colour: one accent (forest green) for actions, ocean for informational links, the
+ * - Colour: one accent (terracotta) for actions, ocean for informational links, the
  *   globe keeps its own palette because it is the visual identity.
  */
 :root {
   --background: #ffffff;
-  --background-elevated: #f7f8f5;
+  --background-elevated: #f6f7f8;
   --surface: #ffffff;
-  --surface-raised: #f7f8f5;
-  --surface-hover: #eef2ed;
-  --surface-muted: #edf0ea;
+  --surface-raised: #f7f8f9;
+  --surface-hover: #f0f2f4;
+  --surface-muted: #eef0f2;
 
-  --border: #e1e5de;
-  --border-strong: #b7c0b4;
+  --border: #e4e7eb;
+  --border-strong: #b8bec6;
 
-  --text-primary: #202a25;
-  --text-secondary: #5b655e;
-  --text-tertiary: #6a756d;
+  --text-primary: #16191d;
+  --text-secondary: #5c636b;
+  --text-tertiary: #68717c;
 
-  --accent: #35634d;
-  --accent-strong: #254c39;
-  --accent-soft: #edf3eb;
-  --accent-border: #a9bfac;
+  --accent: #bc481e;
+  --accent-strong: #c24d1e;
+  --accent-soft: #fbeee7;
+  --accent-border: #f0b9a0;
   --accent-ink: #ffffff;
 
   --ocean: #2f7fa6;
@@ -43,7 +43,7 @@
 
   --globe-ocean: #a5c7cb;
   --globe-land: #e3eadb;
-  --globe-land-hover: #92b59a;
+  --globe-land-hover: #f1b091;
   --globe-atmosphere: #b8d4d2;
 
   --map-ocean: #dfeff2;
@@ -99,11 +99,11 @@
   --text-secondary: #a3aab2;
   --text-tertiary: #9aa3ad;
 
-  --accent: #91bd9f;
-  --accent-strong: #b0d5bc;
-  --accent-soft: #1c2e24;
-  --accent-border: #42624e;
-  --accent-ink: #102218;
+  --accent: #f0743f;
+  --accent-strong: #ff8c5c;
+  --accent-soft: #2e1c14;
+  --accent-border: #6b3a26;
+  --accent-ink: #1a0d07;
 
   --ocean: #63b0d3;
   --ocean-soft: #14242d;

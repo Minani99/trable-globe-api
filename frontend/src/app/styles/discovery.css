@@ -374,28 +374,6 @@ a.profile-panel__identity:focus-visible {
   stroke-linejoin: round;
 }
 
-.country-detail__latest {
-  display: grid;
-  gap: 0.22rem;
-  margin-bottom: 0.55rem;
-  padding: 0.7rem;
-  border-radius: var(--radius-sm);
-  background: var(--accent-soft);
-}
-
-.country-detail__latest small {
-  color: var(--accent-strong);
-  font-size: var(--text-xs);
-}
-
-.country-detail__latest strong {
-  overflow: hidden;
-  color: var(--text-primary);
-  font-size: var(--text-xs);
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
 .country-detail__more {
   padding: 0.45rem 0.5rem 0;
   color: var(--text-tertiary);

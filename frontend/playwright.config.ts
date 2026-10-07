@@ -47,6 +47,9 @@ export default defineConfig({
       timeout: 120_000,
       env: {
         API_BASE_URL: "http://127.0.0.1:8080",
+        // The suite creates many independent accounts from one loopback address.
+        // This only affects the local test server; production retains its limit.
+        AUTH_RATE_LIMIT: "1000",
       },
     },
   ],

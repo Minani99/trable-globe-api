@@ -64,7 +64,7 @@ test("둘러보기는 공개 여행이 있는 프로필만 추천하고 새 친�
   await register(page, viewerUsername, "둘러보는 여행자");
 
   await page.goto("/discover");
-  await expect(page.getByRole("heading", { name: "공개 여행 둘러보기" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "다른 여행자의 기록" })).toBeVisible();
   const activeCard = page.locator(".member-card").filter({
     has: page.locator(`a[href="/${activeUsername}"]`),
   });

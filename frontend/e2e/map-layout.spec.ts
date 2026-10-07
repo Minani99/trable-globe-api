@@ -33,6 +33,8 @@ test("MapTiler 지도를 안전한 MapLibre 렌더러로 열고 높이를 유지
   });
 
   await page.goto("/studio/travels/new");
+  await page.getByRole("tab", { name: "일정", exact: true }).click();
+  await page.getByRole("button", { name: /장소를 추가하세요.*편집/ }).click();
   const openMap = page.getByRole("button", { name: /지도에서 직접 찾기/ });
   await expect(openMap).toBeVisible();
   await openMap.click();
