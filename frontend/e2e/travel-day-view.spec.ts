@@ -41,7 +41,7 @@ test("미래 여행도 여행용 보기에서 날짜별로 확인할 수 있다"
   });
 
   await page.goto("/studio");
-  const previewLink = page.getByRole("link", { name: "여행용 보기", exact: true }).first();
+  const previewLink = page.getByRole("link", { name: /날짜별 일정 미리보기/ }).first();
   await expect(previewLink).toBeVisible();
   await previewLink.click();
   await expect(page).toHaveURL(new RegExp(`/studio/travels/${travelId}/go$`));

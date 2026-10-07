@@ -66,19 +66,24 @@ test("태블릿에서도 예시와 문구가 넘치지 않는다", async ({ page
   }
 });
 
-test("모바일 메인은 추가 스크롤 없이 지구본에 집중한다", async ({ page }) => {
+test("모바일 메인은 지구본을 가리지 않고 하단 탐색을 유지한다", async ({ page }) => {
   await page.goto("/");
   for (const width of [360, 390, 700]) {
     await page.setViewportSize({ width, height: 844 });
     await expect(page.getByRole("region", { name: "계획과 기록", includeHidden: true })).toBeHidden();
-    await expect(page.getByRole("navigation", { name: "모바일 주요 메뉴" })).toBeVisible();
+    const navigation = page.getByRole("navigation", { name: "모바일 주요 메뉴" });
+    await expect(navigation).toBeVisible();
+    const globe = page.locator(".landing-globe-frame");
+    await globe.scrollIntoViewIfNeeded();
+    await page.evaluate(() => window.scrollTo(0, document.documentElement.scrollHeight));
+    const globeBounds = (await globe.boundingBox())!;
+    const navigationBounds = (await navigation.boundingBox())!;
+    expect(globeBounds.y + globeBounds.height).toBeLessThanOrEqual(navigationBounds.y + 1);
+    expect(navigationBounds.y + navigationBounds.height).toBeCloseTo(844, 0);
     const layout = await page.evaluate(() => ({
-      height: document.documentElement.scrollHeight,
       width: document.documentElement.scrollWidth,
-      viewportHeight: window.innerHeight,
       viewportWidth: window.innerWidth,
     }));
-    expect(layout.height).toBeLessThanOrEqual(layout.viewportHeight + 1);
     expect(layout.width).toBeLessThanOrEqual(layout.viewportWidth + 1);
   }
 });

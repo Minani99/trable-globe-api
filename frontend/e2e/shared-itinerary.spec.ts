@@ -52,6 +52,7 @@ test("다른 여행자의 공개 일정을 새 날짜의 내 계획으로 가져
 
   await expect(page).toHaveURL(/\/studio\/travels\/\d+\/edit\?plan=1&source=/, { timeout: 30_000 });
   await expect(page.getByRole("heading", { name: "도쿄 주말 산책에서 시작한 여행" })).toBeVisible();
+  await page.getByRole("button", { name: /도쿄역.*편집/ }).click();
   await expect(page.getByRole("textbox", { name: "장소 이름" }).first()).toHaveValue("도쿄역");
   await expect(page.getByRole("textbox", { name: "메모" }).first()).toHaveValue("");
 });

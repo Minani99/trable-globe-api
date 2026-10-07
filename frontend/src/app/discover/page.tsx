@@ -25,8 +25,8 @@ export default async function DiscoverPage() {
       <main id="main" className="discover-page flex-1">
         <div className="site-shell discover-shell">
           <header className="discover-hero">
-            <h1>공개 여행 둘러보기</h1>
-            <p>여행자와 목적지를 검색하고 공개된 여행 기록을 확인하세요.</p>
+            <p className="page-caption">여행의 발견</p><h1>다른 여행자의 기록</h1>
+            <p>다녀온 장소와 여행 팁을 살펴보세요.</p>
           </header>
           <DiscoverExperience
             recommendations={recommendations ?? []}

@@ -130,7 +130,7 @@ export function ProfilePanel({
 function Stat({ label, value }: { label: string; value: number }) {
   return (
     <div>
-      <dt className="eyebrow text-[0.62rem]">{label}</dt>
+      <dt className="profile-stat-label">{label}</dt>
       <dd className="stat-figure text-content mt-1.5 text-[1.6rem]">{formatStat(value)}</dd>
     </div>
   );

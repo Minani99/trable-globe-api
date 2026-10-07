@@ -1,0 +1,28 @@
+.library { margin-top: 2.75rem; }
+.heading { display: flex; justify-content: space-between; align-items: center; gap: 1rem; margin-bottom: .65rem; }
+.heading h2 { font-size: 1.125rem; font-weight: 600; }
+.heading h2 span { margin-left: .5rem; color: var(--text-tertiary); font-size: .875rem; font-weight: 400; }
+.search input { width: 15rem; min-height: 2.5rem; padding: .6rem .85rem; border: 1px solid var(--border); border-radius: var(--radius-xs); background: var(--surface); font-size: .8125rem; }
+.list { list-style: none; margin: 0; padding: 0; }
+.row { display: grid; grid-template-columns: 3rem minmax(0, 1fr) auto 1rem; align-items: center; gap: 1.25rem; padding: 1.5rem .25rem; border-bottom: 1px solid var(--border); }
+.row:hover { background: var(--surface-raised); }
+.country { display: grid; place-items: center; width: 3rem; height: 3rem; border: 1px solid var(--border); border-radius: var(--radius-xs); color: var(--accent); font-size: .8125rem; letter-spacing: .08em; }
+.copy { min-width: 0; display: grid; gap: .4rem; }
+.copy strong { font-size: 1rem; font-weight: 600; overflow-wrap: anywhere; }
+.copy > span, .meta small { color: var(--text-secondary); font-size: .8125rem; }
+.meta { display: grid; gap: .35rem; text-align: right; font-size: .8125rem; }
+.arrow { color: var(--text-tertiary); }
+.empty { padding: 4rem 1rem; text-align: center; }
+.empty h3 { font-size: 1.125rem; }
+.empty p { margin: .5rem 0 1.25rem; color: var(--text-secondary); font-size: .875rem; }
+.empty a { display: inline-flex; align-items: center; min-height: 2.75rem; padding: .65rem 1rem; border-radius: var(--radius-xs); background: var(--accent); color: var(--accent-ink); font-size: .875rem; }
+@media (max-width: 700px) {
+  .library { margin-top: 1.75rem; }
+  .heading { align-items: stretch; flex-direction: column; gap: .85rem; }
+  .search input { width: 100%; }
+  .row { grid-template-columns: 2.75rem minmax(0, 1fr) auto; gap: .85rem; padding-block: 1.25rem; }
+  .country { width: 2.75rem; height: 2.75rem; }
+  .copy strong { font-size: .9375rem; }
+  .meta { grid-column: 2; text-align: left; display: flex; flex-wrap: wrap; gap: .5rem; }
+  .arrow { grid-column: 3; grid-row: 1 / 3; }
+}

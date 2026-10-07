@@ -86,7 +86,10 @@ test("연도 링크를 열고 바꾸면 지구본, 기록, 리캡과 공유 주�
   await expect(page).toHaveURL(/\/traveler\?year=2025$/);
   await expect(page).toHaveTitle(/2025 여행 세계/);
   const ogImageUrl = await page.locator('meta[property="og:image"]').getAttribute("content");
-  expect(ogImageUrl).toContain("/api/og/profile?username=traveler&year=2025");
+  const ogUrl = new URL(ogImageUrl!);
+  expect(ogUrl.pathname).toBe("/api/og/profile");
+  expect(ogUrl.searchParams.get("username")).toBe("traveler");
+  expect(ogUrl.searchParams.get("year")).toBe("2025");
   const ogImage = await page.request.get(ogImageUrl!);
   expect(ogImage.ok()).toBeTruthy();
   expect(ogImage.headers()["content-type"]).toContain("image/png");
@@ -142,7 +145,8 @@ test("연도 리캡 이미지를 저장하고 링크와 네이티브 공유로 �
   let recapImageRequests = 0;
   page.on("pageerror", (error) => pageErrors.push(error.message));
   page.on("request", (request) => {
-    if (request.url().includes("/api/og/profile?username=traveler&year=2026")) {
+    const url = new URL(request.url());
+    if (url.pathname === "/api/og/profile" && url.searchParams.get("username") === "traveler" && url.searchParams.get("year") === "2026") {
       recapImageRequests += 1;
     }
   });

@@ -1,8 +1,8 @@
 /* Plan builder ------------------------------------------------------------
  *
  * The first screen of every trip. One form column, one live "ticket" preview.
- * Desktop: both side by side, ticket sticky. Mobile: a five-step flow with a
- * fixed action bar; the ticket becomes the last step.
+ * Desktop: both side by side, ticket sticky. Mobile: a three-step flow with a
+ * fixed action bar; the summary becomes the last of three steps.
  *
  * Only tokens from tokens.css are used here - no ad-hoc radii or colours.
  */
@@ -67,6 +67,11 @@
 .pb-step + .pb-step {
   border-top: 1px solid var(--border);
 }
+
+.pb-preferences { border-top: 1px solid var(--border); }
+.pb-preferences > summary { display: flex; align-items: center; gap: .75rem; min-height: 3.5rem; font-size: .875rem; font-weight: 500; }
+.pb-preferences > summary span { color: var(--text-tertiary); font-size: .75rem; }
+@media (max-width: 700px) { .pb-preferences[data-mobile-active="false"] { display: none; } }
 
 .pb-step__heading {
   display: grid;

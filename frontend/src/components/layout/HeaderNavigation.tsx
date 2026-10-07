@@ -47,8 +47,7 @@ export function HeaderNavigation({ initialMember }: HeaderNavigationProps) {
 
   const globeActive = pathname === globePath;
   const discoverActive = pathname === "/discover";
-  const journeysActive = pathname === "/studio" || pathname.startsWith("/studio/travels");
-  const planActive = pathname.startsWith("/studio/plans");
+  const journeysActive = pathname === "/studio" || pathname.startsWith("/studio/");
   const aboutActive = pathname === "/about";
 
   return (
@@ -57,13 +56,10 @@ export function HeaderNavigation({ initialMember }: HeaderNavigationProps) {
         {member ? (
           <>
             <Link prefetch={false} href={globePath} className="site-nav-link site-nav-link--globe" aria-current={globeActive ? "page" : undefined}>
-              내 지구본
+              지구본
             </Link>
             <Link prefetch={false} href="/studio" className="site-nav-link" aria-current={journeysActive ? "page" : undefined}>
-              여행
-            </Link>
-            <Link prefetch={false} href="/studio/plans/new" className="site-nav-link" aria-current={planActive ? "page" : undefined}>
-              계획
+              내 여행
             </Link>
             <Link href="/discover" className="site-nav-link" aria-current={discoverActive ? "page" : undefined}>
               둘러보기
@@ -111,7 +107,6 @@ function MobileBottomNavigation({
   member: AuthMember | null | undefined;
 }) {
   const journeyHref = member ? "/studio" : "/login?next=%2Fstudio";
-  const planHref = member ? "/studio/plans/new" : "/register?next=%2Fstudio%2Fplans%2Fnew";
   const profileHref = member ? "/settings" : "/login";
   const globeActive = pathname === globePath;
   const profileActive = member
@@ -120,14 +115,13 @@ function MobileBottomNavigation({
 
   return (
     <nav className="site-mobile-bottom-nav" aria-label="모바일 주요 메뉴">
-      <MobileNavLink href={globePath} label="세계" icon="globe" active={globeActive} />
+      <MobileNavLink href={globePath} label="지구본" icon="globe" active={globeActive} />
       <MobileNavLink
         href={journeyHref}
-        label="기록"
+        label="내 여행"
         icon="trip"
-        active={pathname === "/studio" || pathname.startsWith("/studio/travels")}
+        active={pathname === "/studio" || pathname.startsWith("/studio/")}
       />
-      <MobileNavLink href={planHref} label="계획" icon="plan" active={pathname.startsWith("/studio/plans")} />
       <MobileNavLink href="/discover" label="둘러보기" icon="search" active={pathname === "/discover"} />
       <MobileNavLink
         href={profileHref}

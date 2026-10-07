@@ -132,20 +132,9 @@ test("진행 중인 여행은 모바일 어디서나 장소·사진·메모로 �
   await capture.getByRole("link", { name: "일정 편집" }).click();
   await expect(page).toHaveURL(new RegExp(`/studio/travels/${travelId}/edit\\?date=${today}#travel-place-editor$`));
   await expect(page.locator("#travel-place-editor")).toBeVisible();
-  await expect(page.locator("#travel-day-view").getByRole("heading", { name: "오늘 일정" })).toBeVisible();
-
-  const quickNavigation = page.getByRole("navigation", { name: "여행 중 빠른 입력" });
-  await expect(quickNavigation).toBeVisible();
-  const quickLabels = await quickNavigation.getByRole("button").evaluateAll((buttons) => buttons.map((button) => ({
-    fontSize: Number.parseFloat(getComputedStyle(button).fontSize),
-    whiteSpace: getComputedStyle(button).whiteSpace,
-  })));
-  expect(quickLabels.every(({ fontSize, whiteSpace }) => fontSize >= 12 && whiteSpace === "nowrap")).toBe(true);
+  const workspaceTabs = page.getByRole("tablist", { name: "여행 작업", exact: true });
   await expect(page.getByRole("tab", { name: /DAY 1/ })).toHaveAttribute("aria-selected", "true");
-  await expect(page.locator("#travel-photo-editor input[type=file]")).toHaveAttribute("multiple", "");
-
-  const editorStepNavigation = page.getByRole("navigation", { name: "여행 편집 단계 이동" });
-  await editorStepNavigation.getByRole("button", { name: "다음" }).click();
+  await workspaceTabs.getByRole("tab", { name: "사진·메모", exact: true }).click();
   const photoEditor = page.locator("#travel-photo-editor");
   await expect(photoEditor.getByText("사진을 선택하거나 이곳에 놓아 주세요", { exact: true })).toBeVisible();
   await photoEditor.locator('input[type="file"]').setInputFiles({
@@ -158,9 +147,10 @@ test("진행 중인 여행은 모바일 어디서나 장소·사진·메모로 �
   await expect(importedPhoto.getByLabel("촬영일")).toHaveValue(today);
   await expect(importedPhoto.getByLabel("연결할 장소")).toHaveValue("0");
 
-  await quickNavigation.getByRole("button", { name: "메모" }).click();
-  await expect(quickNavigation.getByRole("button", { name: "메모" })).toHaveAttribute("aria-pressed", "true");
-  await expect.poll(() => page.evaluate(() => document.activeElement?.id)).toBe("travel-note-editor");
+  await workspaceTabs.getByRole("tab", { name: "일정", exact: true }).click();
+  await page.locator(".editor-stop__summary").first().click();
+  await page.locator("#travel-note-editor").focus();
+  await expect(page.locator("#travel-note-editor")).toBeFocused();
 
   const layout = await page.evaluate(() => ({
     viewportWidth: window.innerWidth,

@@ -52,10 +52,10 @@ test("로그인 직후 모바일 기록 메뉴가 보호 화면을 다시 로그
 
   const mobileNavigation = page.getByRole("navigation", { name: "모바일 주요 메뉴" });
   await expect(mobileNavigation.getByRole("link", { name: "마이" })).toBeVisible();
-  await mobileNavigation.getByRole("link", { name: "기록" }).click();
+  await mobileNavigation.getByRole("link", { name: "내 여행" }).click();
 
   await expect(page).toHaveURL(/\/studio$/);
-  await expect(page.getByRole("heading", { name: "최근 활동" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "내 여행", exact: true })).toBeVisible();
   await expect(page.getByRole("heading", { name: "로그인" })).toHaveCount(0);
 });
 

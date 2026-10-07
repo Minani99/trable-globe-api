@@ -24,10 +24,10 @@ export default async function NewPlanPage({ searchParams }: { searchParams: Prom
       <SiteHeader username={member.username} member={member} />
       <main id="main" className="plan-page flex-1">
         <div className="site-shell plan-shell">
-          <nav className="studio-breadcrumb" aria-label="현재 위치"><Link href="/studio">← 여행 허브</Link></nav>
+          <nav className="studio-breadcrumb" aria-label="현재 위치"><Link href="/studio">← 내 여행</Link></nav>
           <header className="plan-hero">
-            <h1>빈 페이지 없이, 다음 여행을 시작하세요.</h1>
-            <p>나라·날짜·취향을 고르면 날짜별 일정표가 바로 만들어집니다. 자동 초안을 받거나 빈 일정으로 시작해도 좋아요. 모든 내용은 저장 뒤에 자유롭게 바꿀 수 있습니다.</p>
+            <h1>새 여행 계획</h1>
+            <p>어디로, 언제 떠나나요? 자세한 일정은 나중에 채워도 괜찮아요.</p>
           </header>
           <PlanBuilder countries={countryOptions} today={today} initialCountryCode={initialCountryCode} />
         </div>
