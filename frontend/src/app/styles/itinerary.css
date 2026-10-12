@@ -27,13 +27,6 @@
 .shared-plan header p { color: var(--text-secondary); line-height: 1.8; }
 .shared-plan__eyebrow { color: var(--accent); font-weight: 600; font-size: .875rem; }
 .shared-plan__note { white-space: pre-wrap; padding: 1.25rem 0; }
-.shared-plan__day { margin-top: 2rem; }
-.shared-plan__day h2 { margin-bottom: .75rem; font-size: 1.125rem; }
-.shared-plan__day ol { display: grid; gap: .75rem; }
-.shared-plan__day li { display: flex; gap: 1rem; padding: 1rem; background: var(--surface); border: 1px solid var(--border); border-radius: 16px; }
-.shared-plan__day h3 { font-size: 1rem; font-weight: 650; }
-.shared-plan__day small { color: var(--text-secondary); }
-.shared-plan__day li p { white-space: pre-wrap; margin-top: .5rem; font-size: .875rem; }
 @media (max-width: 700px) {
   .editor-stop .editor-stop__summary { padding-right: .65rem; }
   .editor-stop__edit { max-width: 3rem; white-space: normal; }
