@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useCallback, useEffect, useMemo, useState } from "react";
 
 import { SectionHeading } from "@/components/common/SectionHeading";
+import { TravelImage } from "@/components/common/TravelImage";
 import { StateMessage } from "@/components/common/StateMessage";
 import { CountryDetailPanel } from "@/components/globe/CountryDetailPanel";
 import { CountryKeyboardList } from "@/components/globe/CountryKeyboardList";
@@ -282,12 +283,15 @@ export function ProfileExperience({
   const showCountryIndex = scopedCountries.length > 1;
   const showTravelTimeline = scopedTravels.length > 1;
   const mobileArchivePanelCount = 1 + Number(showCountryIndex) + Number(showTravelTimeline);
+  const recentPhotoTravel = !globeOnly ? [...scopedTravels]
+    .filter((travel) => travel.coverImageUrl && !travel.coverImageUrl.includes("/placeholders/"))
+    .sort((a, b) => b.startDate.localeCompare(a.startDate))[0] : undefined;
 
   const handleListCountrySelect = useCallback((iso2Code: string) => {
     handleSelect(iso2Code);
     setMobileArchiveView("travels");
     window.setTimeout(() => {
-      document.getElementById("profile-travel-archive")?.scrollIntoView({ behavior: "smooth", block: "start" });
+      document.getElementById("profile-travel-archive")?.scrollIntoView({ behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "instant" : "smooth", block: "start" });
     }, 50);
   }, [handleSelect]);
 
@@ -295,7 +299,7 @@ export function ProfileExperience({
     handleSelect(iso2Code);
     if (!iso2Code) return;
     window.setTimeout(() => {
-      document.querySelector(".profile-globe-card")?.scrollIntoView({ behavior: "smooth", block: "center" });
+      document.querySelector(".profile-globe-card")?.scrollIntoView({ behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "instant" : "smooth", block: "center" });
     }, 50);
   }, [handleSelect]);
 
@@ -352,6 +356,10 @@ export function ProfileExperience({
         </div>
 
         <div className="site-shell">
+          {recentPhotoTravel ? <figure className="profile-memory">
+            <TravelImage src={recentPhotoTravel.coverImageUrl} alt={`${recentPhotoTravel.title} 대표 장면`} priority />
+            <figcaption><small>최근 남긴 장면</small>{recentPhotoTravel.title}</figcaption>
+          </figure> : null}
           <div className="profile-world-toolbar">
             <TravelYearFilter years={years} selectedYear={selectedYear} onChange={handleYearChange} />
             <nav className="profile-world-view-switch" aria-label="여행 세계 보기 방식">

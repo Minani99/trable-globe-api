@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 
 import { AuthForm } from "@/components/auth/AuthForm";
+import { AuthScene } from "@/components/auth/AuthScene";
 import { SiteFooter } from "@/components/layout/SiteFooter";
 import { SiteHeader } from "@/components/layout/SiteHeader";
 import { getCurrentMember } from "@/lib/api/server-session";
@@ -19,13 +20,17 @@ export default async function LoginPage({ searchParams }: { searchParams: Promis
   return (
     <>
       <SiteHeader />
-      <main id="main" className="auth-page flex-1">
+      <main id="main" className="auth-page auth-page--journal flex-1">
+        <div className="auth-layout">
+        <AuthScene />
         <section className="auth-card auth-card--login">
+          <p className="page-caption">다시, 나의 여행으로</p>
           <h1>로그인</h1>
           <p className="auth-card__intro">여행 계획과 기록을 계속 관리하세요.</p>
           {reset === "1" ? <p className="auth-form__notice">새 비밀번호를 저장했습니다. 다시 로그인해 주세요.</p> : null}
           <AuthForm mode="login" nextPath={nextPath} />
         </section>
+        </div>
       </main>
       <SiteFooter />
     </>

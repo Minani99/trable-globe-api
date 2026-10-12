@@ -237,6 +237,40 @@ class TravelAuthorizationTest {
                 .andExpect(jsonPath("$.data.visibility").value("PRIVATE"));
     }
 
+    @Test
+    @DisplayName("계획 링크는 소유자만 발급·폐기하며 비공개 원본과 사진은 공개하지 않는다")
+    void itineraryLinksAreScopedRevocableAndDoNotPublishTheTravel() throws Exception {
+        Member owner = signUp();
+        Member stranger = signUp();
+        String created = mockMvc.perform(post("/api/private/travels")
+                        .header("Authorization", bearer(owner)).contentType(MediaType.APPLICATION_JSON)
+                        .content(travelPayload("미래 여행", "PRIVATE").replace("2026-08-01", "2099-08-01")))
+                .andExpect(status().isCreated()).andReturn().getResponse().getContentAsString();
+        long id = ((Number) JsonPath.read(created, "$.data.id")).longValue();
+        String endpoint = "/api/private/travels/" + id + "/share";
+        mockMvc.perform(post(endpoint)).andExpect(status().isUnauthorized());
+        mockMvc.perform(get(endpoint).header("Authorization", bearer(stranger))).andExpect(status().isNotFound());
+        mockMvc.perform(post(endpoint).header("Authorization", bearer(stranger))).andExpect(status().isNotFound());
+        mockMvc.perform(delete(endpoint).header("Authorization", bearer(stranger))).andExpect(status().isNotFound());
+        String token = JsonPath.read(okBody(post(endpoint).header("Authorization", bearer(owner))), "$.data.token");
+        assertThat(token).hasSize(36);
+        assertThat(JsonPath.<String>read(okBody(post(endpoint).header("Authorization", bearer(owner))), "$.data.token")).isEqualTo(token);
+        mockMvc.perform(get("/api/shared/itineraries/" + token))
+                .andExpect(status().isOk()).andExpect(jsonPath("$.data.title").value("미래 여행"))
+                .andExpect(jsonPath("$.data.places[0].placeName").value("서울숲"))
+                .andExpect(jsonPath("$.data.photos").isEmpty())
+                .andExpect(jsonPath("$.data.coverImageUrl").isEmpty())
+                .andExpect(jsonPath("$.data.places[0].completedAt").isEmpty());
+        mockMvc.perform(get("/api/travels/" + id)).andExpect(status().isNotFound());
+        assertThat(JsonPath.<List<String>>read(okBody(get("/api/profiles/" + owner.username() + "/travels")), "$.data[*].title")).doesNotContain("미래 여행");
+        mockMvc.perform(delete(endpoint).header("Authorization", bearer(owner))).andExpect(status().isOk());
+        mockMvc.perform(get("/api/shared/itineraries/" + token)).andExpect(status().isNotFound());
+        String next = JsonPath.read(okBody(post(endpoint).header("Authorization", bearer(owner))), "$.data.token");
+        assertThat(next).isNotEqualTo(token);
+        mockMvc.perform(delete("/api/private/travels/" + id).header("Authorization", bearer(owner))).andExpect(status().isOk());
+        mockMvc.perform(get("/api/shared/itineraries/" + next)).andExpect(status().isNotFound());
+    }
+
     // --- helpers -----------------------------------------------------------
 
     private record Member(String username, String token) {

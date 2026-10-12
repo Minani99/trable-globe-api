@@ -6,7 +6,6 @@ import { ChangeEvent, DragEvent, useCallback, useContext, useEffect, useMemo, us
 
 import { WorkspaceTabs } from "@/components/common/WorkspaceTabs";
 import { TravelWorkspaceContext } from "@/components/planner/MobilePlanningWorkspace";
-import "./TravelEditor.workspace.css";
 import { TravelActionIcon } from "@/components/common/TravelActionIcon";
 import { ApiError, apiMutation } from "@/lib/api/client";
 import type { CountryOption } from "@/lib/countries";
@@ -22,6 +21,8 @@ import { isPlaceholderPlaceName } from "@/lib/travel-placeholders";
 import { useUnsavedChangesGuard } from "@/lib/useUnsavedChangesGuard";
 import type { TravelDetail, TravelPhotoWriteInput, TravelPlaceWriteInput, TravelWriteInput, Visibility } from "@/types";
 import { PlaceLocationPicker } from "@/components/studio/PlaceLocationPicker";
+import { PlanSharePanel } from "@/components/studio/PlanSharePanel";
+import { useStopDrag } from "@/components/studio/useStopDrag";
 
 interface PlaceDraft {
   key: string;
@@ -123,7 +124,7 @@ export function TravelEditor({
   const [places, setPlaces] = useState<PlaceDraft[]>(() =>
     initialTravel?.places.length
       ? initialTravel.places.map((place) => ({
-          key: draftKey(),
+          key: `saved-place-${place.id}`,
           countryCode: place.country.iso2Code,
           cityNameEn: place.city?.nameEn ?? "",
           cityName: place.city?.nameKo ?? "",
@@ -136,7 +137,7 @@ export function TravelEditor({
           memo: place.memo ?? "",
           completed: Boolean(place.completedAt),
         }))
-      : [emptyPlace(initialCountryCode)],
+      : [{ ...emptyPlace(initialCountryCode), key: "initial-place" }],
   );
   const [activePlanDate, setActivePlanDate] = useState(() => {
     if (requestedDate && /^\d{4}-\d{2}-\d{2}$/.test(requestedDate)
@@ -340,20 +341,34 @@ export function TravelEditor({
     setDirty(true);
   }
 
-  function movePlace(index: number, direction: -1 | 1) {
-    const nextIndex = index + direction;
-    if (nextIndex < 0 || nextIndex >= places.length) return;
-    setPlaces((current) => {
-      const next = [...current];
-      [next[index], next[nextIndex]] = [next[nextIndex], next[index]];
-      return next;
-    });
+  const stopDrag = useStopDrag(reorderPlace);
+  const [orderNotice, setOrderNotice] = useState("");
+
+  function reorderPlace(fromKey: string, toKey: string) {
+    const indexes = places.map((place, index) => ({ place, index }))
+      .filter(({ place }) => !planningMode || place.visitedAt === activePlanDate).map(({ index }) => index);
+    const ordered = indexes.map((index) => places[index]);
+    const from = ordered.findIndex((place) => place.key === fromKey);
+    const to = ordered.findIndex((place) => place.key === toKey);
+    if (pending || from < 0 || to < 0 || from === to) return;
+    const [moved] = ordered.splice(from, 1);
+    ordered.splice(to, 0, moved);
+    const next = [...places];
+    indexes.forEach((index, position) => { next[index] = ordered[position]; });
+    setPlaces(next);
     setPhotos((current) => current.map((photo) => {
-      if (photo.placeIndex === String(index)) return { ...photo, placeIndex: String(nextIndex) };
-      if (photo.placeIndex === String(nextIndex)) return { ...photo, placeIndex: String(index) };
-      return photo;
+      if (photo.placeIndex === "") return photo;
+      const key = places[Number(photo.placeIndex)]?.key;
+      const position = next.findIndex((place) => place.key === key);
+      return { ...photo, placeIndex: position < 0 ? "" : String(position) };
     }));
     setDirty(true);
+    setOrderNotice(`${moved.placeName || "장소"}을 ${to + 1}번째로 옮겼습니다. 시간은 그대로 유지됩니다.`);
+  }
+
+  function movePlace(index: number, direction: -1 | 1) {
+    const target = places[index + direction];
+    if (target) reorderPlace(places[index].key, target.key);
   }
 
   function movePlanningPlace(index: number, direction: -1 | 1) {
@@ -364,17 +379,7 @@ export function TravelEditor({
     const siblingIndex = siblingIndexes.indexOf(index);
     const targetIndex = siblingIndexes[siblingIndex + direction];
     if (targetIndex === undefined) return;
-    setPlaces((current) => {
-      const next = [...current];
-      [next[index], next[targetIndex]] = [next[targetIndex], next[index]];
-      return next;
-    });
-    setPhotos((current) => current.map((photo) => {
-      if (photo.placeIndex === String(index)) return { ...photo, placeIndex: String(targetIndex) };
-      if (photo.placeIndex === String(targetIndex)) return { ...photo, placeIndex: String(index) };
-      return photo;
-    }));
-    setDirty(true);
+    reorderPlace(places[index].key, places[targetIndex].key);
   }
 
   function addPlanningPlace(slot: (typeof PLAN_SLOT_PRESETS)[number]) {
@@ -577,6 +582,7 @@ export function TravelEditor({
   }
 
   function removePlace(index: number) {
+    if (pending || !window.confirm(`“${places[index].placeName || "이 장소"}”을 일정에서 삭제할까요? 연결된 사진은 여행에 남습니다.`)) return;
     setPlaces((current) => current.filter((_, placeIndex) => placeIndex !== index));
     setPhotos((current) => current.map((photo) => {
       if (photo.placeIndex === "") return photo;
@@ -957,21 +963,35 @@ export function TravelEditor({
             </div>
           </div>
         ) : null}
+        <p className="editor-order-hint" id="stop-drag-help">방문 순서대로 놓아주세요. ⋮⋮ 손잡이를 끌거나, 손잡이에 초점을 두고 ↑ ↓ 키로 옮길 수 있어요.</p>
+        <p className="editor-order-notice" role="status">{orderNotice}</p>
         <ol className="travel-editor__places">
           {places.map((place, index) => planningMode && activePlanDate && place.visitedAt !== activePlanDate ? null : (
-            <li key={place.key} className="editor-stop">
+            <li key={place.key} data-stop-key={place.key} className={`editor-stop${stopDrag.drag?.from === place.key ? " is-dragging" : ""}${stopDrag.drag?.to === place.key && stopDrag.drag.from !== place.key ? " is-drop-target" : ""}`}>
+              <div className="editor-stop__row">
+              <button type="button" className="editor-stop__drag" aria-label={`${place.placeName || "장소"} 순서 이동`} aria-describedby="stop-drag-help" disabled={pending}
+                onPointerDown={(event) => { setExpandedPlace(null); stopDrag.start(event, place.key); }} onPointerMove={stopDrag.move} onPointerUp={stopDrag.finish} onPointerCancel={stopDrag.cancel} onLostPointerCapture={stopDrag.cancel}
+                onKeyDown={(event) => {
+                  if (event.key === "Escape") stopDrag.cancel();
+                  if (event.key === "ArrowUp" || event.key === "ArrowDown") {
+                    event.preventDefault();
+                    const direction = event.key === "ArrowUp" ? -1 : 1;
+                    if (planningMode) movePlanningPlace(index, direction); else movePlace(index, direction);
+                  }
+                }}><span aria-hidden="true">⋮⋮</span></button>
               <button className="editor-stop__summary" type="button" aria-expanded={expandedPlace === place.key} aria-controls={`stop-${index}`} onClick={() => setExpandedPlace(expandedPlace === place.key ? null : place.key)}>
-                <span className="editor-stop__time">{place.startTime || String((planningMode ? activeDayPlaces.findIndex((item) => item.index === index) : index) + 1).padStart(2, "0")}</span>
-                <span><strong>{place.placeName || "장소를 추가하세요"}</strong><small>{[place.cityName || countryMap.get(place.countryCode)?.nameKo, place.durationMinutes ? `${place.durationMinutes}분` : null].filter(Boolean).join(" · ")}</small></span>
-                <span className="editor-stop__edit">{expandedPlace === place.key ? "닫기 −" : "편집 +"}</span>
+                <span className="editor-stop__sequence" aria-label="방문 순번">{String((planningMode ? activeDayPlaces.findIndex((item) => item.index === index) : index) + 1).padStart(2, "0")}</span>
+                <span><strong>{place.placeName || "장소를 추가하세요"}</strong><small>{[place.cityName || countryMap.get(place.countryCode)?.nameKo, place.startTime || null, place.durationMinutes ? `${place.durationMinutes}분` : null].filter(Boolean).join(" · ")}</small></span>
+                <span className="editor-stop__edit">{expandedPlace === place.key ? "편집 닫기 ⌃" : "편집 ⌄"}</span>
               </button>
+              </div>
               <div id={`stop-${index}`} className="editor-stop__body" hidden={expandedPlace !== place.key}>
               <div className="travel-editor__item-head">
                 <strong>{planningMode ? `${String(activeDayPlaces.findIndex((item) => item.index === index) + 1).padStart(2, "0")}번째 일정` : `${String(index + 1).padStart(2, "0")}번째 장소`}{planningMode && place.startTime ? <time>{place.startTime}</time> : null}</strong>
                 <div className="travel-editor__order-actions">
                   <button type="button" onClick={() => planningMode ? movePlanningPlace(index, -1) : movePlace(index, -1)} disabled={(planningMode ? activeDayPlaces[0]?.index === index : index === 0) || pending} aria-label="장소를 앞으로 이동">↑</button>
                   <button type="button" onClick={() => planningMode ? movePlanningPlace(index, 1) : movePlace(index, 1)} disabled={(planningMode ? activeDayPlaces.at(-1)?.index === index : index === places.length - 1) || pending} aria-label="장소를 뒤로 이동">↓</button>
-                  {places.length > 1 ? <button type="button" className="is-danger" onClick={() => removePlace(index)}>삭제</button> : null}
+
                 </div>
               </div>
               <div className="travel-editor__fields">
@@ -999,6 +1019,10 @@ export function TravelEditor({
                   <output><span>예상 종료</span><strong>{estimatedEndTime(place.startTime, place.durationMinutes) || "시간을 정하면 계산돼요"}</strong></output>
                 </div> : null}
                 <label className="is-wide"><span>메모</span><textarea id={index === quickNoteIndex ? "travel-note-editor" : undefined} value={place.memo} onChange={(event) => updatePlace(index, "memo", event.target.value)} maxLength={1000} rows={3} placeholder={planningMode ? "예약, 먹고 싶은 메뉴, 이동 팁" : "그 장소에서 기억하고 싶은 장면"} /></label>
+              </div>
+              <div className="editor-stop__footer">
+                {places.length > 1 ? <button type="button" className="editor-stop__delete" disabled={pending} onClick={() => removePlace(index)}>장소 삭제</button> : <span />}
+                <button type="button" onClick={() => setExpandedPlace(null)}>편집 닫기</button>
               </div>
               </div>
             </li>
@@ -1051,7 +1075,7 @@ export function TravelEditor({
                     <button type="button" onClick={() => movePhoto(index, -1)} disabled={index === 0 || pending} aria-label="사진을 앞으로 이동">↑</button>
                     <button type="button" onClick={() => movePhoto(index, 1)} disabled={index === photos.length - 1 || pending} aria-label="사진을 뒤로 이동">↓</button>
                     {photo.imageUrl ? <button type="button" className={coverImageUrl === photo.imageUrl ? "is-cover" : ""} onClick={() => { setCoverImageUrl(photo.imageUrl); setDirty(true); }}>{coverImageUrl === photo.imageUrl ? "대표 사진" : "대표로 지정"}</button> : null}
-                    <button type="button" onClick={() => removePhoto(index)} disabled={pending}>삭제</button>
+                    <button type="button" onClick={() => removePhoto(index)} disabled={pending}>사진 삭제</button>
                   </div>
                 </div>
                 {photo.uploadState === "error" ? (
@@ -1073,6 +1097,7 @@ export function TravelEditor({
         <div className="travel-editor__add-row"><p>다른 사이트에 이미 올린 사진이라면 주소로도 추가할 수 있어요.</p><button type="button" onClick={() => { setPhotos((current) => [...current, emptyPhoto()]); setDirty(true); }}>＋ 이미지 주소로 추가</button></div>
       </div></section>
 
+      {initialTravel ? <PlanSharePanel travelId={initialTravel.id} dirty={dirty} pendingSave={pending} /> : null}
       <footer className="editor-savebar">
         <div className="editor-savebar__status"><strong>{pending ? "저장 중…" : dirty ? "변경 내용이 있습니다" : editing ? "모든 변경 내용 저장됨" : "새 여행"}</strong><span aria-live="polite">{draftStatus}</span></div>
         <div className="editor-savebar__actions">

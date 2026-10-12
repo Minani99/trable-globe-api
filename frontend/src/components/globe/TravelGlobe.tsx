@@ -86,6 +86,7 @@ export const TravelGlobe = memo(function TravelGlobe({
   const rotationElapsed = useRef(0);
   const interactingRef = useRef(false);
   const compactRef = useRef(false);
+  const inViewportRef = useRef(true);
 
   const [size, setSize] = useState({ width: 0, height: 0 });
   const [features, setFeatures] = useState<CountryFeature[]>(getCachedCountryFeatures);
@@ -143,12 +144,12 @@ export const TravelGlobe = memo(function TravelGlobe({
   }, [cancelAmbientRotation]);
 
   const startAmbientRotation = useCallback(() => {
-    if (autoRotateFrame.current !== null || document.hidden || interactingRef.current || reduceMotionRef.current || selectedRef.current !== null || focusRef.current !== null) return;
+    if (autoRotateFrame.current !== null || document.hidden || !inViewportRef.current || interactingRef.current || reduceMotionRef.current || selectedRef.current !== null || focusRef.current !== null) return;
     setAutoRotating(true);
 
     const rotate = (time: number) => {
       const globe = globeRef.current;
-      if (!globe || document.hidden || interactingRef.current || reduceMotionRef.current || selectedRef.current !== null || focusRef.current !== null) {
+      if (!globe || document.hidden || !inViewportRef.current || interactingRef.current || reduceMotionRef.current || selectedRef.current !== null || focusRef.current !== null) {
         autoRotateFrame.current = null;
         lastRotationAt.current = null;
         rotationElapsed.current = 0;
@@ -179,7 +180,7 @@ export const TravelGlobe = memo(function TravelGlobe({
 
   const scheduleAmbientRotation = useCallback(() => {
     clearRotationResume();
-    if (reduceMotionRef.current || selectedRef.current !== null || focusRef.current !== null) return;
+    if (!inViewportRef.current || reduceMotionRef.current || selectedRef.current !== null || focusRef.current !== null) return;
     autoRotateTimer.current = setTimeout(() => {
       autoRotateTimer.current = null;
       startAmbientRotation();
@@ -476,10 +477,14 @@ export const TravelGlobe = memo(function TravelGlobe({
 
   useEffect(() => {
     if (!ready) return;
+    const container = containerRef.current;
     const handleVisibility = () => {
       const globe = globeRef.current;
       if (!globe) return;
-      if (document.hidden) {
+      const paused = document.hidden || !inViewportRef.current;
+      if (container) container.dataset.rendering = paused ? "paused" : "active";
+      if (paused) {
+        clearRotationResume();
         cancelAmbientRotation();
         setAutoRotating(false);
         globe.pauseAnimation();
@@ -488,9 +493,19 @@ export const TravelGlobe = memo(function TravelGlobe({
       globe.resumeAnimation();
       if (activeCode === null) scheduleAmbientRotation();
     };
+    // Avoid a continuous WebGL render loop while visitors read or edit below it.
+    const observer = new IntersectionObserver(([entry]) => {
+      inViewportRef.current = entry.isIntersecting;
+      handleVisibility();
+    }, { rootMargin: "120px" });
+    if (container) observer.observe(container);
+    handleVisibility();
     document.addEventListener("visibilitychange", handleVisibility);
-    return () => document.removeEventListener("visibilitychange", handleVisibility);
-  }, [activeCode, cancelAmbientRotation, ready, scheduleAmbientRotation]);
+    return () => {
+      observer.disconnect();
+      document.removeEventListener("visibilitychange", handleVisibility);
+    };
+  }, [activeCode, cancelAmbientRotation, clearRotationResume, ready, scheduleAmbientRotation]);
 
   // --- markers ------------------------------------------------------------
 

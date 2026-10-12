@@ -8,7 +8,8 @@ test("모바일 메인은 여행 시작과 국가 탐색을 제공한다", async
   await page.goto("/", { waitUntil: "domcontentloaded" });
   await expect(page.getByRole("heading", { name: "다음 여행을 펼쳐보세요." })).toBeVisible();
   await expect(page.locator(".landing-globe-live")).toBeVisible();
-  await page.waitForTimeout(800);
+  await page.locator(".landing-globe-live").scrollIntoViewIfNeeded();
+  await expect(page.locator(".landing-globe-live [data-rendering]")).toHaveAttribute("data-rendering", "active");
   await expect(page.locator(".landing-globe-live [data-render-quality='mobile']")).toHaveAttribute("data-pixel-ratio-limit", "1.25");
 
   const layout = await page.evaluate(() => ({

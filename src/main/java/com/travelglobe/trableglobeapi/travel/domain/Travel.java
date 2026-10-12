@@ -67,6 +67,16 @@ public class Travel extends BaseTimeEntity {
     @Column(name = "visibility", nullable = false, length = 20)
     private Visibility visibility;
 
+    @Column(name = "share_token", length = 64, unique = true)
+    private String shareToken;
+
+    public String enableSharing() {
+        if (shareToken == null) shareToken = java.util.UUID.randomUUID().toString();
+        return shareToken;
+    }
+
+    public void disableSharing() { shareToken = null; }
+
     @OneToMany(mappedBy = "travel", cascade = CascadeType.ALL, orphanRemoval = true)
     @OrderBy("sortOrder asc, id asc")
     private List<TravelPlace> places = new ArrayList<>();

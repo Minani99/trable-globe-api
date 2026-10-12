@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useCallback, useEffect, useMemo, useState, type ReactNode } from "react";
+import { createContext, useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { WorkspaceTabs } from "@/components/common/WorkspaceTabs";
 import styles from "./TravelWorkspace.module.css";
 
@@ -16,6 +16,7 @@ export function MobilePlanningWorkspace({ travelId, preparation, checklist, budg
   travelId: number; preparation: ReactNode; checklist: ReactNode; budget: ReactNode; editor: ReactNode;
 }) {
   const [active, setActive] = useState(0);
+  const workspaceRef = useRef<HTMLElement>(null);
   const tabsId = `trip-workspace-${travelId}`;
   useEffect(() => {
     function syncHash() {
@@ -32,11 +33,17 @@ export function MobilePlanningWorkspace({ travelId, preparation, checklist, budg
     setActive(index);
     window.history.replaceState(window.history.state, "", `${window.location.pathname}${window.location.search}${HASHES[index]}`);
     window.dispatchEvent(new Event("hashchange"));
+    // Keep the workspace in view when switching from a long tab to a short one.
+    const workspace = workspaceRef.current;
+    const headerHeight = document.querySelector(".site-header")?.getBoundingClientRect().height ?? 56;
+    if (workspace && workspace.getBoundingClientRect().top < headerHeight) {
+      window.scrollTo({ top: window.scrollY + workspace.getBoundingClientRect().top - headerHeight - 8, behavior: "instant" });
+    }
   }, []);
   const selectSection = useCallback((section: number) => select(EDITOR_SECTIONS.indexOf(section)), [select]);
   const context = useMemo(() => ({ section: EDITOR_SECTIONS[active] ?? 1, selectSection, tabsId }), [active, selectSection, tabsId]);
   return (
-    <section className={styles.workspace} aria-label="여행 계획 편집">
+    <section ref={workspaceRef} className={styles.workspace} aria-label="여행 계획 편집">
       <WorkspaceTabs id={tabsId} label="여행 작업" items={TABS} active={active} onChange={select} />
       <TravelWorkspaceContext.Provider value={context}>
         <div className={styles.panel} hidden={active > 2}>{editor}</div>
