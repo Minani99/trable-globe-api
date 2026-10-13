@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { ApiError, apiMutation, apiSessionGet } from "@/lib/api/client";
+import { Icon } from "@/components/common/Icon";
 
 export function PlanSharePanel({ travelId, dirty, pendingSave }: { travelId: number; dirty: boolean; pendingSave: boolean }) {
   const [token, setToken] = useState<string | null>(null);
@@ -48,7 +49,7 @@ export function PlanSharePanel({ travelId, dirty, pendingSave }: { travelId: num
       {dirty ? <p>수정한 내용은 먼저 아래 ‘저장’ 버튼으로 저장해 주세요.</p> : null}
       {loaded && token ? <>
         <label>공유 링크<input readOnly value={url} onFocus={(event) => event.target.select()} /></label>
-        <div className="plan-share-panel__actions"><button type="button" onClick={copy} disabled={pending}>링크 복사</button><a href={`/share/${token}`} target="_blank" rel="noreferrer">공유 화면 보기 ↗</a><button type="button" onClick={() => void changeSharing(false)} disabled={pending}>공유 끄기</button></div>
+        <div className="plan-share-panel__actions"><button type="button" onClick={copy} disabled={pending}>링크 복사</button><a href={`/share/${token}`} target="_blank" rel="noreferrer">공유 화면 보기 <Icon name="arrow-up-right" /></a><button type="button" onClick={() => void changeSharing(false)} disabled={pending}>공유 끄기</button></div>
       </> : loaded ? <button type="button" disabled={pending || dirty || pendingSave} onClick={() => void changeSharing(true)}>{pending ? "준비 중…" : "일정 공유 링크 만들기"}</button>
         : <button type="button" disabled={pending} onClick={() => void load()}>{pending ? "설정 확인 중…" : "다시 불러오기"}</button>}
       <p role="status">{message}</p>

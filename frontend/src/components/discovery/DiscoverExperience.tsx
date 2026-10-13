@@ -6,6 +6,7 @@ import { MemberCard } from "@/components/discovery/MemberCard";
 import { ApiError } from "@/lib/api/client";
 import { searchMembers } from "@/lib/api/discovery";
 import type { MemberDiscovery } from "@/types";
+import { Icon } from "@/components/common/Icon";
 
 export function DiscoverExperience({
   recommendations,
@@ -78,7 +79,7 @@ export function DiscoverExperience({
         <label htmlFor="member-search" className="sr-only">다른 여행자 검색</label>
         <div className="discover-search__field">
           <span aria-hidden="true">
-            <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="6.5" /><path d="m16 16 4 4" /></svg>
+            <Icon name="search" />
           </span>
           <input
             id="member-search"
@@ -89,7 +90,7 @@ export function DiscoverExperience({
             autoComplete="off"
             maxLength={60}
           />
-          {query ? <button type="button" onClick={() => changeQuery("")} aria-label="검색어 지우기">×</button> : null}
+          {query ? <button type="button" onClick={() => changeQuery("")} aria-label="검색어 지우기"><Icon name="close" /></button> : null}
         </div>
         <p>이름이나 사용자명으로 친구를 찾아보세요.</p>
       </form>

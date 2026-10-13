@@ -8,6 +8,7 @@ import { MemberWorldPreview } from "@/components/discovery/MemberWorldPreview";
 import { formatCount } from "@/lib/utils/format";
 import { publicDisplayName } from "@/lib/utils/profile";
 import type { MemberDiscovery } from "@/types";
+import { Icon } from "@/components/common/Icon";
 
 export function MemberCard({ member, viewerAuthenticated }: { member: MemberDiscovery; viewerAuthenticated: boolean }) {
   const displayName = publicDisplayName(member.displayName);
@@ -52,7 +53,7 @@ export function MemberCard({ member, viewerAuthenticated }: { member: MemberDisc
       </div>
 
       <div className="member-card__actions">
-        <Link href={`/${member.username}`}>프로필 보기 <span aria-hidden="true">→</span></Link>
+        <Link href={`/${member.username}`}>프로필 보기 <span aria-hidden="true"><Icon name="arrow-right" /></span></Link>
         {viewerAuthenticated ? (
           <FollowButton
             username={member.username}

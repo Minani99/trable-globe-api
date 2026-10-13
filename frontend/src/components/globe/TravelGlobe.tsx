@@ -767,7 +767,7 @@ export const TravelGlobe = memo(function TravelGlobe({
 
   const arcTooltip = useCallback((arc: object) => {
     const route = arc as GlobeRouteArc;
-    return `<div class="tg-tip"><strong>${escapeHtml(route.fromLabel)}</strong><span>→ ${escapeHtml(route.toLabel)}</span></div>`;
+    return `<div class="tg-tip"><strong>${escapeHtml(route.fromLabel)}</strong><span><svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true" data-icon="arrow-right"><path d="M5 12h14M13 6l6 6-6 6"/></svg> ${escapeHtml(route.toLabel)}</span></div>`;
   }, []);
   const arcColors = useMemo(() => [globeTheme.visitedRamp[1], globeTheme.recent], [globeTheme]);
 

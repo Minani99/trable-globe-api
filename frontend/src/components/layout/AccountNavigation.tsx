@@ -11,6 +11,7 @@ import { ApiError, apiMutation } from "@/lib/api/client";
 import { clearOfflineTravelData } from "@/lib/travel-offline";
 import { publicDisplayName } from "@/lib/utils/profile";
 import type { AuthMember } from "@/types";
+import { Icon } from "@/components/common/Icon";
 
 export function AccountNavigation({
   member,
@@ -99,8 +100,8 @@ export function AccountNavigation({
   if (!member) {
     return mobile ? (
       <>
-        <Link href="/register?next=%2Fstudio" onClick={onNavigate}><span>계정 만들기</span><span aria-hidden="true">→</span></Link>
-        <Link href="/login" onClick={onNavigate}><span>로그인</span><span aria-hidden="true">→</span></Link>
+        <Link href="/register?next=%2Fstudio" onClick={onNavigate}><span>계정 만들기</span><span aria-hidden="true"><Icon name="arrow-right" /></span></Link>
+        <Link href="/login" onClick={onNavigate}><span>로그인</span><span aria-hidden="true"><Icon name="arrow-right" /></span></Link>
       </>
     ) : (
       <div className="site-account-entry">
@@ -111,13 +112,13 @@ export function AccountNavigation({
   }
   return mobile ? (
     <>
-      <Link href="/globe" onClick={onNavigate}><span>내 지구본</span><span aria-hidden="true">→</span></Link>
-      <Link href="/studio" onClick={onNavigate}><span>내 여행</span><span aria-hidden="true">→</span></Link>
-      <Link href="/studio/plans/new" onClick={onNavigate}><span>새 여행 계획</span><span aria-hidden="true">＋</span></Link>
-      <Link href={`/${member.username}`} onClick={onNavigate}><span>공개 프로필</span><span aria-hidden="true">↗</span></Link>
-      <Link href="/settings" onClick={onNavigate}><span>내 정보</span><span aria-hidden="true">→</span></Link>
+      <Link href="/globe" onClick={onNavigate}><span>내 지구본</span><span aria-hidden="true"><Icon name="arrow-right" /></span></Link>
+      <Link href="/studio" onClick={onNavigate}><span>내 여행</span><span aria-hidden="true"><Icon name="arrow-right" /></span></Link>
+      <Link href="/studio/plans/new" onClick={onNavigate}><span>새 여행 계획</span><span aria-hidden="true"><Icon name="plus" /></span></Link>
+      <Link href={`/${member.username}`} onClick={onNavigate}><span>공개 프로필</span><span aria-hidden="true"><Icon name="arrow-up-right" /></span></Link>
+      <Link href="/settings" onClick={onNavigate}><span>내 정보</span><span aria-hidden="true"><Icon name="arrow-right" /></span></Link>
       <button type="button" className="site-mobile-menu__button is-logout" onClick={logout} disabled={logoutPending}>
-        <span>{logoutPending ? "로그아웃 중…" : "로그아웃"}</span><span aria-hidden="true">→</span>
+        <span>{logoutPending ? "로그아웃 중…" : "로그아웃"}</span><span aria-hidden="true"><Icon name="arrow-right" /></span>
       </button>
     </>
   ) : (
@@ -142,20 +143,18 @@ export function AccountNavigation({
           aria-expanded={menuOpen}
           aria-haspopup="menu"
         >
-          <svg aria-hidden="true" viewBox="0 0 16 16">
-            <path d="m4.5 6 3.5 3.5L11.5 6" />
-          </svg>
+          <Icon name="chevron-down" />
         </button>
         {menuOpen ? (
           <div className="site-account-popover" role="menu">
-            <Link href="/globe" role="menuitem" onClick={() => setMenuOpen(false)}><span>내 지구본</span><span aria-hidden="true">↗</span></Link>
-            <Link href="/studio" role="menuitem" onClick={() => setMenuOpen(false)}><span>내 여행</span><span aria-hidden="true">→</span></Link>
-            <Link href="/studio/plans/new" role="menuitem" onClick={() => setMenuOpen(false)}><span>새 여행 계획</span><span aria-hidden="true">＋</span></Link>
-            <Link href={`/${member.username}`} role="menuitem" onClick={() => setMenuOpen(false)}><span>공개 프로필</span><span aria-hidden="true">↗</span></Link>
-            <Link href="/settings" role="menuitem" onClick={() => setMenuOpen(false)}><span>내 정보</span><span aria-hidden="true">→</span></Link>
+            <Link href="/globe" role="menuitem" onClick={() => setMenuOpen(false)}><span>내 지구본</span><span aria-hidden="true"><Icon name="arrow-up-right" /></span></Link>
+            <Link href="/studio" role="menuitem" onClick={() => setMenuOpen(false)}><span>내 여행</span><span aria-hidden="true"><Icon name="arrow-right" /></span></Link>
+            <Link href="/studio/plans/new" role="menuitem" onClick={() => setMenuOpen(false)}><span>새 여행 계획</span><span aria-hidden="true"><Icon name="plus" /></span></Link>
+            <Link href={`/${member.username}`} role="menuitem" onClick={() => setMenuOpen(false)}><span>공개 프로필</span><span aria-hidden="true"><Icon name="arrow-up-right" /></span></Link>
+            <Link href="/settings" role="menuitem" onClick={() => setMenuOpen(false)}><span>내 정보</span><span aria-hidden="true"><Icon name="arrow-right" /></span></Link>
             <button type="button" className="site-account-popover__logout" role="menuitem" onClick={logout} disabled={logoutPending}>
               <span>{logoutPending ? "로그아웃 중…" : "로그아웃"}</span>
-              <span aria-hidden="true">→</span>
+              <span aria-hidden="true"><Icon name="arrow-right" /></span>
             </button>
           </div>
         ) : null}

@@ -7,6 +7,7 @@ import {
   type GoogleDirectionsStop,
   type GoogleTravelMode,
 } from "@/lib/google-directions";
+import { Icon } from "@/components/common/Icon";
 
 interface GoogleDirectionsPanelProps {
   stops: GoogleDirectionsStop[];
@@ -67,7 +68,7 @@ export function GoogleDirectionsPanel({ stops, activeDate }: GoogleDirectionsPan
                 <strong>{segments.length === 1 ? "Google Maps에서 경로 보기" : `${index + 1}구간 경로 보기`}</strong>
                 <span>{segment.stops[0].placeName} → {segment.stops.at(-1)!.placeName}{segment.stops.length > 2 ? ` · 경유 ${segment.stops.length - 2}곳` : ""}</span>
               </span>
-              <svg aria-hidden="true" viewBox="0 0 24 24"><path d="M7 17 17 7M7 7h10v10" /></svg>
+              <Icon name="arrow-up-right" />
               <span className="sr-only"> · Google Maps 새 창</span>
             </a>
           ))}

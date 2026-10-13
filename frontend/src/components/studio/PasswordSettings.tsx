@@ -4,6 +4,7 @@ import Link from "next/link";
 import { FormEvent, useState } from "react";
 
 import { showFeedback } from "@/components/common/AppFeedback";
+import { Icon } from "@/components/common/Icon";
 import { ApiError, apiMutation } from "@/lib/api/client";
 
 export function PasswordSettings() {
@@ -48,59 +49,62 @@ export function PasswordSettings() {
   }
 
   return (
-    <section id="security" className="studio-account settings-card settings-security" aria-labelledby="settings-security-heading">
-      <div className="studio-account__heading">
+    <section id="security" className="account-card" aria-labelledby="settings-security-heading">
+      <header className="account-card__header">
+        <span className="account-card__icon" aria-hidden="true"><Icon name="lock" /></span>
         <div>
           <h2 id="settings-security-heading">비밀번호</h2>
-          <p>변경하면 다른 기기에서 로그아웃됩니다.</p>
+          <p>변경하면 다른 기기에서는 로그아웃됩니다.</p>
         </div>
-      </div>
-      <form className="studio-account__identity settings-password-form" onSubmit={changePassword}>
-        <label>
-          <span>현재 비밀번호</span>
-          <input
-            name="currentPassword"
-            type="password"
-            autoComplete="current-password"
-            aria-invalid={Boolean(errors.currentPassword)}
-            required
-          />
-          {errors.currentPassword ? <small className="field-validation is-error">{errors.currentPassword}</small> : null}
-        </label>
-        <label>
-          <span>새 비밀번호</span>
-          <input
-            name="newPassword"
-            type="password"
-            aria-label="새 비밀번호"
-            aria-describedby="settings-new-password-help"
-            minLength={10}
-            maxLength={72}
-            autoComplete="new-password"
-            aria-invalid={Boolean(errors.newPassword)}
-            required
-          />
-          <small id="settings-new-password-help">{errors.newPassword || "10자 이상"}</small>
-        </label>
-        <label>
-          <span>새 비밀번호 확인</span>
-          <input
-            name="passwordConfirm"
-            type="password"
-            minLength={10}
-            maxLength={72}
-            autoComplete="new-password"
-            aria-invalid={Boolean(errors.passwordConfirm)}
-            required
-          />
-          {errors.passwordConfirm ? <small className="field-validation is-error">{errors.passwordConfirm}</small> : null}
-        </label>
-        <div className="studio-account__identity-actions">
+      </header>
+      <form onSubmit={changePassword}>
+        <div className="account-card__body account-card__grid">
+          <label className="account-field is-wide">
+            <span className="account-field__label">현재 비밀번호</span>
+            <input
+              name="currentPassword"
+              type="password"
+              autoComplete="current-password"
+              aria-invalid={Boolean(errors.currentPassword)}
+              required
+            />
+            {errors.currentPassword ? <small className="account-field__status is-error">{errors.currentPassword}</small> : null}
+          </label>
+          <label className="account-field">
+            <span className="account-field__label">새 비밀번호</span>
+            <input
+              name="newPassword"
+              type="password"
+              aria-label="새 비밀번호"
+              aria-describedby="settings-new-password-help"
+              minLength={10}
+              maxLength={72}
+              autoComplete="new-password"
+              aria-invalid={Boolean(errors.newPassword)}
+              required
+            />
+            <small id="settings-new-password-help" className={errors.newPassword ? "account-field__status is-error" : "account-field__help"}>{errors.newPassword || "10자 이상"}</small>
+          </label>
+          <label className="account-field">
+            <span className="account-field__label">새 비밀번호 확인</span>
+            <input
+              name="passwordConfirm"
+              type="password"
+              minLength={10}
+              maxLength={72}
+              autoComplete="new-password"
+              aria-invalid={Boolean(errors.passwordConfirm)}
+              required
+            />
+            {errors.passwordConfirm ? <small className="account-field__status is-error">{errors.passwordConfirm}</small> : null}
+          </label>
+        </div>
+        <footer className="account-card__footer">
+          <Link href="/forgot-password" className="account-link">비밀번호를 잊은 경우 <Icon name="arrow-right" /></Link>
           <span aria-live="polite">{status}</span>
-          <button type="submit" disabled={pending}>{pending ? "변경 중…" : "비밀번호 변경"}</button>
-        </div>
+          <button type="submit" className="account-button is-primary" disabled={pending}>{pending ? "변경 중…" : "비밀번호 변경"}</button>
+        </footer>
       </form>
-      <Link href="/forgot-password" className="settings-forgot-link">비밀번호를 잊은 경우</Link>
     </section>
   );
 }

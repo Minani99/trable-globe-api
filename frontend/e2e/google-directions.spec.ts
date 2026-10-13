@@ -87,6 +87,7 @@ test("모바일 일정의 날짜·순서·이동수단이 실제 경로에 반�
   await page.setViewportSize({ width: 390, height: 844 });
   const id = await seed(page);
   await page.goto(`/studio/travels/${id}/edit?plan=1`);
+  await page.getByRole("tablist", { name: "여행 작업", exact: true }).getByRole("tab", { name: "일정", exact: true }).click();
   const panel = page.getByRole("region", { name: "실제 이동 경로", exact: true });
   const days = page.getByRole("tablist", { name: "여행 날짜 선택" });
   await expectRoutes(panel, [{ api: "1", origin: "34.9858,135.7588", destination: "35.0116,135.7711", waypoints: "35.005,135.7649", travelmode: "walking" }]);

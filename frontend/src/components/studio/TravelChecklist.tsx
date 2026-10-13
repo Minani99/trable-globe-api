@@ -4,6 +4,7 @@ import { KeyboardEvent, useMemo, useState } from "react";
 
 import { ApiError, apiMutation } from "@/lib/api/client";
 import type { TravelTask, TravelTaskCategory } from "@/types";
+import { Icon } from "@/components/common/Icon";
 
 const CATEGORY_LABELS: Record<TravelTaskCategory, string> = {
   RESERVATION: "예약",
@@ -105,7 +106,7 @@ export function TravelChecklist({ travelId, initialTasks }: { travelId: number; 
                 aria-label={`${task.title} ${task.completed ? "미완료로 변경" : "완료로 변경"}`}
                 aria-pressed={task.completed}
               >
-                <span aria-hidden="true">{task.completed ? "✓" : ""}</span>
+                <span aria-hidden="true">{task.completed ? <Icon name="check" /> : null}</span>
                 <strong>{task.title}</strong>
               </button>
               <small>{CATEGORY_LABELS[task.category]}</small>
@@ -115,7 +116,7 @@ export function TravelChecklist({ travelId, initialTasks }: { travelId: number; 
                 onClick={() => void remove(task)}
                 disabled={pendingKey !== null}
                 aria-label={`${task.title} 삭제`}
-              >×</button>
+              ><Icon name="close" /></button>
             </li>
           ))}
         </ul>
@@ -124,7 +125,7 @@ export function TravelChecklist({ travelId, initialTasks }: { travelId: number; 
       <div className="travel-checklist__composer">
         <label><span className="sr-only">새 준비 항목</span><input value={title} onChange={(event) => setTitle(event.target.value)} onKeyDown={(event: KeyboardEvent<HTMLInputElement>) => { if (event.key === "Enter") { event.preventDefault(); void addTask(); } }} maxLength={120} placeholder="예: 공항철도 예약" /></label>
         <label><span className="sr-only">항목 분류</span><select value={category} onChange={(event) => setCategory(event.target.value as TravelTaskCategory)}>{Object.entries(CATEGORY_LABELS).map(([value, label]) => <option key={value} value={value}>{label}</option>)}</select></label>
-        <button type="button" onClick={() => void addTask()} disabled={pendingKey !== null || !title.trim()}>{pendingKey === "create" ? "추가 중…" : "＋ 추가"}</button>
+        <button type="button" onClick={() => void addTask()} disabled={pendingKey !== null || !title.trim()}>{pendingKey === "create" ? "추가 중…" : <><Icon name="plus" /> 추가</>}</button>
       </div>
       {error ? <p className="travel-checklist__error" role="alert">{error}</p> : null}
     </section>

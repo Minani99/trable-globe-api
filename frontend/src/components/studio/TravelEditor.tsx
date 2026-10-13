@@ -7,6 +7,7 @@ import { ChangeEvent, DragEvent, useCallback, useContext, useEffect, useMemo, us
 import { WorkspaceTabs } from "@/components/common/WorkspaceTabs";
 import { TravelWorkspaceContext } from "@/components/planner/MobilePlanningWorkspace";
 import { TravelActionIcon } from "@/components/common/TravelActionIcon";
+import { WeatherIcon } from "@/components/common/WeatherIcon";
 import { GoogleDirectionsPanel } from "@/components/travel/GoogleDirectionsPanel";
 import { ApiError, apiMutation } from "@/lib/api/client";
 import type { CountryOption } from "@/lib/countries";
@@ -20,10 +21,12 @@ import {
 import { readPhotoMetadata, type PhotoMetadata } from "@/lib/uploads/photo-metadata";
 import { isPlaceholderPlaceName } from "@/lib/travel-placeholders";
 import { useUnsavedChangesGuard } from "@/lib/useUnsavedChangesGuard";
+import { fetchTripWeather, isRainCode, isRainyDay, useTripWeather, WEATHER_SOURCE_LABEL, weatherLabel, type WeatherDay } from "@/lib/weather";
 import type { TravelDetail, TravelPhotoWriteInput, TravelPlaceWriteInput, TravelWriteInput, Visibility } from "@/types";
 import { PlaceLocationPicker } from "@/components/studio/PlaceLocationPicker";
 import { PlanSharePanel } from "@/components/studio/PlanSharePanel";
 import { useStopDrag } from "@/components/studio/useStopDrag";
+import { Icon } from "@/components/common/Icon";
 
 interface PlaceDraft {
   key: string;
@@ -74,12 +77,6 @@ interface StoredTravelDraft {
   visibility: Visibility;
   places: PlaceDraft[];
   photos: Array<Omit<PhotoDraft, "previewUrl" | "file" | "progress" | "uploadState" | "uploadError">>;
-}
-
-interface WeatherForecastDay {
-  date: string;
-  weatherCode: number;
-  precipitationProbability: number;
 }
 
 interface WeatherReplanProposal {
@@ -185,6 +182,7 @@ export function TravelEditor({
   const mobileEditorStep = workspace?.section ?? editorSection;
   const setMobileEditorStep = workspace?.selectSection ?? setEditorSection;
   const editorTabsId = workspace?.tabsId ?? "travel-edit";
+  const sectionTab = (section: number) => workspace ? workspace.tabIndexForSection(section) : EDITOR_SECTIONS.indexOf(section);
   const [expandedPlace, setExpandedPlace] = useState<string | null>(null);
   const [activeQuickAction, setActiveQuickAction] = useState<"place" | "photo" | "note" | null>(null);
   const countryMap = useMemo(() => new Map(countries.map((country) => [country.iso2Code, country])), [countries]);
@@ -206,6 +204,11 @@ export function TravelEditor({
   const tripFinished = Boolean(today && endDate && endDate <= today);
   const conversionReady = planningMode && tripFinished && placeholderCount === 0;
   const travelActive = Boolean(today && startDate && endDate && startDate <= today && today <= endDate);
+  const weatherAnchor = places.find((place) => coordinate(place.latitude) !== null && coordinate(place.longitude) !== null);
+  const dayWeather = useTripWeather(planningMode && weatherAnchor ? {
+    latitude: Number(weatherAnchor.latitude), longitude: Number(weatherAnchor.longitude), startDate, endDate,
+  } : null);
+  const weatherByDate = useMemo(() => new Map((dayWeather.weather?.days ?? []).map((day) => [day.date, day])), [dayWeather.weather]);
 
   useEffect(() => {
     if (!planningMode || planDays.length === 0) return;
@@ -466,34 +469,22 @@ export function TravelEditor({
     setWeatherPlannerMessage(null);
     setWeatherProposal(null);
     try {
-      const params = new URLSearchParams({
-        latitude: anchor.latitude,
-        longitude: anchor.longitude,
-        startDate,
-        endDate,
-      });
-      const response = await fetch(`/api/weather/forecast?${params}`);
-      const body = await response.json() as {
-        success: boolean;
-        data: { available: boolean; availableFrom: string | null; days: WeatherForecastDay[] } | null;
-        message: string | null;
-      };
-      if (!response.ok || !body.success || !body.data) throw new Error(body.message ?? "forecast failed");
-      if (!body.data.available) {
+      const weather = await fetchTripWeather({ latitude: Number(anchor.latitude), longitude: Number(anchor.longitude), startDate, endDate });
+      // Only a real forecast is strong enough to move plans; climate averages are shown, not acted on.
+      const forecastDays = weather.days.filter((day) => day.source === "forecast");
+      if (!forecastDays.length) {
         if (silent) {
           setWeatherPlannerState("idle");
         } else {
           setWeatherPlannerState("message");
-          setWeatherPlannerMessage(body.data.availableFrom
-            ? `${formatPlanDay(body.data.availableFrom)}부터 실제 예보로 변경안을 만들 수 있어요.`
-            : "출발 16일 전부터 실제 예보로 변경안을 만들 수 있어요.");
+          setWeatherPlannerMessage(weather.availableFrom
+            ? `${formatPlanDay(weather.availableFrom)}부터 실제 예보로 변경안을 만들 수 있어요.`
+            : "출발 약 2주 전부터 실제 예보로 변경안을 만들 수 있어요.");
         }
         return;
       }
 
-      const rainyDay = body.data.days.find((day) =>
-        planDays.includes(day.date) && (day.precipitationProbability >= 60 || isRainWeatherCode(day.weatherCode)),
-      );
+      const rainyDay = forecastDays.find((day) => planDays.includes(day.date) && isRainyDay(day));
       if (!rainyDay) {
         if (silent) {
           setWeatherPlannerState("idle");
@@ -504,7 +495,7 @@ export function TravelEditor({
         return;
       }
 
-      const proposal = createWeatherReplanProposal(places, rainyDay, body.data.days);
+      const proposal = createWeatherReplanProposal(places, rainyDay, forecastDays);
       if (!proposal) {
         if (silent) {
           setWeatherPlannerState("idle");
@@ -878,7 +869,7 @@ export function TravelEditor({
         </div>
       </nav>
       {status ? <p className="editor-notice" role="alert">{status}</p> : null}
-      <section id={`${editorTabsId}-panel-2`} role="tabpanel" aria-labelledby={`${editorTabsId}-tab-2`} className="travel-editor__section" hidden={mobileEditorStep !== 0} data-mobile-active={mobileEditorStep === 0}>
+      <section id={`${editorTabsId}-panel-${sectionTab(0)}`} role="tabpanel" aria-labelledby={`${editorTabsId}-tab-${sectionTab(0)}`} className="travel-editor__section" hidden={mobileEditorStep !== 0} data-mobile-active={mobileEditorStep === 0}>
         <div className="travel-editor__section-heading"><span>01</span><div><h2>{planningMode ? "계획 기본 정보" : "여행 기본 정보"}</h2></div></div>
         <div className="travel-editor__fields">
           <label className="is-wide"><span>여행 제목</span><input name="title" value={title} onChange={(event) => setTitle(event.target.value)} maxLength={120} placeholder={planningMode ? "다음 여행의 이름" : "예: 교토의 가을"} required /></label>
@@ -909,7 +900,7 @@ export function TravelEditor({
         </div>
       </section>
 
-      <section id={`${editorTabsId}-panel-0`} role="tabpanel" aria-labelledby={`${editorTabsId}-tab-0`} className="travel-editor__section travel-editor__section--itinerary" hidden={mobileEditorStep !== 1} data-mobile-active={mobileEditorStep === 1}><div id="travel-place-editor">
+      <section id={`${editorTabsId}-panel-${sectionTab(1)}`} role="tabpanel" aria-labelledby={`${editorTabsId}-tab-${sectionTab(1)}`} className="travel-editor__section travel-editor__section--itinerary" hidden={mobileEditorStep !== 1} data-mobile-active={mobileEditorStep === 1}><div id="travel-place-editor">
         <div className="travel-editor__section-heading"><span>02</span><div><h2>{planningMode ? "일차별 일정" : "방문 장소"}</h2><p>{planningMode ? "장소와 체류 시간을 확인하고 필요한 부분만 수정하세요." : "장소를 순서대로 정하고 실제 이동 경로를 확인하세요."}</p></div></div>
         <div className="travel-editor__itinerary-content">
         {planningMode && planDays.length > 0 ? (
@@ -920,14 +911,14 @@ export function TravelEditor({
             </header>
             {weatherProposal || weatherUndo || weatherPlannerMessage ? <section className="weather-replan" aria-labelledby="weather-replan-heading">
               <div className="weather-replan__intro">
-                <span className="weather-replan__icon" aria-hidden="true">☂</span>
+                <span className="weather-replan__icon" aria-hidden="true"><Icon name="umbrella" /></span>
                 <div><small>날씨에 맞춘 일정</small><h3 id="weather-replan-heading">비 예보가 있는 날을 확인하세요</h3><p>실내 장소로 바꾼 일정을 비교한 뒤 직접 적용할 수 있습니다.</p></div>
                 <button type="button" onClick={() => void buildWeatherReplanProposal()} disabled={weatherPlannerState === "loading" || pending}>{weatherPlannerState === "loading" ? "예보 확인 중…" : "예보 다시 확인"}</button>
               </div>
               {weatherPlannerMessage ? <div className="weather-replan__message" role="status"><span>{weatherPlannerMessage}</span>{weatherUndo ? <button type="button" onClick={undoWeatherProposal}>변경 전으로 되돌리기</button> : null}</div> : null}
               {weatherProposal ? <div className="weather-replan__proposal">
-                <header><div><small>{formatPlanDay(weatherProposal.rainyDate)} 추천</small><strong>{weatherProposal.title}</strong><p>{weatherProposal.reason}</p></div><button type="button" onClick={() => setWeatherProposal(null)} aria-label="날씨 변경안 닫기">×</button></header>
-                <div className="weather-replan__diff" aria-label="일정 변경 전후 비교">{weatherProposal.changes.map((change) => <div key={`${change.date}-${change.before}`}><time>{formatPlanDay(change.date)}</time><span><small>현재</small><b>{change.before}</b></span><i aria-hidden="true">→</i><span className="is-after"><small>변경 후</small><b>{change.after}</b></span></div>)}</div>
+                <header><div><small>{formatPlanDay(weatherProposal.rainyDate)} 추천</small><strong>{weatherProposal.title}</strong><p>{weatherProposal.reason}</p></div><button type="button" onClick={() => setWeatherProposal(null)} aria-label="날씨 변경안 닫기"><Icon name="close" /></button></header>
+                <div className="weather-replan__diff" aria-label="일정 변경 전후 비교">{weatherProposal.changes.map((change) => <div key={`${change.date}-${change.before}`}><time>{formatPlanDay(change.date)}</time><span><small>현재</small><b>{change.before}</b></span><i aria-hidden="true"><Icon name="arrow-right" /></i><span className="is-after"><small>변경 후</small><b>{change.after}</b></span></div>)}</div>
                 <footer><p>자동 저장 전에 직접 확인할 수 있으며 예약 정보는 변경하지 않습니다.</p><button type="button" onClick={applyWeatherProposal}>이 변경안 적용</button></footer>
               </div> : null}
             </section> : null}
@@ -946,6 +937,7 @@ export function TravelEditor({
                     onClick={() => setActivePlanDate(day)}
                   >
                     <small>DAY {dayIndex + 1}</small><strong>{formatPlanDay(day)}</strong><span>{ready ? `${dayPlaces.length}곳` : "미정"}</span>
+                    {weatherByDate.get(day) ? <DayWeather day={weatherByDate.get(day)!} /> : null}
                   </button>
                 );
               })}
@@ -953,7 +945,7 @@ export function TravelEditor({
             <div className="plan-itinerary__toolbar">
               <div><strong>일정 빠르게 추가</strong><span>종류를 고른 뒤 장소만 검색하세요.</span></div>
               <div className="plan-itinerary__quick-actions">
-                {PLAN_SLOT_PRESETS.map((slot) => <button key={slot} type="button" onClick={() => addPlanningPlace(slot)}>＋ {slot}</button>)}
+                {PLAN_SLOT_PRESETS.map((slot) => <button key={slot} type="button" aria-label={`${slot} 일정 추가`} onClick={() => addPlanningPlace(slot)}><Icon name="plus" /> {slot}</button>)}
                 {planDays.indexOf(activePlanDate) > 0
                   && places.some((place) => place.visitedAt === planDays[planDays.indexOf(activePlanDate) - 1] && !isPlanningPlaceholder(place))
                   && !activeDayPlaces.some(({ place }) => !isPlanningPlaceholder(place)) ? (
@@ -989,19 +981,19 @@ export function TravelEditor({
                     const direction = event.key === "ArrowUp" ? -1 : 1;
                     if (planningMode) movePlanningPlace(index, direction); else movePlace(index, direction);
                   }
-                }}><span aria-hidden="true">⋮⋮</span></button>
+                }}><span aria-hidden="true"><Icon name="grip" /></span></button>
               <button className="editor-stop__summary" type="button" aria-expanded={expandedPlace === place.key} aria-controls={`stop-${index}`} onClick={() => setExpandedPlace(expandedPlace === place.key ? null : place.key)}>
                 <span className="editor-stop__sequence" aria-label="방문 순번">{String((planningMode ? activeDayPlaces.findIndex((item) => item.index === index) : index) + 1).padStart(2, "0")}</span>
                 <span><strong>{place.placeName || "장소를 추가하세요"}</strong><small>{[place.cityName || countryMap.get(place.countryCode)?.nameKo, place.startTime || null, place.durationMinutes ? `${place.durationMinutes}분` : null].filter(Boolean).join(" · ")}</small></span>
-                <span className="editor-stop__edit">{expandedPlace === place.key ? "편집 닫기 ⌃" : "편집 ⌄"}</span>
+                <span className="editor-stop__edit">{expandedPlace === place.key ? <>편집 닫기 <Icon name="chevron-up" /></> : <>편집 <Icon name="chevron-down" /></>}</span>
               </button>
               </div>
               <div id={`stop-${index}`} className="editor-stop__body" hidden={expandedPlace !== place.key}>
               <div className="travel-editor__item-head">
                 <strong>{planningMode ? `${String(activeDayPlaces.findIndex((item) => item.index === index) + 1).padStart(2, "0")}번째 일정` : `${String(index + 1).padStart(2, "0")}번째 장소`}{planningMode && place.startTime ? <time>{place.startTime}</time> : null}</strong>
                 <div className="travel-editor__order-actions">
-                  <button type="button" onClick={() => planningMode ? movePlanningPlace(index, -1) : movePlace(index, -1)} disabled={(planningMode ? activeDayPlaces[0]?.index === index : index === 0) || pending} aria-label="장소를 앞으로 이동">↑</button>
-                  <button type="button" onClick={() => planningMode ? movePlanningPlace(index, 1) : movePlace(index, 1)} disabled={(planningMode ? activeDayPlaces.at(-1)?.index === index : index === places.length - 1) || pending} aria-label="장소를 뒤로 이동">↓</button>
+                  <button type="button" onClick={() => planningMode ? movePlanningPlace(index, -1) : movePlace(index, -1)} disabled={(planningMode ? activeDayPlaces[0]?.index === index : index === 0) || pending} aria-label="장소를 앞으로 이동"><Icon name="arrow-up" /></button>
+                  <button type="button" onClick={() => planningMode ? movePlanningPlace(index, 1) : movePlace(index, 1)} disabled={(planningMode ? activeDayPlaces.at(-1)?.index === index : index === places.length - 1) || pending} aria-label="장소를 뒤로 이동"><Icon name="arrow-down" /></button>
 
                 </div>
               </div>
@@ -1039,11 +1031,11 @@ export function TravelEditor({
             </li>
           ))}
         </ol>
-        {!planningMode ? <div className="travel-editor__add-row"><p>방문 순서를 바꾸면 Google Maps 경로에도 바로 반영됩니다.</p><button type="button" onClick={() => { const next = emptyPlace(places.at(-1)?.countryCode ?? "KR"); setPlaces((current) => [...current, next]); setExpandedPlace(next.key); setDirty(true); }}>＋ 장소 추가</button></div> : null}
+        {!planningMode ? <div className="travel-editor__add-row"><p>방문 순서를 바꾸면 Google Maps 경로에도 바로 반영됩니다.</p><button type="button" onClick={() => { const next = emptyPlace(places.at(-1)?.countryCode ?? "KR"); setPlaces((current) => [...current, next]); setExpandedPlace(next.key); setDirty(true); }}><Icon name="plus" /> 장소 추가</button></div> : null}
         </div>
       </div></section>
 
-      <section id={`${editorTabsId}-panel-1`} role="tabpanel" aria-labelledby={`${editorTabsId}-tab-1`} className="travel-editor__section" hidden={mobileEditorStep !== 2} data-mobile-active={mobileEditorStep === 2}><div id="travel-photo-editor">
+      <section id={`${editorTabsId}-panel-${sectionTab(2)}`} role="tabpanel" aria-labelledby={`${editorTabsId}-tab-${sectionTab(2)}`} className="travel-editor__section" hidden={mobileEditorStep !== 2} data-mobile-active={mobileEditorStep === 2}><div id="travel-photo-editor">
         <div className="travel-editor__section-heading"><span>03</span><div><h2>여행 사진</h2><p>사진을 추가하고 방문 장소와 연결할 수 있습니다.</p></div></div>
         <label className="editor-trip-note"><span>여행 메모</span><textarea name="description" value={description} onChange={(event) => setDescription(event.target.value)} maxLength={2000} rows={3} placeholder="기억해 둘 이야기나 여행 팁" /></label>
         <label
@@ -1059,7 +1051,7 @@ export function TravelEditor({
             onChange={handlePhotoFiles}
             disabled={!uploadConfig?.configured || pending || photoImporting}
           />
-          <span className="travel-editor__dropzone-icon" aria-hidden="true">＋</span>
+          <span className="travel-editor__dropzone-icon" aria-hidden="true"><Icon name="plus" /></span>
           <strong>{photoImporting ? "촬영정보를 확인하고 있어요" : uploadConfig === null ? "사진 업로드 준비를 확인하고 있어요" : uploadConfig.configured ? "사진을 선택하거나 이곳에 놓아 주세요" : "사진 저장소 연결이 필요해요"}</strong>
           <small>{uploadConfig?.configured ? `JPG · PNG · WebP / 원본 30MB 이하 · 자동 최적화 / 최대 ${uploadConfig.maxPhotos}장` : "연결 전까지는 아래의 외부 이미지 주소 방식을 사용할 수 있어요."}</small>
         </label>
@@ -1083,8 +1075,8 @@ export function TravelEditor({
                 <div className="travel-editor__item-head">
                   <strong>사진 {String(index + 1).padStart(2, "0")}</strong>
                   <div className="travel-editor__photo-actions">
-                    <button type="button" onClick={() => movePhoto(index, -1)} disabled={index === 0 || pending} aria-label="사진을 앞으로 이동">↑</button>
-                    <button type="button" onClick={() => movePhoto(index, 1)} disabled={index === photos.length - 1 || pending} aria-label="사진을 뒤로 이동">↓</button>
+                    <button type="button" onClick={() => movePhoto(index, -1)} disabled={index === 0 || pending} aria-label="사진을 앞으로 이동"><Icon name="arrow-up" /></button>
+                    <button type="button" onClick={() => movePhoto(index, 1)} disabled={index === photos.length - 1 || pending} aria-label="사진을 뒤로 이동"><Icon name="arrow-down" /></button>
                     {photo.imageUrl ? <button type="button" className={coverImageUrl === photo.imageUrl ? "is-cover" : ""} onClick={() => { setCoverImageUrl(photo.imageUrl); setDirty(true); }}>{coverImageUrl === photo.imageUrl ? "대표 사진" : "대표로 지정"}</button> : null}
                     <button type="button" onClick={() => removePhoto(index)} disabled={pending}>사진 삭제</button>
                   </div>
@@ -1105,7 +1097,7 @@ export function TravelEditor({
             ))}
           </ol>
         ) : <div className="travel-editor__photo-empty">아직 사진이 없습니다.</div>}
-        <div className="travel-editor__add-row"><p>다른 사이트에 이미 올린 사진이라면 주소로도 추가할 수 있어요.</p><button type="button" onClick={() => { setPhotos((current) => [...current, emptyPhoto()]); setDirty(true); }}>＋ 이미지 주소로 추가</button></div>
+        <div className="travel-editor__add-row"><p>다른 사이트에 이미 올린 사진이라면 주소로도 추가할 수 있어요.</p><button type="button" onClick={() => { setPhotos((current) => [...current, emptyPhoto()]); setDirty(true); }}><Icon name="plus" /> 이미지 주소로 추가</button></div>
       </div></section>
 
       {initialTravel ? <PlanSharePanel travelId={initialTravel.id} dirty={dirty} pendingSave={pending} /> : null}
@@ -1204,8 +1196,8 @@ function planDayInsertionIndex(places: PlaceDraft[], day: string): number {
 
 function createWeatherReplanProposal(
   places: PlaceDraft[],
-  rainyDay: WeatherForecastDay,
-  forecastDays: WeatherForecastDay[],
+  rainyDay: WeatherDay,
+  forecastDays: WeatherDay[],
 ): WeatherReplanProposal | null {
   const sourceSignature = placeListSignature(places);
   const rainyPlaces = places.filter((place) => place.visitedAt === rainyDay.date);
@@ -1216,8 +1208,8 @@ function createWeatherReplanProposal(
 
   const dryDates = new Set(forecastDays
     .filter((day) => day.date !== rainyDay.date
-      && day.precipitationProbability < 40
-      && !isRainWeatherCode(day.weatherCode))
+      && (day.precipitationProbability ?? 0) < 40
+      && !isRainCode(day.weatherCode))
     .map((day) => day.date));
   const indoorCandidate = places.find((place) =>
     dryDates.has(place.visitedAt) && !isPlanningPlaceholder(place) && isIndoorPlace(place),
@@ -1235,7 +1227,7 @@ function createWeatherReplanProposal(
       sourceSignature,
       afterPlaces,
       title: "실내 일정과 야외 일정을 맞바꿨어요",
-      reason: `${rainyDay.precipitationProbability}% 비 예보를 기준으로 실내 후보를 비 오는 날로 옮겼습니다. 이동시간과 예약 여부를 확인한 뒤 적용해 주세요.`,
+      reason: `${rainForecastLabel(rainyDay)}를 기준으로 실내 후보를 비 오는 날로 옮겼습니다. 이동시간과 예약 여부를 확인한 뒤 적용해 주세요.`,
       changes: [
         {
           date: rainyDay.date,
@@ -1277,7 +1269,7 @@ function createWeatherReplanProposal(
     sourceSignature,
     afterPlaces,
     title: "비 오는 날에 실내 대안 자리를 만들었어요",
-    reason: `${rainyDay.precipitationProbability}% 비 예보가 있지만 교환할 실내 일정이 없어, 기존 일정을 지우지 않고 대체 장소 슬롯만 추가합니다.`,
+    reason: `${rainForecastLabel(rainyDay)}가 있지만 교환할 실내 일정이 없어, 기존 일정을 지우지 않고 대체 장소 슬롯만 추가합니다.`,
     changes: [{
       date: rainyDay.date,
       before: summarizeDay(places, rainyDay.date),
@@ -1317,8 +1309,20 @@ function isIndoorPlace(place: PlaceDraft): boolean {
   ].some((keyword) => text.includes(keyword));
 }
 
-function isRainWeatherCode(code: number): boolean {
-  return (code >= 51 && code <= 67) || (code >= 80 && code <= 82) || code >= 95;
+function DayWeather({ day }: { day: WeatherDay }) {
+  const temperature = day.temperatureMax == null ? null : `${Math.round(day.temperatureMax)}°`;
+  return (
+    <em className={`plan-day-weather${isRainyDay(day) ? " is-rainy" : ""}`} data-source={day.source}
+      title={`${WEATHER_SOURCE_LABEL[day.source]} · ${weatherLabel(day.weatherCode)}`}>
+      <WeatherIcon code={day.weatherCode} />
+      {temperature}
+      <span className="sr-only">{` ${WEATHER_SOURCE_LABEL[day.source]} ${weatherLabel(day.weatherCode)}`}</span>
+    </em>
+  );
+}
+
+function rainForecastLabel(day: WeatherDay): string {
+  return day.precipitationProbability == null ? "비 예보" : `${day.precipitationProbability}% 비 예보`;
 }
 
 function inferPhotoSchedule(

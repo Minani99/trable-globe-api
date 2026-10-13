@@ -1,6 +1,7 @@
 "use client";
 
 import { useRef, useSyncExternalStore } from "react";
+import { Icon } from "@/components/common/Icon";
 
 const GUIDE_STORAGE_KEY = "travel-globe:orientation-seen";
 const GUIDE_CHANGE_EVENT = "travel-globe:orientation-change";
@@ -47,7 +48,7 @@ export function LandingOrientationGuide() {
           aria-label="안내 닫기"
           onClick={() => dialogRef.current?.close()}
         >
-          ×
+          <Icon name="close" />
         </button>
         <p className="eyebrow">이용 방법</p>
         <h2 id="landing-guide-title">계획부터 기록까지</h2>

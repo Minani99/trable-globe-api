@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, type ReactNode } from "react";
+import { Icon } from "@/components/common/Icon";
 
 export function TravelModeEditorPanel({ children }: { children: ReactNode }) {
   const detailsRef = useRef<HTMLDetailsElement>(null);
@@ -24,7 +25,7 @@ export function TravelModeEditorPanel({ children }: { children: ReactNode }) {
     <details className="travel-mode-editor-panel" ref={detailsRef}>
       <summary>
         <span><strong>전체 계획 및 기록 편집</strong><small>예약, 체크리스트, 일정, 사진</small></span>
-        <b aria-hidden="true">⌄</b>
+        <b aria-hidden="true"><Icon name="chevron-down" /></b>
       </summary>
       <div className="travel-mode-editor-panel__content">{children}</div>
     </details>

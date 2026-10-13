@@ -10,6 +10,7 @@ import { nextJourneyAction } from "@/lib/journey-next-action";
 import { authenticatedBackendGet, getCurrentMember } from "@/lib/api/server-session";
 import { todayInKorea } from "@/lib/utils/date";
 import type { ActivityEvent, OwnedTravelSummary } from "@/types";
+import { Icon } from "@/components/common/Icon";
 
 export const metadata: Metadata = { title: "내 여행", robots: { index: false, follow: false } };
 
@@ -28,7 +29,7 @@ export default async function StudioPage() {
       <div className="site-shell studio-shell">
         <header className="studio-hero">
           <div><p className="page-caption">나의 여행 노트</p><h1>내 여행</h1><p>다가오는 여행부터, 오래 기억할 여행까지.</p></div>
-          <div className="studio-hero__actions"><Link href="/studio/travels/new" className="studio-secondary-action">지난 여행 기록</Link><Link href="/studio/plans/new" className="studio-primary-action">＋ 새 여행 계획</Link></div>
+          <div className="studio-hero__actions"><Link href="/studio/travels/new" className="studio-secondary-action">지난 여행 기록</Link><Link href="/studio/plans/new" className="studio-primary-action"><Icon name="plus" /> 새 여행 계획</Link></div>
         </header>
         {nextAction ? <JourneyNextCard action={nextAction} /> : null}
         <TravelLibrary travels={travels} today={today} />

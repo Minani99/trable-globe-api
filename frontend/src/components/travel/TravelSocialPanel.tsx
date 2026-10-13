@@ -8,6 +8,7 @@ import { ApiError, apiMutation } from "@/lib/api/client";
 import { profilePath, travelPath } from "@/lib/config";
 import { publicDisplayName } from "@/lib/utils/profile";
 import type { AuthMember, TravelSocial } from "@/types";
+import { Icon } from "@/components/common/Icon";
 
 export function TravelSocialPanel({
   travelId,
@@ -78,7 +79,7 @@ export function TravelSocialPanel({
             aria-controls="travel-comments"
             onClick={() => setCommentsOpen((open) => !open)}
           >
-            <span aria-hidden="true">{commentsOpen ? "−" : "+"}</span>
+            <span aria-hidden="true"><Icon name={commentsOpen ? "minus" : "plus"} /></span>
             댓글 {social.commentCount}
           </button>
           {currentMember ? (
@@ -123,7 +124,7 @@ export function TravelSocialPanel({
           ) : (
             <div className="travel-social__guest">
               <p>로그인하고 이 여행에 좋아요와 댓글을 남겨보세요.</p>
-              <Link href={loginPath}>로그인하고 대화 참여하기 →</Link>
+              <Link href={loginPath}>로그인하고 대화 참여하기 <Icon name="arrow-right" /></Link>
             </div>
           )}
 

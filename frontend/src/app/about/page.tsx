@@ -4,6 +4,7 @@ import Link from "next/link";
 import { SiteFooter } from "@/components/layout/SiteFooter";
 import { SiteHeader } from "@/components/layout/SiteHeader";
 import { globePath, siteConfig } from "@/lib/config";
+import { Icon } from "@/components/common/Icon";
 
 export const metadata: Metadata = {
   title: "서비스 이야기",
@@ -50,7 +51,7 @@ export default function AboutPage() {
               <div className="about-hero__actions">
                 <Link href="/register?next=%2Fstudio" className="landing-primary-cta">
                   <span>계정 만들기</span>
-                  <span className="landing-primary-cta__arrow" aria-hidden="true">↗</span>
+                  <span className="landing-primary-cta__arrow" aria-hidden="true"><Icon name="arrow-up-right" /></span>
                 </Link>
                 <Link href={globePath} className="landing-secondary-cta">샘플 지구본 보기</Link>
               </div>

@@ -22,6 +22,7 @@ for (const width of [390, 1280]) {
     await page.setViewportSize({ width, height: 900 });
     const id = await seed(page);
     await page.goto(`/studio/travels/${id}/edit?plan=1`);
+  await page.getByRole("tablist", { name: "여행 작업", exact: true }).getByRole("tab", { name: "일정", exact: true }).click();
     const rows = page.locator(".editor-stop");
     await expect(rows).toHaveCount(3);
     await expect(rows.locator(".editor-stop__sequence")).toHaveText(["01", "02", "03"]);
@@ -74,6 +75,7 @@ for (const width of [390, 1280]) {
 test("미래의 비공개 계획을 링크로 공유·복사하고 공유를 끈다", async ({ page, browser }) => {
   const id = await seed(page);
   await page.goto(`/studio/travels/${id}/edit?plan=1`);
+  await page.getByRole("tablist", { name: "여행 작업", exact: true }).getByRole("tab", { name: "일정", exact: true }).click();
   await page.locator(".plan-share-panel summary").click();
   await page.getByRole("button", { name: "일정 공유 링크 만들기", exact: true }).click();
   const input = page.getByRole("textbox", { name: "공유 링크", exact: true });

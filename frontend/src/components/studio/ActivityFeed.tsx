@@ -5,13 +5,14 @@ import Link, { useLinkStatus } from "next/link";
 import { TravelImage } from "@/components/common/TravelImage";
 import { publicDisplayName } from "@/lib/utils/profile";
 import type { ActivityEvent } from "@/types";
+import { Icon } from "@/components/common/Icon";
 
 export function ActivityFeed({ events }: { events: ActivityEvent[] }) {
   return (
     <section id="activity" className="studio-activity" aria-labelledby="studio-activity-heading">
       <div className="studio-section-heading">
         <div><h2 id="studio-activity-heading">최근 활동</h2></div>
-        <Link href="/discover">여행자 찾기 →</Link>
+        <Link href="/discover">여행자 찾기 <Icon name="arrow-right" /></Link>
       </div>
       {events.length ? (
         <ol className="studio-activity__list">
@@ -51,7 +52,7 @@ export function ActivityFeed({ events }: { events: ActivityEvent[] }) {
 
 function ActivityLinkHint({ label }: { label: string }) {
   const { pending } = useLinkStatus();
-  return <span className="studio-activity__link-hint" role="status">{pending ? "여는 중…" : <>{label} <span aria-hidden="true">→</span></>}</span>;
+  return <span className="studio-activity__link-hint" role="status">{pending ? "여는 중…" : <>{label} <span aria-hidden="true"><Icon name="arrow-right" /></span></>}</span>;
 }
 
 function activityCopy(event: ActivityEvent): string {

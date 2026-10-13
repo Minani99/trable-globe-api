@@ -1,0 +1,421 @@
+/* Trip weather and the flight step
+ *
+ * Part of the ordered stylesheet - see globals.css. Weather sits above the
+ * planning tabs so it stays visible on every step; the flight tab is the first
+ * step of the plan.
+ */
+:root {
+  --weather-sun: #d98a0b;
+  --weather-cloud: #7b8794;
+  --weather-rain: var(--ocean);
+  --weather-snow: #4f9fca;
+  --weather-storm: #7356b8;
+}
+
+:root[data-theme="dark"] {
+  --weather-sun: #f2b443;
+  --weather-cloud: #a2abb5;
+  --weather-snow: #8cc8e8;
+  --weather-storm: #a993e6;
+}
+
+.weather-icon.is-sun { color: var(--weather-sun); }
+.weather-icon.is-cloud { color: var(--weather-cloud); }
+.weather-icon.is-rain { color: var(--weather-rain); }
+.weather-icon.is-snow { color: var(--weather-snow); }
+.weather-icon.is-storm { color: var(--weather-storm); }
+
+/* Panel ------------------------------------------------------------------ */
+.trip-weather {
+  margin: 0 0 1.25rem;
+  padding: 1.1rem 1.25rem 0.95rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  background: var(--surface);
+}
+
+.trip-weather__header {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 0.9rem;
+}
+
+.trip-weather__badge {
+  display: grid;
+  width: 2.75rem;
+  height: 2.75rem;
+  place-items: center;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--surface);
+  color: var(--ocean);
+}
+
+.trip-weather__badge .ui-icon {
+  width: 1.5rem;
+  height: 1.5rem;
+}
+
+.trip-weather__header small {
+  color: var(--ocean);
+  font-size: var(--text-xs);
+  font-weight: 700;
+}
+
+.trip-weather__header h2 {
+  margin-top: 0.15rem;
+  color: var(--text-primary);
+  font-size: var(--text-md);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  word-break: keep-all;
+}
+
+.trip-weather__header p {
+  margin-top: 0.2rem;
+  color: var(--text-secondary);
+  font-size: var(--text-sm);
+  line-height: 1.5;
+  word-break: keep-all;
+}
+
+.trip-weather__action {
+  display: inline-flex;
+  min-height: 2.5rem;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0 0.95rem;
+  border-radius: var(--radius-sm);
+  background: var(--ocean);
+  color: #fff;
+  font-size: var(--text-sm);
+  font-weight: 650;
+  white-space: nowrap;
+}
+
+:root[data-theme="dark"] .trip-weather__action {
+  color: #08161d;
+}
+
+.trip-weather__action:hover {
+  background: color-mix(in srgb, var(--ocean) 86%, #000);
+}
+
+.trip-weather__days {
+  display: grid;
+  grid-auto-columns: minmax(6.75rem, 1fr);
+  grid-auto-flow: column;
+  gap: 0.5rem;
+  margin: 1rem 0 0;
+  padding: 0 0 0.3rem;
+  overflow-x: auto;
+  list-style: none;
+  scroll-snap-type: x proximity;
+  scrollbar-width: thin;
+}
+
+.trip-weather-day {
+  position: relative;
+  display: grid;
+  justify-items: start;
+  align-content: start;
+  gap: 0.25rem;
+  min-width: 0;
+  padding: 0.75rem 0.8rem 0.8rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--surface);
+  scroll-snap-align: start;
+}
+
+.trip-weather-day[data-source="climate"] {
+  border-style: dashed;
+  background: color-mix(in srgb, var(--surface) 70%, transparent);
+}
+
+.trip-weather-day.is-rainy {
+  border-color: color-mix(in srgb, var(--ocean) 50%, var(--border));
+  background: color-mix(in srgb, var(--ocean-soft) 70%, var(--surface));
+}
+
+.trip-weather-day__date {
+  display: grid;
+  gap: 0.1rem;
+  color: var(--text-tertiary);
+  font-size: var(--text-xs);
+  white-space: nowrap;
+}
+
+.trip-weather-day__date b {
+  color: var(--text-secondary);
+  font-weight: 700;
+}
+
+.trip-weather-day .trip-weather-day__icon {
+  width: 2.1rem;
+  height: 2.1rem;
+  margin-block: 0.2rem 0.1rem;
+}
+
+.trip-weather-day strong {
+  color: var(--text-primary);
+  font-size: var(--text-base);
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.trip-weather-day__meta {
+  color: var(--text-secondary);
+  font-size: var(--text-xs);
+  line-height: 1.4;
+}
+
+.trip-weather-day em,
+.trip-weather__footer b {
+  padding: 0.05rem 0.35rem;
+  border-radius: var(--radius-xs);
+  background: var(--surface-muted);
+  color: var(--text-tertiary);
+  font-size: 0.6875rem;
+  font-style: normal;
+  font-weight: 700;
+}
+
+.trip-weather-day em {
+  position: absolute;
+  top: 0.65rem;
+  right: 0.6rem;
+}
+
+.trip-weather-day[data-source="forecast"] em,
+.trip-weather__footer b[data-source="forecast"] {
+  background: var(--ocean-soft);
+  color: var(--ocean);
+}
+
+.trip-weather__days.is-loading li {
+  height: 8.6rem;
+  border-radius: var(--radius-md);
+  background: var(--surface-muted);
+  animation: trip-weather-pulse 1.4s ease-in-out infinite;
+}
+
+@keyframes trip-weather-pulse {
+  50% { opacity: 0.55; }
+}
+
+.trip-weather__footer {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.45rem 1rem;
+  margin-top: 0.7rem;
+  color: var(--text-tertiary);
+  font-size: var(--text-xs);
+}
+
+.trip-weather__footer ul {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem 1rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.trip-weather__footer b {
+  margin-right: 0.25rem;
+}
+
+.trip-weather__footer a {
+  color: inherit;
+  text-decoration: underline;
+  text-underline-offset: 0.15em;
+}
+
+/* Weather on the itinerary day tabs and the trip-day selector ------------- */
+.plan-itinerary__days .plan-day-weather,
+.mobile-trip-companion__day-weather {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.2rem;
+  color: var(--text-secondary);
+  font-size: var(--text-xs);
+  font-style: normal;
+  font-variant-numeric: tabular-nums;
+  font-weight: 650;
+}
+
+.plan-itinerary__days .plan-day-weather .ui-icon,
+.mobile-trip-companion__day-weather .ui-icon {
+  width: 1.15rem;
+  height: 1.15rem;
+}
+
+.plan-itinerary__days .plan-day-weather[data-source="climate"] {
+  opacity: 0.8;
+}
+
+.plan-itinerary__days .plan-day-weather.is-rainy {
+  color: var(--ocean);
+}
+
+.mobile-trip-companion__heading > p .weather-icon {
+  width: 1.4rem;
+  height: 1.4rem;
+}
+
+/* Flight step -------------------------------------------------------------- */
+.trip-flight .trip-preparation__heading > div {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+}
+
+.trip-flight .trip-preparation__heading h2 {
+  margin-top: 0;
+  font-size: clamp(1.25rem, 2.4vw, 1.6rem);
+}
+
+.trip-flight .trip-preparation__heading div p {
+  margin-top: 0.2rem;
+  color: var(--text-secondary);
+  font-size: var(--text-sm);
+}
+
+.trip-flight__icon {
+  display: grid;
+  flex: none;
+  width: 2.75rem;
+  height: 2.75rem;
+  place-items: center;
+  border-radius: var(--radius-md);
+  background: var(--accent-soft);
+  color: var(--accent-strong);
+}
+
+.trip-flight__icon .ui-icon {
+  width: 1.5rem;
+  height: 1.5rem;
+}
+
+.trip-flight__body {
+  display: grid;
+  gap: 0.85rem;
+}
+
+.trip-flight .trip-flight-route {
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  align-items: end;
+  gap: 0.75rem;
+  padding: 0.9rem 1rem 1rem;
+}
+
+.trip-flight .trip-flight-route input {
+  min-height: 2.6rem;
+  font-size: var(--text-sm);
+}
+
+.trip-flight .trip-flight-route__arrow {
+  display: grid;
+  width: 2.25rem;
+  height: 2.25rem;
+  place-items: center;
+  margin-bottom: 0.2rem;
+  padding: 0;
+  border-radius: 50%;
+  background: var(--accent-soft);
+  color: var(--accent-strong);
+}
+
+.trip-flight__dates {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.5rem;
+  margin: 0;
+}
+
+.trip-flight__dates > div {
+  padding: 0.7rem 0.9rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--surface);
+}
+
+.trip-flight__dates dt {
+  color: var(--text-tertiary);
+  font-size: var(--text-xs);
+}
+
+.trip-flight__dates dd {
+  margin: 0.2rem 0 0;
+  color: var(--text-primary);
+  font-size: var(--text-base);
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+}
+
+.trip-flight .trip-flight__search {
+  display: flex;
+  min-height: 3rem;
+  align-items: center;
+  justify-content: center;
+  gap: 0.45rem;
+  font-size: var(--text-base);
+}
+
+.trip-flight__body > small {
+  color: var(--text-tertiary);
+  font-size: var(--text-xs);
+  line-height: 1.55;
+}
+
+.trip-flight__body > small a {
+  color: inherit;
+  text-decoration: underline;
+  text-underline-offset: 0.15em;
+}
+
+@media (max-width: 700px) {
+  .trip-weather {
+    margin-bottom: 1rem;
+    padding: 0.9rem 0.9rem 0.8rem;
+    border-radius: var(--radius-md);
+  }
+
+  .trip-weather__header {
+    grid-template-columns: auto minmax(0, 1fr);
+    gap: 0.75rem;
+  }
+
+  .trip-weather__action {
+    grid-column: 1 / -1;
+    justify-content: center;
+  }
+
+  .trip-weather__days {
+    grid-auto-columns: 6.4rem;
+    margin-inline: -0.9rem;
+    padding-inline: 0.9rem;
+    scroll-padding-inline: 0.9rem;
+  }
+
+  .trip-flight .trip-flight-route {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .trip-flight .trip-flight-route__arrow {
+    justify-self: center;
+    margin: -0.2rem 0;
+    transform: rotate(90deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .trip-weather__days.is-loading li {
+    animation: none;
+  }
+}

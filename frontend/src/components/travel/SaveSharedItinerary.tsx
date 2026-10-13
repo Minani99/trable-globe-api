@@ -8,6 +8,7 @@ import { showFeedback } from "@/components/common/AppFeedback";
 import { ApiError, apiMutation } from "@/lib/api/client";
 import { publicDisplayName } from "@/lib/utils/profile";
 import type { TravelDetail, TravelWriteInput } from "@/types";
+import { Icon } from "@/components/common/Icon";
 
 export function SaveSharedItinerary({ travel, signedIn, isOwner, today, returnPath }: { travel: TravelDetail; signedIn: boolean; isOwner: boolean; today: string; returnPath?: string }) {
   const router = useRouter();
@@ -18,14 +19,14 @@ export function SaveSharedItinerary({ travel, signedIn, isOwner, today, returnPa
   const ownerName = publicDisplayName(travel.owner.displayName);
 
   if (isOwner) {
-    return <Link href={`/studio/travels/${travel.id}/edit`} className="shared-itinerary-cta is-owner">내 여행 편집하기 <span aria-hidden="true">→</span></Link>;
+    return <Link href={`/studio/travels/${travel.id}/edit`} className="shared-itinerary-cta is-owner">내 여행 편집하기 <span aria-hidden="true"><Icon name="arrow-right" /></span></Link>;
   }
 
   if (!signedIn) {
     return (
       <div className="shared-itinerary-save">
         <Link href={`/login?next=${encodeURIComponent(returnPath ?? `/${travel.owner.username}/travel/${travel.id}`)}`} className="shared-itinerary-cta">
-          로그인하고 내 계획으로 복사 <span aria-hidden="true">＋</span>
+          로그인하고 내 계획으로 복사 <span aria-hidden="true"><Icon name="plus" /></span>
         </Link>
         <p className="shared-itinerary-save__note">장소·순서·시간·메모를 복사합니다. 사진·예약·예산은 포함하지 않습니다.</p>
       </div>
@@ -76,7 +77,7 @@ export function SaveSharedItinerary({ travel, signedIn, isOwner, today, returnPa
 
   return (
     <div className="shared-itinerary-save">
-      <button type="button" className="shared-itinerary-cta" onClick={() => setOpen((current) => !current)} aria-expanded={open}>내 계획으로 복사 <span aria-hidden="true">＋</span></button>
+      <button type="button" className="shared-itinerary-cta" onClick={() => setOpen((current) => !current)} aria-expanded={open}>내 계획으로 복사 <span aria-hidden="true"><Icon name="plus" /></span></button>
       {!open ? <p className="shared-itinerary-save__note">방문 순서와 메모는 그대로, 날짜는 내 여행에 맞춰 복사해요.</p> : null}
       {open ? <div className="shared-itinerary-save__panel">
         <div><strong>내 여행에 일정 복사</strong><p>{travel.places.length}개 장소의 방문 순서·시간·메모를 그대로 복사합니다. 사진·예약·예산은 포함하지 않으며, 복사본은 나만 볼 수 있어요.</p></div>

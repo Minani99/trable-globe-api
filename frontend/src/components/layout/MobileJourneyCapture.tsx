@@ -8,6 +8,7 @@ import { journeyGroups } from "@/lib/journey-next-action";
 import { todayInKorea } from "@/lib/utils/date";
 import { cacheTravel, readCachedCurrentTravel, readCachedTravel } from "@/lib/travel-offline";
 import type { AuthMember, OwnedTravelSummary, TravelDetail } from "@/types";
+import { Icon } from "@/components/common/Icon";
 
 interface MobileJourneyCaptureProps {
   member: AuthMember | null | undefined;
@@ -114,7 +115,7 @@ export function MobileJourneyCapture({ member, pathname }: MobileJourneyCaptureP
               <strong>{travel.title}</strong>
               {travelState?.cached ? <span>기기에 저장된 일정</span> : null}
             </div>
-            <button type="button" onClick={() => setOpen(false)} aria-label="빠른 기록 닫기">×</button>
+            <button type="button" onClick={() => setOpen(false)} aria-label="빠른 기록 닫기"><Icon name="close" /></button>
           </header>
           {travelState?.detail ? (
             <MobileTripCompanion key={`${travelState.detail.id}-${travelState.cached ? "cached" : "live"}`} travel={travelState.detail} today={todayInKorea()} username={member.username} />
@@ -137,7 +138,7 @@ export function MobileJourneyCapture({ member, pathname }: MobileJourneyCaptureP
         aria-haspopup="dialog"
         onClick={() => setOpen((current) => !current)}
       >
-        <span aria-hidden="true">＋</span>
+        <span aria-hidden="true"><Icon name="plus" /></span>
         <span className="mobile-journey-capture__trigger-copy"><small>여행 중</small><strong>빠른 기록</strong></span>
       </button>
     </aside>
