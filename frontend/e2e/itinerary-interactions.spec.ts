@@ -26,7 +26,10 @@ for (const width of [390, 1280]) {
     await expect(rows).toHaveCount(3);
     await expect(rows.locator(".editor-stop__sequence")).toHaveText(["01", "02", "03"]);
     const handle = page.getByRole("button", { name: "교토역 순서 이동", exact: true });
-    await handle.scrollIntoViewIfNeeded();
+    // Keep both ends in view before sending raw touch coordinates. The route
+    // panel above the list can put the destination behind the fixed save bar.
+    await page.locator(".travel-editor__places").evaluate((list) => list.scrollIntoView({ block: "center", behavior: "instant" }));
+    await expect(handle).toBeInViewport();
     const from = (await handle.boundingBox())!;
     const to = (await rows.nth(2).boundingBox())!;
     const x = from.x + from.width / 2, y = from.y + from.height / 2, targetY = to.y + to.height / 2;

@@ -17,11 +17,14 @@ test("국가 호버가 회전을 끊거나 마커를 다시 만들지 않는다"
   const canvas = await globe.locator("canvas").boundingBox();
   expect(canvas).not.toBeNull();
   let countryTooltipSeen = false;
-  for (const [x, y] of [[0.48, 0.42], [0.46, 0.5], [0.5, 0.48], [0.54, 0.44], [0.49, 0.52]]) {
+  // The close hero camera centers East Asia, with mainland countries above and
+  // left of the Pacific. Sample that land area while the globe keeps turning.
+  for (const [x, y] of [[0.36, 0.32], [0.42, 0.32], [0.4, 0.24], [0.47, 0.24], [0.35, 0.4], [0.43, 0.38], [0.5, 0.28]]) {
     await page.mouse.move(canvas!.x + canvas!.width * x, canvas!.y + canvas!.height * y, { steps: 8 });
     await page.waitForTimeout(200);
-    countryTooltipSeen ||= await page.locator(".tg-tip em").first().isVisible();
+    countryTooltipSeen = await page.locator(".tg-tip em").first().isVisible();
     await expect(globe).toHaveAttribute("data-auto-rotating", "true");
+    if (countryTooltipSeen) break;
   }
   expect(countryTooltipSeen).toBe(true);
   // Watch rendered marker movement as well as the state flag: a running flag alone

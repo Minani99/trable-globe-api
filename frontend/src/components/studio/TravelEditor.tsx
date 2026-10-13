@@ -7,6 +7,7 @@ import { ChangeEvent, DragEvent, useCallback, useContext, useEffect, useMemo, us
 import { WorkspaceTabs } from "@/components/common/WorkspaceTabs";
 import { TravelWorkspaceContext } from "@/components/planner/MobilePlanningWorkspace";
 import { TravelActionIcon } from "@/components/common/TravelActionIcon";
+import { GoogleDirectionsPanel } from "@/components/travel/GoogleDirectionsPanel";
 import { ApiError, apiMutation } from "@/lib/api/client";
 import type { CountryOption } from "@/lib/countries";
 import {
@@ -909,7 +910,7 @@ export function TravelEditor({
       </section>
 
       <section id={`${editorTabsId}-panel-0`} role="tabpanel" aria-labelledby={`${editorTabsId}-tab-0`} className="travel-editor__section travel-editor__section--itinerary" hidden={mobileEditorStep !== 1} data-mobile-active={mobileEditorStep === 1}><div id="travel-place-editor">
-        <div className="travel-editor__section-heading"><span>02</span><div><h2>{planningMode ? "일차별 일정" : "방문 장소"}</h2><p>{planningMode ? "장소와 체류 시간을 확인하고 필요한 부분만 수정하세요." : "입력한 순서대로 지도에 경로가 표시됩니다."}</p></div></div>
+        <div className="travel-editor__section-heading"><span>02</span><div><h2>{planningMode ? "일차별 일정" : "방문 장소"}</h2><p>{planningMode ? "장소와 체류 시간을 확인하고 필요한 부분만 수정하세요." : "장소를 순서대로 정하고 실제 이동 경로를 확인하세요."}</p></div></div>
         <div className="travel-editor__itinerary-content">
         {planningMode && planDays.length > 0 ? (
           <div className="plan-itinerary">
@@ -963,6 +964,16 @@ export function TravelEditor({
             </div>
           </div>
         ) : null}
+        <GoogleDirectionsPanel
+          activeDate={planningMode ? activePlanDate : undefined}
+          stops={(planningMode ? activeDayPlaces.map(({ place }) => place) : places).map((place) => ({
+            key: place.key,
+            placeName: place.placeName,
+            latitude: coordinate(place.latitude),
+            longitude: coordinate(place.longitude),
+            visitedAt: place.visitedAt,
+          }))}
+        />
         <p className="editor-order-hint" id="stop-drag-help">방문 순서대로 놓아주세요. ⋮⋮ 손잡이를 끌거나, 손잡이에 초점을 두고 ↑ ↓ 키로 옮길 수 있어요.</p>
         <p className="editor-order-notice" role="status">{orderNotice}</p>
         <ol className="travel-editor__places">
@@ -1028,7 +1039,7 @@ export function TravelEditor({
             </li>
           ))}
         </ol>
-        {!planningMode ? <div className="travel-editor__add-row"><p>추가한 순서대로 상세 지도의 여행 경로가 이어집니다.</p><button type="button" onClick={() => { const next = emptyPlace(places.at(-1)?.countryCode ?? "KR"); setPlaces((current) => [...current, next]); setExpandedPlace(next.key); setDirty(true); }}>＋ 장소 추가</button></div> : null}
+        {!planningMode ? <div className="travel-editor__add-row"><p>방문 순서를 바꾸면 Google Maps 경로에도 바로 반영됩니다.</p><button type="button" onClick={() => { const next = emptyPlace(places.at(-1)?.countryCode ?? "KR"); setPlaces((current) => [...current, next]); setExpandedPlace(next.key); setDirty(true); }}>＋ 장소 추가</button></div> : null}
         </div>
       </div></section>
 

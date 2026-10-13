@@ -14,32 +14,29 @@ export default function LandingPage() {
       <main id="main" className="landing-main landing-main--journal flex flex-1 flex-col overflow-hidden">
         <section aria-labelledby="landing-title" className="landing-hero site-shell">
           <div className="landing-copy relative z-10">
-            <p className="page-caption">나의 여행 노트</p>
+            <p className="page-caption">나의 여행, 나의 세계</p>
             <h1 id="landing-title" className="landing-title text-content">
-              <span className="landing-title-line landing-title-line--one">다음 여행을</span>{" "}
-              <span className="landing-title-line landing-title-line--two">펼쳐보세요.</span>
+              <span className="landing-title-line landing-title-line--one">여행이 쌓이는,</span>{" "}
+              <span className="landing-title-line landing-title-line--two">나만의 지구본.</span>
             </h1>
 
             <p className="text-body landing-intro landing-reveal landing-reveal--body mt-7 max-w-[40ch]">
-              일정을 정리하고, 다녀온 곳은 지구본에 남겨두세요.
-              여행 전에도, 돌아온 뒤에도 꺼내 보는 나만의 노트.
+              다녀온 나라를 색칠하고, 그곳의 기억을 열어보세요.
+              다음 여행도 이곳에서 시작하세요.
             </p>
-
-            <div className="landing-reveal landing-reveal--actions mt-10 flex flex-wrap items-center gap-3">
-              <LandingStartAction />
-            </div>
           </div>
-
-          <figure className="landing-postcard">
-            <JournalPhoto priority />
-            <span className="landing-postcard__stamp" aria-hidden="true">한 장의 여행</span>
-            <figcaption><span>JAPAN · KYOTO</span><strong>골목을 걷다,<br />여행이 시작됐다.</strong><a href="https://unsplash.com/photos/a-narrow-street-with-a-pagoda-in-the-background-yQvYgnh9XEg" target="_blank" rel="noreferrer">Photo · Filipe Freitas ↗</a></figcaption>
-          </figure>
+          <LandingGlobePreview />
+          <div className="landing-reveal landing-reveal--actions flex flex-wrap items-center gap-3">
+            <LandingStartAction />
+          </div>
         </section>
 
-        <section className="landing-world site-shell" aria-labelledby="landing-world-heading">
-          <div className="landing-world__copy"><p className="page-caption">여행이 쌓이는 곳</p><h2 id="landing-world-heading">당신의 세계는<br />얼마나 넓어졌나요?</h2><p>다녀온 나라를 돌려보고,<br />그곳의 기억을 다시 열어보세요.</p><Link href="/traveler">샘플 여행자의 기록 <span aria-hidden="true">↗</span></Link></div>
-          <LandingGlobePreview />
+        <section className="landing-journal site-shell" aria-labelledby="landing-journal-heading">
+          <figure className="landing-postcard">
+            <JournalPhoto />
+            <figcaption><span>JAPAN · KYOTO</span><a href="https://unsplash.com/photos/a-narrow-street-with-a-pagoda-in-the-background-yQvYgnh9XEg" target="_blank" rel="noreferrer">Photo · Filipe Freitas ↗</a></figcaption>
+          </figure>
+          <div className="landing-journal__copy"><p className="page-caption">나라 하나, 기억 하나</p><h2 id="landing-journal-heading">지도 위의 한 점이<br />나만의 이야기가 되도록.</h2><p>골목에서 찍은 사진부터 다시 가고 싶은 장소까지.<br />여행의 순간을 지구본에 차곡차곡 남겨두세요.</p><Link href="/traveler">샘플 여행자의 기록 <span aria-hidden="true">↗</span></Link></div>
         </section>
 
         <LandingOverview />
