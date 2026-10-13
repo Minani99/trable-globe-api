@@ -180,8 +180,8 @@ export function ProfileEditor({ member }: { member: AuthMember }) {
         </label>
         <label className="account-field">
           <span className="account-field__label">소개</span>
-          <textarea name="bio" defaultValue={savedMember.bio ?? ""} maxLength={300} rows={3} placeholder="여행 스타일이나 관심 지역" onChange={(event) => setBioLength(event.target.value.length)} />
-          <small className="account-field__help account-field__count" aria-live="off">{bioLength} / 300</small>
+          <textarea name="bio" aria-label="소개" aria-describedby="settings-bio-count" defaultValue={savedMember.bio ?? ""} maxLength={300} rows={3} placeholder="여행 스타일이나 관심 지역" onChange={(event) => setBioLength(event.target.value.length)} />
+          <small id="settings-bio-count" className="account-field__help account-field__count">{bioLength} / 300</small>
         </label>
         <details className="account-disclosure">
           <summary><Icon name="chevron-right" />이미지 URL로 등록</summary>
