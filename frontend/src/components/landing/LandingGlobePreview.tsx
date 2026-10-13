@@ -104,6 +104,7 @@ export function LandingGlobePreview() {
               onCountryCenter={setCenteredCountry}
               onCountrySelect={setSelectedCountry}
               mode="world"
+              presentation="hero"
             />
           </div>
           <span className="landing-globe-vignette" aria-hidden="true" />
@@ -168,8 +169,9 @@ export function LandingGlobePreview() {
           </div>
         </div>
 
-        <figcaption className="sr-only">
-          모든 국가에 마우스를 올려 대표 랜드마크나 도시를 확인할 수 있는 세계 지구본
+        <figcaption className="landing-globe-caption">
+          <span>지구본을 돌려보고, 나라를 눌러보세요</span>
+          <Link href="/globe">크게 보기 <span aria-hidden="true">↗</span></Link>
         </figcaption>
       </figure>
     </div>

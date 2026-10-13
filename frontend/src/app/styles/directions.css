@@ -1,0 +1,43 @@
+.google-directions {
+  min-width: 0;
+  padding: 1.25rem;
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  background: var(--surface);
+}
+
+.google-directions__heading { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1rem; }
+.google-directions__heading h3 { margin: 0; color: var(--text-primary); font-size: .9375rem; font-weight: 700; }
+.google-directions__heading p { margin: .35rem 0 0; color: var(--text-secondary); font-size: .8125rem; line-height: 1.6; word-break: keep-all; }
+.google-directions__modes { display: flex; flex-shrink: 0; gap: .25rem; padding: .25rem; border-radius: 12px; background: var(--surface-raised); }
+.google-directions__modes button { min-height: 40px; padding: .5rem .8rem; border-radius: 9px; color: var(--text-secondary); font-size: .8125rem; white-space: nowrap; transition: background-color .18s, color .18s; }
+.google-directions__modes button[aria-pressed="true"] { color: var(--accent-strong); background: var(--surface); font-weight: 700; box-shadow: 0 1px 4px #0000000b; }
+.google-directions__days { display: flex; gap: .5rem; overflow-x: auto; margin-top: 1rem; padding-bottom: .25rem; scrollbar-width: thin; }
+.google-directions__days button { flex-shrink: 0; min-height: 44px; padding: .5rem .85rem; border: 1px solid var(--border); border-radius: 10px; color: var(--text-secondary); font-size: .8125rem; }
+.google-directions__days button[aria-pressed="true"] { border-color: var(--accent-strong); color: var(--accent-strong); background: color-mix(in srgb, var(--accent) 7%, var(--surface)); }
+.google-directions__routes { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 18rem), 1fr)); gap: .6rem; margin-top: 1rem; }
+.google-directions__route { display: flex; align-items: center; justify-content: space-between; gap: .75rem; min-width: 0; min-height: 68px; padding: .8rem 1rem; border: 1px solid color-mix(in srgb, var(--accent) 30%, var(--border)); border-radius: 12px; color: var(--accent-strong); background: color-mix(in srgb, var(--accent) 5%, var(--surface)); transition: background-color .18s; }
+.google-directions__route:hover { background: color-mix(in srgb, var(--accent) 10%, var(--surface)); }
+.google-directions__route-copy { display: grid; gap: .25rem; min-width: 0; }
+.google-directions__route-copy strong { font-size: .875rem; font-weight: 700; }
+.google-directions__route-copy > span { color: var(--text-secondary); font-size: .75rem; line-height: 1.6; overflow-wrap: anywhere; }
+.google-directions__route svg { flex-shrink: 0; width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 1.75; stroke-linecap: round; stroke-linejoin: round; }
+.google-directions__empty { margin: 1rem 0 0; color: var(--text-tertiary); font-size: .8125rem; line-height: 1.65; word-break: keep-all; }
+.google-directions__notes { display: grid; gap: .25rem; color: var(--text-tertiary); font-size: .75rem; line-height: 1.6; word-break: keep-all; }
+.google-directions__notes:not(:empty) { margin-top: .75rem; }
+.google-directions__notes p { margin: 0; }
+.google-directions :is(button, a):focus-visible { outline: 2px solid var(--accent-strong); outline-offset: 3px; }
+.travel-editor__itinerary-content > .google-directions { margin: 1.25rem 0; }
+.travel-route-explorer > .google-directions { grid-column: 1 / -1; border-width: 0 0 1px; border-radius: 0; }
+
+@media (max-width: 700px) {
+  .google-directions { padding: 1rem; }
+  .google-directions__heading { gap: .75rem; }
+  .google-directions__modes { width: 100%; }
+  .google-directions__modes button { flex: 1; min-height: 44px; }
+  .google-directions__routes { grid-template-columns: minmax(0, 1fr); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .google-directions *, .google-directions *::before, .google-directions *::after { transition: none; }
+}

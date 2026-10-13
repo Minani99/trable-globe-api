@@ -30,6 +30,7 @@ interface TravelGlobeProps {
   onCountryCenter?: (country: GlobeCountryHover | null) => void;
   onCountrySelect?: (country: GlobeCountryHover | null) => void;
   mode?: "travel" | "world";
+  presentation?: "standard" | "hero";
 }
 
 // Load browser-only WebGL code and static geography together. Geography is
@@ -46,6 +47,8 @@ const ALTITUDE_MIN = 0.6;
 const ALTITUDE_MAX = 4;
 const INITIAL_VIEW = { lat: 24, lng: 127, altitude: ALTITUDE_DEFAULT } as const;
 const MOBILE_INITIAL_VIEW = { lat: 24, lng: 127, altitude: 2.75 } as const;
+const HERO_INITIAL_VIEW = { lat: 24, lng: 127, altitude: 1.8 } as const;
+const HERO_MOBILE_INITIAL_VIEW = { lat: 24, lng: 127, altitude: 1.45 } as const;
 const MOBILE_ALTITUDE_FOCUSED = 1.82;
 const MOBILE_MAX_PIXEL_RATIO = 1.25;
 const DESKTOP_MAX_PIXEL_RATIO = 1.75;
@@ -76,6 +79,7 @@ export const TravelGlobe = memo(function TravelGlobe({
   onCountryCenter,
   onCountrySelect,
   mode = "travel",
+  presentation = "standard",
 }: TravelGlobeProps) {
   const globeRef = useRef<GlobeMethods | undefined>(undefined);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -100,8 +104,10 @@ export const TravelGlobe = memo(function TravelGlobe({
   const globeTheme = globeThemes[colorTheme];
   const isWorldExplorer = mode === "world";
   const compact = size.width > 0 && size.width <= 700;
-  const overviewView = compact ? MOBILE_INITIAL_VIEW : INITIAL_VIEW;
-  const focusedAltitude = compact ? MOBILE_ALTITUDE_FOCUSED : ALTITUDE_FOCUSED;
+  const overviewView = presentation === "hero"
+    ? (compact ? HERO_MOBILE_INITIAL_VIEW : HERO_INITIAL_VIEW)
+    : (compact ? MOBILE_INITIAL_VIEW : INITIAL_VIEW);
+  const focusedAltitude = Math.min(overviewView.altitude, compact ? MOBILE_ALTITUDE_FOCUSED : ALTITUDE_FOCUSED);
 
   useEffect(() => {
     compactRef.current = compact;

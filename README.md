@@ -238,6 +238,11 @@ Pull Request와 `master` push에는 GitHub Actions가 자동으로 백엔드 테
 - 직전 기록 연도 대비 여행·나라·일수·거리 변화와 새로 더해진 나라 비교
 - 연도별 리캡 한 문장과 대표 여행 최대 3개 직접 편집·기본값 복구
 - 국가 선택에 따른 여행 카드 필터, 여행 타임라인, 여행 상세(경로 지도·장소·사진·이전/다음)
+- 첫 화면에서 직접 돌려보는 큰 지구본, 모바일에서도 소개 바로 아래에서 나라 선택
+- 일차별 Google Maps 추천 경로: 도보·자동차·대중교통 선택, 방문 순서 변경 즉시 반영 (API 키 불필요)
+  - 장소 간 직선 대신 Google Maps 앱·웹의 실제 이동 경로와 소요 시간으로 연결합니다.
+  - 모바일 경유지 한도에 맞춰 최대 5곳씩 나누고, 대중교통은 구간별로 엽니다. 위치 미정 장소에서는 경로를 분리합니다.
+  - 방문 순서를 자동으로 바꾸지는 않습니다. [Google Maps URLs](https://developers.google.com/maps/documentation/urls/get-started)의 공식 방향 안내 링크를 사용합니다.
 - Loading / Error / Not Found / Empty 상태
 - 키보드 조작과 국가 목록 대체 UI, `prefers-reduced-motion` 대응
 - 반응형 (모바일 / 태블릿 / 데스크톱)

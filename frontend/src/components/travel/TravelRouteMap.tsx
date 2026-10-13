@@ -3,6 +3,7 @@
 import type { PointerEvent, WheelEvent } from "react";
 import { useEffect, useMemo, useRef, useState } from "react";
 
+import { GoogleDirectionsPanel } from "@/components/travel/GoogleDirectionsPanel";
 import { formatDate } from "@/lib/utils/format";
 import type { TravelPlace } from "@/types";
 
@@ -36,7 +37,7 @@ const TILE_SIZE = 256;
 const MIN_ZOOM = 3;
 const MAX_ZOOM = 18;
 
-/** A raster city map whose route, selected stop and itinerary stay synchronized. */
+/** A city map for place locations, paired with Google Maps travel directions. */
 export function TravelRouteMap({ places }: TravelRouteMapProps) {
   const initialView = useMemo(
     () => createInitialView(places, DEFAULT_VIEWPORT.width, DEFAULT_VIEWPORT.height),
@@ -177,15 +178,16 @@ export function TravelRouteMap({ places }: TravelRouteMapProps) {
 
   return (
     <div className="travel-route-explorer">
+      <GoogleDirectionsPanel stops={places.map((place) => ({ ...place, key: place.id }))} />
       <div className="travel-route-map-shell">
         <div className="travel-route-map-toolbar">
           <div>
-            <p className="travel-route-map-toolbar__hint">지도를 움직이고 확대해 경로를 살펴보세요</p>
+            <p className="travel-route-map-toolbar__hint">장소 위치를 살펴보세요 · 실제 이동 경로는 Google Maps에서 확인</p>
           </div>
-          <div className="travel-route-map-controls" role="toolbar" aria-label="여행 경로 지도 확대·축소">
+          <div className="travel-route-map-controls" role="toolbar" aria-label="장소 위치 지도 확대·축소">
             <button type="button" onClick={() => updateZoom(zoom + 1)} aria-label="지도 확대">+</button>
             <button type="button" onClick={() => updateZoom(zoom - 1)} aria-label="지도 축소">−</button>
-            <button type="button" onClick={resetViewport} aria-label="전체 여행 경로 맞춤">경로 맞춤</button>
+            <button type="button" onClick={resetViewport} aria-label="전체 장소 위치 맞춤">전체 보기</button>
           </div>
         </div>
 
@@ -222,31 +224,8 @@ export function TravelRouteMap({ places }: TravelRouteMapProps) {
           <svg
             viewBox={`0 0 ${viewportSize.width} ${viewportSize.height}`}
             preserveAspectRatio="none"
-            aria-label="방문 순서 경로"
+            aria-label="방문 장소 위치"
           >
-            {viewport.points.length > 1 ? (
-              <>
-                <polyline
-                  points={viewport.routeLine}
-                  fill="none"
-                  stroke="#ffffff"
-                  strokeWidth="8"
-                  strokeOpacity="0.82"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-                <polyline
-                  points={viewport.routeLine}
-                  fill="none"
-                  stroke="var(--accent-strong)"
-                  strokeWidth="3"
-                  strokeDasharray="10 7"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-              </>
-            ) : null}
-
             {viewport.points.map((point, index) => {
               const active = point.place.id === selectedPlace.id;
               const markerOffset = Math.hypot(point.x - point.anchorX, point.y - point.anchorY);
@@ -326,7 +305,7 @@ export function TravelRouteMap({ places }: TravelRouteMapProps) {
           </p>
         </div>
         <p id="travel-route-map-help" className="travel-route-map-help">
-          지도 조작이 어렵다면 오른쪽의 일차별 장소 목록을 이용하세요. 모든 방문지는 같은 순서로 제공됩니다.
+          번호는 방문 순서입니다. 장소 목록에서도 위치를 선택할 수 있어요. 도로와 교통편을 따르는 경로는 위에서 확인하세요.
         </p>
       </div>
 
@@ -453,9 +432,6 @@ function buildViewport(
   return {
     tiles,
     points,
-    routeLine: anchorPoints
-      .map((point) => `${point.anchorX.toFixed(1)},${point.anchorY.toFixed(1)}`)
-      .join(" "),
   };
 }
 

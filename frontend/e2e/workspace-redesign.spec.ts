@@ -112,7 +112,7 @@ test("공개 화면은 작은 화면과 어두운 화면에서도 읽을 수 있
   for (const width of [360, 1440]) {
     await page.setViewportSize({ width, height: 960 });
     await page.goto("/");
-    await expect(page.getByRole("heading", { name: "다음 여행을 펼쳐보세요." })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "여행이 쌓이는, 나만의 지구본." })).toBeVisible();
     await expect(page.locator(".landing-globe-frame canvas")).toBeVisible({ timeout: 45000 });
     await page.screenshot({ path: testInfo.outputPath(`home-${width}.png`), fullPage: true });
     expect(await page.evaluate(() => document.documentElement.scrollWidth - innerWidth)).toBeLessThanOrEqual(1);

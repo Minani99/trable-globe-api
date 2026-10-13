@@ -45,6 +45,7 @@
 @import "./styles/mobile-step-flow.css";
 @import "./styles/mobile-system.css";
 @import "./styles/plan-builder.css";
+@import "./styles/directions.css";
 @import "../components/studio/TravelEditor.workspace.css";
 @import "./styles/design-system.css";
 @import "./styles/journal.css";
