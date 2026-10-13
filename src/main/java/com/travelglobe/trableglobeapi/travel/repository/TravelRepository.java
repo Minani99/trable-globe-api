@@ -24,6 +24,12 @@ import org.springframework.data.repository.query.Param;
  */
 public interface TravelRepository extends JpaRepository<Travel, Long> {
 
+    Optional<Travel> findByShareToken(String shareToken);
+
+    @org.springframework.data.jpa.repository.Lock(jakarta.persistence.LockModeType.PESSIMISTIC_WRITE)
+    @Query("select t from Travel t where t.id = :travelId and t.member.id = :memberId")
+    Optional<Travel> findOwnedForSharing(@Param("travelId") Long travelId, @Param("memberId") Long memberId);
+
     Optional<Travel> findByIdAndVisibility(Long id, Visibility visibility);
 
     @Query("""

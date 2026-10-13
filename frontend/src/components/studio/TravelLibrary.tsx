@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useState } from "react";
 import { WorkspaceTabs } from "@/components/common/WorkspaceTabs";
+import { JourneyArtwork } from "@/components/common/JourneyArtwork";
 import { formatDateRange } from "@/lib/utils/format";
 import type { OwnedTravelSummary } from "@/types";
 import styles from "./TravelLibrary.module.css";
@@ -19,7 +20,7 @@ export function TravelLibrary({ travels, today }: { travels: OwnedTravelSummary[
       {active === index ? visible.length ? <ol className={styles.list} aria-label="여행 목록">{visible.map(({ travel, visibility }) => {
         const phase = travel.startDate > today ? "계획 중" : travel.endDate < today ? "다녀온 여행" : "여행 중";
         return <li key={travel.id}><Link href={`/studio/travels/${travel.id}/edit${phase === "계획 중" ? "?plan=1" : ""}`} className={styles.row}>
-          <span className={styles.country} aria-hidden="true">{travel.primaryCountry?.iso2Code ?? "TR"}</span>
+          <JourneyArtwork className={styles.cover} src={travel.coverImageUrl} label={travel.primaryCountry?.iso2Code ?? "TR"} alt={`${travel.title} 대표 장면`} />
           <span className={styles.copy}><strong>{travel.title}</strong><span>{travel.primaryCountry?.nameKo ?? "여행"} · {formatDateRange(travel.startDate, travel.endDate)}</span></span>
           <span className={styles.meta}><span>{phase}</span><small>{visibility === "PUBLIC" ? "공개" : "비공개"} · 장소 {travel.placeCount}곳</small></span>
           <span className={styles.arrow} aria-hidden="true">↗</span>

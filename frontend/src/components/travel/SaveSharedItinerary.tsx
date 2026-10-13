@@ -9,7 +9,7 @@ import { ApiError, apiMutation } from "@/lib/api/client";
 import { publicDisplayName } from "@/lib/utils/profile";
 import type { TravelDetail, TravelWriteInput } from "@/types";
 
-export function SaveSharedItinerary({ travel, signedIn, isOwner, today }: { travel: TravelDetail; signedIn: boolean; isOwner: boolean; today: string }) {
+export function SaveSharedItinerary({ travel, signedIn, isOwner, today, returnPath }: { travel: TravelDetail; signedIn: boolean; isOwner: boolean; today: string; returnPath?: string }) {
   const router = useRouter();
   const [open, setOpen] = useState(false);
   const [startDate, setStartDate] = useState(today);
@@ -24,21 +24,22 @@ export function SaveSharedItinerary({ travel, signedIn, isOwner, today }: { trav
   if (!signedIn) {
     return (
       <div className="shared-itinerary-save">
-        <Link href={`/login?next=${encodeURIComponent(`/${travel.owner.username}/travel/${travel.id}`)}`} className="shared-itinerary-cta">
-          로그인하고 이 일정 가져오기 <span aria-hidden="true">＋</span>
+        <Link href={`/login?next=${encodeURIComponent(returnPath ?? `/${travel.owner.username}/travel/${travel.id}`)}`} className="shared-itinerary-cta">
+          로그인하고 내 계획으로 복사 <span aria-hidden="true">＋</span>
         </Link>
-        <p className="shared-itinerary-save__note">공개된 장소와 일정만 가져오며 사진과 개인 기록은 포함하지 않습니다.</p>
+        <p className="shared-itinerary-save__note">장소·순서·시간·메모를 복사합니다. 사진·예약·예산은 포함하지 않습니다.</p>
       </div>
     );
   }
 
   async function saveToMyPlans() {
+    if (pending || !/^\d{4}-\d{2}-\d{2}$/.test(startDate) || startDate < today) { setError("오늘 이후의 출발일을 골라 주세요."); return; }
     setPending(true);
     setError(null);
     const durationOffset = daysBetween(travel.startDate, travel.endDate);
     const payload: TravelWriteInput = {
-      title: `${travel.title.slice(0, 109)}에서 시작한 여행`,
-      description: `${ownerName}님의 공개 일정에서 가져왔어요. 내 취향과 동선에 맞게 자유롭게 바꿔보세요.`,
+      title: travel.title,
+      description: `${ownerName}님의 일정에서 복사했습니다.\n${travel.description ?? ""}`.slice(0, 2000),
       startDate,
       endDate: addDays(startDate, durationOffset),
       coverImageUrl: null,
@@ -57,7 +58,7 @@ export function SaveSharedItinerary({ travel, signedIn, isOwner, today }: { trav
         visitedAt: addDays(startDate, place.visitedAt ? daysBetween(travel.startDate, place.visitedAt) : 0),
         startTime: place.startTime,
         durationMinutes: place.durationMinutes,
-        memo: null,
+        memo: place.memo,
       })),
       photos: [],
     };
@@ -75,12 +76,12 @@ export function SaveSharedItinerary({ travel, signedIn, isOwner, today }: { trav
 
   return (
     <div className="shared-itinerary-save">
-      <button type="button" className="shared-itinerary-cta" onClick={() => setOpen((current) => !current)} aria-expanded={open}>이 일정으로 계획 만들기 <span aria-hidden="true">＋</span></button>
-      {!open ? <p className="shared-itinerary-save__note">장소와 일정만 내 날짜에 맞춰 가져옵니다.</p> : null}
+      <button type="button" className="shared-itinerary-cta" onClick={() => setOpen((current) => !current)} aria-expanded={open}>내 계획으로 복사 <span aria-hidden="true">＋</span></button>
+      {!open ? <p className="shared-itinerary-save__note">방문 순서와 메모는 그대로, 날짜는 내 여행에 맞춰 복사해요.</p> : null}
       {open ? <div className="shared-itinerary-save__panel">
-        <div><strong>내 날짜로 일정 가져오기</strong><p>{travel.places.length}개 장소와 공개 일정을 같은 순서로 가져옵니다. 사진·메모·개인 예약정보는 복사하지 않습니다.</p></div>
+        <div><strong>내 여행에 일정 복사</strong><p>{travel.places.length}개 장소의 방문 순서·시간·메모를 그대로 복사합니다. 사진·예약·예산은 포함하지 않으며, 복사본은 나만 볼 수 있어요.</p></div>
         <label><span>새 출발일</span><input type="date" min={today} value={startDate} onChange={(event) => setStartDate(event.target.value)} /></label>
-        <button type="button" onClick={saveToMyPlans} disabled={pending || !startDate}>{pending ? "계획에 담는 중…" : `${travel.durationDays}일 일정 담기`}</button>
+        <button type="button" onClick={saveToMyPlans} disabled={pending || !startDate || startDate < today}>{pending ? "계획에 담는 중…" : `${travel.durationDays}일 일정 복사`}</button>
         {error ? <p className="shared-itinerary-save__error" role="alert">{error}</p> : null}
         <small>{ownerName}님의 일정에서 가져온 기록임을 계획에 표시합니다.</small>
       </div> : null}

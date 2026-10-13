@@ -55,6 +55,7 @@ const nextConfig: NextConfig = {
       { source: "/api/uploads/:path*", headers: [{ key: "Cache-Control", value: "private, no-store" }] },
       { source: "/settings/:path*", headers: privatePageHeaders },
       { source: "/studio/:path*", headers: privatePageHeaders },
+      { source: "/share/:path*", headers: [...privatePageHeaders, { key: "Referrer-Policy", value: "no-referrer" }] },
       { source: "/login/:path*", headers: noIndexHeaders },
       { source: "/register/:path*", headers: noIndexHeaders },
       { source: "/forgot-password/:path*", headers: noIndexHeaders },

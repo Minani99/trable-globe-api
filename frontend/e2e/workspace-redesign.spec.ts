@@ -67,6 +67,31 @@ for (const width of [390, 1440]) {
     await tabs.getByRole("tab", { name: "예산·예약", exact: true }).press("ArrowRight");
     await expect(tabs.getByRole("tab", { name: "준비물", exact: true })).toBeFocused();
     await expect(page.getByRole("heading", { name: "여행 준비 체크리스트" })).toBeVisible();
+    if (width === 390) {
+      // Selecting an overflowed tab reveals it without losing the current work.
+      await expect.poll(async () => {
+        const bounds = await tabs.getByRole("tab", { name: "준비물", exact: true }).boundingBox();
+        const frame = await tabs.boundingBox();
+        return Boolean(bounds && frame && bounds.x >= frame.x && bounds.x + bounds.width <= frame.x + frame.width + 1);
+      }).toBe(true);
+      await tabs.getByRole("tab", { name: "여행 정보", exact: true }).click();
+      await page.getByLabel("여행 제목", { exact: true }).focus();
+      // Model the visual viewport resize emitted by a mobile keyboard.
+      await page.evaluate(() => {
+        Object.defineProperty(window.visualViewport!, "height", { configurable: true, value: window.innerHeight - 300 });
+        window.visualViewport!.dispatchEvent(new Event("resize"));
+      });
+      await expect(page.locator(".editor-savebar")).toBeHidden();
+      await page.evaluate(() => {
+        Reflect.deleteProperty(window.visualViewport!, "height");
+        window.visualViewport!.dispatchEvent(new Event("resize"));
+      });
+      await expect(page.locator(".editor-savebar")).toBeVisible();
+      const saveBounds = (await page.locator(".editor-savebar").boundingBox())!;
+      expect(saveBounds.y + saveBounds.height).toBeLessThanOrEqual(page.viewportSize()!.height);
+      expect(saveBounds.x).toBeGreaterThan(0);
+      expect(saveBounds.width).toBeLessThan(width);
+    }
 
     await page.goto("/studio");
     await page.getByRole("tab", { name: "계획 중", exact: true }).click();
@@ -77,6 +102,7 @@ for (const width of [390, 1440]) {
     await page.getByRole("tab", { name: "전체", exact: true }).click();
     const overflow = await page.evaluate(() => document.documentElement.scrollWidth - innerWidth);
     expect(overflow).toBeLessThanOrEqual(1);
+    await page.evaluate(() => window.scrollTo({ top: 0, behavior: "instant" }));
     await page.screenshot({ path: testInfo.outputPath(`library-${width}.png`), fullPage: true });
     expect(errors).toEqual([]);
   });
@@ -148,7 +174,7 @@ test("저장한 사진을 다시 편집해도 다음 저장 전에는 파일을 
   await expect(editor.getByRole("img", { name: "여행 사진 1" })).toHaveAttribute("src", photoUrl);
   await save.click();
   await expect(page.getByText("서버에 저장됨", { exact: true })).toBeVisible();
-  await editor.getByRole("button", { name: "삭제", exact: true }).click();
+  await editor.getByRole("button", { name: "사진 삭제", exact: true }).click();
   await expect(editor.getByText("아직 사진이 없습니다.")).toBeVisible();
   expect(deletions).toEqual([]);
   const beforeSave = (await (await page.request.get(`/api/private/travels/${id}`)).json()).data;
