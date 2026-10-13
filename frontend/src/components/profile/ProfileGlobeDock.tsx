@@ -7,6 +7,7 @@ import { ProfilePanel } from "@/components/profile/ProfilePanel";
 import { formatStat } from "@/lib/utils/format";
 import { publicDisplayName } from "@/lib/utils/profile";
 import type { MemberSafetyStatus, UserProfile } from "@/types";
+import { Icon } from "@/components/common/Icon";
 
 interface ProfileGlobeDockProps {
   profile: UserProfile;
@@ -58,7 +59,7 @@ export function ProfileGlobeDock({
           onClick={() => setExpanded((current) => !current)}
         >
           <span>{expanded ? "접기" : "프로필"}</span>
-          <svg aria-hidden="true" viewBox="0 0 20 20"><path d="m5 8 5 5 5-5" /></svg>
+          <Icon name="chevron-down" />
         </button>
       </div>
 

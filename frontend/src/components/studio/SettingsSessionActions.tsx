@@ -8,6 +8,7 @@ import { showFeedback } from "@/components/common/AppFeedback";
 import { ApiError, apiMutation } from "@/lib/api/client";
 import { setCachedAuthMember } from "@/lib/auth-state";
 import type { AuthMember } from "@/types";
+import { Icon } from "@/components/common/Icon";
 
 export function SettingsSessionActions({ member }: { member: AuthMember }) {
   const router = useRouter();
@@ -30,16 +31,16 @@ export function SettingsSessionActions({ member }: { member: AuthMember }) {
   }
 
   return (
-    <div className="settings-hero__actions" aria-label="계정 바로가기">
-      <Link href={`/${member.username}`} className="studio-secondary-action">공개 프로필 <span aria-hidden="true">↗</span></Link>
+    <div className="account-hero__actions" aria-label="계정 바로가기">
+      <Link href={`/${member.username}`} className="account-button is-secondary">공개 프로필 <Icon name="arrow-up-right" /></Link>
       <button
         type="button"
-        className="settings-session-logout"
+        className="account-button is-ghost"
         onClick={logout}
         disabled={pending}
         aria-busy={pending}
       >
-        {pending ? "로그아웃 중…" : "로그아웃"}
+        <Icon name="logout" />{pending ? "로그아웃 중…" : "로그아웃"}
       </button>
     </div>
   );

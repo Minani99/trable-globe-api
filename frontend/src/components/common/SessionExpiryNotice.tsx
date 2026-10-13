@@ -5,6 +5,7 @@ import { useEffect, useRef, useState } from "react";
 
 import { setCachedAuthMember } from "@/lib/auth-state";
 import { SESSION_EXPIRED_EVENT } from "@/lib/session-events";
+import { Icon } from "@/components/common/Icon";
 
 export function SessionExpiryNotice() {
   const [returnPath, setReturnPath] = useState("/studio");
@@ -30,7 +31,7 @@ export function SessionExpiryNotice() {
   return (
     <div className="session-expiry" role="presentation">
       <section role="alertdialog" aria-modal="true" aria-labelledby="session-expiry-title" aria-describedby="session-expiry-description">
-        <span className="session-expiry__icon" aria-hidden="true">↻</span>
+        <span className="session-expiry__icon" aria-hidden="true"><Icon name="refresh" /></span>
         <div>
           <p>로그인 시간이 끝났습니다</p>
           <h2 id="session-expiry-title">다시 로그인해 주세요</h2>

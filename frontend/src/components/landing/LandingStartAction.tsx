@@ -13,6 +13,7 @@ import { apiSessionGet } from "@/lib/api/client";
 import { nextJourneyAction, type JourneyNextAction } from "@/lib/journey-next-action";
 import { todayInKorea } from "@/lib/utils/date";
 import type { OwnedTravelSummary } from "@/types";
+import { Icon } from "@/components/common/Icon";
 
 export function LandingStartAction() {
   const [journey, setJourney] = useState<{ username: string; action: JourneyNextAction | null } | null>(null);
@@ -60,7 +61,7 @@ export function LandingStartAction() {
       title={action?.trip.travel.title}
     >
       <span>{member ? action?.label ?? (loaded ? "새 여행 계획" : "내 여행 열기") : "계정 만들기"}</span>
-      <span className="landing-primary-cta__arrow" aria-hidden="true">↗</span>
+      <span className="landing-primary-cta__arrow" aria-hidden="true"><Icon name="arrow-up-right" /></span>
     </Link>
     <Link href={member ? "/studio" : profilePath(siteConfig.demoUsername)} className="landing-secondary-cta">
       {member ? "내 여행 전체 보기" : "샘플 지구본 보기"}

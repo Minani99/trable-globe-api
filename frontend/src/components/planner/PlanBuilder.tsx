@@ -8,6 +8,7 @@ import { ApiError, apiMutation, readEnvelope } from "@/lib/api/client";
 import type { CountryOption } from "@/lib/countries";
 import type { PlaceRecommendation, PlaceRecommendationCategory } from "@/lib/place-recommendations";
 import type { TravelDetail, TravelPlaceWriteInput, TravelWriteInput } from "@/types";
+import { Icon } from "@/components/common/Icon";
 
 /* ------------------------------------------------------------------------ */
 /* Options                                                                   */
@@ -381,9 +382,9 @@ export function PlanBuilder({
             <div className="pb-field">
               <span className="pb-field__label">기간</span>
               <div className="pb-stepper" role="group" aria-label="여행 기간 조절">
-                <button type="button" onClick={() => changeTripDays(tripDays - 1)} disabled={tripDays <= 1} aria-label="하루 줄이기">−</button>
+                <button type="button" onClick={() => changeTripDays(tripDays - 1)} disabled={tripDays <= 1} aria-label="하루 줄이기"><Icon name="minus" /></button>
                 <output aria-live="polite">{formatDuration(tripDays)}</output>
-                <button type="button" onClick={() => changeTripDays(tripDays + 1)} disabled={tripDays >= MAX_TRIP_DAYS} aria-label="하루 늘리기">+</button>
+                <button type="button" onClick={() => changeTripDays(tripDays + 1)} disabled={tripDays >= MAX_TRIP_DAYS} aria-label="하루 늘리기"><Icon name="plus" /></button>
               </div>
             </div>
           </div>
@@ -457,7 +458,7 @@ export function PlanBuilder({
                   />
                 </label>
                 <a className="pb-secondary" href={googleMapsSearchUrl} target="_blank" rel="noopener noreferrer">
-                  Google 지도 <span aria-hidden="true">↗</span>
+                  Google 지도 <span aria-hidden="true"><Icon name="arrow-up-right" /></span>
                 </a>
               </div>
               <p className="pb-note">
@@ -597,7 +598,7 @@ export function PlanBuilder({
           {error ? <p className="pb-error" role="alert">{error}</p> : null}
 
           <button type="button" className="pb-primary pb-ticket__submit" onClick={createPlan} disabled={pending}>
-            {pending ? <><Spinner />{pendingLabel}</> : <>{submitLabel}<span aria-hidden="true">→</span></>}
+            {pending ? <><Spinner />{pendingLabel}</> : <>{submitLabel}<span aria-hidden="true"><Icon name="arrow-right" /></span></>}
           </button>
           <small>계획은 나에게만 보이며, 다녀온 뒤 기록으로 공개할 수 있어요.</small>
         </div>
@@ -670,19 +671,19 @@ function Spinner() {
 }
 
 function SearchIcon() {
-  return <svg className="pb-icon" aria-hidden="true" viewBox="0 0 20 20"><circle cx="9" cy="9" r="5.5" /><path d="m13.2 13.2 3.3 3.3" /></svg>;
+  return <Icon name="search" className="pb-icon" />;
 }
 
 function PinIcon() {
-  return <svg className="pb-icon" aria-hidden="true" viewBox="0 0 20 20"><path d="M10 17.5s-5.5-4.6-5.5-9a5.5 5.5 0 0 1 11 0c0 4.4-5.5 9-5.5 9Z" /><circle cx="10" cy="8.5" r="2" /></svg>;
+  return <Icon name="pin" className="pb-icon" />;
 }
 
 function CalendarIcon() {
-  return <svg className="pb-icon" aria-hidden="true" viewBox="0 0 20 20"><rect x="3" y="4.5" width="14" height="12" rx="2" /><path d="M6.5 3v3M13.5 3v3M3 8.5h14" /></svg>;
+  return <Icon name="calendar" className="pb-icon" />;
 }
 
 function CheckIcon() {
-  return <svg className="pb-icon pb-icon--check" aria-hidden="true" viewBox="0 0 20 20"><path d="m5 10.5 3.2 3L15 6.5" /></svg>;
+  return <Icon name="check" className="pb-icon pb-icon--check" />;
 }
 
 /* ------------------------------------------------------------------------ */

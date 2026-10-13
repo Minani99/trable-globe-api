@@ -8,6 +8,7 @@ import { authenticatedBackendGet, getCurrentMember } from "@/lib/api/server-sess
 import { todayInKorea } from "@/lib/utils/date";
 import { formatDateRange } from "@/lib/utils/format";
 import type { TravelDetail } from "@/types";
+import { Icon } from "@/components/common/Icon";
 
 export const metadata: Metadata = {
   title: "여행용 보기",
@@ -38,8 +39,8 @@ export default async function TravelDayPage(props: PageProps<"/studio/travels/[t
       <main id="main" className="travel-day-page flex-1">
         <div className="site-shell travel-day-shell">
           <nav className="travel-day-page__nav" aria-label="여행용 보기 메뉴">
-            <Link href="/studio">← 내 여행</Link>
-            <Link href={today > travel.endDate ? `/studio/travels/${travel.id}/edit?finish=1` : `/studio/travels/${travel.id}/edit?plan=1#travel-preparation`}>{today > travel.endDate ? "여행 기록하기" : "계획 편집"}</Link>
+            <Link href="/studio"><Icon name="arrow-left" /> 내 여행</Link>
+            <Link href={today > travel.endDate ? `/studio/travels/${travel.id}/edit?finish=1` : `/studio/travels/${travel.id}/edit?plan=1`}>{today > travel.endDate ? "여행 기록하기" : "계획 편집"}</Link>
           </nav>
           <header className="travel-day-page__hero">
             <div>

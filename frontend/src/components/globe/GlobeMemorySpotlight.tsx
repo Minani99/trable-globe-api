@@ -2,6 +2,7 @@
 
 import { formatDateRange } from "@/lib/utils/format";
 import type { TravelSummary, VisitedCountry } from "@/types";
+import { Icon } from "@/components/common/Icon";
 
 export function GlobeMemorySpotlight({
   country,
@@ -31,7 +32,7 @@ export function GlobeMemorySpotlight({
           <span>여행 {country.travelCount}회 · 도시 {country.cityCount}곳</span>
         )}
       </span>
-      <svg aria-hidden="true" viewBox="0 0 20 20"><path d="m7 4 6 6-6 6" /></svg>
+      <Icon name="chevron-right" />
     </button>
   );
 }

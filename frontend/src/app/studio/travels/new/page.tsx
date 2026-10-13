@@ -7,6 +7,7 @@ import { SiteHeader } from "@/components/layout/SiteHeader";
 import { TravelEditor } from "@/components/studio/TravelEditor";
 import { getCurrentMember } from "@/lib/api/server-session";
 import { countryOptions } from "@/lib/countries";
+import { Icon } from "@/components/common/Icon";
 
 export const metadata: Metadata = { title: "새 여행 기록", robots: { index: false, follow: false } };
 
@@ -28,6 +29,6 @@ export default async function NewTravelPage({
     redirect(`/login?next=${encodeURIComponent(destination)}`);
   }
   return (
-    <><SiteHeader username={member.username} member={member} /><main id="main" className="studio-page flex-1"><div className="site-shell travel-editor-shell"><nav className="studio-breadcrumb"><Link href="/studio">← 내 여행</Link></nav><header className="travel-editor-hero"><h1>지난 여행 기록하기</h1><p>장소와 사진을 추가하면 지구본과 프로필에 기록됩니다.</p></header><TravelEditor username={member.username} countries={countryOptions} initialCountryCode={initialCountryCode} /></div></main><SiteFooter /></>
+    <><SiteHeader username={member.username} member={member} /><main id="main" className="studio-page flex-1"><div className="site-shell travel-editor-shell"><nav className="studio-breadcrumb"><Link href="/studio"><Icon name="arrow-left" /> 내 여행</Link></nav><header className="travel-editor-hero"><h1>지난 여행 기록하기</h1><p>장소와 사진을 추가하면 지구본과 프로필에 기록됩니다.</p></header><TravelEditor username={member.username} countries={countryOptions} initialCountryCode={initialCountryCode} /></div></main><SiteFooter /></>
   );
 }

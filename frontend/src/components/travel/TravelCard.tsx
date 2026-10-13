@@ -4,6 +4,7 @@ import { TravelImage } from "@/components/common/TravelImage";
 import { travelPath } from "@/lib/config";
 import { formatDateRange, formatDuration } from "@/lib/utils/format";
 import type { TravelSummary } from "@/types";
+import { Icon } from "@/components/common/Icon";
 
 interface TravelCardProps {
   travel: TravelSummary;
@@ -52,7 +53,7 @@ export function TravelCard({ travel, username, priority }: TravelCardProps) {
             <div><dt>장소</dt><dd>{String(travel.placeCount).padStart(2, "0")}</dd></div>
             <div><dt>사진</dt><dd>{travel.photoCount > 0 ? String(travel.photoCount).padStart(2, "0") : "—"}</dd></div>
           </dl>
-          <span className="travel-card__open" aria-hidden="true">여행 보기 <i>→</i></span>
+          <span className="travel-card__open" aria-hidden="true">여행 보기 <i><Icon name="arrow-right" /></i></span>
         </div>
       </Link>
     </article>

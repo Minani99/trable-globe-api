@@ -2,6 +2,7 @@
 
 import { ChangeEvent, FormEvent, useEffect, useState } from "react";
 
+import { Icon } from "@/components/common/Icon";
 import { TravelImage } from "@/components/common/TravelImage";
 import { showFeedback } from "@/components/common/AppFeedback";
 import { setCachedAuthMember } from "@/lib/auth-state";
@@ -25,6 +26,7 @@ export function ProfileEditor({ member }: { member: AuthMember }) {
   const [uploadProgress, setUploadProgress] = useState<number | null>(null);
   const [status, setStatus] = useState<string | null>(null);
   const [pending, setPending] = useState(false);
+  const [bioLength, setBioLength] = useState(member.bio?.length ?? 0);
 
   useEffect(() => {
     getUploadConfiguration()
@@ -102,92 +104,98 @@ export function ProfileEditor({ member }: { member: AuthMember }) {
   }
 
   return (
-    <form id="profile" className="studio-profile settings-profile settings-card" onSubmit={handleSubmit}>
-      <div className="studio-profile__heading">
+    <form id="profile" className="account-card" aria-labelledby="account-profile-heading" onSubmit={handleSubmit}>
+      <header className="account-card__header">
+        <span className="account-card__icon" aria-hidden="true"><Icon name="user" /></span>
         <div>
-          <h2>프로필</h2>
+          <h2 id="account-profile-heading">프로필</h2>
           <p>다른 사용자에게 표시되는 정보입니다.</p>
         </div>
-        <span>공개</span>
-      </div>
+        <span className="account-chip is-info">공개</span>
+      </header>
 
-      <div className="settings-avatar">
-        <TravelImage
-          src={displayImage}
-          alt={`${savedMember.displayName} 프로필 이미지 미리보기`}
-          fallbackLabel={savedMember.username.slice(0, 2)}
-          className="settings-avatar__preview"
-        />
-        <div className="settings-avatar__actions">
-          <strong>프로필 사진</strong>
-          <p>JPG, PNG, WebP · 원본 30MB 이하 · 자동 최적화</p>
-          <div>
-            <label className={`settings-avatar__upload${uploadConfig?.configured ? "" : " is-disabled"}`}>
-              <span>{imageFile
-                ? "다른 사진 선택"
-                : uploadConfig === null && !uploadConfigFailed
-                  ? "업로드 확인 중…"
-                  : uploadConfig?.configured
-                    ? "사진 업로드"
-                    : "URL로 등록"}</span>
-              <input
-                type="file"
-                accept="image/jpeg,image/png,image/webp"
-                onChange={chooseImage}
-                disabled={!uploadConfig?.configured || pending}
-              />
-            </label>
-            {displayImage ? (
-              <button type="button" onClick={() => { setImageFile(null); setPreviewUrl(null); setImageUrl(""); }} disabled={pending}>
-                사진 삭제
-              </button>
+      <div className="account-card__body">
+        <div className="account-photo">
+          <TravelImage
+            src={displayImage}
+            alt={`${savedMember.displayName} 프로필 이미지 미리보기`}
+            fallbackLabel={savedMember.username.slice(0, 2)}
+            className="account-photo__avatar"
+          />
+          <div className="account-photo__copy">
+            <strong>프로필 사진</strong>
+            <p>JPG, PNG, WebP · 원본 30MB 이하 · 자동 최적화</p>
+            <div className="account-photo__actions">
+              <label className={`account-button is-secondary account-photo__upload${uploadConfig?.configured ? "" : " is-disabled"}`}>
+                <Icon name="camera" />
+                <span>{imageFile
+                  ? "다른 사진 선택"
+                  : uploadConfig === null && !uploadConfigFailed
+                    ? "업로드 확인 중…"
+                    : uploadConfig?.configured
+                      ? "사진 업로드"
+                      : "URL로 등록"}</span>
+                <input
+                  type="file"
+                  accept="image/jpeg,image/png,image/webp"
+                  onChange={chooseImage}
+                  disabled={!uploadConfig?.configured || pending}
+                />
+              </label>
+              {displayImage ? (
+                <button type="button" className="account-button is-ghost" onClick={() => { setImageFile(null); setPreviewUrl(null); setImageUrl(""); }} disabled={pending}>
+                  사진 삭제
+                </button>
+              ) : null}
+            </div>
+            {uploadConfig && !uploadConfig.configured ? (
+              <small className="account-notice" role="status">
+                <Icon name="info" />사진 업로드를 사용할 수 없습니다. 아래 이미지 URL로 등록해 주세요.
+              </small>
+            ) : uploadConfigFailed ? (
+              <small className="account-notice is-error" role="alert">
+                <Icon name="alert" />업로드 상태를 확인하지 못했습니다.
+              </small>
             ) : null}
+            {uploadProgress !== null ? <small className="account-progress" role="status"><i style={{ width: `${uploadProgress}%` }} />업로드 {uploadProgress}%</small> : null}
           </div>
-          {uploadConfig && !uploadConfig.configured ? (
-            <small className="settings-avatar__notice" role="status">
-              사진 업로드를 사용할 수 없습니다. 이미지 URL을 입력해 주세요.
-            </small>
-          ) : uploadConfigFailed ? (
-            <small className="settings-avatar__notice is-error" role="alert">
-              업로드 상태를 확인하지 못했습니다.
-            </small>
-          ) : null}
-          {uploadProgress !== null ? <small role="status">업로드 {uploadProgress}%</small> : null}
         </div>
+
+        <label className="account-field">
+          <span className="account-field__label">표시 이름</span>
+          <input
+            name="displayName"
+            defaultValue={savedMember.displayName}
+            minLength={1}
+            maxLength={60}
+            pattern="[^<>]*"
+            title="꺾쇠괄호 없이 1~60자로 입력해 주세요."
+            aria-label="표시 이름"
+            aria-describedby="settings-display-name-help"
+            required
+          />
+          <small id="settings-display-name-help" className="account-field__help">
+            프로필과 공개 여행에 표시됩니다.
+          </small>
+        </label>
+        <label className="account-field">
+          <span className="account-field__label">소개</span>
+          <textarea name="bio" defaultValue={savedMember.bio ?? ""} maxLength={300} rows={3} placeholder="여행 스타일이나 관심 지역" onChange={(event) => setBioLength(event.target.value.length)} />
+          <small className="account-field__help account-field__count" aria-live="off">{bioLength} / 300</small>
+        </label>
+        <details className="account-disclosure">
+          <summary><Icon name="chevron-right" />이미지 URL로 등록</summary>
+          <label className="account-field">
+            <span className="account-field__label">프로필 이미지 URL</span>
+            <input value={imageUrl} onChange={(event) => { setImageUrl(event.target.value); setImageFile(null); setPreviewUrl(null); }} type="url" placeholder="https://…" />
+          </label>
+        </details>
       </div>
 
-      <label>
-        <span>표시 이름</span>
-        <input
-          name="displayName"
-          defaultValue={savedMember.displayName}
-          minLength={1}
-          maxLength={60}
-          pattern="[^<>]*"
-          title="꺾쇠괄호 없이 1~60자로 입력해 주세요."
-          aria-label="표시 이름"
-          aria-describedby="settings-display-name-help"
-          required
-        />
-        <small id="settings-display-name-help" className="settings-field-help">
-          프로필과 공개 여행에 표시됩니다.
-        </small>
-      </label>
-      <label>
-        <span>소개</span>
-        <textarea name="bio" defaultValue={savedMember.bio ?? ""} maxLength={300} rows={3} placeholder="여행 스타일이나 관심 지역" />
-      </label>
-      <details className="settings-image-url">
-        <summary>이미지 URL</summary>
-        <label>
-          <span>프로필 이미지 URL</span>
-          <input value={imageUrl} onChange={(event) => { setImageUrl(event.target.value); setImageFile(null); setPreviewUrl(null); }} type="url" placeholder="https://…" />
-        </label>
-      </details>
-      <div className="studio-form-actions">
+      <footer className="account-card__footer">
         <span aria-live="polite">{status}</span>
-        <button type="submit" disabled={pending}>{pending ? "저장 중…" : "프로필 저장"}</button>
-      </div>
+        <button type="submit" className="account-button is-primary" disabled={pending}>{pending ? "저장 중…" : "프로필 저장"}</button>
+      </footer>
     </form>
   );
 }

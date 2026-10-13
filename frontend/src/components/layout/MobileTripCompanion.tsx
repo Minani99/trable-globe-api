@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useEffect, useMemo, useRef, useState } from "react";
 
 import { TravelActionIcon } from "@/components/common/TravelActionIcon";
+import { WeatherIcon } from "@/components/common/WeatherIcon";
 import { ApiError, apiMutation } from "@/lib/api/client";
 import {
   applyPlaceUpdate,
@@ -16,19 +17,8 @@ import {
 import { isPlaceholderPlaceName } from "@/lib/travel-placeholders";
 import { deleteUploadedPhoto, getUploadConfiguration, MAX_SOURCE_IMAGE_BYTES, uploadPhoto } from "@/lib/uploads/client";
 import type { TravelDetail, TravelPlace } from "@/types";
-
-type ForecastDay = {
-  date: string;
-  weatherCode: number;
-  temperatureMax: number | null;
-  temperatureMin: number | null;
-  precipitationProbability: number;
-};
-
-type ForecastResponse = {
-  success: boolean;
-  data: { available: boolean; days: ForecastDay[] } | null;
-};
+import { formatRain, isRainyDay, useTripWeather, WEATHER_SOURCE_LABEL, weatherLabel, type WeatherDay } from "@/lib/weather";
+import { Icon } from "@/components/common/Icon";
 
 export function MobileTripCompanion({
   travel,
@@ -44,7 +34,6 @@ export function MobileTripCompanion({
   initialDate?: string;
 }) {
   const [currentTravel, setCurrentTravel] = useState(travel);
-  const [forecast, setForecast] = useState<ForecastDay | null>(null);
   const [composer, setComposer] = useState<"note" | "photo" | null>(null);
   const [selectedPlaceId, setSelectedPlaceId] = useState<number | null>(null);
   const [note, setNote] = useState("");
@@ -66,33 +55,16 @@ export function MobileTripCompanion({
   const nextPlace = dayPlaces.find((place) => !place.completedAt) ?? null;
   const selectedPlace = dayPlaces.find((place) => place.id === selectedPlaceId) ?? nextPlace ?? dayPlaces[0] ?? null;
   const location = dayPlaces[0] ?? currentTravel.places[0];
-  const visibleForecast = forecast?.date === viewDate ? forecast : null;
+  const tripWeather = useTripWeather(location ? {
+    latitude: location.latitude, longitude: location.longitude, startDate: currentTravel.startDate, endDate: currentTravel.endDate,
+  } : null);
+  const weatherByDate = useMemo(() => new Map((tripWeather.weather?.days ?? []).map((day) => [day.date, day])), [tripWeather.weather]);
+  const visibleForecast = weatherByDate.get(viewDate) ?? null;
   const completedCount = dayPlaces.filter((place) => place.completedAt).length;
 
   useEffect(() => {
     if (composer) composerRef.current?.scrollIntoView({ block: "nearest", behavior: "instant" });
   }, [composer]);
-
-  useEffect(() => {
-    if (!location) return;
-    const controller = new AbortController();
-    const params = new URLSearchParams({
-      latitude: String(location.latitude),
-      longitude: String(location.longitude),
-      startDate: viewDate,
-      endDate: viewDate,
-    });
-    fetch(`/api/weather/forecast?${params}`, { signal: controller.signal })
-      .then(async (response) => {
-        const body = await response.json() as ForecastResponse;
-        if (!controller.signal.aborted) setForecast(response.ok && body.success && body.data?.available
-          ? body.data.days.find((day) => day.date === viewDate) ?? null : null);
-      })
-      .catch((error) => {
-        if (!(error instanceof Error && error.name === "AbortError")) setForecast(null);
-      });
-    return () => controller.abort();
-  }, [location, viewDate]);
 
   useEffect(() => {
     cacheTravel(username, currentTravel);
@@ -323,9 +295,9 @@ export function MobileTripCompanion({
           <h2 id={`mobile-trip-${variant}-${currentTravel.id}`}>{viewingToday ? "오늘 일정" : `${dayNumber}일차 일정`}</h2>
         </div>
         {visibleForecast ? (
-          <p className={isRain(visibleForecast) ? "has-rain" : undefined}>
-            <strong>{weatherIcon(visibleForecast.weatherCode)}</strong>
-            <span>{formatTemperature(visibleForecast)} · 비 {visibleForecast.precipitationProbability}%</span>
+          <p className={isRainyDay(visibleForecast) ? "has-rain" : undefined} title={weatherLabel(visibleForecast.weatherCode)}>
+            <strong><WeatherIcon code={visibleForecast.weatherCode} /></strong>
+            <span>{[formatTemperature(visibleForecast), formatRain(visibleForecast), visibleForecast.source === "forecast" ? null : WEATHER_SOURCE_LABEL[visibleForecast.source]].filter(Boolean).join(" · ")}</span>
           </p>
         ) : null}
       </header>
@@ -351,6 +323,11 @@ export function MobileTripCompanion({
             >
               <strong>DAY {index + 1}</strong>
               <span>{formatDayTab(date)}</span>
+              {weatherByDate.get(date) ? (
+                <i className="mobile-trip-companion__day-weather" title={weatherLabel(weatherByDate.get(date)!.weatherCode)}>
+                  <WeatherIcon code={weatherByDate.get(date)!.weatherCode} />{formatTemperature(weatherByDate.get(date)!)}
+                </i>
+              ) : null}
               {date === today ? <small>오늘</small> : null}
             </button>
           ))}
@@ -381,7 +358,7 @@ export function MobileTripCompanion({
         <a className="mobile-trip-companion__next" href={googleMapsUrl(nextPlace)} target="_blank" rel="noreferrer">
           <span>다음 일정</span>
           <strong>{formatTime(nextPlace.startTime) ?? "시간 미정"} · {nextPlace.placeName}</strong>
-          <small>지도에서 위치 보기 <b aria-hidden="true">↗</b></small>
+          <small>지도에서 위치 보기 <b aria-hidden="true"><Icon name="arrow-up-right" /></b></small>
         </a>
       ) : dayPlaces.length ? (
         <div className="mobile-trip-companion__empty is-complete">
@@ -407,7 +384,7 @@ export function MobileTripCompanion({
                 disabled={pendingAction !== null}
                 onClick={() => void updatePlace(place, !place.completedAt)}
                 aria-busy={pendingPlaceId === place.id}
-              ><span aria-hidden="true">{pendingPlaceId === place.id ? "…" : place.completedAt ? "✓" : ""}</span><small>{pendingPlaceId === place.id ? "저장 중" : place.completedAt ? "완료됨" : "완료"}</small></button>
+              ><span aria-hidden="true">{pendingPlaceId === place.id ? "…" : place.completedAt ? <Icon name="check" /> : null}</span><small>{pendingPlaceId === place.id ? "저장 중" : place.completedAt ? "완료됨" : "완료"}</small></button>
               <a href={googleMapsUrl(place)} target="_blank" rel="noreferrer">
                 <strong>{place.placeName}</strong>
                 <small>{place.city?.nameKo ?? place.country.nameKo}{place.durationMinutes ? ` · ${formatDuration(place.durationMinutes)}` : ""}{place.memo ? ` · ${place.memo}` : ""}</small>
@@ -422,11 +399,11 @@ export function MobileTripCompanion({
         <button type="button" aria-pressed={composer === "photo"} onClick={() => openComposer("photo")} disabled={!dayPlaces.length || pendingAction !== null}><TravelActionIcon name="photo" /><strong>사진</strong></button>
         <button type="button" aria-pressed={composer === "note"} onClick={() => openComposer("note")} disabled={!dayPlaces.length || pendingAction !== null}><TravelActionIcon name="note" /><strong>메모</strong></button>
       </nav>
-      {variant === "sheet" ? <Link className="mobile-trip-companion__all-days" href={`/studio/travels/${currentTravel.id}/go`}>다른 날짜 일정 보기 <span aria-hidden="true">→</span></Link> : null}
+      {variant === "sheet" ? <Link className="mobile-trip-companion__all-days" href={`/studio/travels/${currentTravel.id}/go`}>다른 날짜 일정 보기 <span aria-hidden="true"><Icon name="arrow-right" /></span></Link> : null}
 
       {composer ? (
         <fieldset ref={composerRef} disabled={pendingAction !== null} className="mobile-trip-companion__composer" aria-label={composer === "note" ? "빠른 메모" : "빠른 사진 기록"}>
-          <header><strong>{composer === "note" ? "메모 남기기" : "사진 기록하기"}</strong><button type="button" onClick={() => setComposer(null)} aria-label="빠른 기록 닫기">×</button></header>
+          <header><strong>{composer === "note" ? "메모 남기기" : "사진 기록하기"}</strong><button type="button" onClick={() => setComposer(null)} aria-label="빠른 기록 닫기"><Icon name="close" /></button></header>
           {dayPlaces.length > 1 ? (
             <label><span>연결할 일정</span><select value={selectedPlace?.id ?? ""} onChange={(event) => { const id = Number(event.target.value); const place = dayPlaces.find((item) => item.id === id); setSelectedPlaceId(id); if (composer === "note") setNote(place?.memo ?? ""); }}>{dayPlaces.map((place) => <option key={place.id} value={place.id}>{formatTime(place.startTime) ?? "시간 미정"} · {place.placeName}</option>)}</select></label>
           ) : selectedPlace ? <p className="mobile-trip-companion__composer-place">{selectedPlace.placeName}</p> : null}
@@ -495,20 +472,8 @@ function formatDuration(minutes: number): string {
   return remainder ? `${hours}시간 ${remainder}분` : `${hours}시간`;
 }
 
-function isRain(day: ForecastDay): boolean {
-  return day.precipitationProbability >= 60 || (day.weatherCode >= 51 && day.weatherCode <= 67) || (day.weatherCode >= 80 && day.weatherCode <= 82) || day.weatherCode >= 95;
-}
-
-function weatherIcon(code: number): string {
-  if (code >= 95) return "⛈";
-  if ((code >= 51 && code <= 67) || (code >= 80 && code <= 82)) return "☂";
-  if (code >= 71 && code <= 77) return "❄";
-  if (code <= 1) return "☀";
-  return "☁";
-}
-
-function formatTemperature(day: ForecastDay): string {
-  if (day.temperatureMax == null) return "오늘 날씨";
+function formatTemperature(day: WeatherDay): string {
+  if (day.temperatureMax == null) return weatherLabel(day.weatherCode);
   return `${Math.round(day.temperatureMax)}°`;
 }
 

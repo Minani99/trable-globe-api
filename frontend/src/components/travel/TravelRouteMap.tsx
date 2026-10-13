@@ -6,6 +6,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { GoogleDirectionsPanel } from "@/components/travel/GoogleDirectionsPanel";
 import { formatDate } from "@/lib/utils/format";
 import type { TravelPlace } from "@/types";
+import { Icon } from "@/components/common/Icon";
 
 interface TravelRouteMapProps {
   places: TravelPlace[];
@@ -185,8 +186,8 @@ export function TravelRouteMap({ places }: TravelRouteMapProps) {
             <p className="travel-route-map-toolbar__hint">장소 위치를 살펴보세요 · 실제 이동 경로는 Google Maps에서 확인</p>
           </div>
           <div className="travel-route-map-controls" role="toolbar" aria-label="장소 위치 지도 확대·축소">
-            <button type="button" onClick={() => updateZoom(zoom + 1)} aria-label="지도 확대">+</button>
-            <button type="button" onClick={() => updateZoom(zoom - 1)} aria-label="지도 축소">−</button>
+            <button type="button" onClick={() => updateZoom(zoom + 1)} aria-label="지도 확대"><Icon name="plus" /></button>
+            <button type="button" onClick={() => updateZoom(zoom - 1)} aria-label="지도 축소"><Icon name="minus" /></button>
             <button type="button" onClick={resetViewport} aria-label="전체 장소 위치 맞춤">전체 보기</button>
           </div>
         </div>
@@ -346,7 +347,7 @@ export function TravelRouteMap({ places }: TravelRouteMapProps) {
                     ) : null}
                     {place.memo ? <span className="travel-itinerary__memo">{place.memo}</span> : null}
                   </span>
-                  <span className="travel-itinerary__arrow" aria-hidden="true">↗</span>
+                  <span className="travel-itinerary__arrow" aria-hidden="true"><Icon name="arrow-up-right" /></span>
                 </button>
               </li>
             );

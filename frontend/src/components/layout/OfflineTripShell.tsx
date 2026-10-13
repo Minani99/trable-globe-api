@@ -7,6 +7,7 @@ import { useEffect, useState } from "react";
 import { MobileTripCompanion } from "@/components/layout/MobileTripCompanion";
 import { readCachedActiveTravel, type CachedTravel } from "@/lib/travel-offline";
 import { todayInKorea } from "@/lib/utils/date";
+import { Icon } from "@/components/common/Icon";
 
 type ActiveTravel = { username: string; cached: CachedTravel };
 
@@ -21,7 +22,7 @@ export function OfflineTripShell() {
   return (
     <main id="main" className="offline-trip-page">
       <header className="offline-trip-header">
-        <a href="/offline" aria-label="오프라인 안내로 돌아가기">←</a>
+        <a href="/offline" aria-label="오프라인 안내로 돌아가기"><Icon name="arrow-left" /></a>
         <div>
           <span>TRAVEL GLOBE</span>
           <strong>{activeTravel?.cached.travel.title ?? "저장된 여행"}</strong>

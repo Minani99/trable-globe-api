@@ -14,6 +14,7 @@ import { profilePath, siteConfig } from "@/lib/config";
 import { buildGlobeTimeline } from "@/lib/globeTimeline";
 import { countryFlag, getWorldLandmarkPlace } from "@/lib/worldLandmarks";
 import type { TravelSummary, UserProfile, VisitedCountry } from "@/types";
+import { Icon } from "@/components/common/Icon";
 
 const EMPTY_COUNTRIES: VisitedCountry[] = [];
 const ignoreHover = () => undefined;
@@ -152,7 +153,7 @@ export function LandingGlobePreview() {
                     className="landing-landmark-card__action"
                   >
                     <span>{isOwnWorld ? "내 지구본 보기" : "샘플 프로필 보기"}</span>
-                    <span aria-hidden="true">→</span>
+                    <span aria-hidden="true"><Icon name="arrow-right" /></span>
                   </Link>
                 ) : null}
               </>
@@ -171,7 +172,7 @@ export function LandingGlobePreview() {
 
         <figcaption className="landing-globe-caption">
           <span>지구본을 돌려보고, 나라를 눌러보세요</span>
-          <Link href="/globe">크게 보기 <span aria-hidden="true">↗</span></Link>
+          <Link href="/globe">크게 보기 <span aria-hidden="true"><Icon name="arrow-up-right" /></span></Link>
         </figcaption>
       </figure>
     </div>

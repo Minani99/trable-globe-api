@@ -6,6 +6,7 @@ import { FormEvent, useState } from "react";
 
 import { ApiError, apiMutation } from "@/lib/api/client";
 import type { AccountActionResult, AuthMember } from "@/types";
+import { Icon } from "@/components/common/Icon";
 
 export function ForgotPasswordForm() {
   const [status, setStatus] = useState<string | null>(null);
@@ -34,7 +35,7 @@ export function ForgotPasswordForm() {
     <form className="auth-form" onSubmit={submit}>
       <label><span>가입한 이메일</span><input name="email" type="email" autoComplete="email" required /></label>
       {status ? <p className="auth-form__notice" role="status">{status}</p> : null}
-      {developmentToken ? <Link className="auth-form__dev-link" href={`/reset-password?token=${encodeURIComponent(developmentToken)}`}>개발 환경에서 재설정 계속하기 →</Link> : null}
+      {developmentToken ? <Link className="auth-form__dev-link" href={`/reset-password?token=${encodeURIComponent(developmentToken)}`}>개발 환경에서 재설정 계속하기 <Icon name="arrow-right" /></Link> : null}
       <button type="submit" disabled={pending}>{pending ? "요청 중…" : "재설정 링크 받기"}</button>
       <p className="auth-form__switch"><Link href="/login">로그인으로 돌아가기</Link></p>
     </form>
