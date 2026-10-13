@@ -5,6 +5,8 @@ test("국가 호버가 회전을 끊거나 마커를 다시 만들지 않는다"
   await page.setViewportSize({ width: 1440, height: 960 });
   await page.goto("/");
   const globe = page.locator(".landing-globe-live [role='application']");
+  await globe.scrollIntoViewIfNeeded();
+  await expect(globe).toHaveAttribute("data-rendering", "active");
   await expect(globe).toHaveAttribute("aria-busy", "false", { timeout: 30_000 });
   await expect(globe).toHaveAttribute("data-auto-rotating", "true");
   await expect(globe.locator(".tg-marker")).toHaveCount(66);
@@ -54,6 +56,8 @@ test("모바일 크기에서 드래그·확대 후 회전이 재개되고 모션
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto("/");
   const globe = page.locator(".landing-globe-live [role='application']");
+  await globe.scrollIntoViewIfNeeded();
+  await expect(globe).toHaveAttribute("data-rendering", "active");
   await expect(globe).toHaveAttribute("aria-busy", "false", { timeout: 30_000 });
   await expect(globe).toHaveAttribute("data-auto-rotating", "true");
   const canvas = (await globe.locator("canvas").boundingBox())!;
@@ -82,6 +86,8 @@ test("샘플 국가를 선택하면 재방문 횟수가 보이고 선택 해제 
   await page.emulateMedia({ reducedMotion: "no-preference" });
   await page.goto("/");
   const globe = page.locator(".landing-globe-live [role='application']");
+  await globe.scrollIntoViewIfNeeded();
+  await expect(globe).toHaveAttribute("data-rendering", "active");
   await expect(globe).toHaveAttribute("aria-busy", "false", { timeout: 30_000 });
   await expect(globe.locator('[data-code="JP"]')).toBeVisible();
   // Stop the moving target using a real control, then exercise the marker click.

@@ -10,8 +10,8 @@ test("공개 여행 기록을 읽고 모바일에서 일정과 사진을 가로 
   await expect(page.locator(".travel-itinerary__list")).toContainText("DAY 01");
   await expect(page.locator(".travel-gallery li")).toHaveCount(3);
   await expect(page.getByRole("heading", { name: "샘플 여행자님의 여행 기록" })).toBeVisible();
-  await expect(page.getByRole("link", { name: /로그인하고 이 일정 가져오기/ })).toBeVisible();
-  await expect(page.locator(".shared-itinerary-save__note")).toContainText("사진과 개인 기록은 포함하지 않습니다");
+  await expect(page.getByRole("link", { name: /로그인하고 내 계획으로 복사/ })).toBeVisible();
+  await expect(page.locator(".shared-itinerary-save__note")).toContainText("사진·예약·예산은 포함하지 않습니다");
   await expect(page.getByRole("button", { name: "여행 공유" })).toBeVisible();
   await expect(page.locator("meta[property='og:type']")).toHaveAttribute("content", "article");
   await expect(page.locator("link[rel='canonical']")).toHaveAttribute("href", /\/traveler\/travel\/1$/);
