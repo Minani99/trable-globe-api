@@ -1,5 +1,6 @@
 "use client";
 
+import { AppIcon } from "@/components/common/AppIcon";
 import {
   geocoding,
   type GeocodingFeature,
@@ -454,7 +455,7 @@ export function PlaceLocationPicker({
       ) : null}
 
       <div className="place-picker__search">
-        <span className="place-picker__search-icon" aria-hidden="true">⌕</span>
+        <span className="place-picker__search-icon"><AppIcon name="search" /></span>
         <input
           value={query}
           onChange={(event) => {
@@ -507,7 +508,7 @@ export function PlaceLocationPicker({
                     <span className="place-picker__result-action">일정에 담기</span>
                   </button>
                   <div className="place-picker__result-links">
-                    <a href={googleMapsSearchUrl(result)} target="_blank" rel="noreferrer">Google 지도에서 사진·후기 보기 <span aria-hidden="true">↗</span></a>
+                    <a href={googleMapsSearchUrl(result)} target="_blank" rel="noreferrer">Google 지도에서 사진·후기 보기 </a>
                   </div>
                 </article>
               </li>
@@ -534,7 +535,7 @@ export function PlaceLocationPicker({
 
       <div className="place-picker__google-tools">
         <a href={googleMapsDiscoveryUrl(countryName, cityName, query)} target="_blank" rel="noreferrer">
-          <span aria-hidden="true">G</span><span><strong>Google 지도에서 직접 찾아보기</strong><small>사진·평점·후기를 비교한 뒤 공유 링크를 복사하세요</small></span><b aria-hidden="true">↗</b>
+          <span aria-hidden="true">G</span><span><strong>Google 지도에서 직접 찾아보기</strong><small>사진·평점·후기를 비교한 뒤 공유 링크를 복사하세요</small></span>
         </a>
         <details>
           <summary>Google 지도 링크로 장소 가져오기</summary>
@@ -553,7 +554,7 @@ export function PlaceLocationPicker({
         <div className="place-map-dialog" role="dialog" aria-modal="true" aria-label="지도에서 위치 조정">
           <div className="place-map-dialog__sheet">
             <header>
-              <button type="button" className="place-map-dialog__close" onClick={() => setMapOpen(false)} aria-label="지도 닫기">×</button>
+              <button type="button" className="place-map-dialog__close" onClick={() => setMapOpen(false)} aria-label="지도 닫기"><AppIcon name="close" /></button>
               <div><strong>위치 조정</strong><span>{countryName} · 지도를 움직여 핀에 맞추세요</span></div>
               <span className="place-map-dialog__provider" translate="no">{provider === "maptiler" ? "MapTiler" : "OpenStreetMap"}</span>
             </header>

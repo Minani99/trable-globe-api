@@ -1,5 +1,6 @@
 "use client";
 
+import { AppIcon } from "@/components/common/AppIcon";
 import { useEffect, useId, useRef, useState } from "react";
 
 import { MobileTripCompanion } from "@/components/layout/MobileTripCompanion";
@@ -114,7 +115,7 @@ export function MobileJourneyCapture({ member, pathname }: MobileJourneyCaptureP
               <strong>{travel.title}</strong>
               {travelState?.cached ? <span>기기에 저장된 일정</span> : null}
             </div>
-            <button type="button" onClick={() => setOpen(false)} aria-label="빠른 기록 닫기">×</button>
+            <button type="button" onClick={() => setOpen(false)} aria-label="빠른 기록 닫기"><AppIcon name="close" /></button>
           </header>
           {travelState?.detail ? (
             <MobileTripCompanion key={`${travelState.detail.id}-${travelState.cached ? "cached" : "live"}`} travel={travelState.detail} today={todayInKorea()} username={member.username} />

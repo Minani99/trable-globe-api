@@ -1,5 +1,6 @@
 "use client";
 
+import { AppIcon } from "@/components/common/AppIcon";
 import { KeyboardEvent, useMemo, useState } from "react";
 
 import { ApiError, apiMutation } from "@/lib/api/client";
@@ -115,7 +116,7 @@ export function TravelChecklist({ travelId, initialTasks }: { travelId: number; 
                 onClick={() => void remove(task)}
                 disabled={pendingKey !== null}
                 aria-label={`${task.title} 삭제`}
-              >×</button>
+              ><AppIcon name="trash" /><span>삭제</span></button>
             </li>
           ))}
         </ul>

@@ -1,0 +1,124 @@
+/* Shared action language: a clear label, a consistent icon, a comfortable target. */
+.app-icon { display: inline-block; width: var(--app-icon-size, 20px); height: var(--app-icon-size, 20px); flex: 0 0 auto; vertical-align: middle; }
+.studio-breadcrumb { display: flex; flex-wrap: wrap; gap: .5rem; }
+.studio-breadcrumb a { display: inline-flex; align-items: center; justify-content: center; gap: .5rem; min-height: 44px; padding: .6rem .85rem; border: 1px solid var(--border-strong); border-radius: 10px; background: var(--surface); color: var(--text-primary); font-size: .875rem; font-weight: 600; }
+.studio-breadcrumb a:hover { border-color: var(--accent); color: var(--accent-strong); }
+button:has(> .app-icon) { gap: .4rem; }
+:is(.travel-checklist__delete, .travel-plan-delete) { display: inline-flex !important; align-items: center; justify-content: center; gap: .35rem; width: auto !important; min-width: 70px; min-height: 44px; padding: .5rem .65rem !important; border: 1px solid color-mix(in srgb, #c34432 35%, var(--border)) !important; border-radius: 8px; background: var(--surface) !important; color: #b53625 !important; opacity: 1 !important; font-size: .8125rem !important; }
+[data-theme="dark"] :is(.travel-checklist__delete, .travel-plan-delete, .destructive-action) { color: #ff9a89 !important; }
+:is(.travel-checklist__delete, .travel-plan-delete):disabled { opacity: .5 !important; }
+.editor-manage { display: flex; align-items: center; flex-wrap: wrap; gap: .75rem; margin: 1.5rem 0 2rem; padding: 1.25rem; border: 1px solid var(--border-strong); border-radius: 14px; background: var(--surface); }
+.editor-manage > div { flex: 1 1 100%; }
+.editor-manage strong { color: var(--text-primary); font-size: .95rem; }
+.editor-manage p { margin: .35rem 0 0; color: var(--text-secondary); font-size: .8125rem; line-height: 1.6; }
+.editor-manage button { display: inline-flex; align-items: center; justify-content: center; gap: .5rem; min-height: 44px; padding: .65rem 1rem; border: 1px solid var(--border-strong); border-radius: 9px; background: var(--surface); color: var(--text-primary); font-size: .875rem; font-weight: 600; }
+.editor-manage .destructive-action { color: #b53625; border-color: color-mix(in srgb, #c34432 40%, var(--border)); }
+:is(.place-map-dialog__close, .mobile-trip-companion__composer header button, .weather-replan header button) { display: inline-flex; align-items: center; justify-content: center; min-width: 44px; min-height: 44px; color: var(--text-primary); }
+
+/* Forecasts stay visible while moving through preparation stages. */
+.trip-forecast { min-width: 0; padding: 1rem; margin-bottom: 1rem; border: 1px solid var(--border); border-radius: 14px; background: var(--surface); }
+.trip-forecast > header { display: flex; align-items: center; gap: .5rem; flex-wrap: wrap; }
+.trip-forecast > header > .app-icon { color: var(--accent-strong); }
+.trip-forecast > header strong { font-size: .875rem; }
+.trip-forecast > header > span { margin-left: auto; font-size: .75rem; color: var(--text-secondary); }
+.trip-forecast p { margin: .75rem 0; color: var(--text-secondary); font-size: .8125rem; line-height: 1.6; overflow-wrap: anywhere; }
+.trip-forecast__days { display: flex; gap: .5rem; overflow-x: auto; overscroll-behavior-x: contain; padding: .75rem 0; margin: 0; list-style: none; scrollbar-width: thin; }
+.trip-forecast__days li { display: grid; flex: 0 0 94px; justify-items: center; gap: .35rem; padding: .75rem .5rem; border-radius: 10px; background: var(--surface-muted); font-size: .75rem; }
+.trip-forecast__days li.has-rain { background: var(--accent-soft); }
+.trip-forecast__days strong { color: var(--text-primary); white-space: nowrap; font-size: .8125rem; }
+.trip-forecast__days small, .trip-forecast__source { color: var(--text-secondary); font-size: .6875rem; }
+.trip-forecast__source a { text-decoration: underline; text-underline-offset: 3px; }
+.trip-forecast__error { display: flex; align-items: center; flex-wrap: wrap; gap: .75rem; }
+.trip-forecast__error button { display: inline-flex; align-items: center; gap: .4rem; min-height: 44px; padding: .5rem .8rem; border: 1px solid var(--border-strong); border-radius: 8px; }
+.trip-preparation__grid { grid-template-columns: minmax(0, 1fr); }
+
+/* One daily route, with the same numbered stops on the map and in the checklist. */
+.day-route-overview { min-width: 0; padding: 1rem; border: 1px solid var(--border); border-radius: 16px; background: var(--surface); }
+.day-route-overview > header { display: flex; align-items: center; gap: .5rem; }
+.day-route-overview > header h3 { font-size: 1rem; font-weight: 700; }
+.day-route-overview > header > span { margin-left: auto; color: var(--text-secondary); font-size: .8125rem; }
+.day-route-stops { display: flex; flex-wrap: wrap; gap: .5rem; padding: .75rem 0; margin: 0; list-style: none; }
+.day-route-stops li { display: flex; align-items: center; gap: .35rem; max-width: 100%; font-size: .8125rem; overflow-wrap: anywhere; }
+.day-route-stops b, .trip-stop-number { display: grid; flex-shrink: 0; place-items: center; width: 28px; height: 28px; border-radius: 50%; background: var(--accent-soft); color: var(--accent-strong); font-size: .8125rem; font-weight: 700; }
+.mobile-trip-companion .mobile-trip-companion__timeline li { grid-template-columns: 2rem minmax(0, 1fr) 3rem; }
+.trip-stop-number { grid-column: 1; grid-row: 1; }
+.travel-route-explorer.is-compact { display: block; margin: 0; }
+.travel-route-explorer.is-compact .travel-route-map-canvas { height: 280px; min-height: 280px; touch-action: pan-y; }
+.travel-route-explorer.is-compact .travel-route-map-toolbar { padding: .5rem; gap: .5rem; }
+.travel-route-explorer.is-compact .travel-route-map-toolbar > div:first-child { display: none; }
+.travel-route-explorer.is-compact .travel-route-map-controls { width: 100%; justify-content: flex-end; }
+.travel-route-explorer.is-compact .travel-route-map-active { display: none; }
+.travel-route-explorer.is-compact .travel-route-map-help { font-size: .6875rem; line-height: 1.5; }
+.travel-route-map-controls button { min-height: 44px; min-width: 44px; }
+.day-route-overview .google-directions { margin-top: 1rem; padding: .75rem; }
+.day-map-placeholder { display: grid; place-items: center; min-height: 280px; color: var(--text-secondary); background: var(--surface-muted); }
+.mobile-trip-companion .trip-forecast { margin-bottom: 0; }
+
+/* Account settings: simple sections with a stable, responsive navigation. */
+.settings-shell { max-width: 1060px; }
+.settings-workspace { display: grid; grid-template-columns: 200px minmax(0, 1fr); gap: 2rem; align-items: start; }
+.settings-page .settings-section-nav { margin-inline: 0; position: sticky; top: 6rem; display: grid; gap: .5rem; border: 0; padding: 0; background: none; }
+.settings-section-nav a { min-width: 0; display: flex; align-items: center; gap: .75rem; min-height: 64px; padding: .85rem 1rem; border: 1px solid var(--border); border-radius: 12px; background: var(--surface); color: var(--text-primary); }
+.settings-section-nav a:hover { background: var(--accent-soft); border-color: var(--accent); }
+.settings-section-nav .app-icon { color: var(--accent-strong); }
+.settings-section-nav span { font-size: .875rem; font-weight: 600; }
+.settings-section-nav small { display: block; margin-top: .2rem; color: var(--text-secondary); font-size: .75rem; font-weight: 400; }
+.settings-page .settings-layout { display: grid; grid-template-columns: minmax(0, 1fr); gap: 1.25rem; padding: 0; }
+.settings-page .settings-card { min-width: 0; padding: 1.5rem; border: 1px solid var(--border); border-radius: 16px; background: var(--surface); box-shadow: none; scroll-margin-top: 6rem; }
+.settings-card h2 { font-family: inherit; font-weight: 700; font-size: 1.125rem; }
+.settings-page .settings-avatar { grid-template-columns: 72px minmax(0, 1fr); gap: 1rem; padding: 1rem; border-radius: 12px; }
+.settings-page .settings-avatar__preview { width: 72px; height: 72px; border-radius: 50%; }
+.settings-avatar__actions > div { flex-wrap: wrap; gap: .5rem; }
+.settings-page .settings-avatar__actions strong { font-family: inherit; font-weight: 600; font-size: .875rem; }
+.settings-avatar__upload, .settings-avatar__actions button { min-height: 44px; padding: .5rem .75rem; }
+.settings-avatar__actions button { border: 1px solid var(--border-strong); border-radius: 8px; color: var(--text-primary); }
+.settings-hero__actions { display: flex; flex-wrap: wrap; gap: .5rem; }
+.settings-hero__actions :is(a, button) { display: inline-flex; align-items: center; gap: .5rem; min-height: 44px; padding: .65rem .9rem; border: 1px solid var(--border-strong); border-radius: 10px; background: var(--surface); color: var(--text-primary); font-size: .8125rem; }
+.settings-card :is(input, textarea) { width: 100%; min-width: 0; font-size: 16px; border-radius: 8px; }
+.settings-card .studio-account__links { margin-top: 1.5rem; padding-top: 1rem; border-top: 1px solid var(--border); }
+.studio-account__links button { display: inline-flex; align-items: center; gap: .5rem; min-height: 44px; padding: .6rem .85rem; border: 1px solid color-mix(in srgb, #c34432 35%, var(--border)); border-radius: 8px; color: #b53625; }
+
+@media (max-width: 700px) {
+  .settings-workspace { grid-template-columns: minmax(0, 1fr); gap: 1rem; }
+  .settings-page .settings-section-nav { position: static; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: .4rem; }
+  .settings-section-nav a { flex-direction: column; justify-content: center; gap: .4rem; padding: .65rem .3rem; text-align: center; }
+  .settings-section-nav small { display: none; }
+  .settings-section-nav span { font-size: .8125rem; }
+  .settings-page .settings-card { padding: 1rem; border-radius: 14px; }
+  .settings-page .settings-avatar { grid-template-columns: 56px minmax(0, 1fr); padding: .75rem; gap: .75rem; }
+  .settings-page .settings-avatar__preview { width: 56px; height: 56px; }
+  .settings-page .settings-hero { display: grid; gap: 1rem; }
+  .settings-hero__actions { width: 100%; }
+  .settings-hero__actions :is(a, button) { flex: 1; justify-content: center; }
+  .day-route-overview { padding: .75rem; }
+  .mobile-trip-companion.is-page { min-width: 0; }
+  .google-directions__heading { flex-direction: column; align-items: stretch; }
+  .google-directions__modes { display: flex; width: 100%; }
+  .google-directions__modes button { flex: 1; min-height: 44px; }
+  .editor-manage { padding: 1rem; }
+  .editor-manage button { flex: 1 1 auto; }
+  .travel-plan-row-actions { flex-wrap: wrap; }
+}
+
+.trip-forecast__days:has(> li:only-child) li { flex: 1; display: flex; flex-wrap: wrap; justify-content: flex-start; align-items: center; gap: .6rem; padding: .75rem; }
+.trip-forecast__days:has(> li:only-child) li strong { margin-left: auto; }
+.site-mobile-menu a > span:has(.app-icon), .site-account-menu a > span:has(.app-icon) { display: inline-flex; align-items: center; gap: .65rem; }
+.travel-editor__order-actions { flex-wrap: wrap; }
+.travel-editor__order-actions button { display: inline-flex; align-items: center; justify-content: center; min-width: 44px; width: auto; min-height: 44px; padding-inline: .65rem; gap: .25rem; font-size: .75rem; }
+.travel-editor__item-head { flex-wrap: wrap; gap: .75rem; }
+.editor-stop__edit { display: inline-flex; align-items: center; gap: .2rem; }
+.editor-stop__drag { color: var(--text-secondary); }
+.editor-stop__footer .editor-stop__delete { display: inline-flex; align-items: center; gap: .4rem; color: #b53625; border: 1px solid color-mix(in srgb, #c34432 35%, var(--border)); text-decoration: none; }
+.settings-avatar__preview > span { color: #fff; font-size: .875rem; letter-spacing: .05em; }
+
+.travel-day-page__nav { display: flex; flex-wrap: wrap; gap: .5rem; }
+.travel-day-page__nav a { display: inline-flex; align-items: center; gap: .5rem; justify-content: center; min-height: 44px; padding: .6rem .8rem; border: 1px solid var(--border-strong); border-radius: 10px; background: var(--surface); font-size: .875rem; color: var(--text-primary); }
+.trip-preparation__grid { display: grid; margin-inline: 0; padding-inline: 0; overflow: visible; }
+.trip-flight-route { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.trip-flight-route input { font-size: 16px; min-height: 44px; }
+.travel-editor__photo-actions { flex-wrap: wrap; }
+.travel-editor__photo-actions button { display: inline-flex; align-items: center; gap: .3rem; min-height: 44px; width: auto; }
+@media (max-width: 700px) {
+  .trip-flight-route { grid-template-columns: minmax(0, 1fr); gap: 1rem; }
+  .trip-action-card.is-flight { padding: 1rem; min-width: 0; }
+}

@@ -1,6 +1,9 @@
 "use client";
 
+import { forecastRequest, clearForecast } from "@/lib/weather-client";
+import { AppIcon } from "@/components/common/AppIcon";
 import Link from "next/link";
+import dynamic from "next/dynamic";
 import { useRouter, useSearchParams } from "next/navigation";
 import { ChangeEvent, DragEvent, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
 
@@ -21,7 +24,7 @@ import { readPhotoMetadata, type PhotoMetadata } from "@/lib/uploads/photo-metad
 import { isPlaceholderPlaceName } from "@/lib/travel-placeholders";
 import { useUnsavedChangesGuard } from "@/lib/useUnsavedChangesGuard";
 import type { TravelDetail, TravelPhotoWriteInput, TravelPlaceWriteInput, TravelWriteInput, Visibility } from "@/types";
-import { PlaceLocationPicker } from "@/components/studio/PlaceLocationPicker";
+const PlaceLocationPicker = dynamic(() => import("@/components/studio/PlaceLocationPicker").then((module) => module.PlaceLocationPicker), { loading: () => <p role="status">장소 검색을 준비하고 있어요…</p> });
 import { PlanSharePanel } from "@/components/studio/PlanSharePanel";
 import { useStopDrag } from "@/components/studio/useStopDrag";
 
@@ -224,6 +227,7 @@ export function TravelEditor({
   }, []);
 
   useEffect(() => {
+    if (mobileEditorStep !== 2 || uploadConfig !== null) return;
     let active = true;
     getUploadConfiguration()
       .then((configuration) => {
@@ -233,7 +237,7 @@ export function TravelEditor({
         if (active) setUploadConfig({ configured: false, maxBytes: 10 * 1024 * 1024, maxPhotos: 30, acceptedTypes: ["image/jpeg", "image/png", "image/webp"] });
       });
     return () => { active = false; };
-  }, []);
+  }, [mobileEditorStep, uploadConfig]);
 
   useEffect(() => {
     const timer = window.setTimeout(() => {
@@ -472,13 +476,10 @@ export function TravelEditor({
         startDate,
         endDate,
       });
-      const response = await fetch(`/api/weather/forecast?${params}`);
-      const body = await response.json() as {
-        success: boolean;
-        data: { available: boolean; availableFrom: string | null; days: WeatherForecastDay[] } | null;
-        message: string | null;
-      };
-      if (!response.ok || !body.success || !body.data) throw new Error(body.message ?? "forecast failed");
+      const url = `/api/weather/forecast?${params}`;
+      if (!silent) clearForecast(url);
+      const forecast = await forecastRequest(url);
+      const body = { data: { ...forecast, days: forecast.days.filter((day) => day.weatherCode !== null && day.precipitationProbability !== null) as WeatherForecastDay[] } };
       if (!body.data.available) {
         if (silent) {
           setWeatherPlannerState("idle");
@@ -878,7 +879,7 @@ export function TravelEditor({
         </div>
       </nav>
       {status ? <p className="editor-notice" role="alert">{status}</p> : null}
-      <section id={`${editorTabsId}-panel-2`} role="tabpanel" aria-labelledby={`${editorTabsId}-tab-2`} className="travel-editor__section" hidden={mobileEditorStep !== 0} data-mobile-active={mobileEditorStep === 0}>
+      <section id={`${editorTabsId}-panel-${workspace ? 5 : 2}`} role="tabpanel" aria-labelledby={`${editorTabsId}-tab-${workspace ? 5 : 2}`} className="travel-editor__section" hidden={mobileEditorStep !== 0} data-mobile-active={mobileEditorStep === 0}>
         <div className="travel-editor__section-heading"><span>01</span><div><h2>{planningMode ? "계획 기본 정보" : "여행 기본 정보"}</h2></div></div>
         <div className="travel-editor__fields">
           <label className="is-wide"><span>여행 제목</span><input name="title" value={title} onChange={(event) => setTitle(event.target.value)} maxLength={120} placeholder={planningMode ? "다음 여행의 이름" : "예: 교토의 가을"} required /></label>
@@ -909,7 +910,7 @@ export function TravelEditor({
         </div>
       </section>
 
-      <section id={`${editorTabsId}-panel-0`} role="tabpanel" aria-labelledby={`${editorTabsId}-tab-0`} className="travel-editor__section travel-editor__section--itinerary" hidden={mobileEditorStep !== 1} data-mobile-active={mobileEditorStep === 1}><div id="travel-place-editor">
+      <section id={`${editorTabsId}-panel-${workspace ? 3 : 0}`} role="tabpanel" aria-labelledby={`${editorTabsId}-tab-${workspace ? 3 : 0}`} className="travel-editor__section travel-editor__section--itinerary" hidden={mobileEditorStep !== 1} data-mobile-active={mobileEditorStep === 1}><div id="travel-place-editor">
         <div className="travel-editor__section-heading"><span>02</span><div><h2>{planningMode ? "일차별 일정" : "방문 장소"}</h2><p>{planningMode ? "장소와 체류 시간을 확인하고 필요한 부분만 수정하세요." : "장소를 순서대로 정하고 실제 이동 경로를 확인하세요."}</p></div></div>
         <div className="travel-editor__itinerary-content">
         {planningMode && planDays.length > 0 ? (
@@ -926,8 +927,8 @@ export function TravelEditor({
               </div>
               {weatherPlannerMessage ? <div className="weather-replan__message" role="status"><span>{weatherPlannerMessage}</span>{weatherUndo ? <button type="button" onClick={undoWeatherProposal}>변경 전으로 되돌리기</button> : null}</div> : null}
               {weatherProposal ? <div className="weather-replan__proposal">
-                <header><div><small>{formatPlanDay(weatherProposal.rainyDate)} 추천</small><strong>{weatherProposal.title}</strong><p>{weatherProposal.reason}</p></div><button type="button" onClick={() => setWeatherProposal(null)} aria-label="날씨 변경안 닫기">×</button></header>
-                <div className="weather-replan__diff" aria-label="일정 변경 전후 비교">{weatherProposal.changes.map((change) => <div key={`${change.date}-${change.before}`}><time>{formatPlanDay(change.date)}</time><span><small>현재</small><b>{change.before}</b></span><i aria-hidden="true">→</i><span className="is-after"><small>변경 후</small><b>{change.after}</b></span></div>)}</div>
+                <header><div><small>{formatPlanDay(weatherProposal.rainyDate)} 추천</small><strong>{weatherProposal.title}</strong><p>{weatherProposal.reason}</p></div><button type="button" onClick={() => setWeatherProposal(null)} aria-label="날씨 변경안 닫기"><AppIcon name="close" /></button></header>
+                <div className="weather-replan__diff" aria-label="일정 변경 전후 비교">{weatherProposal.changes.map((change) => <div key={`${change.date}-${change.before}`}><time>{formatPlanDay(change.date)}</time><span><small>현재</small><b>{change.before}</b></span><AppIcon name="arrow-right" /><span className="is-after"><small>변경 후</small><b>{change.after}</b></span></div>)}</div>
                 <footer><p>자동 저장 전에 직접 확인할 수 있으며 예약 정보는 변경하지 않습니다.</p><button type="button" onClick={applyWeatherProposal}>이 변경안 적용</button></footer>
               </div> : null}
             </section> : null}
@@ -989,25 +990,25 @@ export function TravelEditor({
                     const direction = event.key === "ArrowUp" ? -1 : 1;
                     if (planningMode) movePlanningPlace(index, direction); else movePlace(index, direction);
                   }
-                }}><span aria-hidden="true">⋮⋮</span></button>
+                }}><AppIcon name="drag" /></button>
               <button className="editor-stop__summary" type="button" aria-expanded={expandedPlace === place.key} aria-controls={`stop-${index}`} onClick={() => setExpandedPlace(expandedPlace === place.key ? null : place.key)}>
                 <span className="editor-stop__sequence" aria-label="방문 순번">{String((planningMode ? activeDayPlaces.findIndex((item) => item.index === index) : index) + 1).padStart(2, "0")}</span>
                 <span><strong>{place.placeName || "장소를 추가하세요"}</strong><small>{[place.cityName || countryMap.get(place.countryCode)?.nameKo, place.startTime || null, place.durationMinutes ? `${place.durationMinutes}분` : null].filter(Boolean).join(" · ")}</small></span>
-                <span className="editor-stop__edit">{expandedPlace === place.key ? "편집 닫기 ⌃" : "편집 ⌄"}</span>
+                <span className="editor-stop__edit">{expandedPlace === place.key ? "닫기" : "편집"}<AppIcon name={expandedPlace === place.key ? "chevron-up" : "edit"} size={16} /></span>
               </button>
               </div>
               <div id={`stop-${index}`} className="editor-stop__body" hidden={expandedPlace !== place.key}>
               <div className="travel-editor__item-head">
                 <strong>{planningMode ? `${String(activeDayPlaces.findIndex((item) => item.index === index) + 1).padStart(2, "0")}번째 일정` : `${String(index + 1).padStart(2, "0")}번째 장소`}{planningMode && place.startTime ? <time>{place.startTime}</time> : null}</strong>
                 <div className="travel-editor__order-actions">
-                  <button type="button" onClick={() => planningMode ? movePlanningPlace(index, -1) : movePlace(index, -1)} disabled={(planningMode ? activeDayPlaces[0]?.index === index : index === 0) || pending} aria-label="장소를 앞으로 이동">↑</button>
-                  <button type="button" onClick={() => planningMode ? movePlanningPlace(index, 1) : movePlace(index, 1)} disabled={(planningMode ? activeDayPlaces.at(-1)?.index === index : index === places.length - 1) || pending} aria-label="장소를 뒤로 이동">↓</button>
+                  <button type="button" onClick={() => planningMode ? movePlanningPlace(index, -1) : movePlace(index, -1)} disabled={(planningMode ? activeDayPlaces[0]?.index === index : index === 0) || pending} aria-label="장소를 앞으로 이동"><AppIcon name="arrow-up" size={18} /><span>앞으로</span></button>
+                  <button type="button" onClick={() => planningMode ? movePlanningPlace(index, 1) : movePlace(index, 1)} disabled={(planningMode ? activeDayPlaces.at(-1)?.index === index : index === places.length - 1) || pending} aria-label="장소를 뒤로 이동"><AppIcon name="arrow-down" size={18} /><span>뒤로</span></button>
 
                 </div>
               </div>
               <div className="travel-editor__fields">
                 <label><span>나라</span><select value={place.countryCode} onChange={(event) => updateCountry(index, event.target.value)} required>{countries.map((country) => <option key={country.iso2Code} value={country.iso2Code}>{country.label}</option>)}</select></label>
-                <PlaceLocationPicker
+                {expandedPlace === place.key ? <PlaceLocationPicker
                   key={place.countryCode}
                   countryCode={place.countryCode}
                   countryName={countryMap.get(place.countryCode)?.nameKo ?? "선택한 나라"}
@@ -1020,7 +1021,7 @@ export function TravelEditor({
                   routeAnchor={findRouteAnchor(places, index)}
                   travelPreferences={travelPreferences}
                   onSelect={(location) => updateLocation(index, location)}
-                />
+                /> : null}
                 <label><span>도시</span><input value={place.cityName} onChange={(event) => updateCityName(index, event.target.value)} maxLength={100} placeholder="예: 서울" /></label>
                 <label className="is-wide"><span>장소 이름</span><input value={place.placeName} onChange={(event) => updatePlace(index, "placeName", event.target.value)} maxLength={150} placeholder="예: 서울숲" required /></label>
                 <label><span>방문일</span><input value={place.visitedAt} onChange={(event) => updatePlace(index, "visitedAt", event.target.value)} type="date" /></label>
@@ -1032,7 +1033,7 @@ export function TravelEditor({
                 <label className="is-wide"><span>메모</span><textarea id={index === quickNoteIndex ? "travel-note-editor" : undefined} value={place.memo} onChange={(event) => updatePlace(index, "memo", event.target.value)} maxLength={1000} rows={3} placeholder={planningMode ? "예약, 먹고 싶은 메뉴, 이동 팁" : "그 장소에서 기억하고 싶은 장면"} /></label>
               </div>
               <div className="editor-stop__footer">
-                {places.length > 1 ? <button type="button" className="editor-stop__delete" disabled={pending} onClick={() => removePlace(index)}>장소 삭제</button> : <span />}
+                {places.length > 1 ? <button type="button" className="editor-stop__delete" disabled={pending} onClick={() => removePlace(index)}><AppIcon name="trash" />장소 삭제</button> : <span />}
                 <button type="button" onClick={() => setExpandedPlace(null)}>편집 닫기</button>
               </div>
               </div>
@@ -1043,7 +1044,7 @@ export function TravelEditor({
         </div>
       </div></section>
 
-      <section id={`${editorTabsId}-panel-1`} role="tabpanel" aria-labelledby={`${editorTabsId}-tab-1`} className="travel-editor__section" hidden={mobileEditorStep !== 2} data-mobile-active={mobileEditorStep === 2}><div id="travel-photo-editor">
+      <section id={`${editorTabsId}-panel-${workspace ? 4 : 1}`} role="tabpanel" aria-labelledby={`${editorTabsId}-tab-${workspace ? 4 : 1}`} className="travel-editor__section" hidden={mobileEditorStep !== 2} data-mobile-active={mobileEditorStep === 2}><div id="travel-photo-editor">
         <div className="travel-editor__section-heading"><span>03</span><div><h2>여행 사진</h2><p>사진을 추가하고 방문 장소와 연결할 수 있습니다.</p></div></div>
         <label className="editor-trip-note"><span>여행 메모</span><textarea name="description" value={description} onChange={(event) => setDescription(event.target.value)} maxLength={2000} rows={3} placeholder="기억해 둘 이야기나 여행 팁" /></label>
         <label
@@ -1083,8 +1084,8 @@ export function TravelEditor({
                 <div className="travel-editor__item-head">
                   <strong>사진 {String(index + 1).padStart(2, "0")}</strong>
                   <div className="travel-editor__photo-actions">
-                    <button type="button" onClick={() => movePhoto(index, -1)} disabled={index === 0 || pending} aria-label="사진을 앞으로 이동">↑</button>
-                    <button type="button" onClick={() => movePhoto(index, 1)} disabled={index === photos.length - 1 || pending} aria-label="사진을 뒤로 이동">↓</button>
+                    <button type="button" onClick={() => movePhoto(index, -1)} disabled={index === 0 || pending} aria-label="사진을 앞으로 이동"><AppIcon name="arrow-up" size={18} /><span>앞으로</span></button>
+                    <button type="button" onClick={() => movePhoto(index, 1)} disabled={index === photos.length - 1 || pending} aria-label="사진을 뒤로 이동"><AppIcon name="arrow-down" size={18} /><span>뒤로</span></button>
                     {photo.imageUrl ? <button type="button" className={coverImageUrl === photo.imageUrl ? "is-cover" : ""} onClick={() => { setCoverImageUrl(photo.imageUrl); setDirty(true); }}>{coverImageUrl === photo.imageUrl ? "대표 사진" : "대표로 지정"}</button> : null}
                     <button type="button" onClick={() => removePhoto(index)} disabled={pending}>사진 삭제</button>
                   </div>
@@ -1116,10 +1117,11 @@ export function TravelEditor({
           <button type="button" onClick={() => void handleSubmit()} disabled={pending}>{pending ? "저장 중…" : "저장"}</button>
         </div>
       </footer>
-      {mobileEditorStep === 0 ? <div className="editor-manage">
-        {editing ? <button type="button" onClick={handleDelete} disabled={pending}>여행 삭제</button> : null}
-        {draftRestored ? <button type="button" onClick={discardDraft} disabled={pending}>임시 저장본 버리기</button> : null}
-      </div> : null}
+      <div className="editor-manage" aria-label="여행 관리">
+        <div><strong>여행 관리</strong><p>여행 삭제와 임시 저장본 관리는 여기에서 할 수 있어요.</p></div>
+        {editing ? <button type="button" onClick={handleDelete} className="destructive-action" disabled={pending}><AppIcon name="trash" />여행 삭제</button> : null}
+        {draftRestored ? <button type="button" onClick={discardDraft} disabled={pending}><AppIcon name="refresh" />임시 저장본 버리기</button> : null}
+      </div>
     </div>
   );
 }

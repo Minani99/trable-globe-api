@@ -50,7 +50,7 @@ export default function AboutPage() {
               <div className="about-hero__actions">
                 <Link href="/register?next=%2Fstudio" className="landing-primary-cta">
                   <span>계정 만들기</span>
-                  <span className="landing-primary-cta__arrow" aria-hidden="true">↗</span>
+
                 </Link>
                 <Link href={globePath} className="landing-secondary-cta">샘플 지구본 보기</Link>
               </div>

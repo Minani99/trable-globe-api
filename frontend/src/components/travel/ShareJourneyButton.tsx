@@ -1,5 +1,6 @@
 "use client";
 
+import { AppIcon } from "@/components/common/AppIcon";
 import { useState } from "react";
 
 interface ShareJourneyButtonProps {
@@ -42,8 +43,8 @@ export function ShareJourneyButton({ title, ownerName }: ShareJourneyButtonProps
 
   return (
     <div className="journey-share">
-      <button type="button" onClick={shareJourney} disabled={pending} aria-busy={pending}>
-        <span aria-hidden="true">↗</span>
+      <button type="button" onClick={shareJourney} disabled={pending} aria-busy={pending}><AppIcon name="share" />
+
         {pending ? "공유 준비 중" : "여행 공유"}
       </button>
       <span className="journey-share__status" role="status" aria-live="polite">

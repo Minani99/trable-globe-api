@@ -1,5 +1,6 @@
 "use client";
 
+import { AppIcon } from "@/components/common/AppIcon";
 import { FormEvent, useState } from "react";
 
 import { ApiError, apiMutation } from "@/lib/api/client";
@@ -196,7 +197,7 @@ export function TravelPlanningBoard({
                 <button type="button" className="travel-plan-toggle" disabled={pending} onClick={() => toggleExpense(expense)} aria-label={`${expense.title} ${expense.paid ? "미결제로 변경" : "결제 완료로 변경"}`}><span aria-hidden="true">{expense.paid ? "✓" : ""}</span></button>
                 <div><small>{categoryLabel(EXPENSE_CATEGORIES, expense.category)}</small><strong>{expense.title}</strong></div>
                 <b>{formatMoney(expense.amount, planning.currency)}</b>
-                <div className="travel-plan-row-actions"><button type="button" disabled={pending} onClick={() => setEditingExpenseId(expense.id)} aria-label={`${expense.title} 수정`}>수정</button><button type="button" className="travel-plan-delete" disabled={pending} onClick={() => mutate(`${basePath}/expenses/${expense.id}`, "DELETE")} aria-label={`${expense.title} 삭제`}>×</button></div>
+                <div className="travel-plan-row-actions"><button type="button" disabled={pending} onClick={() => setEditingExpenseId(expense.id)} aria-label={`${expense.title} 수정`}>수정</button><button type="button" className="travel-plan-delete" disabled={pending} onClick={() => mutate(`${basePath}/expenses/${expense.id}`, "DELETE")} aria-label={`${expense.title} 삭제`}><AppIcon name="trash" /><span>삭제</span></button></div>
               </li>
             )
           ))}</ul> : <p className="travel-plan-empty">항공권이나 숙소처럼 큰 비용부터 추가해 보세요.</p>}
@@ -230,7 +231,7 @@ export function TravelPlanningBoard({
               <li key={reservation.id} className={reservation.confirmed ? "is-complete" : undefined}>
                 <button type="button" className="travel-plan-toggle" disabled={pending} onClick={() => toggleReservation(reservation)} aria-label={`${reservation.title} ${reservation.confirmed ? "미확정으로 변경" : "예약 확정으로 변경"}`}><span aria-hidden="true">{reservation.confirmed ? "✓" : ""}</span></button>
                 <div><small>{formatShortDate(reservation.reservationDate)} · {categoryLabel(RESERVATION_CATEGORIES, reservation.category)}</small><strong>{reservation.title}</strong>{reservation.memo ? <p>{reservation.memo}</p> : null}</div>
-                <div className="travel-plan-row-actions"><button type="button" disabled={pending} onClick={() => setEditingReservationId(reservation.id)} aria-label={`${reservation.title} 수정`}>수정</button><button type="button" className="travel-plan-delete" disabled={pending} onClick={() => mutate(`${basePath}/reservations/${reservation.id}`, "DELETE")} aria-label={`${reservation.title} 삭제`}>×</button></div>
+                <div className="travel-plan-row-actions"><button type="button" disabled={pending} onClick={() => setEditingReservationId(reservation.id)} aria-label={`${reservation.title} 수정`}>수정</button><button type="button" className="travel-plan-delete" disabled={pending} onClick={() => mutate(`${basePath}/reservations/${reservation.id}`, "DELETE")} aria-label={`${reservation.title} 삭제`}><AppIcon name="trash" /><span>삭제</span></button></div>
               </li>
             )
           ))}</ul> : <p className="travel-plan-empty">항공·숙소 예약 날짜를 먼저 모아보세요.</p>}

@@ -18,7 +18,7 @@ export function SaveSharedItinerary({ travel, signedIn, isOwner, today, returnPa
   const ownerName = publicDisplayName(travel.owner.displayName);
 
   if (isOwner) {
-    return <Link href={`/studio/travels/${travel.id}/edit`} className="shared-itinerary-cta is-owner">내 여행 편집하기 <span aria-hidden="true">→</span></Link>;
+    return <Link href={`/studio/travels/${travel.id}/edit`} className="shared-itinerary-cta is-owner">내 여행 편집하기 </Link>;
   }
 
   if (!signedIn) {

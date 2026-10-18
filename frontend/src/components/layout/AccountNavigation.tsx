@@ -1,5 +1,6 @@
 "use client";
 
+import { AppIcon } from "@/components/common/AppIcon";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
@@ -99,8 +100,8 @@ export function AccountNavigation({
   if (!member) {
     return mobile ? (
       <>
-        <Link href="/register?next=%2Fstudio" onClick={onNavigate}><span>계정 만들기</span><span aria-hidden="true">→</span></Link>
-        <Link href="/login" onClick={onNavigate}><span>로그인</span><span aria-hidden="true">→</span></Link>
+        <Link href="/register?next=%2Fstudio" onClick={onNavigate}><span>계정 만들기</span></Link>
+        <Link href="/login" onClick={onNavigate}><span>로그인</span></Link>
       </>
     ) : (
       <div className="site-account-entry">
@@ -111,13 +112,13 @@ export function AccountNavigation({
   }
   return mobile ? (
     <>
-      <Link href="/globe" onClick={onNavigate}><span>내 지구본</span><span aria-hidden="true">→</span></Link>
-      <Link href="/studio" onClick={onNavigate}><span>내 여행</span><span aria-hidden="true">→</span></Link>
-      <Link href="/studio/plans/new" onClick={onNavigate}><span>새 여행 계획</span><span aria-hidden="true">＋</span></Link>
-      <Link href={`/${member.username}`} onClick={onNavigate}><span>공개 프로필</span><span aria-hidden="true">↗</span></Link>
-      <Link href="/settings" onClick={onNavigate}><span>내 정보</span><span aria-hidden="true">→</span></Link>
+      <Link href="/globe" onClick={onNavigate}><span><AppIcon name="globe" />내 지구본</span></Link>
+      <Link href="/studio" onClick={onNavigate}><span><AppIcon name="suitcase" />내 여행</span></Link>
+      <Link href="/studio/plans/new" onClick={onNavigate}><span>새 여행 계획</span><AppIcon name="plus" /></Link>
+      <Link href={`/${member.username}`} onClick={onNavigate}><span><AppIcon name="user" />공개 프로필</span></Link>
+      <Link href="/settings" onClick={onNavigate}><span><AppIcon name="shield" />내 정보</span></Link>
       <button type="button" className="site-mobile-menu__button is-logout" onClick={logout} disabled={logoutPending}>
-        <span>{logoutPending ? "로그아웃 중…" : "로그아웃"}</span><span aria-hidden="true">→</span>
+        <span>{logoutPending ? "로그아웃 중…" : "로그아웃"}</span>
       </button>
     </>
   ) : (
@@ -148,14 +149,14 @@ export function AccountNavigation({
         </button>
         {menuOpen ? (
           <div className="site-account-popover" role="menu">
-            <Link href="/globe" role="menuitem" onClick={() => setMenuOpen(false)}><span>내 지구본</span><span aria-hidden="true">↗</span></Link>
-            <Link href="/studio" role="menuitem" onClick={() => setMenuOpen(false)}><span>내 여행</span><span aria-hidden="true">→</span></Link>
-            <Link href="/studio/plans/new" role="menuitem" onClick={() => setMenuOpen(false)}><span>새 여행 계획</span><span aria-hidden="true">＋</span></Link>
-            <Link href={`/${member.username}`} role="menuitem" onClick={() => setMenuOpen(false)}><span>공개 프로필</span><span aria-hidden="true">↗</span></Link>
-            <Link href="/settings" role="menuitem" onClick={() => setMenuOpen(false)}><span>내 정보</span><span aria-hidden="true">→</span></Link>
+            <Link href="/globe" role="menuitem" onClick={() => setMenuOpen(false)}><span><AppIcon name="globe" />내 지구본</span></Link>
+            <Link href="/studio" role="menuitem" onClick={() => setMenuOpen(false)}><span><AppIcon name="suitcase" />내 여행</span></Link>
+            <Link href="/studio/plans/new" role="menuitem" onClick={() => setMenuOpen(false)}><span>새 여행 계획</span><AppIcon name="plus" /></Link>
+            <Link href={`/${member.username}`} role="menuitem" onClick={() => setMenuOpen(false)}><span><AppIcon name="user" />공개 프로필</span></Link>
+            <Link href="/settings" role="menuitem" onClick={() => setMenuOpen(false)}><span><AppIcon name="shield" />내 정보</span></Link>
             <button type="button" className="site-account-popover__logout" role="menuitem" onClick={logout} disabled={logoutPending}>
               <span>{logoutPending ? "로그아웃 중…" : "로그아웃"}</span>
-              <span aria-hidden="true">→</span>
+
             </button>
           </div>
         ) : null}

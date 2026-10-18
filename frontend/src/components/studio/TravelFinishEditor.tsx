@@ -116,7 +116,7 @@ export function TravelFinishEditor({ username, travel }: { username: string; tra
               </li>
             ))}
           </ol>
-          <Link href={`/studio/travels/${travel.id}/edit?plan=1#travel-place-editor`}>{unresolvedPlaces.length ? `미정 장소 ${unresolvedPlaces.length}개 수정` : "장소 수정"} <span aria-hidden="true">→</span></Link>
+          <Link href={`/studio/travels/${travel.id}/edit?plan=1#travel-place-editor`}>{unresolvedPlaces.length ? `미정 장소 ${unresolvedPlaces.length}개 수정` : "장소 수정"} </Link>
         </div>
       </section>
 

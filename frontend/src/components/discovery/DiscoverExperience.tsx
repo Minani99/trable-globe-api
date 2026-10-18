@@ -1,5 +1,6 @@
 "use client";
 
+import { AppIcon } from "@/components/common/AppIcon";
 import { FormEvent, useEffect, useRef, useState } from "react";
 
 import { MemberCard } from "@/components/discovery/MemberCard";
@@ -89,7 +90,7 @@ export function DiscoverExperience({
             autoComplete="off"
             maxLength={60}
           />
-          {query ? <button type="button" onClick={() => changeQuery("")} aria-label="검색어 지우기">×</button> : null}
+          {query ? <button type="button" onClick={() => changeQuery("")} aria-label="검색어 지우기"><AppIcon name="close" /></button> : null}
         </div>
         <p>이름이나 사용자명으로 친구를 찾아보세요.</p>
       </form>

@@ -167,7 +167,7 @@ export default async function TravelDetailPage(
         <article className="site-shell">
           <nav aria-label="현재 위치" className="travel-detail-breadcrumb">
             <Link href={profilePath(travel.owner.username)}>
-              <span aria-hidden="true">←</span>
+
               {ownerName}의 지구본
             </Link>
             <span aria-hidden="true">/</span>

@@ -1,5 +1,6 @@
 "use client";
 
+import { AppIcon } from "@/components/common/AppIcon";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
@@ -31,7 +32,7 @@ export function SettingsSessionActions({ member }: { member: AuthMember }) {
 
   return (
     <div className="settings-hero__actions" aria-label="계정 바로가기">
-      <Link href={`/${member.username}`} className="studio-secondary-action">공개 프로필 <span aria-hidden="true">↗</span></Link>
+      <Link href={`/${member.username}`} className="studio-secondary-action"><AppIcon name="user" />공개 프로필</Link>
       <button
         type="button"
         className="settings-session-logout"
@@ -39,7 +40,7 @@ export function SettingsSessionActions({ member }: { member: AuthMember }) {
         disabled={pending}
         aria-busy={pending}
       >
-        {pending ? "로그아웃 중…" : "로그아웃"}
+        <AppIcon name="logout" />{pending ? "로그아웃 중…" : "로그아웃"}
       </button>
     </div>
   );

@@ -2,6 +2,7 @@
 
 /* eslint-disable @next/next/no-html-link-for-pages -- Hard navigations keep cached offline documents usable without an RSC request. */
 
+import { AppIcon } from "@/components/common/AppIcon";
 import { useEffect, useState } from "react";
 
 import { MobileTripCompanion } from "@/components/layout/MobileTripCompanion";
@@ -21,7 +22,7 @@ export function OfflineTripShell() {
   return (
     <main id="main" className="offline-trip-page">
       <header className="offline-trip-header">
-        <a href="/offline" aria-label="오프라인 안내로 돌아가기">←</a>
+        <a href="/offline" aria-label="오프라인 안내로 돌아가기"><AppIcon name="arrow-left" /><span>돌아가기</span></a>
         <div>
           <span>TRAVEL GLOBE</span>
           <strong>{activeTravel?.cached.travel.title ?? "저장된 여행"}</strong>

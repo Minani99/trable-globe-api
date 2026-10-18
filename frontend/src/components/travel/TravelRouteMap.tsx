@@ -9,6 +9,8 @@ import type { TravelPlace } from "@/types";
 
 interface TravelRouteMapProps {
   places: TravelPlace[];
+  compact?: boolean;
+  placeNumbers?: Record<number, number>;
 }
 
 interface PanState {
@@ -38,7 +40,7 @@ const MIN_ZOOM = 3;
 const MAX_ZOOM = 18;
 
 /** A city map for place locations, paired with Google Maps travel directions. */
-export function TravelRouteMap({ places }: TravelRouteMapProps) {
+export function TravelRouteMap({ places, compact = false, placeNumbers }: TravelRouteMapProps) {
   const initialView = useMemo(
     () => createInitialView(places, DEFAULT_VIEWPORT.width, DEFAULT_VIEWPORT.height),
     [places],
@@ -177,8 +179,8 @@ export function TravelRouteMap({ places }: TravelRouteMapProps) {
   };
 
   return (
-    <div className="travel-route-explorer">
-      <GoogleDirectionsPanel stops={places.map((place) => ({ ...place, key: place.id }))} />
+    <div className={`travel-route-explorer${compact ? " is-compact" : ""}`}>
+      {!compact ? <GoogleDirectionsPanel stops={places.map((place) => ({ ...place, key: place.id }))} /> : null}
       <div className="travel-route-map-shell">
         <div className="travel-route-map-toolbar">
           <div>
@@ -235,7 +237,7 @@ export function TravelRouteMap({ places }: TravelRouteMapProps) {
                   className={`travel-route-marker${active ? " is-active" : ""}`}
                   role="button"
                   tabIndex={0}
-                  aria-label={`${index + 1}번째 장소 ${point.place.placeName}`}
+                  aria-label={`${placeNumbers?.[point.place.id] ?? index + 1}번째 장소 ${point.place.placeName}`}
                   onPointerDown={(event) => event.stopPropagation()}
                   onClick={() => selectPlace(point.place)}
                   onKeyDown={(event) => {
@@ -277,7 +279,7 @@ export function TravelRouteMap({ places }: TravelRouteMapProps) {
                     fontWeight="650"
                     fontFamily="var(--font-mono)"
                   >
-                    {index + 1}
+                    {placeNumbers?.[point.place.id] ?? index + 1}
                   </text>
                 </g>
               );
@@ -292,7 +294,7 @@ export function TravelRouteMap({ places }: TravelRouteMapProps) {
           ) : null}
 
           <div className="travel-route-map-active" aria-live="polite">
-            <span>{String(selectedIndex + 1).padStart(2, "0")}</span>
+            <span>{String(placeNumbers?.[selectedPlace.id] ?? selectedIndex + 1).padStart(2, "0")}</span>
             <div>
               <strong>{selectedPlace.placeName}</strong>
               <p>{[selectedPlace.city?.nameKo, selectedPlace.country.nameKo].filter(Boolean).join(" · ")}</p>
@@ -305,11 +307,11 @@ export function TravelRouteMap({ places }: TravelRouteMapProps) {
           </p>
         </div>
         <p id="travel-route-map-help" className="travel-route-map-help">
-          번호는 방문 순서입니다. 장소 목록에서도 위치를 선택할 수 있어요. 도로와 교통편을 따르는 경로는 위에서 확인하세요.
+          번호는 방문 순서입니다. 장소 목록에서도 위치를 선택할 수 있어요. 실제 도로와 교통편은 Google Maps 경로 보기에서 확인하세요.
         </p>
       </div>
 
-      <aside className="travel-itinerary" aria-label="방문 장소 일정">
+      {!compact ? <aside className="travel-itinerary" aria-label="방문 장소 일정">
         <div className="travel-itinerary__header">
           <div>
             <h3>일차별 일정</h3>
@@ -346,13 +348,13 @@ export function TravelRouteMap({ places }: TravelRouteMapProps) {
                     ) : null}
                     {place.memo ? <span className="travel-itinerary__memo">{place.memo}</span> : null}
                   </span>
-                  <span className="travel-itinerary__arrow" aria-hidden="true">↗</span>
+
                 </button>
               </li>
             );
           })}
         </ol>
-      </aside>
+      </aside> : null}
     </div>
   );
 }
@@ -377,7 +379,7 @@ function createInitialView(places: TravelPlace[], viewportWidth: number, viewpor
       Math.log2(Math.max(viewportHeight - verticalPadding, 140) / spanY),
     ),
   );
-  const zoom = clamp(Number.isFinite(fitZoom) ? fitZoom : 14, 11, 16);
+  const zoom = clamp(Number.isFinite(fitZoom) ? fitZoom : 14, MIN_ZOOM, 16);
   const centerWorld = lngLatToWorld(
     places.reduce((sum, place) => sum + place.longitude, 0) / places.length,
     places.reduce((sum, place) => sum + place.latitude, 0) / places.length,

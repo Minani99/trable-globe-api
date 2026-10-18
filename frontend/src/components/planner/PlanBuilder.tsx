@@ -264,7 +264,7 @@ export function PlanBuilder({
           : "일차별 여행 계획을 만들었습니다. 장소만 골라 채워보세요.",
         "success",
       );
-      router.push(`/studio/travels/${result.id}/edit?plan=1`);
+      router.push(`/studio/travels/${result.id}/edit?plan=1#travel-preparation`);
       router.refresh();
     } catch (cause) {
       setError(cause instanceof ApiError ? cause.message : "여행 계획을 만들지 못했습니다.");
@@ -457,7 +457,7 @@ export function PlanBuilder({
                   />
                 </label>
                 <a className="pb-secondary" href={googleMapsSearchUrl} target="_blank" rel="noopener noreferrer">
-                  Google 지도 <span aria-hidden="true">↗</span>
+                  Google 지도
                 </a>
               </div>
               <p className="pb-note">
@@ -597,7 +597,7 @@ export function PlanBuilder({
           {error ? <p className="pb-error" role="alert">{error}</p> : null}
 
           <button type="button" className="pb-primary pb-ticket__submit" onClick={createPlan} disabled={pending}>
-            {pending ? <><Spinner />{pendingLabel}</> : <>{submitLabel}<span aria-hidden="true">→</span></>}
+            {pending ? <><Spinner />{pendingLabel}</> : <>{submitLabel}</>}
           </button>
           <small>계획은 나에게만 보이며, 다녀온 뒤 기록으로 공개할 수 있어요.</small>
         </div>

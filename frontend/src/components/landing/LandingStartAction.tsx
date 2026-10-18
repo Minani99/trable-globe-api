@@ -60,7 +60,7 @@ export function LandingStartAction() {
       title={action?.trip.travel.title}
     >
       <span>{member ? action?.label ?? (loaded ? "새 여행 계획" : "내 여행 열기") : "계정 만들기"}</span>
-      <span className="landing-primary-cta__arrow" aria-hidden="true">↗</span>
+
     </Link>
     <Link href={member ? "/studio" : profilePath(siteConfig.demoUsername)} className="landing-secondary-cta">
       {member ? "내 여행 전체 보기" : "샘플 지구본 보기"}

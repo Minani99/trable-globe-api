@@ -38,7 +38,7 @@ export function JourneySummary({ travel, ownerName, locationLabel }: JourneySumm
           <small>프로필 보기</small>
           <strong>{ownerName}의 여행 세계</strong>
         </span>
-        <i aria-hidden="true">→</i>
+
       </Link>
     </section>
   );

@@ -1,5 +1,6 @@
 "use client";
 
+import { AppIcon } from "@/components/common/AppIcon";
 import { useEffect, useState } from "react";
 
 export type FeedbackTone = "success" | "error" | "info";
@@ -45,7 +46,7 @@ export function AppFeedback() {
             {feedback.tone === "success" ? "✓" : feedback.tone === "error" ? "!" : "i"}
           </span>
           <span>{feedback.message}</span>
-          <button type="button" onClick={() => setFeedback(null)} aria-label="알림 닫기">×</button>
+          <button type="button" onClick={() => setFeedback(null)} aria-label="알림 닫기"><AppIcon name="close" /></button>
         </div>
       ) : null}
     </div>

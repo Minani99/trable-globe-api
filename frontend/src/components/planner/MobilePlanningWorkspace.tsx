@@ -4,18 +4,18 @@ import { createContext, useCallback, useEffect, useMemo, useRef, useState, type 
 import { WorkspaceTabs } from "@/components/common/WorkspaceTabs";
 import styles from "./TravelWorkspace.module.css";
 
-const TABS = ["일정", "사진·메모", "여행 정보", "예산·예약", "준비물", "항공·날씨"] as const;
-const HASHES = ["#travel-place-editor", "#travel-photo-editor", "#travel-info-editor", "#travel-budget", "#travel-checklist", "#travel-preparation"];
-const EDITOR_SECTIONS = [1, 2, 0];
+const TABS = ["항공권", "준비물", "예산·예약", "일정", "사진·메모", "여행 정보"] as const;
+const HASHES = ["#travel-preparation", "#travel-checklist", "#travel-budget", "#travel-place-editor", "#travel-photo-editor", "#travel-info-editor"];
+const EDITOR_SECTIONS = [-1, -1, -1, 1, 2, 0];
 
 export const TravelWorkspaceContext = createContext<{
   section: number; selectSection: (section: number) => void; tabsId: string;
 } | null>(null);
 
-export function MobilePlanningWorkspace({ travelId, preparation, checklist, budget, editor }: {
-  travelId: number; preparation: ReactNode; checklist: ReactNode; budget: ReactNode; editor: ReactNode;
+export function MobilePlanningWorkspace({ travelId, preparation, checklist, budget, editor, weather }: {
+  travelId: number; preparation: ReactNode; checklist: ReactNode; budget: ReactNode; editor: ReactNode; weather?: ReactNode;
 }) {
-  const [active, setActive] = useState(0);
+  const [active, setActive] = useState(3);
   const workspaceRef = useRef<HTMLElement>(null);
   const tabsId = `trip-workspace-${travelId}`;
   useEffect(() => {
@@ -23,7 +23,7 @@ export function MobilePlanningWorkspace({ travelId, preparation, checklist, budg
       const hash = window.location.hash;
       const index = HASHES.indexOf(hash);
       if (index >= 0) setActive(index);
-      else if (["#travel-editor", "#itinerary-editor", "#travel-note-editor"].includes(hash)) setActive(0);
+      else if (["#travel-editor", "#itinerary-editor", "#travel-note-editor"].includes(hash)) setActive(3);
     }
     syncHash();
     window.addEventListener("hashchange", syncHash);
@@ -41,16 +41,17 @@ export function MobilePlanningWorkspace({ travelId, preparation, checklist, budg
     }
   }, []);
   const selectSection = useCallback((section: number) => select(EDITOR_SECTIONS.indexOf(section)), [select]);
-  const context = useMemo(() => ({ section: EDITOR_SECTIONS[active] ?? 1, selectSection, tabsId }), [active, selectSection, tabsId]);
+  const context = useMemo(() => ({ section: active >= 3 ? EDITOR_SECTIONS[active] : 1, selectSection, tabsId }), [active, selectSection, tabsId]);
   return (
     <section ref={workspaceRef} className={styles.workspace} aria-label="여행 계획 편집">
+      {weather}
       <WorkspaceTabs id={tabsId} label="여행 작업" items={TABS} active={active} onChange={select} />
       <TravelWorkspaceContext.Provider value={context}>
-        <div className={styles.panel} hidden={active > 2}>{editor}</div>
+        <div className={styles.panel} hidden={active < 3}>{editor}</div>
       </TravelWorkspaceContext.Provider>
-      {[budget, checklist, preparation].map((panel, index) => (
-        <div key={index} className={styles.panel} id={`${tabsId}-panel-${index + 3}`} role="tabpanel"
-          aria-labelledby={`${tabsId}-tab-${index + 3}`} hidden={active !== index + 3}>{panel}</div>
+      {[preparation, checklist, budget].map((panel, index) => (
+        <div key={index} className={styles.panel} id={`${tabsId}-panel-${index}`} role="tabpanel"
+          aria-labelledby={`${tabsId}-tab-${index}`} hidden={active !== index}>{panel}</div>
       ))}
     </section>
   );

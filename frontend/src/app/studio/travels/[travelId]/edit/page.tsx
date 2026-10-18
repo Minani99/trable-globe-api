@@ -1,3 +1,5 @@
+import { TripWeather } from "@/components/travel/TripWeather";
+import { AppIcon } from "@/components/common/AppIcon";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
@@ -39,6 +41,7 @@ export default async function EditTravelPage(props: PageProps<"/studio/travels/[
   const editor = finishMode ? <TravelFinishEditor username={member.username} travel={travel} /> : (
     planningMode ? (
       <MobilePlanningWorkspace
+        weather={<TripWeather startDate={travel.startDate} endDate={travel.endDate} latitude={travel.places[0]?.latitude ?? travel.countries[0]?.latitude ?? 37.5665} longitude={travel.places[0]?.longitude ?? travel.countries[0]?.longitude ?? 126.978} label={travel.places[0]?.city?.nameKo ?? travel.countries[0]?.nameKo ?? "여행지"} />}
         travelId={travel.id}
         preparation={<TravelPreparationHub startDate={travel.startDate} endDate={travel.endDate} countryCode={travel.countries[0]?.iso2Code ?? travel.places[0]?.country.iso2Code ?? ""} destinationLabel={travel.places[0]?.city?.nameKo ?? travel.countries[0]?.nameKo ?? "여행지"} latitude={travel.places[0]?.latitude ?? travel.countries[0]?.latitude ?? 37.5665} longitude={travel.places[0]?.longitude ?? travel.countries[0]?.longitude ?? 126.978} places={travel.places} />}
         checklist={<TravelChecklist travelId={travel.id} initialTasks={tasks ?? []} />}
@@ -52,7 +55,7 @@ export default async function EditTravelPage(props: PageProps<"/studio/travels/[
       <SiteHeader username={member.username} member={member} />
       <main id="main" className="studio-page flex-1">
         <div className={`site-shell travel-editor-shell${finishMode ? " is-finishing" : ""}`}>
-          <nav className="studio-breadcrumb" aria-label="현재 위치"><Link href="/studio">← 내 여행</Link><Link href={`/studio/travels/${travel.id}/go`}>여행용 보기 ↗</Link>{travel.visibility === "PUBLIC" ? <Link href={`/${member.username}/travel/${travel.id}`}>공개 기록 보기 ↗</Link> : null}{finishMode ? <Link href={`/studio/travels/${travel.id}/edit?plan=1`}>전체 편집</Link> : null}</nav>
+          <nav className="studio-breadcrumb" aria-label="현재 위치"><Link href="/studio"><AppIcon name="suitcase" />내 여행</Link><Link href={`/studio/travels/${travel.id}/go`}><AppIcon name="route" />여행용 보기</Link>{travel.visibility === "PUBLIC" ? <Link href={`/${member.username}/travel/${travel.id}`}>공개 기록 보기</Link> : null}{finishMode ? <Link href={`/studio/travels/${travel.id}/edit?plan=1`}>전체 편집</Link> : null}</nav>
           <header className="travel-editor-hero">
             <p className="page-caption">{travelMode ? "여행 중" : travel.startDate > today ? "계획 중" : "다녀온 여행"} · {travel.visibility === "PUBLIC" ? "공개" : "비공개"}</p>
             <h1>{finishMode ? "여행 기록 정리" : travel.title}</h1>

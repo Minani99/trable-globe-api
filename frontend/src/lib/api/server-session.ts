@@ -1,5 +1,6 @@
 import "server-only";
 
+import { cache } from "react";
 import { cookies } from "next/headers";
 
 import type { ApiEnvelope } from "@/lib/api/client";
@@ -29,6 +30,6 @@ export async function authenticatedBackendGet<T>(path: string): Promise<T | null
   return envelope.data;
 }
 
-export function getCurrentMember(): Promise<AuthMember | null> {
+export const getCurrentMember = cache(function getCurrentMember(): Promise<AuthMember | null> {
   return authenticatedBackendGet<AuthMember>("/api/auth/me");
-}
+});

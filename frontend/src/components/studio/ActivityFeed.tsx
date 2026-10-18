@@ -51,7 +51,7 @@ export function ActivityFeed({ events }: { events: ActivityEvent[] }) {
 
 function ActivityLinkHint({ label }: { label: string }) {
   const { pending } = useLinkStatus();
-  return <span className="studio-activity__link-hint" role="status">{pending ? "여는 중…" : <>{label} <span aria-hidden="true">→</span></>}</span>;
+  return <span className="studio-activity__link-hint" role="status">{pending ? "여는 중…" : <>{label} </>}</span>;
 }
 
 function activityCopy(event: ActivityEvent): string {

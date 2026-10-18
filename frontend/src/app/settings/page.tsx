@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { AppIcon } from "@/components/common/AppIcon";
 import { redirect } from "next/navigation";
 
 import { SiteFooter } from "@/components/layout/SiteFooter";
@@ -30,15 +31,15 @@ export default async function SettingsPage() {
           <header className="studio-hero settings-hero">
             <div>
               <h1>내 정보</h1>
-              <p>프로필과 로그인 정보를 관리합니다.</p>
+              <p>{member.displayName}님의 여행과 계정을 위한 공간</p>
             </div>
             <SettingsSessionActions member={member} />
           </header>
           <div className="settings-workspace">
             <nav className="settings-section-nav" aria-label="내 정보 항목">
-              <a href="#profile">프로필</a>
-              <a href="#account">로그인 정보</a>
-              <a href="#security">비밀번호</a>
+              <a href="#profile"><AppIcon name="user" /><span>프로필<small>사진과 소개</small></span></a>
+              <a href="#account"><AppIcon name="mail" /><span>로그인 정보<small>아이디와 이메일</small></span></a>
+              <a href="#security"><AppIcon name="shield" /><span>비밀번호<small>계정 보안</small></span></a>
             </nav>
             <div className="settings-layout">
               <ProfileEditor member={member} />

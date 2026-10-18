@@ -1,5 +1,6 @@
 "use client";
 
+import { AppIcon } from "@/components/common/AppIcon";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { FormEvent, useState } from "react";
@@ -199,7 +200,7 @@ export function AccountSettings({ member }: { member: AuthMember }) {
           {developmentToken ? <Link href={`/verify-email?token=${encodeURIComponent(developmentToken)}`}>개발 환경에서 인증 계속하기 →</Link> : null}
         </div>
       ) : null}
-      <div className="studio-account__links"><button type="button" onClick={() => setDeleteOpen((current) => !current)}>계정 삭제</button></div>
+      <div className="studio-account__links"><button type="button" onClick={() => setDeleteOpen((current) => !current)}aria-expanded={deleteOpen}><AppIcon name="trash" />계정 삭제</button></div>
       {deleteOpen ? (
         <form className="studio-account__delete" onSubmit={deleteAccount}>
           <strong>계정과 모든 여행을 영구 삭제합니다.</strong>

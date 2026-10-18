@@ -36,7 +36,7 @@ export default function LandingPage() {
             <JournalPhoto />
             <figcaption><span>JAPAN · KYOTO</span><a href="https://unsplash.com/photos/a-narrow-street-with-a-pagoda-in-the-background-yQvYgnh9XEg" target="_blank" rel="noreferrer">Photo · Filipe Freitas ↗</a></figcaption>
           </figure>
-          <div className="landing-journal__copy"><p className="page-caption">나라 하나, 기억 하나</p><h2 id="landing-journal-heading">지도 위의 한 점이<br />나만의 이야기가 되도록.</h2><p>골목에서 찍은 사진부터 다시 가고 싶은 장소까지.<br />여행의 순간을 지구본에 차곡차곡 남겨두세요.</p><Link href="/traveler">샘플 여행자의 기록 <span aria-hidden="true">↗</span></Link></div>
+          <div className="landing-journal__copy"><p className="page-caption">나라 하나, 기억 하나</p><h2 id="landing-journal-heading">지도 위의 한 점이<br />나만의 이야기가 되도록.</h2><p>골목에서 찍은 사진부터 다시 가고 싶은 장소까지.<br />여행의 순간을 지구본에 차곡차곡 남겨두세요.</p><Link href="/traveler">샘플 여행자의 기록 </Link></div>
         </section>
 
         <LandingOverview />

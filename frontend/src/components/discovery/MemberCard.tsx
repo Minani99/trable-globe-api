@@ -52,7 +52,7 @@ export function MemberCard({ member, viewerAuthenticated }: { member: MemberDisc
       </div>
 
       <div className="member-card__actions">
-        <Link href={`/${member.username}`}>프로필 보기 <span aria-hidden="true">→</span></Link>
+        <Link href={`/${member.username}`}>프로필 보기 </Link>
         {viewerAuthenticated ? (
           <FollowButton
             username={member.username}

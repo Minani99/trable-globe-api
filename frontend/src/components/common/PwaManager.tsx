@@ -1,5 +1,6 @@
 "use client";
 
+import { AppIcon } from "@/components/common/AppIcon";
 import { usePathname } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 
@@ -90,7 +91,7 @@ export function PwaManager() {
         <p>{showIosHelp ? "Safari 공유 버튼을 누른 뒤 ‘홈 화면에 추가’를 선택하세요." : "여행 중에는 앱처럼 빠르게 열 수 있어요."}</p>
       </div>
       {!showIosHelp ? <button type="button" onClick={() => void install()}>{installPrompt ? "설치" : "방법 보기"}</button> : null}
-      <button type="button" className="pwa-install__close" onClick={dismiss} aria-label="앱 설치 안내 닫기">×</button>
+      <button type="button" className="pwa-install__close" onClick={dismiss} aria-label="앱 설치 안내 닫기"><AppIcon name="close" /></button>
     </aside>
   );
 }

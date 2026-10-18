@@ -1,5 +1,6 @@
 "use client";
 
+import { AppIcon } from "@/components/common/AppIcon";
 import { useState } from "react";
 
 interface ShareProfileButtonProps {
@@ -49,8 +50,8 @@ export function ShareProfileButton({
 
   return (
     <div className={`profile-share profile-share--${variant}`}>
-      <button type="button" onClick={shareProfile}>
-        <span aria-hidden="true">↗</span>
+      <button type="button" onClick={shareProfile}><AppIcon name="share" />
+
         {variant === "recap"
           ? selectedYear ? `${selectedYear} 리캡 공유` : "전체 리캡 공유"
           : "지구본 공유"}

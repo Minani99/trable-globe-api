@@ -111,13 +111,13 @@ test("몇 번의 선택으로 여행 계획을 만들고 일차별 일정으로 
   await planStepNavigation.getByRole("button", { name: "다음" }).click();
   await page.getByRole("button", { name: "일정 만들기", exact: true }).click();
 
-  await expect(page).toHaveURL(/\/studio\/travels\/\d+\/edit\?plan=1$/, { timeout: 30_000 });
+  await expect(page).toHaveURL(/\/studio\/travels\/\d+\/edit\?plan=1#travel-preparation$/, { timeout: 30_000 });
   const travelId = Number(page.url().match(/\/travels\/(\d+)\/edit/)?.[1]);
   expect(travelId).toBeGreaterThan(0);
   await expect(page.getByRole("heading", { name: "일본 3일 여행" })).toBeVisible();
   const workspaceTabs = page.getByRole("tablist", { name: "여행 작업", exact: true });
-  await workspaceTabs.getByRole("tab", { name: "항공·날씨", exact: true }).click();
-  await expect(page.getByRole("heading", { name: "예약과 여행 준비" })).toBeVisible();
+  await workspaceTabs.getByRole("tab", { name: "항공권", exact: true }).click();
+  await expect(page.getByRole("heading", { name: "항공권부터 준비하기" })).toBeVisible();
   await expect(page.getByRole("combobox", { name: "출발 공항 검색" })).toHaveValue("서울 · 서울 모든 공항");
   const destinationAirport = page.getByRole("combobox", { name: "도착 공항 검색" });
   await expect(destinationAirport).toHaveValue("도쿄 · 도쿄 모든 공항");
@@ -129,7 +129,7 @@ test("몇 번의 선택으로 여행 계획을 만들고 일차별 일정으로 
   await page.getByRole("option", { name: /Cairo International Airport.*CAI/ }).click();
   await expect(destinationAirport).toHaveValue("Cairo · Cairo International Airport");
   await expect(page.getByRole("link", { name: /이 일정으로 항공권 찾기/ })).toHaveAttribute("href", /skyscanner\.co\.kr\/transport\/flights\/sel\/cai\//);
-  await expect(page.getByText(/예보는 출발 16일 전부터 제공/)).toBeVisible();
+  await expect(page.getByText(/최대 16일 예보/)).toBeVisible();
   await workspaceTabs.getByRole("tab", { name: "준비물", exact: true }).click();
   await expect(page.getByRole("heading", { name: "여행 준비 체크리스트" })).toBeVisible();
   await expect(page.locator(".travel-checklist__items li")).toHaveCount(6);

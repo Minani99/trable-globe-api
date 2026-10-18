@@ -152,7 +152,7 @@ export function LandingGlobePreview() {
                     className="landing-landmark-card__action"
                   >
                     <span>{isOwnWorld ? "내 지구본 보기" : "샘플 프로필 보기"}</span>
-                    <span aria-hidden="true">→</span>
+
                   </Link>
                 ) : null}
               </>
@@ -171,7 +171,7 @@ export function LandingGlobePreview() {
 
         <figcaption className="landing-globe-caption">
           <span>지구본을 돌려보고, 나라를 눌러보세요</span>
-          <Link href="/globe">크게 보기 <span aria-hidden="true">↗</span></Link>
+          <Link href="/globe">크게 보기 </Link>
         </figcaption>
       </figure>
     </div>
