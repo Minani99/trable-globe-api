@@ -32,7 +32,7 @@ export function SettingsSessionActions({ member }: { member: AuthMember }) {
 
   return (
     <div className="account-hero__actions" aria-label="계정 바로가기">
-      <Link href={`/${member.username}`} className="account-button is-secondary">공개 프로필 <Icon name="arrow-up-right" /></Link>
+      <Link href={`/${member.username}`} className="account-button is-secondary"><Icon name="user" />공개 프로필</Link>
       <button
         type="button"
         className="account-button is-ghost"

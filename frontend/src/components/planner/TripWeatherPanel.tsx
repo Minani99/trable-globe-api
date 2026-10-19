@@ -49,10 +49,11 @@ export function TripWeatherPanel({
           <p>{description(state.status, weather, destinationLabel)}</p>
         </div>
         {rainyForecast.length ? (
-          <a className="trip-weather__action" href="#itinerary-editor">비 오는 날 일정 점검 <Icon name="arrow-right" /></a>
+          <a className="trip-weather__action" href="#itinerary-editor">비 오는 날 일정 점검</a>
         ) : null}
       </header>
 
+      {state.status === "error" ? <button className="trip-weather__action" type="button" onClick={state.refresh}><Icon name="refresh" />다시 확인</button> : null}
       {state.status === "loading" ? (
         <ol className="trip-weather__days is-loading" aria-hidden="true">
           {datesBetween(startDate, endDate).slice(0, 7).map((date) => <li key={date} />)}

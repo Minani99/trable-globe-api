@@ -1,10 +1,16 @@
 "use client";
 
+import { AppIcon } from "@/components/common/AppIcon";
 import Link from "next/link";
+import dynamic from "next/dynamic";
+import { GoogleDirectionsPanel } from "@/components/travel/GoogleDirectionsPanel";
+import { TripWeather } from "@/components/travel/TripWeather";
+import { isDirectionsStopLocated } from "@/lib/google-directions";
+
+const DayMap = dynamic(() => import("@/components/travel/TravelRouteMap").then((module) => module.TravelRouteMap), { loading: () => <div className="day-map-placeholder" role="status">장소 지도를 불러오는 중…</div> });
 import { useEffect, useMemo, useRef, useState } from "react";
 
 import { TravelActionIcon } from "@/components/common/TravelActionIcon";
-import { WeatherIcon } from "@/components/common/WeatherIcon";
 import { ApiError, apiMutation } from "@/lib/api/client";
 import {
   applyPlaceUpdate,
@@ -17,8 +23,6 @@ import {
 import { isPlaceholderPlaceName } from "@/lib/travel-placeholders";
 import { deleteUploadedPhoto, getUploadConfiguration, MAX_SOURCE_IMAGE_BYTES, uploadPhoto } from "@/lib/uploads/client";
 import type { TravelDetail, TravelPlace } from "@/types";
-import { formatRain, isRainyDay, useTripWeather, WEATHER_SOURCE_LABEL, weatherLabel, type WeatherDay } from "@/lib/weather";
-import { Icon } from "@/components/common/Icon";
 
 export function MobileTripCompanion({
   travel,
@@ -55,11 +59,6 @@ export function MobileTripCompanion({
   const nextPlace = dayPlaces.find((place) => !place.completedAt) ?? null;
   const selectedPlace = dayPlaces.find((place) => place.id === selectedPlaceId) ?? nextPlace ?? dayPlaces[0] ?? null;
   const location = dayPlaces[0] ?? currentTravel.places[0];
-  const tripWeather = useTripWeather(location ? {
-    latitude: location.latitude, longitude: location.longitude, startDate: currentTravel.startDate, endDate: currentTravel.endDate,
-  } : null);
-  const weatherByDate = useMemo(() => new Map((tripWeather.weather?.days ?? []).map((day) => [day.date, day])), [tripWeather.weather]);
-  const visibleForecast = weatherByDate.get(viewDate) ?? null;
   const completedCount = dayPlaces.filter((place) => place.completedAt).length;
 
   useEffect(() => {
@@ -294,12 +293,7 @@ export function MobileTripCompanion({
           <span>DAY {dayNumber} · {formatShortDate(viewDate)}</span>
           <h2 id={`mobile-trip-${variant}-${currentTravel.id}`}>{viewingToday ? "오늘 일정" : `${dayNumber}일차 일정`}</h2>
         </div>
-        {visibleForecast ? (
-          <p className={isRainyDay(visibleForecast) ? "has-rain" : undefined} title={weatherLabel(visibleForecast.weatherCode)}>
-            <strong><WeatherIcon code={visibleForecast.weatherCode} /></strong>
-            <span>{[formatTemperature(visibleForecast), formatRain(visibleForecast), visibleForecast.source === "forecast" ? null : WEATHER_SOURCE_LABEL[visibleForecast.source]].filter(Boolean).join(" · ")}</span>
-          </p>
-        ) : null}
+
       </header>
 
       {variant === "page" && travelDates.length > 1 ? (
@@ -323,11 +317,6 @@ export function MobileTripCompanion({
             >
               <strong>DAY {index + 1}</strong>
               <span>{formatDayTab(date)}</span>
-              {weatherByDate.get(date) ? (
-                <i className="mobile-trip-companion__day-weather" title={weatherLabel(weatherByDate.get(date)!.weatherCode)}>
-                  <WeatherIcon code={weatherByDate.get(date)!.weatherCode} />{formatTemperature(weatherByDate.get(date)!)}
-                </i>
-              ) : null}
               {date === today ? <small>오늘</small> : null}
             </button>
           ))}
@@ -354,11 +343,21 @@ export function MobileTripCompanion({
         </div>
       ) : null}
 
+      {location ? <TripWeather latitude={location.latitude} longitude={location.longitude} startDate={viewDate} endDate={viewDate} label={location.city?.nameKo ?? location.country.nameKo} /> : null}
+      {variant === "page" ? <>
+        {dayPlaces.length ? <section className="day-route-overview" aria-label="하루 동선 한눈에 보기">
+          <header><AppIcon name="route" /><h3>하루 동선</h3><span>{dayPlaces.length}곳</span></header>
+          <ol className="day-route-stops">{dayPlaces.map((place, index) => <li key={place.id}><b>{index + 1}</b><span>{place.placeName}</span></li>)}</ol>
+          <DayMap key={viewDate} compact placeNumbers={Object.fromEntries(dayPlaces.map((place, index) => [place.id, index + 1]))} places={dayPlaces.filter((place) => isDirectionsStopLocated({ ...place, key: place.id }))} />
+          <GoogleDirectionsPanel activeDate={viewDate} stops={dayPlaces.map((place) => ({ ...place, key: place.id }))} />
+        </section> : null}
+      </> : null}
+
       {nextPlace ? (
         <a className="mobile-trip-companion__next" href={googleMapsUrl(nextPlace)} target="_blank" rel="noreferrer">
           <span>다음 일정</span>
-          <strong>{formatTime(nextPlace.startTime) ?? "시간 미정"} · {nextPlace.placeName}</strong>
-          <small>지도에서 위치 보기 <b aria-hidden="true"><Icon name="arrow-up-right" /></b></small>
+          <strong>{dayPlaces.indexOf(nextPlace) + 1}번째 · {nextPlace.placeName}</strong>
+          <small>지도에서 위치 보기 </small>
         </a>
       ) : dayPlaces.length ? (
         <div className="mobile-trip-companion__empty is-complete">
@@ -374,9 +373,9 @@ export function MobileTripCompanion({
 
       {dayPlaces.length ? (
         <ol className="mobile-trip-companion__timeline" aria-label={`${currentTravel.title} ${viewingToday ? "오늘 일정" : `${dayNumber}일차 일정`}`}>
-          {dayPlaces.map((place) => (
+          {dayPlaces.map((place, index) => (
             <li key={place.id} className={`${place.id === nextPlace?.id ? "is-next " : ""}${place.completedAt ? "is-complete" : ""}`.trim()}>
-              <time>{formatTime(place.startTime) ?? "--:--"}</time>
+              <span className="trip-stop-number" aria-label={`${index + 1}번째 장소`}>{index + 1}</span>
               <button
                 type="button"
                 aria-label={`${place.placeName} ${place.completedAt ? "미완료로 변경" : "완료"}`}
@@ -384,10 +383,10 @@ export function MobileTripCompanion({
                 disabled={pendingAction !== null}
                 onClick={() => void updatePlace(place, !place.completedAt)}
                 aria-busy={pendingPlaceId === place.id}
-              ><span aria-hidden="true">{pendingPlaceId === place.id ? "…" : place.completedAt ? <Icon name="check" /> : null}</span><small>{pendingPlaceId === place.id ? "저장 중" : place.completedAt ? "완료됨" : "완료"}</small></button>
+              ><span aria-hidden="true">{pendingPlaceId === place.id ? "…" : place.completedAt ? "✓" : ""}</span><small>{pendingPlaceId === place.id ? "저장 중" : place.completedAt ? "완료됨" : "완료"}</small></button>
               <a href={googleMapsUrl(place)} target="_blank" rel="noreferrer">
                 <strong>{place.placeName}</strong>
-                <small>{place.city?.nameKo ?? place.country.nameKo}{place.durationMinutes ? ` · ${formatDuration(place.durationMinutes)}` : ""}{place.memo ? ` · ${place.memo}` : ""}</small>
+                <small>{place.startTime ? `${formatTime(place.startTime)} · ` : ""}{place.city?.nameKo ?? place.country.nameKo}{place.durationMinutes ? ` · ${formatDuration(place.durationMinutes)}` : ""}{place.memo ? ` · ${place.memo}` : ""}</small>
               </a>
             </li>
           ))}
@@ -399,11 +398,11 @@ export function MobileTripCompanion({
         <button type="button" aria-pressed={composer === "photo"} onClick={() => openComposer("photo")} disabled={!dayPlaces.length || pendingAction !== null}><TravelActionIcon name="photo" /><strong>사진</strong></button>
         <button type="button" aria-pressed={composer === "note"} onClick={() => openComposer("note")} disabled={!dayPlaces.length || pendingAction !== null}><TravelActionIcon name="note" /><strong>메모</strong></button>
       </nav>
-      {variant === "sheet" ? <Link className="mobile-trip-companion__all-days" href={`/studio/travels/${currentTravel.id}/go`}>다른 날짜 일정 보기 <span aria-hidden="true"><Icon name="arrow-right" /></span></Link> : null}
+      {variant === "sheet" ? <Link className="mobile-trip-companion__all-days" href={`/studio/travels/${currentTravel.id}/go`}>다른 날짜 일정 보기 </Link> : null}
 
       {composer ? (
         <fieldset ref={composerRef} disabled={pendingAction !== null} className="mobile-trip-companion__composer" aria-label={composer === "note" ? "빠른 메모" : "빠른 사진 기록"}>
-          <header><strong>{composer === "note" ? "메모 남기기" : "사진 기록하기"}</strong><button type="button" onClick={() => setComposer(null)} aria-label="빠른 기록 닫기"><Icon name="close" /></button></header>
+          <header><strong>{composer === "note" ? "메모 남기기" : "사진 기록하기"}</strong><button type="button" onClick={() => setComposer(null)} aria-label="빠른 기록 닫기"><AppIcon name="close" /></button></header>
           {dayPlaces.length > 1 ? (
             <label><span>연결할 일정</span><select value={selectedPlace?.id ?? ""} onChange={(event) => { const id = Number(event.target.value); const place = dayPlaces.find((item) => item.id === id); setSelectedPlaceId(id); if (composer === "note") setNote(place?.memo ?? ""); }}>{dayPlaces.map((place) => <option key={place.id} value={place.id}>{formatTime(place.startTime) ?? "시간 미정"} · {place.placeName}</option>)}</select></label>
           ) : selectedPlace ? <p className="mobile-trip-companion__composer-place">{selectedPlace.placeName}</p> : null}
@@ -422,7 +421,7 @@ export function MobileTripCompanion({
 function placesForDay(places: TravelPlace[], today: string): TravelPlace[] {
   return places
     .filter((place) => place.visitedAt === today && !isPlaceholderPlaceName(place.placeName))
-    .sort((left, right) => (formatTime(left.startTime) ?? "99:99").localeCompare(formatTime(right.startTime) ?? "99:99") || left.sortOrder - right.sortOrder);
+    .sort((left, right) => left.sortOrder - right.sortOrder);
 }
 
 function formatTime(value: string | null): string | null {
@@ -470,11 +469,6 @@ function formatDuration(minutes: number): string {
   const hours = Math.floor(minutes / 60);
   const remainder = minutes % 60;
   return remainder ? `${hours}시간 ${remainder}분` : `${hours}시간`;
-}
-
-function formatTemperature(day: WeatherDay): string {
-  if (day.temperatureMax == null) return weatherLabel(day.weatherCode);
-  return `${Math.round(day.temperatureMax)}°`;
 }
 
 function formatBytes(bytes: number): string {

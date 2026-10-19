@@ -45,8 +45,8 @@ type DailyRow = {
 };
 
 export async function GET(request: NextRequest) {
-  const latitude = Number(request.nextUrl.searchParams.get("latitude"));
-  const longitude = Number(request.nextUrl.searchParams.get("longitude"));
+  const latitude = Number(request.nextUrl.searchParams.get("latitude") || NaN);
+  const longitude = Number(request.nextUrl.searchParams.get("longitude") || NaN);
   const startDate = request.nextUrl.searchParams.get("startDate") ?? "";
   const endDate = request.nextUrl.searchParams.get("endDate") ?? "";
 
@@ -211,7 +211,7 @@ function round(value: number, digits: number): number {
 }
 
 function isIsoDate(value: string): boolean {
-  return /^\d{4}-\d{2}-\d{2}$/.test(value) && !Number.isNaN(Date.parse(`${value}T00:00:00Z`));
+  return /^\d{4}-\d{2}-\d{2}$/.test(value) && !Number.isNaN(Date.parse(`${value}T00:00:00Z`)) && new Date(`${value}T00:00:00Z`).toISOString().slice(0, 10) === value;
 }
 
 function addDays(value: string, amount: number): string {

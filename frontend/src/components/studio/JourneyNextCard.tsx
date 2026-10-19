@@ -4,7 +4,6 @@ import { JourneyArtwork } from "@/components/common/JourneyArtwork";
 import type { JourneyNextAction } from "@/lib/journey-next-action";
 import { formatDateRange } from "@/lib/utils/format";
 import styles from "./JourneyNextCard.module.css";
-import { Icon } from "@/components/common/Icon";
 
 export function JourneyNextCard({ action }: { action: JourneyNextAction }) {
   const { trip: { travel }, phase } = action;
@@ -19,9 +18,9 @@ export function JourneyNextCard({ action }: { action: JourneyNextAction }) {
           <h2 id="journey-next-heading">{travel.title}</h2>
           <p>장소 {travel.placeCount}곳 · 사진 {travel.photoCount}장</p>
         </div>
-        <Link href={action.href} className={styles.action}>{action.label}<span aria-hidden="true"><Icon name="arrow-right" /></span></Link>
+        <Link href={action.href} className={styles.action}>{action.label}</Link>
       </div>
-      {phase === "plan" ? <Link className={styles.secondary} href={`/studio/travels/${travel.id}/go`}>날짜별 일정 미리보기 <span aria-hidden="true"><Icon name="arrow-right" /></span></Link> : null}
+      {phase === "plan" ? <Link className={styles.secondary} href={`/studio/travels/${travel.id}/go`}>날짜별 일정 미리보기 </Link> : null}
       </div>
     </section>
   );

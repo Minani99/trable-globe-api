@@ -23,7 +23,6 @@ import { formatDate, formatDateRange, formatDuration } from "@/lib/utils/format"
 import { todayInKorea } from "@/lib/utils/date";
 import { publicDisplayName } from "@/lib/utils/profile";
 import type { TravelDetail, TravelNavigationLink, TravelSocial } from "@/types";
-import { Icon } from "@/components/common/Icon";
 
 const loadTravel = cache((travelId: number) => fetchTravelDetail(travelId));
 
@@ -168,7 +167,7 @@ export default async function TravelDetailPage(
         <article className="site-shell">
           <nav aria-label="현재 위치" className="travel-detail-breadcrumb">
             <Link href={profilePath(travel.owner.username)}>
-              <span aria-hidden="true"><Icon name="arrow-left" /></span>
+
               {ownerName}의 지구본
             </Link>
             <span aria-hidden="true">/</span>
@@ -226,7 +225,7 @@ export default async function TravelDetailPage(
               <div className="travel-detail-hero__actions">
                 <a href="#route" className="travel-detail-hero__jump">
                   경로와 일정 보기
-                  <span aria-hidden="true"><Icon name="arrow-down" /></span>
+                  <span aria-hidden="true">↓</span>
                 </a>
                 <ShareJourneyButton title={travel.title} ownerName={ownerName} />
                 <SaveSharedItinerary travel={travel} signedIn={Boolean(currentMember)} isOwner={currentMember?.username === travel.owner.username} today={todayInKorea()} />
@@ -307,7 +306,7 @@ function TravelNavCard({
 }) {
   const isPrevious = direction === "previous";
   const label = isPrevious ? "이전 여행" : "다음 여행";
-  const arrow = <Icon name={isPrevious ? "arrow-left" : "arrow-right"} />;
+  const arrow = isPrevious ? "←" : "→";
 
   if (!travel) {
     return (

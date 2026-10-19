@@ -10,3 +10,7 @@
 .next :global(.ui-icon) { width: 1.35rem; height: 1.35rem; }
 .next:hover { border-color: var(--accent); background: color-mix(in srgb, var(--accent-soft) 70%, var(--surface)); }
 @media (max-width: 700px) { .workspace > [role="tablist"] { top: 4rem; } .panel { padding-block: 1rem; } }
+@media (max-width: 700px) {
+  .workspace > [role="tablist"] { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); overflow: visible; }
+  .workspace > [role="tablist"] button { min-width: 0; padding-inline: .3rem; }
+}

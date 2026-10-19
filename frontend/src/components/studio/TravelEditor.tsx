@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import dynamic from "next/dynamic";
 import { useRouter, useSearchParams } from "next/navigation";
 import { ChangeEvent, DragEvent, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
 
@@ -23,7 +24,7 @@ import { isPlaceholderPlaceName } from "@/lib/travel-placeholders";
 import { useUnsavedChangesGuard } from "@/lib/useUnsavedChangesGuard";
 import { fetchTripWeather, isRainCode, isRainyDay, useTripWeather, WEATHER_SOURCE_LABEL, weatherLabel, type WeatherDay } from "@/lib/weather";
 import type { TravelDetail, TravelPhotoWriteInput, TravelPlaceWriteInput, TravelWriteInput, Visibility } from "@/types";
-import { PlaceLocationPicker } from "@/components/studio/PlaceLocationPicker";
+const PlaceLocationPicker = dynamic(() => import("@/components/studio/PlaceLocationPicker").then((module) => module.PlaceLocationPicker), { loading: () => <p role="status">장소 검색을 준비하고 있어요…</p> });
 import { PlanSharePanel } from "@/components/studio/PlanSharePanel";
 import { useStopDrag } from "@/components/studio/useStopDrag";
 import { Icon } from "@/components/common/Icon";
@@ -227,6 +228,7 @@ export function TravelEditor({
   }, []);
 
   useEffect(() => {
+    if (mobileEditorStep !== 2 || uploadConfig !== null) return;
     let active = true;
     getUploadConfiguration()
       .then((configuration) => {
@@ -236,7 +238,7 @@ export function TravelEditor({
         if (active) setUploadConfig({ configured: false, maxBytes: 10 * 1024 * 1024, maxPhotos: 30, acceptedTypes: ["image/jpeg", "image/png", "image/webp"] });
       });
     return () => { active = false; };
-  }, []);
+  }, [mobileEditorStep, uploadConfig]);
 
   useEffect(() => {
     const timer = window.setTimeout(() => {
@@ -469,7 +471,7 @@ export function TravelEditor({
     setWeatherPlannerMessage(null);
     setWeatherProposal(null);
     try {
-      const weather = await fetchTripWeather({ latitude: Number(anchor.latitude), longitude: Number(anchor.longitude), startDate, endDate });
+      const weather = await fetchTripWeather({ latitude: Number(anchor.latitude), longitude: Number(anchor.longitude), startDate, endDate }, { force: !silent });
       // Only a real forecast is strong enough to move plans; climate averages are shown, not acted on.
       const forecastDays = weather.days.filter((day) => day.source === "forecast");
       if (!forecastDays.length) {
@@ -985,21 +987,21 @@ export function TravelEditor({
               <button className="editor-stop__summary" type="button" aria-expanded={expandedPlace === place.key} aria-controls={`stop-${index}`} onClick={() => setExpandedPlace(expandedPlace === place.key ? null : place.key)}>
                 <span className="editor-stop__sequence" aria-label="방문 순번">{String((planningMode ? activeDayPlaces.findIndex((item) => item.index === index) : index) + 1).padStart(2, "0")}</span>
                 <span><strong>{place.placeName || "장소를 추가하세요"}</strong><small>{[place.cityName || countryMap.get(place.countryCode)?.nameKo, place.startTime || null, place.durationMinutes ? `${place.durationMinutes}분` : null].filter(Boolean).join(" · ")}</small></span>
-                <span className="editor-stop__edit">{expandedPlace === place.key ? <>편집 닫기 <Icon name="chevron-up" /></> : <>편집 <Icon name="chevron-down" /></>}</span>
+                <span className="editor-stop__edit">{expandedPlace === place.key ? <>편집 닫기 <Icon name="chevron-up" /></> : <>편집 <Icon name="edit" /></>}</span>
               </button>
               </div>
               <div id={`stop-${index}`} className="editor-stop__body" hidden={expandedPlace !== place.key}>
               <div className="travel-editor__item-head">
                 <strong>{planningMode ? `${String(activeDayPlaces.findIndex((item) => item.index === index) + 1).padStart(2, "0")}번째 일정` : `${String(index + 1).padStart(2, "0")}번째 장소`}{planningMode && place.startTime ? <time>{place.startTime}</time> : null}</strong>
                 <div className="travel-editor__order-actions">
-                  <button type="button" onClick={() => planningMode ? movePlanningPlace(index, -1) : movePlace(index, -1)} disabled={(planningMode ? activeDayPlaces[0]?.index === index : index === 0) || pending} aria-label="장소를 앞으로 이동"><Icon name="arrow-up" /></button>
-                  <button type="button" onClick={() => planningMode ? movePlanningPlace(index, 1) : movePlace(index, 1)} disabled={(planningMode ? activeDayPlaces.at(-1)?.index === index : index === places.length - 1) || pending} aria-label="장소를 뒤로 이동"><Icon name="arrow-down" /></button>
+                  <button type="button" onClick={() => planningMode ? movePlanningPlace(index, -1) : movePlace(index, -1)} disabled={(planningMode ? activeDayPlaces[0]?.index === index : index === 0) || pending} aria-label="장소를 앞으로 이동"><Icon name="arrow-up" /><span>앞으로</span></button>
+                  <button type="button" onClick={() => planningMode ? movePlanningPlace(index, 1) : movePlace(index, 1)} disabled={(planningMode ? activeDayPlaces.at(-1)?.index === index : index === places.length - 1) || pending} aria-label="장소를 뒤로 이동"><Icon name="arrow-down" /><span>뒤로</span></button>
 
                 </div>
               </div>
               <div className="travel-editor__fields">
                 <label><span>나라</span><select value={place.countryCode} onChange={(event) => updateCountry(index, event.target.value)} required>{countries.map((country) => <option key={country.iso2Code} value={country.iso2Code}>{country.label}</option>)}</select></label>
-                <PlaceLocationPicker
+                {expandedPlace === place.key ? <PlaceLocationPicker
                   key={place.countryCode}
                   countryCode={place.countryCode}
                   countryName={countryMap.get(place.countryCode)?.nameKo ?? "선택한 나라"}
@@ -1012,7 +1014,7 @@ export function TravelEditor({
                   routeAnchor={findRouteAnchor(places, index)}
                   travelPreferences={travelPreferences}
                   onSelect={(location) => updateLocation(index, location)}
-                />
+                /> : null}
                 <label><span>도시</span><input value={place.cityName} onChange={(event) => updateCityName(index, event.target.value)} maxLength={100} placeholder="예: 서울" /></label>
                 <label className="is-wide"><span>장소 이름</span><input value={place.placeName} onChange={(event) => updatePlace(index, "placeName", event.target.value)} maxLength={150} placeholder="예: 서울숲" required /></label>
                 <label><span>방문일</span><input value={place.visitedAt} onChange={(event) => updatePlace(index, "visitedAt", event.target.value)} type="date" /></label>
@@ -1024,7 +1026,7 @@ export function TravelEditor({
                 <label className="is-wide"><span>메모</span><textarea id={index === quickNoteIndex ? "travel-note-editor" : undefined} value={place.memo} onChange={(event) => updatePlace(index, "memo", event.target.value)} maxLength={1000} rows={3} placeholder={planningMode ? "예약, 먹고 싶은 메뉴, 이동 팁" : "그 장소에서 기억하고 싶은 장면"} /></label>
               </div>
               <div className="editor-stop__footer">
-                {places.length > 1 ? <button type="button" className="editor-stop__delete" disabled={pending} onClick={() => removePlace(index)}>장소 삭제</button> : <span />}
+                {places.length > 1 ? <button type="button" className="editor-stop__delete" disabled={pending} onClick={() => removePlace(index)}><Icon name="trash" />장소 삭제</button> : <span />}
                 <button type="button" onClick={() => setExpandedPlace(null)}>편집 닫기</button>
               </div>
               </div>
@@ -1075,8 +1077,8 @@ export function TravelEditor({
                 <div className="travel-editor__item-head">
                   <strong>사진 {String(index + 1).padStart(2, "0")}</strong>
                   <div className="travel-editor__photo-actions">
-                    <button type="button" onClick={() => movePhoto(index, -1)} disabled={index === 0 || pending} aria-label="사진을 앞으로 이동"><Icon name="arrow-up" /></button>
-                    <button type="button" onClick={() => movePhoto(index, 1)} disabled={index === photos.length - 1 || pending} aria-label="사진을 뒤로 이동"><Icon name="arrow-down" /></button>
+                    <button type="button" onClick={() => movePhoto(index, -1)} disabled={index === 0 || pending} aria-label="사진을 앞으로 이동"><Icon name="arrow-up" /><span>앞으로</span></button>
+                    <button type="button" onClick={() => movePhoto(index, 1)} disabled={index === photos.length - 1 || pending} aria-label="사진을 뒤로 이동"><Icon name="arrow-down" /><span>뒤로</span></button>
                     {photo.imageUrl ? <button type="button" className={coverImageUrl === photo.imageUrl ? "is-cover" : ""} onClick={() => { setCoverImageUrl(photo.imageUrl); setDirty(true); }}>{coverImageUrl === photo.imageUrl ? "대표 사진" : "대표로 지정"}</button> : null}
                     <button type="button" onClick={() => removePhoto(index)} disabled={pending}>사진 삭제</button>
                   </div>
@@ -1108,10 +1110,11 @@ export function TravelEditor({
           <button type="button" onClick={() => void handleSubmit()} disabled={pending}>{pending ? "저장 중…" : "저장"}</button>
         </div>
       </footer>
-      {mobileEditorStep === 0 ? <div className="editor-manage">
-        {editing ? <button type="button" onClick={handleDelete} disabled={pending}>여행 삭제</button> : null}
-        {draftRestored ? <button type="button" onClick={discardDraft} disabled={pending}>임시 저장본 버리기</button> : null}
-      </div> : null}
+      <div className="editor-manage" aria-label="여행 관리">
+        <div><strong>여행 관리</strong><p>여행 삭제와 임시 저장본 관리는 여기에서 할 수 있어요.</p></div>
+        {editing ? <button type="button" onClick={handleDelete} className="destructive-action" disabled={pending}><Icon name="trash" />여행 삭제</button> : null}
+        {draftRestored ? <button type="button" onClick={discardDraft} disabled={pending}><Icon name="refresh" />임시 저장본 버리기</button> : null}
+      </div>
     </div>
   );
 }

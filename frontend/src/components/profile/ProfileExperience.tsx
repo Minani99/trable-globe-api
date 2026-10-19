@@ -34,7 +34,6 @@ import type {
   UserProfile,
   VisitedCountry,
 } from "@/types";
-import { Icon } from "@/components/common/Icon";
 
 interface ProfileExperienceProps {
   profile: UserProfile;
@@ -348,7 +347,7 @@ export function ProfileExperience({
             <div className="profile-world__intro-actions">
               {globeOnly ? (
                 <Link href={profilePath(profile.username)} className="globe-page-profile-link">
-                  전체 프로필과 기록 보기 <span aria-hidden="true"><Icon name="arrow-right" /></span>
+                  전체 프로필과 기록 보기
                 </Link>
               ) : null}
               <ShareProfileButton displayName={displayName} selectedYear={selectedYear} />

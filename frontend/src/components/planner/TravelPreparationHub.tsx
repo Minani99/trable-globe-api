@@ -48,14 +48,13 @@ export function TravelPreparationHub({
       <div className="trip-flight__body">
         <div className="trip-flight-route">
           <AirportSearchField label="출발" value={origin} onChange={setOrigin} placeholder="예: 서울, 인천공항" />
-          <span className="trip-flight-route__arrow" aria-hidden="true"><Icon name="arrow-right" /></span>
           <AirportSearchField label="도착" value={destination} onChange={setDestination} placeholder="예: 도쿄, 나리타" />
         </div>
         <dl className="trip-flight__dates">
           <div><dt>가는 날</dt><dd>{formatKoreanDate(startDate)}</dd></div>
           <div><dt>오는 날</dt><dd>{formatKoreanDate(endDate)}</dd></div>
         </dl>
-        {flightReady ? <a className="trip-action-card__button trip-flight__search" href={buildSkyscannerFlightUrl({ origin, destination, outboundDate: startDate, inboundDate: endDate })} target="_blank" rel="noreferrer">이 일정으로 항공권 찾기 <Icon name="arrow-up-right" /></a> : <p className="trip-action-card__notice">출발·도착 공항의 영문 코드 3자리를 입력해 주세요.</p>}
+        {flightReady ? <a className="trip-action-card__button trip-flight__search" href={buildSkyscannerFlightUrl({ origin, destination, outboundDate: startDate, inboundDate: endDate })} target="_blank" rel="noreferrer">이 일정으로 항공권 찾기</a> : <p className="trip-action-card__notice">출발·도착 공항의 영문 코드 3자리를 입력해 주세요.</p>}
         <small>검색은 버튼을 누를 때만 실행되며 예약은 스카이스캐너에서 진행됩니다. 예약한 항공권은 예산·예약 탭에 기록해 두세요. 공항 데이터: <a href="https://ourairports.com/data/" target="_blank" rel="noreferrer">OurAirports</a></small>
       </div>
     </section>

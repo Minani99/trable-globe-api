@@ -1,7 +1,7 @@
 "use client";
 
+import { AppIcon } from "@/components/common/AppIcon";
 import { useEffect, useState } from "react";
-import { Icon } from "@/components/common/Icon";
 
 export type FeedbackTone = "success" | "error" | "info";
 
@@ -43,10 +43,10 @@ export function AppFeedback() {
       {feedback ? (
         <div className={`app-feedback is-${feedback.tone}`} role={feedback.tone === "error" ? "alert" : "status"}>
           <span className="app-feedback__icon" aria-hidden="true">
-            <Icon name={feedback.tone === "success" ? "check" : feedback.tone === "error" ? "alert" : "info"} />
+            {feedback.tone === "success" ? "✓" : feedback.tone === "error" ? "!" : "i"}
           </span>
           <span>{feedback.message}</span>
-          <button type="button" onClick={() => setFeedback(null)} aria-label="알림 닫기"><Icon name="close" /></button>
+          <button type="button" onClick={() => setFeedback(null)} aria-label="알림 닫기"><AppIcon name="close" /></button>
         </div>
       ) : null}
     </div>

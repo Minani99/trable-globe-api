@@ -4,7 +4,6 @@ import { TravelImage } from "@/components/common/TravelImage";
 import { profilePath } from "@/lib/config";
 import { formatDuration } from "@/lib/utils/format";
 import type { TravelDetail } from "@/types";
-import { Icon } from "@/components/common/Icon";
 
 interface JourneySummaryProps {
   travel: TravelDetail;
@@ -39,7 +38,7 @@ export function JourneySummary({ travel, ownerName, locationLabel }: JourneySumm
           <small>프로필 보기</small>
           <strong>{ownerName}의 여행 세계</strong>
         </span>
-        <i aria-hidden="true"><Icon name="arrow-right" /></i>
+
       </Link>
     </section>
   );

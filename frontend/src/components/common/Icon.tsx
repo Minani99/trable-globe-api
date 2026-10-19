@@ -1,4 +1,4 @@
-import type { ReactNode } from "react";
+import type { CSSProperties, ReactNode } from "react";
 
 /*
  * One stroke icon set for the whole app.
@@ -12,6 +12,9 @@ import type { ReactNode } from "react";
 const DOT = { fill: "currentColor", stroke: "none" } as const;
 
 const ICONS = {
+  suitcase: <><rect x="4" y="7" width="16" height="14" rx="2" /><path d="M9 7V3h6v4M8 7v14M16 7v14" /></>,
+  route: <><circle cx="5" cy="5" r="2" /><circle cx="19" cy="19" r="2" /><path d="M9 5h7a4 4 0 0 1 0 8H8a4 4 0 0 0 0 8h5" /></>,
+  edit: <><path d="m4 16-1 5 5-1L20 8l-4-4L4 16Z" /><path d="m13 7 4 4" /></>,
   "arrow-right": <path d="M5 12h14M13 6l6 6-6 6" />,
   "arrow-left": <path d="M19 12H5M11 6l-6 6 6 6" />,
   "arrow-up": <path d="M12 19V5M6 11l6-6 6 6" />,
@@ -60,10 +63,11 @@ const ICONS = {
 
 export type IconName = keyof typeof ICONS;
 
-export function Icon({ name, className }: { name: IconName; className?: string }) {
+export function Icon({ name, className, size }: { name: IconName; className?: string; size?: number }) {
   return (
     <svg
       className={className ? `ui-icon ${className}` : "ui-icon"}
+      style={size ? { "--app-icon-size": `${size}px`, width: size, height: size } as CSSProperties : undefined}
       viewBox="0 0 24 24"
       aria-hidden="true"
       focusable="false"

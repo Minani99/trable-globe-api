@@ -1,5 +1,6 @@
 "use client";
 
+import { AppIcon } from "@/components/common/AppIcon";
 import {
   geocoding,
   type GeocodingFeature,
@@ -22,7 +23,6 @@ import type {
   PlaceRecommendationCategory,
 } from "@/lib/place-recommendations";
 import { PLACE_RECOMMENDATION_DETAILS } from "@/lib/place-recommendations";
-import { Icon } from "@/components/common/Icon";
 
 interface LocationSelection {
   name: string;
@@ -455,7 +455,7 @@ export function PlaceLocationPicker({
       ) : null}
 
       <div className="place-picker__search">
-        <span className="place-picker__search-icon" aria-hidden="true"><Icon name="search" /></span>
+        <span className="place-picker__search-icon"><AppIcon name="search" /></span>
         <input
           value={query}
           onChange={(event) => {
@@ -508,7 +508,7 @@ export function PlaceLocationPicker({
                     <span className="place-picker__result-action">일정에 담기</span>
                   </button>
                   <div className="place-picker__result-links">
-                    <a href={googleMapsSearchUrl(result)} target="_blank" rel="noreferrer">Google 지도에서 사진·후기 보기 <span aria-hidden="true"><Icon name="arrow-up-right" /></span></a>
+                    <a href={googleMapsSearchUrl(result)} target="_blank" rel="noreferrer">Google 지도에서 사진·후기 보기 </a>
                   </div>
                 </article>
               </li>
@@ -523,19 +523,19 @@ export function PlaceLocationPicker({
 
       {hasSelection ? (
         <div className="place-picker__selected-card">
-          <span className="place-picker__selected-card-icon" aria-hidden="true"><Icon name="check" /></span>
+          <span className="place-picker__selected-card-icon" aria-hidden="true">✓</span>
           <span><strong>{initialName || query || "위치 선택됨"}</strong><small>{selectedLabel || cityName || `${latitude?.toFixed(5)}, ${longitude?.toFixed(5)}`}</small></span>
           <button type="button" onClick={openMap}>위치 조정</button>
         </div>
       ) : (
         <button type="button" className="place-picker__map-open" onClick={openMap}>
-          <span aria-hidden="true"><Icon name="target" /></span><span><strong>지도에서 직접 찾기</strong><small>지도를 움직여 중앙 핀에 맞추세요</small></span><b aria-hidden="true"><Icon name="chevron-right" /></b>
+          <span aria-hidden="true">⌖</span><span><strong>지도에서 직접 찾기</strong><small>지도를 움직여 중앙 핀에 맞추세요</small></span><b aria-hidden="true">›</b>
         </button>
       )}
 
       <div className="place-picker__google-tools">
         <a href={googleMapsDiscoveryUrl(countryName, cityName, query)} target="_blank" rel="noreferrer">
-          <span aria-hidden="true">G</span><span><strong>Google 지도에서 직접 찾아보기</strong><small>사진·평점·후기를 비교한 뒤 공유 링크를 복사하세요</small></span><b aria-hidden="true"><Icon name="arrow-up-right" /></b>
+          <span aria-hidden="true">G</span><span><strong>Google 지도에서 직접 찾아보기</strong><small>사진·평점·후기를 비교한 뒤 공유 링크를 복사하세요</small></span>
         </a>
         <details>
           <summary>Google 지도 링크로 장소 가져오기</summary>
@@ -554,7 +554,7 @@ export function PlaceLocationPicker({
         <div className="place-map-dialog" role="dialog" aria-modal="true" aria-label="지도에서 위치 조정">
           <div className="place-map-dialog__sheet">
             <header>
-              <button type="button" className="place-map-dialog__close" onClick={() => setMapOpen(false)} aria-label="지도 닫기"><Icon name="close" /></button>
+              <button type="button" className="place-map-dialog__close" onClick={() => setMapOpen(false)} aria-label="지도 닫기"><AppIcon name="close" /></button>
               <div><strong>위치 조정</strong><span>{countryName} · 지도를 움직여 핀에 맞추세요</span></div>
               <span className="place-map-dialog__provider" translate="no">{provider === "maptiler" ? "MapTiler" : "OpenStreetMap"}</span>
             </header>
@@ -634,8 +634,8 @@ function FallbackMapCanvas({ initialCenter, onCenterChange }: { initialCenter: C
         ))}
       </div>
       <div className="place-map-dialog__controls">
-        <button type="button" aria-label="지도 확대" onPointerDown={(event) => event.stopPropagation()} onClick={() => setZoom((value) => Math.min(18, value + 1))}><Icon name="plus" /></button>
-        <button type="button" aria-label="지도 축소" onPointerDown={(event) => event.stopPropagation()} onClick={() => setZoom((value) => Math.max(4, value - 1))}><Icon name="minus" /></button>
+        <button type="button" aria-label="지도 확대" onPointerDown={(event) => event.stopPropagation()} onClick={() => setZoom((value) => Math.min(18, value + 1))}>＋</button>
+        <button type="button" aria-label="지도 축소" onPointerDown={(event) => event.stopPropagation()} onClick={() => setZoom((value) => Math.max(4, value - 1))}>−</button>
       </div>
       <p className="place-map-dialog__attribution">© <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noreferrer" onPointerDown={(event) => event.stopPropagation()}>OpenStreetMap</a></p>
     </div>

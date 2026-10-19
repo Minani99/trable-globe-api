@@ -91,7 +91,9 @@ body {
 /* The codemod turned every circle into --radius-xs; put back the few that must
  * stay round. */
 :where(
-  [class*="avatar"],
+  [class~="site-member-avatar"],
+  [class$="__avatar"],
+  .settings-avatar__preview,
   .profile-image,
   [class*="__dot"],
   [class*="-dot"],

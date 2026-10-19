@@ -42,8 +42,9 @@ function cacheKey({ latitude, longitude, startDate, endDate }: WeatherQuery): st
  * network call, so the edit page's weather strip, day tabs and rain re-planner do
  * not each hit the API.
  */
-export function fetchTripWeather(query: WeatherQuery): Promise<TripWeather> {
+export function fetchTripWeather(query: WeatherQuery, { force = false }: { force?: boolean } = {}): Promise<TripWeather> {
   const key = cacheKey(query);
+  if (force) cache.delete(key);
   const cached = cache.get(key);
   if (cached && Date.now() - cached.at < CACHE_TTL_MS) return cached.promise;
   const params = new URLSearchParams({
@@ -52,14 +53,15 @@ export function fetchTripWeather(query: WeatherQuery): Promise<TripWeather> {
     startDate: query.startDate,
     endDate: query.endDate,
   });
-  const promise = fetch(`/api/weather/forecast?${params}`)
+  const promise = fetch(`/api/weather/forecast?${params}`, { signal: AbortSignal.timeout(15_000) })
     .then(async (response) => {
       const body = await response.json() as { success: boolean; data: TripWeather | null; message: string | null };
       if (!response.ok || !body.success || !body.data) throw new Error(body.message ?? "weather request failed");
       return body.data;
     });
+  if (cache.size >= 24) cache.delete(cache.keys().next().value!);
   cache.set(key, { at: Date.now(), promise });
-  promise.catch(() => cache.delete(key));
+  promise.catch(() => { if (cache.get(key)?.promise === promise) cache.delete(key); });
   return promise;
 }
 
@@ -67,11 +69,13 @@ export type TripWeatherState =
   | { status: "idle" | "loading" | "error"; weather: null }
   | { status: "ready"; weather: TripWeather };
 
-export function useTripWeather(query: Partial<WeatherQuery> | null): TripWeatherState {
+export function useTripWeather(query: Partial<WeatherQuery> | null): TripWeatherState & { refresh: () => void } {
   const valid = Boolean(query
     && Number.isFinite(query.latitude) && Number.isFinite(query.longitude)
     && isIsoDate(query.startDate) && isIsoDate(query.endDate) && query.startDate! <= query.endDate!);
   const key = valid ? cacheKey(query as WeatherQuery) : null;
+  const [attempt, setAttempt] = useState(0);
+  const refresh = () => { if (key) cache.delete(key); setState({ key, value: { status: "loading", weather: null } }); setAttempt((value) => value + 1); };
   const [state, setState] = useState<{ key: string | null; value: TripWeatherState }>({ key: null, value: { status: "idle", weather: null } });
 
   useEffect(() => {
@@ -83,10 +87,10 @@ export function useTripWeather(query: Partial<WeatherQuery> | null): TripWeather
     return () => { active = false; };
     // The key captures every field of the query.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [key]);
+  }, [key, attempt]);
 
-  if (!key) return { status: "idle", weather: null };
-  return state.key === key ? state.value : { status: "loading", weather: null };
+  if (!key) return { status: "idle", weather: null, refresh };
+  return state.key === key ? { ...state.value, refresh } : { status: "loading", weather: null, refresh };
 }
 
 export function weatherIconName(code: number): IconName {

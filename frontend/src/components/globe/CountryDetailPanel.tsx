@@ -1,12 +1,12 @@
 "use client";
 
+import { AppIcon } from "@/components/common/AppIcon";
 import Link from "next/link";
 
 import { travelPath } from "@/lib/config";
 import { formatDate, formatDateRange } from "@/lib/utils/format";
 import { countryFlag } from "@/lib/worldLandmarks";
 import type { TravelSummary, VisitedCountry } from "@/types";
-import { Icon } from "@/components/common/Icon";
 
 interface CountryDetailPanelProps {
   country: VisitedCountry;
@@ -48,7 +48,7 @@ export function CountryDetailPanel({
           aria-label="국가 선택 해제"
           className="country-detail__close"
         >
-          <Icon name="close" />
+          <AppIcon name="close" />
         </button>
       </div>
 
@@ -75,7 +75,7 @@ export function CountryDetailPanel({
             <small>최근 기억 · {formatDateRange(latestTravel.startDate, latestTravel.endDate)}</small>
             <strong>{latestTravel.title}</strong>
           </span>
-          <span aria-hidden="true"><Icon name="arrow-up-right" /></span>
+
         </Link>
       ) : null}
 

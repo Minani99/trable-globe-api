@@ -1,7 +1,7 @@
 "use client";
 
 import { createContext, useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
-import { Icon, type IconName } from "@/components/common/Icon";
+import { type IconName } from "@/components/common/Icon";
 import { WorkspaceTabs } from "@/components/common/WorkspaceTabs";
 import styles from "./TravelWorkspace.module.css";
 
@@ -69,7 +69,6 @@ export function MobilePlanningWorkspace({ travelId, preparation, checklist, budg
           {panel}
           <button type="button" className={styles.next} onClick={() => select(index + 1)}>
             <span><small>다음 단계</small><strong>{NEXT_STEP_LABELS[index]}</strong></span>
-            <Icon name="arrow-right" />
           </button>
         </div>
       ))}

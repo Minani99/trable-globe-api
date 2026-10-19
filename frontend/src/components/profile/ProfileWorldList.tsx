@@ -6,7 +6,6 @@ import { countryFlag } from "@/lib/worldLandmarks";
 import { travelPath } from "@/lib/config";
 import { formatDate, formatDateRange } from "@/lib/utils/format";
 import type { TravelSummary, VisitedCountry } from "@/types";
-import { Icon } from "@/components/common/Icon";
 
 interface ProfileWorldListProps {
   countries: VisitedCountry[];
@@ -47,7 +46,7 @@ export function ProfileWorldList({
                   여행 {country.travelCount} · 도시 {country.cityCount}
                   <small>{country.lastVisitedAt ? `${formatDate(country.lastVisitedAt)} 방문` : "방문 기록"}</small>
                 </span>
-                <span className="profile-world-list__arrow" aria-hidden="true"><Icon name="arrow-right" /></span>
+
               </button>
             </li>
           ))}
@@ -69,7 +68,7 @@ export function ProfileWorldList({
                   <strong>{travel.title}</strong>
                   <small>{formatDateRange(travel.startDate, travel.endDate)}</small>
                 </div>
-                <span aria-hidden="true"><Icon name="arrow-up-right" /></span>
+
               </Link>
             </li>
           ))}

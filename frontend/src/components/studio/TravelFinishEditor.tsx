@@ -10,7 +10,6 @@ import { isPlaceholderPlaceName } from "@/lib/travel-placeholders";
 import { useUnsavedChangesGuard } from "@/lib/useUnsavedChangesGuard";
 import { formatDateRange } from "@/lib/utils/format";
 import type { TravelDetail, TravelPhotoWriteInput, TravelPlaceWriteInput, TravelWriteInput, Visibility } from "@/types";
-import { Icon } from "@/components/common/Icon";
 
 export function TravelFinishEditor({ username, travel }: { username: string; travel: TravelDetail }) {
   const router = useRouter();
@@ -117,7 +116,7 @@ export function TravelFinishEditor({ username, travel }: { username: string; tra
               </li>
             ))}
           </ol>
-          <Link href={`/studio/travels/${travel.id}/edit?plan=1#travel-place-editor`}>{unresolvedPlaces.length ? `미정 장소 ${unresolvedPlaces.length}개 수정` : "장소 수정"} <span aria-hidden="true"><Icon name="arrow-right" /></span></Link>
+          <Link href={`/studio/travels/${travel.id}/edit?plan=1#travel-place-editor`}>{unresolvedPlaces.length ? `미정 장소 ${unresolvedPlaces.length}개 수정` : "장소 수정"} </Link>
         </div>
       </section>
 
@@ -152,7 +151,7 @@ export function TravelFinishEditor({ username, travel }: { username: string; tra
             <p>{captionCount}/{travel.photos.length}장에 설명이 있습니다.</p>
           </div>
         ) : (
-          <div className="travel-finish__empty"><strong>아직 사진이 없어요.</strong><p>사진 없이도 공개할 수 있고, 나중에 추가해도 됩니다.</p><Link href={`/studio/travels/${travel.id}/edit?plan=1#travel-photo-editor`}>사진 추가 <Icon name="arrow-right" /></Link></div>
+          <div className="travel-finish__empty"><strong>아직 사진이 없어요.</strong><p>사진 없이도 공개할 수 있고, 나중에 추가해도 됩니다.</p><Link href={`/studio/travels/${travel.id}/edit?plan=1#travel-photo-editor`}>사진 추가 →</Link></div>
         )}
       </section>
 
@@ -166,7 +165,7 @@ export function TravelFinishEditor({ username, travel }: { username: string; tra
 }
 
 function FinishStep({ number, label, complete, optional = true }: { number: string; label: string; complete: boolean; optional?: boolean }) {
-  return <li className={complete ? "is-complete" : undefined}><span>{complete ? <Icon name="check" /> : number}</span><strong>{label}</strong><small>{complete ? "완료" : optional ? "선택" : "필수"}</small></li>;
+  return <li className={complete ? "is-complete" : undefined}><span>{complete ? "✓" : number}</span><strong>{label}</strong><small>{complete ? "완료" : optional ? "선택" : "필수"}</small></li>;
 }
 
 function toPlaceInput(place: TravelDetail["places"][number]): TravelPlaceWriteInput {

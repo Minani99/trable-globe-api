@@ -2,8 +2,7 @@
  *
  * Part of the ordered stylesheet - see globals.css. The page uses its own
  * `account-*` class names so none of the older settings rules apply. Only the
- * photo previews contain "avatar" in their class name: design-system.css rounds
- * every [class*="avatar"] element.
+ * photo previews use the shared avatar shape; form sections keep their own geometry.
  */
 .account-shell {
   max-width: 72rem;
