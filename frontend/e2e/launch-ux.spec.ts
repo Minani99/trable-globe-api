@@ -18,16 +18,18 @@ test("여행 화면은 작은 화면과 다크 모드에서도 읽히고 저장 
   const id = (await creation.json()).data.id;
   await page.route("**/api/weather/forecast?**", async (route) => {
     const firstDay = new URL(route.request().url()).searchParams.get("startDate") === "2027-04-10";
-    await route.fulfill({ json: { success: true, data: { available: firstDay, days: firstDay ? [{ date: "2027-04-10", weatherCode: 0, temperatureMax: 33, temperatureMin: 20, precipitationProbability: 0 }] : [] } } });
+    await route.fulfill({ json: { success: true, data: { available: firstDay, days: firstDay ? [{ date: "2027-04-10", weatherCode: 0, temperatureMax: 33, temperatureMin: 20, precipitationProbability: 0, precipitationSum: 0, source: "forecast" }] : [] } } });
   });
   await page.setViewportSize({ width: 1440, height: 960 });
   await page.goto("/studio");
   await expect(page.getByRole("heading", { name: "내 여행", exact: true })).toBeVisible();
   await page.screenshot({ path: testInfo.outputPath("studio-desktop.png"), fullPage: true });
   await page.goto(`/studio/travels/${id}/go`);
-  await expect(page.locator(".mobile-trip-companion__heading")).toContainText("33°");
+  const weather = page.getByRole("region", { name: /여행 날씨/ });
+  await expect(weather).toContainText("33° / 20°");
   await page.getByRole("button", { name: /DAY 2/ }).click();
-  await expect(page.locator(".mobile-trip-companion__heading")).not.toContainText("33°");
+  await expect(weather).toContainText("이 날짜의 날씨 정보가 아직 없습니다.");
+  await expect(weather).not.toContainText("33°");
 
   let release!: () => void;
   const hold = new Promise<void>((resolve) => { release = resolve; });
