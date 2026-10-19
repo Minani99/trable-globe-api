@@ -9,6 +9,7 @@ import { apiMutation, ApiError } from "@/lib/api/client";
 import { normalizeUsernameInput, validateUsername } from "@/lib/username";
 import { useUsernameAvailability } from "@/lib/useUsernameAvailability";
 import type { AuthMember } from "@/types";
+import { Icon } from "@/components/common/Icon";
 
 export function AuthForm({ mode, nextPath }: { mode: "login" | "register"; nextPath?: string }) {
   const [error, setError] = useState<string | null>(null);
@@ -202,7 +203,7 @@ export function AuthForm({ mode, nextPath }: { mode: "login" | "register"; nextP
                   ? "로그인하고 계속"
                   : "로그인"}
         </span>
-        {(pending || completed) ? <span className={`action-spinner${completed ? " is-complete" : ""}`} aria-hidden="true">{completed ? "✓" : ""}</span> : null}
+        {(pending || completed) ? <span className={`action-spinner${completed ? " is-complete" : ""}`} aria-hidden="true">{completed ? <Icon name="check" /> : null}</span> : null}
       </button>
 
       <p className="auth-form__switch">

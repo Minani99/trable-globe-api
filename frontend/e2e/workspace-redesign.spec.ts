@@ -28,9 +28,13 @@ for (const width of [390, 1440]) {
     const id = await seed(page);
     await page.goto(`/studio/travels/${id}/edit?plan=1`);
     const tabs = page.getByRole("tablist", { name: "여행 작업", exact: true });
-    await expect(tabs.getByRole("tab", { name: "일정", exact: true })).toHaveAttribute("aria-selected", "true");
+    // Planning starts where a trip usually starts: flights, then packing, budget and itinerary.
+    await expect(tabs.getByRole("tab")).toHaveText(["항공권", "준비물", "예산·예약", "일정", "사진·메모", "여행 정보"]);
+    await expect(tabs.getByRole("tab", { name: "항공권", exact: true })).toHaveAttribute("aria-selected", "true");
+    await expect(page.getByRole("heading", { name: "항공권 예약" })).toBeVisible();
+    await tabs.getByRole("tab", { name: "일정", exact: true }).click();
     await expect(page.getByRole("button", { name: /후시미 이나리.*편집/ })).toBeVisible();
-    await expect(page.getByRole("heading", { name: "항공권부터 준비하기" })).toBeHidden();
+    await expect(page.getByRole("heading", { name: "항공권 예약" })).toBeHidden();
     await expect(page.getByRole("textbox", { name: "장소 이름", exact: true })).toHaveCount(0);
     await page.screenshot({ path: testInfo.outputPath(`workspace-${width}.png`), fullPage: true });
 
@@ -64,9 +68,8 @@ for (const width of [390, 1440]) {
     await expect(page.getByText("서버에 저장됨", { exact: true })).toBeVisible();
     await page.goto(`/studio/travels/${id}/edit#travel-budget`);
     await expect(tabs.getByRole("tab", { name: "예산·예약", exact: true })).toHaveAttribute("aria-selected", "true");
-    await tabs.getByRole("tab", { name: "예산·예약", exact: true }).press("ArrowRight");
-    await expect(tabs.getByRole("tab", { name: "일정", exact: true })).toBeFocused();
-    await tabs.getByRole("tab", { name: "준비물", exact: true }).click();
+    await tabs.getByRole("tab", { name: "예산·예약", exact: true }).press("ArrowLeft");
+    await expect(tabs.getByRole("tab", { name: "준비물", exact: true })).toBeFocused();
     await expect(page.getByRole("heading", { name: "여행 준비 체크리스트" })).toBeVisible();
     if (width === 390) {
       // Selecting an overflowed tab reveals it without losing the current work.
@@ -143,9 +146,10 @@ test("새 여행은 세 단계로 만들고 바로 일정을 편집한다", asyn
   await page.screenshot({ path: testInfo.outputPath("new-plan-mobile.png"), fullPage: true });
   await navigation.getByRole("button", { name: "다음" }).click();
   await page.getByRole("button", { name: "일정 만들기", exact: true }).click();
-  await expect(page).toHaveURL(/\/studio\/travels\/\d+\/edit\?plan=1#travel-preparation$/);
-  await expect(page.getByRole("tablist", { name: "여행 작업", exact: true }).getByRole("tab", { name: "항공권", exact: true })).toHaveAttribute("aria-selected", "true");
-  await expect(page.getByRole("heading", { name: "항공권부터 준비하기" })).toBeVisible();
+  await expect(page).toHaveURL(/\/studio\/travels\/\d+\/edit\?plan=1$/);
+  // A plan that starts today opens on the itinerary rather than on flights.
+  await expect(page.getByRole("tablist", { name: "여행 작업", exact: true }).getByRole("tab", { name: "일정", exact: true })).toHaveAttribute("aria-selected", "true");
+  await expect(page.locator(".editor-stop__summary").first()).toBeVisible();
 });
 
 test("저장한 사진을 다시 편집해도 다음 저장 전에는 파일을 삭제하지 않는다", async ({ page }) => {

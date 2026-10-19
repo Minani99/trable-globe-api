@@ -2,6 +2,7 @@
 
 import { formatDate } from "@/lib/utils/format";
 import type { GlobeTimelineMoment } from "@/lib/globeTimeline";
+import { Icon } from "@/components/common/Icon";
 
 export function GlobeTimelineControls({
   moments,
@@ -68,7 +69,7 @@ export function GlobeTimelineControls({
           onClick={() => onExpandedChange(!expanded)}
         >
           <span>{expanded ? "접기" : "시간 여행"}</span>
-          <svg aria-hidden="true" viewBox="0 0 20 20"><path d="m5 8 5 5 5-5" /></svg>
+          <Icon name="chevron-down" />
         </button>
       </div>
 

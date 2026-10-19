@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 
+import { Icon } from "@/components/common/Icon";
 import {
   buildSkyscannerFlightUrl,
   findAirportByCode,
@@ -12,7 +13,6 @@ import {
   type AirportOption,
 } from "@/lib/airports";
 import type { TravelPlace } from "@/types";
-import { AppIcon } from "@/components/common/AppIcon";
 
 export function TravelPreparationHub({
   startDate,
@@ -25,8 +25,6 @@ export function TravelPreparationHub({
   endDate: string;
   countryCode: string;
   destinationLabel: string;
-  latitude: number;
-  longitude: number;
   places: TravelPlace[];
 }) {
   const inferredDestination = useMemo(() => inferAirportCode(
@@ -38,26 +36,26 @@ export function TravelPreparationHub({
   const flightReady = origin.length === 3 && destination.length === 3;
 
   return (
-    <section className="trip-preparation" aria-labelledby="trip-preparation-heading">
+    <section className="trip-preparation trip-flight" aria-labelledby="trip-preparation-heading">
       <header className="trip-preparation__heading">
-        <div><h2 id="trip-preparation-heading">항공권부터 준비하기</h2></div>
+        <div>
+          <span className="trip-flight__icon" aria-hidden="true"><Icon name="plane" /></span>
+          <div><h2 id="trip-preparation-heading">항공권 예약</h2><p>여행 날짜에 맞춰 항공편부터 비교해 보세요.</p></div>
+        </div>
         <p>{formatDateRange(startDate, endDate)} · {destinationLabel}</p>
       </header>
 
-      <div className="trip-preparation__grid">
-        <article className="trip-action-card is-flight">
-          <div className="trip-action-card__icon" aria-hidden="true"><AppIcon name="plane" /></div>
-          <div className="trip-action-card__copy"><span>항공권</span><h3>항공권 검색</h3><p>여행 날짜에 맞춰 항공편을 찾아보세요.</p></div>
-          <div className="trip-flight-route">
-            <AirportSearchField label="출발" value={origin} onChange={setOrigin} placeholder="예: 서울, 인천공항" />
-
-            <AirportSearchField label="도착" value={destination} onChange={setDestination} placeholder="예: 도쿄, 나리타" />
-          </div>
-          {flightReady ? <a className="trip-action-card__button" href={buildSkyscannerFlightUrl({ origin, destination, outboundDate: startDate, inboundDate: endDate })} target="_blank" rel="noreferrer">이 일정으로 항공권 찾기 </a> : <p className="trip-action-card__notice">출발·도착 공항의 영문 코드 3자리를 입력해 주세요.</p>}
-          <small>검색은 버튼을 누를 때만 실행되며 예약은 스카이스캐너에서 진행됩니다. 공항 데이터: <a href="https://ourairports.com/data/" target="_blank" rel="noreferrer">OurAirports</a></small>
-        </article>
-
-
+      <div className="trip-flight__body">
+        <div className="trip-flight-route">
+          <AirportSearchField label="출발" value={origin} onChange={setOrigin} placeholder="예: 서울, 인천공항" />
+          <AirportSearchField label="도착" value={destination} onChange={setDestination} placeholder="예: 도쿄, 나리타" />
+        </div>
+        <dl className="trip-flight__dates">
+          <div><dt>가는 날</dt><dd>{formatKoreanDate(startDate)}</dd></div>
+          <div><dt>오는 날</dt><dd>{formatKoreanDate(endDate)}</dd></div>
+        </dl>
+        {flightReady ? <a className="trip-action-card__button trip-flight__search" href={buildSkyscannerFlightUrl({ origin, destination, outboundDate: startDate, inboundDate: endDate })} target="_blank" rel="noreferrer">이 일정으로 항공권 찾기</a> : <p className="trip-action-card__notice">출발·도착 공항의 영문 코드 3자리를 입력해 주세요.</p>}
+        <small>검색은 버튼을 누를 때만 실행되며 예약은 스카이스캐너에서 진행됩니다. 예약한 항공권은 예산·예약 탭에 기록해 두세요. 공항 데이터: <a href="https://ourairports.com/data/" target="_blank" rel="noreferrer">OurAirports</a></small>
       </div>
     </section>
   );
@@ -148,7 +146,7 @@ function AirportSearchField({
             placeholder={placeholder}
             autoComplete="off"
           />
-          {value ? <b>{value}</b> : <AppIcon name="search" />}
+          {value ? <b>{value}</b> : <span aria-hidden="true"><Icon name="search" /></span>}
         </span>
       </label>
       {open ? <div className="airport-search__popover" id={listId} role="listbox" aria-label={`${label} 공항 검색 결과`}>

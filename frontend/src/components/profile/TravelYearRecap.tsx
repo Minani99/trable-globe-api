@@ -11,6 +11,7 @@ import { travelPath } from "@/lib/config";
 import { formatDate } from "@/lib/utils/format";
 import type { TravelRecap, TravelYearComparison } from "@/lib/travelInsights";
 import type { ProfileRecapCustomization, TravelSummary } from "@/types";
+import { Icon } from "@/components/common/Icon";
 
 interface TravelYearRecapProps {
   recap: TravelRecap;
@@ -213,7 +214,7 @@ export function TravelYearRecap({
           <small>여행 리듬 · 대표 도시 · 기억 장면</small>
           <strong>{detailsExpanded ? "리캡 접기" : "리캡 자세히 보기"}</strong>
         </span>
-        <svg aria-hidden="true" viewBox="0 0 20 20"><path d="m5 8 5 5 5-5" /></svg>
+        <Icon name="chevron-down" />
       </button>
 
       <div id={detailsId} className="travel-recap__details" hidden={!detailsExpanded}>

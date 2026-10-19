@@ -77,9 +77,9 @@ test("몇 번의 선택으로 여행 계획을 만들고 일차별 일정으로 
           available: true,
           availableFrom: null,
           days: [
-            { date: koreaToday, weatherCode: 61, precipitationProbability: 80, temperatureMax: 24, temperatureMin: 19 },
-            { date: addDays(koreaToday, 1), weatherCode: 1, precipitationProbability: 10, temperatureMax: 26, temperatureMin: 18 },
-            { date: addDays(koreaToday, 2), weatherCode: 2, precipitationProbability: 20, temperatureMax: 25, temperatureMin: 18 },
+            { date: koreaToday, weatherCode: 61, precipitationProbability: 80, temperatureMax: 24, temperatureMin: 19, source: "forecast" },
+            { date: addDays(koreaToday, 1), weatherCode: 1, precipitationProbability: 10, temperatureMax: 26, temperatureMin: 18, source: "forecast" },
+            { date: addDays(koreaToday, 2), weatherCode: 2, precipitationProbability: 20, temperatureMax: 25, temperatureMin: 18, source: "forecast" },
           ],
         },
         message: null,
@@ -111,13 +111,22 @@ test("몇 번의 선택으로 여행 계획을 만들고 일차별 일정으로 
   await planStepNavigation.getByRole("button", { name: "다음" }).click();
   await page.getByRole("button", { name: "일정 만들기", exact: true }).click();
 
-  await expect(page).toHaveURL(/\/studio\/travels\/\d+\/edit\?plan=1#travel-preparation$/, { timeout: 30_000 });
+  await expect(page).toHaveURL(/\/studio\/travels\/\d+\/edit\?plan=1$/, { timeout: 30_000 });
   const travelId = Number(page.url().match(/\/travels\/(\d+)\/edit/)?.[1]);
   expect(travelId).toBeGreaterThan(0);
   await expect(page.getByRole("heading", { name: "일본 3일 여행" })).toBeVisible();
   const workspaceTabs = page.getByRole("tablist", { name: "여행 작업", exact: true });
+  // The trip starts today, so the itinerary opens first; the tabs still follow the
+  // usual preparation order: flights, packing, budget, itinerary.
+  await expect(workspaceTabs.getByRole("tab")).toHaveText(["항공권", "준비물", "예산·예약", "일정", "사진·메모", "여행 정보"]);
+  await expect(workspaceTabs.getByRole("tab", { name: "일정", exact: true })).toHaveAttribute("aria-selected", "true");
+  // Weather stays visible above every tab.
+  const weather = page.getByRole("region", { name: /비 예보 1일/ });
+  await expect(weather).toBeVisible();
+  await expect(weather.getByRole("list", { name: "날짜별 날씨" }).getByRole("listitem")).toHaveCount(3);
   await workspaceTabs.getByRole("tab", { name: "항공권", exact: true }).click();
-  await expect(page.getByRole("heading", { name: "항공권부터 준비하기" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "항공권 예약" })).toBeVisible();
+  await expect(weather).toBeVisible();
   await expect(page.getByRole("combobox", { name: "출발 공항 검색" })).toHaveValue("서울 · 서울 모든 공항");
   const destinationAirport = page.getByRole("combobox", { name: "도착 공항 검색" });
   await expect(destinationAirport).toHaveValue("도쿄 · 도쿄 모든 공항");
@@ -129,15 +138,15 @@ test("몇 번의 선택으로 여행 계획을 만들고 일차별 일정으로 
   await page.getByRole("option", { name: /Cairo International Airport.*CAI/ }).click();
   await expect(destinationAirport).toHaveValue("Cairo · Cairo International Airport");
   await expect(page.getByRole("link", { name: /이 일정으로 항공권 찾기/ })).toHaveAttribute("href", /skyscanner\.co\.kr\/transport\/flights\/sel\/cai\//);
-  await expect(page.getByText(/최대 16일 예보/)).toBeVisible();
-  await workspaceTabs.getByRole("tab", { name: "준비물", exact: true }).click();
+  await page.getByRole("button", { name: /다음 단계\s*준비물 챙기기/ }).click();
+  await expect(workspaceTabs.getByRole("tab", { name: "준비물", exact: true })).toHaveAttribute("aria-selected", "true");
   await expect(page.getByRole("heading", { name: "여행 준비 체크리스트" })).toBeVisible();
   await expect(page.locator(".travel-checklist__items li")).toHaveCount(6);
   await page.getByRole("button", { name: "항공·교통편 확인 완료로 변경" }).click();
   await expect(page.locator(".travel-checklist__items li").first()).toHaveClass(/is-complete/);
   const newChecklistItem = page.getByRole("textbox", { name: "새 준비 항목" });
   await newChecklistItem.fill("공항철도 예약");
-  const addChecklistItem = page.getByRole("button", { name: "＋ 추가" });
+  const addChecklistItem = page.getByRole("button", { name: "추가", exact: true });
   await expect(addChecklistItem).toBeEnabled();
   await addChecklistItem.click();
   await expect(page.getByText("공항철도 예약", { exact: true })).toBeVisible();
@@ -146,7 +155,7 @@ test("몇 번의 선택으로 여행 계획을 만들고 일차별 일정으로 
   await page.getByRole("spinbutton", { name: "총예산" }).fill("1500000");
   await page.getByRole("button", { name: "저장", exact: true }).click();
   await expect(page.getByText("₩1,500,000", { exact: true })).toBeVisible();
-  await page.getByText("＋ 비용 추가", { exact: true }).click();
+  await page.locator("summary", { hasText: "비용 추가" }).click();
   await page.getByRole("textbox", { name: "새 비용 이름" }).fill("왕복 항공권");
   await page.getByRole("spinbutton", { name: "예상 비용" }).fill("450000");
   // Focusing an input must not hide a toolbar that reappears under the submit tap.
@@ -161,7 +170,7 @@ test("몇 번의 선택으로 여행 계획을 만들고 일차별 일정으로 
   await page.getByRole("button", { name: "변경 저장" }).click();
   await expect(page.getByText("왕복 항공권·수하물", { exact: true })).toBeVisible();
   await page.getByRole("button", { name: "왕복 항공권·수하물 결제 완료로 변경" }).click();
-  await page.getByText("＋ 예약 추가", { exact: true }).click();
+  await page.locator("summary", { hasText: "예약 추가" }).click();
   await page.getByRole("textbox", { name: "새 예약 이름" }).fill("도쿄 호텔 체크인");
   const reservationButton = page.getByRole("button", { name: "예약 추가", exact: true });
   await reservationButton.evaluate((button) => button.scrollIntoView({ block: "center" }));
@@ -204,7 +213,7 @@ test("몇 번의 선택으로 여행 계획을 만들고 일차별 일정으로 
   expect(mapSheet?.width).toBeGreaterThanOrEqual(389);
   expect(mapSheet?.height).toBeGreaterThanOrEqual(843);
   await page.getByRole("button", { name: "지도 닫기" }).click();
-  await page.getByRole("button", { name: "＋ 식사" }).click();
+  await page.getByRole("button", { name: "식사 일정 추가" }).click();
   await expect(page.getByRole("textbox", { name: "장소 이름" })).toHaveCount(1);
   await page.getByRole("button", { name: "맛집", exact: true }).first().click();
   await expect(page.getByRole("button", { name: "현지 음식", exact: true })).toBeVisible();

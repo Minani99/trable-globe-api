@@ -1,0 +1,118 @@
+/* Shared stroke icons
+ *
+ * Imported last (see globals.css) so the icon box is not reshaped by legacy
+ * section rules. Context rules that size an icon deliberately (for example a
+ * round arrow button) still win through higher specificity.
+ */
+.ui-icon {
+  display: inline-block;
+  flex: none;
+  width: 1.2em;
+  height: 1.2em;
+  overflow: visible;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  vertical-align: -0.24em;
+  pointer-events: none;
+}
+
+/* Older section rules drew icons with 1.5–1.7px strokes. One weight everywhere
+ * keeps arrows and chevrons legible at small sizes. */
+svg.ui-icon {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+}
+
+/* Disclosure and menu toggles were drawn at ~13px; give them a readable size. */
+.site-account-menu__toggle .ui-icon,
+.profile-globe-dock__toggle .ui-icon,
+.globe-time-controls__toggle .ui-icon,
+.travel-recap__details-toggle .ui-icon,
+.globe-memory-spotlight > .ui-icon {
+  width: 1.15rem;
+  height: 1.15rem;
+}
+
+.site-account-menu__toggle {
+  color: var(--text-secondary);
+}
+
+/* Trailing arrows in menus and lists used to be tertiary grey glyphs. */
+.site-account-popover > a > span[aria-hidden="true"],
+.site-mobile-menu > a > span[aria-hidden="true"],
+.site-mobile-menu__button > span[aria-hidden="true"] {
+  display: inline-grid;
+  place-items: center;
+  color: var(--text-secondary);
+}
+
+.site-account-popover > a:hover > span[aria-hidden="true"],
+.site-account-popover > a:focus-visible > span[aria-hidden="true"] {
+  color: var(--accent-strong);
+}
+
+.site-account-popover__logout > span[aria-hidden="true"],
+.site-mobile-menu__button.is-logout > span[aria-hidden="true"] {
+  color: inherit;
+}
+
+/* A leading plus replaces the old dark badge, so the button no longer needs its wide gap. */
+.studio-primary-action:has(> .ui-icon:first-child) {
+  gap: 0.45rem;
+  padding-inline: 1rem 1.2rem;
+}
+
+/* Disclosure toggles drawn with CSS used "+" / "−" text; use the shared chevron. */
+.studio-onboarding > summary::after,
+.studio-activity-disclosure > summary::after {
+  flex: none;
+  width: 1.15rem;
+  height: 1.15rem;
+  background: currentColor;
+  content: "";
+  -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9.5 6 6 6-6'/%3E%3C/svg%3E") center / contain no-repeat;
+  mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9.5 6 6 6-6'/%3E%3C/svg%3E") center / contain no-repeat;
+  transition: transform 160ms ease;
+}
+
+.studio-onboarding[open] > summary::after,
+.studio-activity-disclosure[open] > summary::after {
+  content: "";
+  transform: rotate(180deg);
+}
+
+/* Breadcrumb links that start or end with an arrow line up with plain ones. */
+.studio-breadcrumb a,
+.travel-day-page__nav a {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  vertical-align: middle;
+}
+
+/* Arrows inside links and buttons get a short, consistent nudge on hover. */
+:where(a, button):hover > .ui-icon[data-icon="arrow-right"],
+:where(a, button):hover > :where(span, i, b) > .ui-icon[data-icon="arrow-right"] {
+  transform: translateX(2px);
+}
+
+:where(a, button):hover > .ui-icon[data-icon="arrow-up-right"],
+:where(a, button):hover > :where(span, i, b) > .ui-icon[data-icon="arrow-up-right"] {
+  transform: translate(1.5px, -1.5px);
+}
+
+.ui-icon[data-icon="arrow-right"],
+.ui-icon[data-icon="arrow-up-right"] {
+  transition: transform 160ms ease;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ui-icon[data-icon="arrow-right"],
+  .ui-icon[data-icon="arrow-up-right"] {
+    transition: none;
+  }
+}

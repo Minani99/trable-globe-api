@@ -1,6 +1,5 @@
 "use client";
 
-import { AppIcon } from "@/components/common/AppIcon";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
@@ -9,6 +8,7 @@ import { showFeedback } from "@/components/common/AppFeedback";
 import { ApiError, apiMutation } from "@/lib/api/client";
 import { setCachedAuthMember } from "@/lib/auth-state";
 import type { AuthMember } from "@/types";
+import { Icon } from "@/components/common/Icon";
 
 export function SettingsSessionActions({ member }: { member: AuthMember }) {
   const router = useRouter();
@@ -31,16 +31,16 @@ export function SettingsSessionActions({ member }: { member: AuthMember }) {
   }
 
   return (
-    <div className="settings-hero__actions" aria-label="계정 바로가기">
-      <Link href={`/${member.username}`} className="studio-secondary-action"><AppIcon name="user" />공개 프로필</Link>
+    <div className="account-hero__actions" aria-label="계정 바로가기">
+      <Link href={`/${member.username}`} className="account-button is-secondary"><Icon name="user" />공개 프로필</Link>
       <button
         type="button"
-        className="settings-session-logout"
+        className="account-button is-ghost"
         onClick={logout}
         disabled={pending}
         aria-busy={pending}
       >
-        <AppIcon name="logout" />{pending ? "로그아웃 중…" : "로그아웃"}
+        <Icon name="logout" />{pending ? "로그아웃 중…" : "로그아웃"}
       </button>
     </div>
   );

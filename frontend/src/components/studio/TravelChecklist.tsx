@@ -125,7 +125,7 @@ export function TravelChecklist({ travelId, initialTasks }: { travelId: number; 
       <div className="travel-checklist__composer">
         <label><span className="sr-only">새 준비 항목</span><input value={title} onChange={(event) => setTitle(event.target.value)} onKeyDown={(event: KeyboardEvent<HTMLInputElement>) => { if (event.key === "Enter") { event.preventDefault(); void addTask(); } }} maxLength={120} placeholder="예: 공항철도 예약" /></label>
         <label><span className="sr-only">항목 분류</span><select value={category} onChange={(event) => setCategory(event.target.value as TravelTaskCategory)}>{Object.entries(CATEGORY_LABELS).map(([value, label]) => <option key={value} value={value}>{label}</option>)}</select></label>
-        <button type="button" onClick={() => void addTask()} disabled={pendingKey !== null || !title.trim()}>{pendingKey === "create" ? "추가 중…" : "＋ 추가"}</button>
+        <button type="button" onClick={() => void addTask()} disabled={pendingKey !== null || !title.trim()}><AppIcon name="plus" />{pendingKey === "create" ? "추가 중…" : "추가"}</button>
       </div>
       {error ? <p className="travel-checklist__error" role="alert">{error}</p> : null}
     </section>

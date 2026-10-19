@@ -1,10 +1,11 @@
 "use client";
 
 import { useEffect, useRef, type KeyboardEvent } from "react";
+import { Icon, type IconName } from "@/components/common/Icon";
 import styles from "./WorkspaceTabs.module.css";
 
-export function WorkspaceTabs({ id, label, items, active, onChange }: {
-  id: string; label: string; items: readonly string[]; active: number; onChange: (index: number) => void;
+export function WorkspaceTabs({ id, label, items, icons, active, onChange }: {
+  id: string; label: string; items: readonly string[]; icons?: readonly IconName[]; active: number; onChange: (index: number) => void;
 }) {
   const tabsRef = useRef<HTMLDivElement>(null);
   useEffect(() => {
@@ -38,7 +39,9 @@ export function WorkspaceTabs({ id, label, items, active, onChange }: {
         <button key={item} id={`${id}-tab-${index}`} type="button" role="tab"
           aria-selected={active === index} aria-controls={`${id}-panel-${index}`}
           tabIndex={active === index ? 0 : -1}
-          onClick={() => onChange(index)} onKeyDown={(event) => navigate(event, index)}>{item}</button>
+          onClick={() => onChange(index)} onKeyDown={(event) => navigate(event, index)}>
+          {icons?.[index] ? <Icon name={icons[index]} className={styles.icon} /> : null}{item}
+        </button>
       ))}
     </div>
   );
