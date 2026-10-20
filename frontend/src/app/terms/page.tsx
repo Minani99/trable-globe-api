@@ -30,6 +30,7 @@ export default function TermsPage() {
       </section>
       <section>
         <h2>베타의 한계</h2>
+        <p>Google 지도와 경로 기능에는 <a href="https://maps.google.com/help/terms_maps/" target="_blank" rel="noopener noreferrer">Google Maps 이용약관</a>이 적용됩니다. 방문 순서 제안은 직선거리 기준이며 도로·교통·영업시간을 반영하지 않습니다.</p>
         <p>기능과 화면은 예고 없이 바뀔 수 있고 일시적인 오류나 데이터 손실 가능성이 있습니다. 항공·날씨·장소 정보는 참고용이며 실제 운영기관과 예약처 정보를 다시 확인해야 합니다. 중요한 일정, 영수증과 사진 원본은 별도로 보관해 주세요.</p>
       </section>
       <section>

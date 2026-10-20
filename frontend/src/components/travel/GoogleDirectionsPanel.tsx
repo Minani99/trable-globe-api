@@ -2,6 +2,9 @@
 
 import { AppIcon } from "@/components/common/AppIcon";
 import { useId, useState } from "react";
+import dynamic from "next/dynamic";
+
+const GoogleRoutePreview = dynamic(() => import("./GoogleRoutePreview").then((module) => module.GoogleRoutePreview), { ssr: false });
 
 import {
   buildGoogleDirectionsSegments,
@@ -61,6 +64,7 @@ export function GoogleDirectionsPanel({ stops, activeDate, compact = false }: Go
         </div>
       ) : null}
 
+      <GoogleRoutePreview stops={dayStops} mode={mode} />
       {segments.length ? (
         <div className="google-directions__routes">
           {segments.map((segment, index) => (

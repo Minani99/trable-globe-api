@@ -46,6 +46,9 @@ jobs:
 
   browser-journey:
     name: Core browser journey (${{ matrix.shard }})
+    env:
+      # SDK is mocked by the route test; this is not a Google credential.
+      NEXT_PUBLIC_GOOGLE_MAPS_API_KEY: mock-browser-key
     runs-on: ubuntu-latest
     timeout-minutes: 15
     strategy:

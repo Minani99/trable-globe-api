@@ -33,6 +33,7 @@ export default function PrivacyPage() {
       </section>
       <section>
         <h2>어디에서 처리되나요?</h2>
+        <p>앱 안에서 Google 경로 지도를 열면 선택한 장소 좌표와 이동수단이 Google Maps Platform으로 전달됩니다. 경로 결과는 서비스의 데이터베이스나 브라우저 저장소에 저장하지 않습니다. Google의 처리는 <a href="https://policies.google.com/privacy" target="_blank" rel="noopener noreferrer">Google 개인정보처리방침</a>을 참고하세요.</p>
         <p>현재 베타는 Vercel(화면), Render(서버), Neon(데이터베이스), Cloudflare R2(사진), Resend(계정 이메일)를 사용합니다. 지도·장소·날씨 기능을 사용할 때 MapTiler, OpenStreetMap 관련 서비스와 Open-Meteo에 검색어 또는 위치·날짜가 전달될 수 있습니다.</p>
       </section>
       <section>
