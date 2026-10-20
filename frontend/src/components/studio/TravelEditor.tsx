@@ -185,6 +185,7 @@ export function TravelEditor({
   const editorTabsId = workspace?.tabsId ?? "travel-edit";
   const sectionTab = (section: number) => workspace ? workspace.tabIndexForSection(section) : EDITOR_SECTIONS.indexOf(section);
   const [expandedPlace, setExpandedPlace] = useState<string | null>(null);
+  const [newPlaceKey, setNewPlaceKey] = useState<string | null>(null);
   const [activeQuickAction, setActiveQuickAction] = useState<"place" | "photo" | "note" | null>(null);
   const countryMap = useMemo(() => new Map(countries.map((country) => [country.iso2Code, country])), [countries]);
   const travelPreferences = useMemo(() => recommendationPreferences(`${title} ${description}`), [description, title]);
@@ -414,6 +415,7 @@ export function TravelEditor({
       return { ...photo, placeIndex: String(Number(photo.placeIndex) + 1) };
     }));
     setExpandedPlace(nextPlace.key);
+    setNewPlaceKey(nextPlace.key);
     setDirty(true);
   }
 
@@ -958,16 +960,6 @@ export function TravelEditor({
             </div>
           </div>
         ) : null}
-        <GoogleDirectionsPanel
-          activeDate={planningMode ? activePlanDate : undefined}
-          stops={(planningMode ? activeDayPlaces.map(({ place }) => place) : places).map((place) => ({
-            key: place.key,
-            placeName: place.placeName,
-            latitude: coordinate(place.latitude),
-            longitude: coordinate(place.longitude),
-            visitedAt: place.visitedAt,
-          }))}
-        />
         <p className="editor-order-hint" id="stop-drag-help">방문 순서대로 놓아주세요. ⋮⋮ 손잡이를 끌거나, 손잡이에 초점을 두고 ↑ ↓ 키로 옮길 수 있어요.</p>
         <p className="editor-order-notice" role="status">{orderNotice}</p>
         <ol className="travel-editor__places">
@@ -1002,6 +994,7 @@ export function TravelEditor({
               <div className="travel-editor__fields">
                 <label><span>나라</span><select value={place.countryCode} onChange={(event) => updateCountry(index, event.target.value)} required>{countries.map((country) => <option key={country.iso2Code} value={country.iso2Code}>{country.label}</option>)}</select></label>
                 {expandedPlace === place.key ? <PlaceLocationPicker
+                  focusSearch={newPlaceKey === place.key}
                   key={place.countryCode}
                   countryCode={place.countryCode}
                   countryName={countryMap.get(place.countryCode)?.nameKo ?? "선택한 나라"}
@@ -1013,7 +1006,7 @@ export function TravelEditor({
                   longitude={coordinate(place.longitude)}
                   routeAnchor={findRouteAnchor(places, index)}
                   travelPreferences={travelPreferences}
-                  onSelect={(location) => updateLocation(index, location)}
+                  onSelect={(location) => { updateLocation(index, location); setNewPlaceKey(null); }}
                 /> : null}
                 <label><span>도시</span><input value={place.cityName} onChange={(event) => updateCityName(index, event.target.value)} maxLength={100} placeholder="예: 서울" /></label>
                 <label className="is-wide"><span>장소 이름</span><input value={place.placeName} onChange={(event) => updatePlace(index, "placeName", event.target.value)} maxLength={150} placeholder="예: 서울숲" required /></label>
@@ -1033,6 +1026,13 @@ export function TravelEditor({
             </li>
           ))}
         </ol>
+        <GoogleDirectionsPanel compact
+          activeDate={planningMode ? activePlanDate : undefined}
+          stops={(planningMode ? activeDayPlaces.map(({ place }) => place) : places).map((place) => ({
+            key: place.key, placeName: place.placeName,
+            latitude: coordinate(place.latitude), longitude: coordinate(place.longitude), visitedAt: place.visitedAt,
+          }))}
+        />
         {!planningMode ? <div className="travel-editor__add-row"><p>방문 순서를 바꾸면 Google Maps 경로에도 바로 반영됩니다.</p><button type="button" onClick={() => { const next = emptyPlace(places.at(-1)?.countryCode ?? "KR"); setPlaces((current) => [...current, next]); setExpandedPlace(next.key); setDirty(true); }}><Icon name="plus" /> 장소 추가</button></div> : null}
         </div>
       </div></section>

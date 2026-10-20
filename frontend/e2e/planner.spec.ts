@@ -214,6 +214,7 @@ test("몇 번의 선택으로 여행 계획을 만들고 일차별 일정으로 
   expect(mapSheet?.height).toBeGreaterThanOrEqual(843);
   await page.getByRole("button", { name: "지도 닫기" }).click();
   await page.getByRole("button", { name: "식사 일정 추가" }).click();
+  await expect(page.getByRole("textbox", { name: "방문할 장소 검색" })).toBeFocused();
   await expect(page.getByRole("textbox", { name: "장소 이름" })).toHaveCount(1);
   await page.getByRole("button", { name: "맛집", exact: true }).first().click();
   await expect(page.getByRole("button", { name: "현지 음식", exact: true })).toBeVisible();

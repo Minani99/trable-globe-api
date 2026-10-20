@@ -44,6 +44,7 @@ interface PlaceLocationPickerProps {
   routeAnchor?: Coordinate | null;
   travelPreferences?: string[];
   onSelect: (location: LocationSelection) => void;
+  focusSearch?: boolean;
 }
 
 interface SearchSuggestion extends LocationSelection {
@@ -99,6 +100,7 @@ export function PlaceLocationPicker({
   routeAnchor = null,
   travelPreferences = [],
   onSelect,
+  focusSearch = false,
 }: PlaceLocationPickerProps) {
   const initialName = placeName.includes(PLACEHOLDER_TEXT) ? "" : placeName;
   const [query, setQuery] = useState(initialName);
@@ -125,6 +127,12 @@ export function PlaceLocationPicker({
     [initialName, cityName].filter(Boolean).join(" · "),
   );
   const requestIdRef = useRef(0);
+  const searchInputRef = useRef<HTMLInputElement>(null);
+  useEffect(() => {
+    if (!focusSearch) return;
+    searchInputRef.current?.focus({ preventScroll: true });
+    searchInputRef.current?.scrollIntoView({ block: "center", behavior: "instant" });
+  }, [focusSearch]);
   const hasSelection = latitude !== null && longitude !== null && Boolean(initialName);
   const searchOrigin = routeAnchor ?? { latitude: fallbackLatitude, longitude: fallbackLongitude };
   const recommendationOrigin = routeAnchor ?? (hasSelection && latitude !== null && longitude !== null
@@ -457,6 +465,7 @@ export function PlaceLocationPicker({
       <div className="place-picker__search">
         <span className="place-picker__search-icon"><AppIcon name="search" /></span>
         <input
+          ref={searchInputRef}
           value={query}
           onChange={(event) => {
             setQuery(event.target.value);
