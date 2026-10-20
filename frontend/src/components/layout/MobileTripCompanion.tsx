@@ -346,7 +346,7 @@ export function MobileTripCompanion({
       {variant === "page" ? <>
         {dayPlaces.length ? <section className="day-route-overview" aria-label="하루 동선 한눈에 보기">
           <header><AppIcon name="route" /><h3>하루 동선</h3><span>{dayPlaces.length}곳</span></header>
-          {nextPlace ? <a className="day-route-next" href={googleMapsUrl(nextPlace)} target="_blank" rel="noreferrer"><span>다음 방문</span><strong>{dayPlaces.indexOf(nextPlace) + 1}. {nextPlace.placeName}</strong><AppIcon name="pin" /></a> : null}
+          {nextPlace ? <a className="day-route-next" href={googleMapsUrl(nextPlace)} target="_blank" rel="noreferrer" aria-label={`다음 방문 ${nextPlace.placeName} · 지도에서 위치 보기`}><span>다음 방문</span><strong>{dayPlaces.indexOf(nextPlace) + 1}. {nextPlace.placeName}</strong><AppIcon name="pin" /></a> : null}
           <ol className="day-route-stops">{dayPlaces.map((place, index) => <li key={place.id}><b>{index + 1}</b><span>{place.placeName}</span></li>)}</ol>
           <DayMap key={viewDate} compact placeNumbers={Object.fromEntries(dayPlaces.map((place, index) => [place.id, index + 1]))} places={dayPlaces.filter((place) => isDirectionsStopLocated({ ...place, key: place.id }))} />
           <GoogleDirectionsPanel compact activeDate={viewDate} stops={dayPlaces.map((place) => ({ ...place, key: place.id }))} />
