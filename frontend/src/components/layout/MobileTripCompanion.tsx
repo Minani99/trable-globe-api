@@ -343,23 +343,23 @@ export function MobileTripCompanion({
         </div>
       ) : null}
 
-      {location ? <TripWeather latitude={location.latitude} longitude={location.longitude} startDate={viewDate} endDate={viewDate} label={location.city?.nameKo ?? location.country.nameKo} /> : null}
       {variant === "page" ? <>
         {dayPlaces.length ? <section className="day-route-overview" aria-label="하루 동선 한눈에 보기">
           <header><AppIcon name="route" /><h3>하루 동선</h3><span>{dayPlaces.length}곳</span></header>
+          {nextPlace ? <a className="day-route-next" href={googleMapsUrl(nextPlace)} target="_blank" rel="noreferrer" aria-label={`다음 방문 ${nextPlace.placeName} · 지도에서 위치 보기`}><span>다음 방문</span><strong>{dayPlaces.indexOf(nextPlace) + 1}. {nextPlace.placeName}</strong><AppIcon name="pin" /></a> : null}
           <ol className="day-route-stops">{dayPlaces.map((place, index) => <li key={place.id}><b>{index + 1}</b><span>{place.placeName}</span></li>)}</ol>
           <DayMap key={viewDate} compact placeNumbers={Object.fromEntries(dayPlaces.map((place, index) => [place.id, index + 1]))} places={dayPlaces.filter((place) => isDirectionsStopLocated({ ...place, key: place.id }))} />
-          <GoogleDirectionsPanel activeDate={viewDate} stops={dayPlaces.map((place) => ({ ...place, key: place.id }))} />
+          <GoogleDirectionsPanel compact activeDate={viewDate} stops={dayPlaces.map((place) => ({ ...place, key: place.id }))} />
         </section> : null}
       </> : null}
 
-      {nextPlace ? (
+      {nextPlace ? variant === "sheet" ? (
         <a className="mobile-trip-companion__next" href={googleMapsUrl(nextPlace)} target="_blank" rel="noreferrer">
           <span>다음 일정</span>
           <strong>{dayPlaces.indexOf(nextPlace) + 1}번째 · {nextPlace.placeName}</strong>
           <small>지도에서 위치 보기 </small>
         </a>
-      ) : dayPlaces.length ? (
+      ) : null : dayPlaces.length ? (
         <div className="mobile-trip-companion__empty is-complete">
           <strong>{viewingToday ? "오늘 일정을 모두 마쳤어요." : `${dayNumber}일차 일정을 모두 마쳤어요.`}</strong>
           <p>남긴 사진과 메모는 여행 기록에 그대로 이어집니다.</p>
@@ -370,6 +370,8 @@ export function MobileTripCompanion({
           <p>일정 편집에서 이 날짜에 갈 장소를 추가하세요.</p>
         </div>
       )}
+
+      {location ? <TripWeather compact={variant === "page"} latitude={location.latitude} longitude={location.longitude} startDate={viewDate} endDate={viewDate} label={location.city?.nameKo ?? location.country.nameKo} /> : null}
 
       {dayPlaces.length ? (
         <ol className="mobile-trip-companion__timeline" aria-label={`${currentTravel.title} ${viewingToday ? "오늘 일정" : `${dayNumber}일차 일정`}`}>

@@ -90,3 +90,33 @@ button:has(> .app-icon) { gap: .4rem; }
 .trip-forecast__days .weather-icon { width: 20px; height: 20px; }
 .trip-flight .trip-flight-route { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 @media (max-width: 700px) { .trip-flight .trip-flight-route { grid-template-columns: minmax(0, 1fr); } }
+
+/* Keep the route and next stop together, ahead of supporting information. */
+.day-route-next { display: flex; align-items: center; gap: .5rem; min-height: 44px; margin-top: .5rem; color: var(--text-primary); }
+.day-route-next > span { flex-shrink: 0; color: var(--accent-strong); font-size: .75rem; font-weight: 700; }
+.day-route-next > strong { flex: 1; min-width: 0; font-size: .875rem; overflow-wrap: anywhere; }
+.google-directions.is-compact { padding: .75rem 0 0; border: 0; border-radius: 0; background: transparent; }
+.google-directions.is-compact .google-directions__heading { gap: .5rem; }
+.google-directions.is-compact .google-directions__heading > div:first-child { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
+.google-directions.is-compact .google-directions__modes { width: 100%; }
+.google-directions.is-compact .google-directions__route { padding: .75rem; }
+.google-directions.is-compact .google-directions__notes:empty { display: none; }
+.trip-forecast.is-compact { padding: .75rem; border-radius: 10px; gap: .4rem; }
+.trip-forecast.is-compact > header { margin: 0; }
+.trip-forecast.is-compact .trip-forecast__days { margin: 0; }
+.trip-forecast.is-compact .trip-forecast__source { font-size: .65rem; }
+.travel-editor__places + .google-directions { margin-top: 1rem; }
+.editor-stop__body { scroll-margin-top: 6rem; }
+@media (max-width: 700px) {
+  .travel-day-page .travel-day-page__hero { margin-block: .75rem; padding-block: .5rem; }
+  .travel-day-page .travel-day-page__hero h1 { font-size: 1.25rem; }
+  .travel-day-page .mobile-trip-companion.is-page { padding-top: .75rem; gap: .75rem; }
+  .travel-day-page .mobile-trip-companion__heading h2 { font-size: 1.1rem; }
+  .travel-day-page .mobile-trip-companion__progress { gap: .25rem; }
+  .travel-day-page .day-route-overview { padding: .75rem; border-radius: 12px; }
+  .travel-day-page .day-route-stops { flex-wrap: nowrap; overflow-x: auto; padding-block: .5rem; scrollbar-width: thin; }
+  .travel-day-page .day-route-stops li { flex-shrink: 0; max-width: 80%; }
+  .travel-day-page .day-route-stops li span { overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+  .travel-editor .plan-itinerary__toolbar { padding: .75rem; }
+  .travel-editor .editor-order-hint { font-size: .75rem; margin-block: .5rem; }
+}

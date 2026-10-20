@@ -61,6 +61,10 @@ for (const width of [320, 390, 768]) {
     expect(dayResponse?.status()).toBe(200);
     const route = page.getByRole("region", { name: "하루 동선 한눈에 보기" });
     await expect(route.locator(".day-route-stops li")).toHaveText(["1교토역", "2기요미즈데라", "3니시키 시장"]);
+    await expect(route.locator(".day-route-next")).toContainText("1. 교토역");
+    const routeBox = await route.boundingBox();
+    const weatherBox = await page.locator(".trip-forecast").boundingBox();
+    expect(routeBox!.y).toBeLessThan(weatherBox!.y);
     const directions = route.getByRole("link", { name: /Google Maps에서 경로 보기/ });
     const url = new URL((await directions.getAttribute("href"))!);
     expect(url.searchParams.get("origin")).toBe("34.9858,135.7588");
@@ -70,6 +74,7 @@ for (const width of [320, 390, 768]) {
     const before = forecasts;
     await page.getByRole("button", { name: "교토역 완료", exact: true }).click();
     await expect(page.getByRole("button", { name: "교토역 미완료로 변경", exact: true })).toHaveAttribute("aria-pressed", "true");
+    await expect(route.locator(".day-route-next")).toContainText("2. 기요미즈데라");
     expect(forecasts).toBe(before);
     await assertFits();
     await page.evaluate(() => window.scrollTo({ top: 0, behavior: "instant" }));
