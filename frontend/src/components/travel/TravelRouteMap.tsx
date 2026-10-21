@@ -11,6 +11,8 @@ interface TravelRouteMapProps {
   places: TravelPlace[];
   compact?: boolean;
   placeNumbers?: Record<number, number>;
+  focusedPlaceId?: number | null;
+  onPlaceSelect?: (id: number) => void;
 }
 
 interface PanState {
@@ -40,7 +42,7 @@ const MIN_ZOOM = 3;
 const MAX_ZOOM = 18;
 
 /** A city map for place locations, paired with Google Maps travel directions. */
-export function TravelRouteMap({ places, compact = false, placeNumbers }: TravelRouteMapProps) {
+export function TravelRouteMap({ places, compact = false, placeNumbers, focusedPlaceId, onPlaceSelect }: TravelRouteMapProps) {
   const initialView = useMemo(
     () => createInitialView(places, DEFAULT_VIEWPORT.width, DEFAULT_VIEWPORT.height),
     [places],
@@ -52,9 +54,24 @@ export function TravelRouteMap({ places, compact = false, placeNumbers }: Travel
   const [measured, setMeasured] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
   const [loadedTileCount, setLoadedTileCount] = useState(0);
+  const [allowMapMove, setAllowMapMove] = useState(false);
   const canvasRef = useRef<HTMLDivElement | null>(null);
   const panState = useRef<PanState | null>(null);
   const measuredWidthRef = useRef<number | null>(null);
+  const focusedPlace = places.find((place) => place.id === focusedPlaceId);
+  const focusLat = focusedPlace?.latitude;
+  const focusLng = focusedPlace?.longitude;
+
+  useEffect(() => {
+    if (focusedPlaceId == null || focusLat == null || focusLng == null) return;
+    const frame = requestAnimationFrame(() => {
+      const target = lngLatToWorld(focusLng, focusLat, 15);
+      setSelectedId(focusedPlaceId);
+      setZoom(15);
+      setCenter({ x: target.x, y: target.y });
+    });
+    return () => cancelAnimationFrame(frame);
+  }, [focusedPlaceId, focusLat, focusLng]);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -64,7 +81,9 @@ export function TravelRouteMap({ places, compact = false, placeNumbers }: Travel
 
     // React's delegated wheel listener can be passive in some browsers. A native non-passive
     // listener owns the gesture so zooming the map never scrolls the surrounding article.
-    const preventPageScroll = (event: globalThis.WheelEvent) => event.preventDefault();
+    const preventPageScroll = (event: globalThis.WheelEvent) => {
+      if (!compact || allowMapMove || event.ctrlKey || event.metaKey) event.preventDefault();
+    };
     canvas.addEventListener("wheel", preventPageScroll, { passive: false });
 
     const resizeObserver = new ResizeObserver(([entry]) => {
@@ -92,7 +111,7 @@ export function TravelRouteMap({ places, compact = false, placeNumbers }: Travel
       canvas.removeEventListener("wheel", preventPageScroll);
       resizeObserver.disconnect();
     };
-  }, [places]);
+  }, [places, compact, allowMapMove]);
 
   const viewport = useMemo(
     () => buildViewport(places, center.x, center.y, zoom, viewportSize.width, viewportSize.height),
@@ -133,16 +152,19 @@ export function TravelRouteMap({ places, compact = false, placeNumbers }: Travel
     const targetZoom = Math.max(zoom, 15);
     const nextCenter = lngLatToWorld(place.longitude, place.latitude, targetZoom);
     setSelectedId(place.id);
+    onPlaceSelect?.(place.id);
     setZoom(targetZoom);
     setCenter({ x: nextCenter.x, y: nextCenter.y });
   };
 
   const handleWheel = (event: WheelEvent<HTMLDivElement>) => {
+    if (compact && !allowMapMove && !event.ctrlKey && !event.metaKey) return;
     event.preventDefault();
     updateZoom(zoom + (event.deltaY > 0 ? -1 : 1));
   };
 
   const handlePointerDown = (event: PointerEvent<HTMLDivElement>) => {
+    if (compact && !allowMapMove && event.pointerType === "touch") return;
     if (event.button !== 0) {
       return;
     }
@@ -187,6 +209,7 @@ export function TravelRouteMap({ places, compact = false, placeNumbers }: Travel
             <p className="travel-route-map-toolbar__hint">장소 위치를 살펴보세요 · 실제 이동 경로는 Google Maps에서 확인</p>
           </div>
           <div className="travel-route-map-controls" role="toolbar" aria-label="장소 위치 지도 확대·축소">
+            {compact ? <button type="button" aria-pressed={allowMapMove} onClick={() => setAllowMapMove(!allowMapMove)}>{allowMapMove ? "지도 이동 끄기" : "지도 이동 켜기"}</button> : null}
             <button type="button" onClick={() => updateZoom(zoom + 1)} aria-label="지도 확대">+</button>
             <button type="button" onClick={() => updateZoom(zoom - 1)} aria-label="지도 축소">−</button>
             <button type="button" onClick={resetViewport} aria-label="전체 장소 위치 맞춤">전체 보기</button>
@@ -196,6 +219,7 @@ export function TravelRouteMap({ places, compact = false, placeNumbers }: Travel
         <div
           ref={canvasRef}
           className={`travel-route-map-canvas${isDragging ? " is-dragging" : ""}`}
+          style={compact ? { touchAction: allowMapMove ? "none" : "pan-y pinch-zoom", overscrollBehavior: allowMapMove ? "contain" : "auto" } : undefined}
           role="application"
           aria-label={`${places.map((place) => place.placeName).join(", ")} 방문 순서를 보여주는 실제 도시 지도`}
           aria-describedby="travel-route-map-help"
@@ -238,6 +262,7 @@ export function TravelRouteMap({ places, compact = false, placeNumbers }: Travel
                   role="button"
                   tabIndex={0}
                   aria-label={`${placeNumbers?.[point.place.id] ?? index + 1}번째 장소 ${point.place.placeName}`}
+                  aria-pressed={active}
                   onPointerDown={(event) => event.stopPropagation()}
                   onClick={() => selectPlace(point.place)}
                   onKeyDown={(event) => {
@@ -307,7 +332,7 @@ export function TravelRouteMap({ places, compact = false, placeNumbers }: Travel
           </p>
         </div>
         <p id="travel-route-map-help" className="travel-route-map-help">
-          번호는 방문 순서입니다. 장소 목록에서도 위치를 선택할 수 있어요. 실제 도로와 교통편은 Google Maps 경로 보기에서 확인하세요.
+          {compact ? "위아래로 스크롤하세요. 지도 이동을 켜면 지도를 끌 수 있어요." : "번호는 방문 순서입니다. 장소 목록에서도 위치를 선택할 수 있어요. 실제 도로와 교통편은 Google Maps 경로 보기에서 확인하세요."}
         </p>
       </div>
 
