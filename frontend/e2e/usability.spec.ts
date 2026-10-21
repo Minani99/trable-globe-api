@@ -74,12 +74,13 @@ for (const width of [320, 390, 768]) {
     await route.getByRole("button", { name: "지도 이동 끄기", exact: true }).click();
     await expect(map).toHaveCSS("touch-action", "pan-y pinch-zoom");
     if (width === 320) {
-      await map.scrollIntoViewIfNeeded();
+      await map.evaluate((node) => node.scrollIntoView({ block: "center", behavior: "instant" }));
       const box = (await map.boundingBox())!;
       const scrollBefore = await page.evaluate(() => window.scrollY);
       const cdp = await page.context().newCDPSession(page);
+      await cdp.send("Emulation.setTouchEmulationEnabled", { enabled: true });
       const x = box.x + 30;
-      const y = box.y + box.height * 0.7;
+      const y = box.y + box.height * 0.5;
       await cdp.send("Input.dispatchTouchEvent", { type: "touchStart", touchPoints: [{ x, y }] });
       for (let step = 1; step <= 5; step += 1) {
         await cdp.send("Input.dispatchTouchEvent", { type: "touchMove", touchPoints: [{ x, y: y - step * 18 }] });

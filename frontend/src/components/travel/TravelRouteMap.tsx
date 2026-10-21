@@ -219,7 +219,7 @@ export function TravelRouteMap({ places, compact = false, placeNumbers, focusedP
         <div
           ref={canvasRef}
           className={`travel-route-map-canvas${isDragging ? " is-dragging" : ""}`}
-          style={compact ? { touchAction: allowMapMove ? "none" : "pan-y pinch-zoom" } : undefined}
+          style={compact ? { touchAction: allowMapMove ? "none" : "pan-y pinch-zoom", overscrollBehavior: allowMapMove ? "contain" : "auto" } : undefined}
           role="application"
           aria-label={`${places.map((place) => place.placeName).join(", ")} 방문 순서를 보여주는 실제 도시 지도`}
           aria-describedby="travel-route-map-help"
