@@ -15,13 +15,47 @@ interface MobileJourneyCaptureProps {
   pathname: string;
 }
 
+/**
+ * Every route change remounts this component. Reusing one server answer for a short while
+ * keeps quick menu hops from re-reading the whole trip list and itinerary each time; the
+ * device cache, which the companion updates on every edit, stays the freshest copy.
+ */
+const CURRENT_TRAVEL_TTL_MS = 60_000;
+let currentTravelRequest: {
+  username: string;
+  requestedAt: number;
+  promise: Promise<{ travel: OwnedTravelSummary | null; detail: TravelDetail | null; fetchedAt: number }>;
+} | null = null;
+
+function loadCurrentTravel(username: string) {
+  if (currentTravelRequest?.username === username && Date.now() - currentTravelRequest.requestedAt < CURRENT_TRAVEL_TTL_MS) {
+    return currentTravelRequest.promise;
+  }
+  const promise = apiSessionGet<OwnedTravelSummary[]>("/api/private/travels").then(async (travels) => {
+    const travel = findCurrentTravel(travels);
+    if (!travel) return { travel: null, detail: null, fetchedAt: Date.now() };
+    try {
+      const detail = await apiSessionGet<TravelDetail>(`/api/private/travels/${travel.travel.id}`);
+      const fetchedAt = Date.now();
+      cacheTravel(username, detail);
+      return { travel, detail, fetchedAt };
+    } catch {
+      return { travel, detail: null, fetchedAt: Date.now() };
+    }
+  });
+  currentTravelRequest = { username, requestedAt: Date.now(), promise };
+  promise.catch(() => {
+    if (currentTravelRequest?.promise === promise) currentTravelRequest = null;
+  });
+  return promise;
+}
+
 export function MobileJourneyCapture({ member, pathname }: MobileJourneyCaptureProps) {
   const panelId = useId();
   const [travelState, setTravelState] = useState<{
     username: string;
     travel: OwnedTravelSummary | null;
     detail: TravelDetail | null;
-    detailPending: boolean;
     cached: boolean;
   } | null>(null);
   const [open, setOpen] = useState(false);
@@ -29,7 +63,12 @@ export function MobileJourneyCapture({ member, pathname }: MobileJourneyCaptureP
   const triggerRef = useRef<HTMLButtonElement>(null);
 
   useEffect(() => {
-    if (!member || pathname.includes("/studio/travels/") || !window.matchMedia("(max-width: 700px)").matches) {
+    if (pathname.includes("/studio/travels/")) {
+      // Trips are edited here, so the next page should read them again.
+      currentTravelRequest = null;
+      return;
+    }
+    if (!member || !window.matchMedia("(max-width: 700px)").matches) {
       return;
     }
 
@@ -42,30 +81,29 @@ export function MobileJourneyCapture({ member, pathname }: MobileJourneyCaptureP
           username: member.username,
           travel: summaryFromCachedTravel(cached.travel, cached.savedAt),
           detail: cached.travel,
-          detailPending: false,
           cached: true,
         });
       });
     }
-    apiSessionGet<OwnedTravelSummary[]>("/api/private/travels")
-      .then(async (travels) => {
-        const currentTravel = findCurrentTravel(travels);
-        if (!currentTravel) {
-          if (active) setTravelState({ username: member.username, travel: null, detail: null, detailPending: false, cached: false });
+    loadCurrentTravel(member.username)
+      .then(({ travel, detail, fetchedAt }) => {
+        if (!active) return;
+        if (!travel) {
+          setTravelState({ username: member.username, travel: null, detail: null, cached: false });
           return;
         }
-        const cachedDetail = readCachedTravel(member.username, currentTravel.travel.id)?.travel ?? null;
-        if (active) setTravelState({ username: member.username, travel: currentTravel, detail: cachedDetail, detailPending: !cachedDetail, cached: Boolean(cachedDetail) });
-        try {
-          const detail = await apiSessionGet<TravelDetail>(`/api/private/travels/${currentTravel.travel.id}`);
-          cacheTravel(member.username, detail);
-          if (active) setTravelState({ username: member.username, travel: currentTravel, detail, detailPending: false, cached: false });
-        } catch {
-          if (active) setTravelState({ username: member.username, travel: currentTravel, detail: cachedDetail, detailPending: false, cached: Boolean(cachedDetail) });
-        }
+        // Edits made in the companion since the server answer live in the device cache.
+        const stored = readCachedTravel(member.username, travel.travel.id);
+        const storedIsCurrent = stored && (!detail || Date.parse(stored.savedAt) >= fetchedAt);
+        setTravelState({
+          username: member.username,
+          travel,
+          detail: storedIsCurrent ? stored.travel : detail,
+          cached: !detail && Boolean(stored),
+        });
       })
       .catch(() => {
-        if (active && !cached) setTravelState({ username: member.username, travel: null, detail: null, detailPending: false, cached: false });
+        if (active && !cached) setTravelState({ username: member.username, travel: null, detail: null, cached: false });
       });
     return () => {
       active = false;
@@ -119,8 +157,6 @@ export function MobileJourneyCapture({ member, pathname }: MobileJourneyCaptureP
           </header>
           {travelState?.detail ? (
             <MobileTripCompanion key={`${travelState.detail.id}-${travelState.cached ? "cached" : "live"}`} travel={travelState.detail} today={todayInKorea()} username={member.username} />
-          ) : travelState?.detailPending ? (
-            <div className="mobile-journey-capture__loading" role="status">오늘 일정을 불러오는 중…</div>
           ) : (
             <div className="mobile-journey-capture__loading" role="status">
               <span>오늘 일정을 불러오지 못했어요.</span>

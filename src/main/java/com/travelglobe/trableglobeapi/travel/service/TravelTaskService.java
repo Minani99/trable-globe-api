@@ -67,7 +67,7 @@ public class TravelTaskService {
     }
 
     private Travel requireOwnedTravel(MemberPrincipal principal, Long travelId) {
-        return travelRepository.findOwnedDetail(travelId, principal.memberId())
+        return travelRepository.findOwned(travelId, principal.memberId())
                 .orElseThrow(() -> ResourceNotFoundException.travel(travelId));
     }
 

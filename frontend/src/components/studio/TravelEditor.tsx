@@ -783,7 +783,8 @@ export function TravelEditor({
       const endpoint = editing ? `/api/private/travels/${initialTravel!.id}` : "/api/private/travels";
       const result = await apiMutation<TravelDetail>(endpoint, editing ? "PUT" : "POST", payload);
       if (!result) throw new ApiError(500, "저장된 여행을 확인할 수 없습니다.");
-      await Promise.allSettled(removedPhotoUrls.map((publicUrl) => deleteUploadedPhoto({ publicUrl })));
+      // The trip no longer references these files; cleaning them up must not hold the save.
+      void Promise.allSettled(removedPhotoUrls.map((publicUrl) => deleteUploadedPhoto({ publicUrl })));
       const savedPhotoKeys = new Set(photos.map((photo) => photo.key));
       // Saved uploads now belong to the travel. Remove them only after a later save.
       setPhotos((current) => current.map((photo) => savedPhotoKeys.has(photo.key) ? { ...photo, objectKey: null } : photo));
@@ -811,7 +812,7 @@ export function TravelEditor({
       await apiMutation<null>(`/api/private/travels/${initialTravel.id}`, "DELETE");
       const storedUrls = [initialTravel.coverImageUrl, ...initialTravel.photos.map((photo) => photo.imageUrl)]
         .filter((url): url is string => Boolean(url));
-      await Promise.allSettled([...new Set(storedUrls)].map((publicUrl) => deleteUploadedPhoto({ publicUrl })));
+      void Promise.allSettled([...new Set(storedUrls)].map((publicUrl) => deleteUploadedPhoto({ publicUrl })));
       window.localStorage.removeItem(draftStorageKey);
       setDirty(false);
       router.push("/studio");

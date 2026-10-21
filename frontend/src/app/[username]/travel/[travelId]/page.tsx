@@ -15,7 +15,7 @@ import { SaveSharedItinerary } from "@/components/travel/SaveSharedItinerary";
 import { ShareJourneyButton } from "@/components/travel/ShareJourneyButton";
 import { TravelSocialPanel } from "@/components/travel/TravelSocialPanel";
 import { ApiError } from "@/lib/api/client";
-import { authenticatedBackendGet, getCurrentMember } from "@/lib/api/server-session";
+import { authenticatedBackendGet, getCurrentMember, hasSessionCookie } from "@/lib/api/server-session";
 import { fetchTravelDetail, fetchTravelSocial } from "@/lib/api/travel";
 import { profilePath, siteConfig, travelPath } from "@/lib/config";
 import { getSiteUrl } from "@/lib/site-url";
@@ -84,6 +84,12 @@ export default async function TravelDetailPage(
     notFound();
   }
 
+  // Likes and comments do not depend on the trip body, so start them alongside it
+  // instead of waiting for the trip and the session check to come back first.
+  const socialRequest = ((await hasSessionCookie())
+    ? authenticatedBackendGet<TravelSocial>(`/api/private/travels/${id}/social`)
+    : fetchTravelSocial(id)
+  ).catch(() => null);
   let travel: TravelDetail;
   let currentMember: Awaited<ReturnType<typeof getCurrentMember>> = null;
   try {
@@ -133,10 +139,10 @@ export default async function TravelDetailPage(
     commentCount: 0,
     comments: [],
   };
-  const social = await (currentMember
-    ? authenticatedBackendGet<TravelSocial>(`/api/private/travels/${id}/social`)
-    : fetchTravelSocial(id)
-  ).catch(() => null) ?? emptySocial;
+  // An expired cookie yields no personal social data; fall back to the public counts.
+  const social = await socialRequest
+    ?? (currentMember ? null : await fetchTravelSocial(id).catch(() => null))
+    ?? emptySocial;
   const ownerName = publicDisplayName(travel.owner.displayName);
   const journeyUrl = new URL(travelPath(travel.owner.username, travel.id), getSiteUrl()).toString();
   const ownerUrl = new URL(profilePath(travel.owner.username), getSiteUrl()).toString();

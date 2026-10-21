@@ -29,6 +29,7 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -174,10 +175,18 @@ public class TravelCommandService {
 
     private List<TravelPlace> buildPlaces(List<TravelPlaceWriteRequest> requests) {
         List<TravelPlace> places = new ArrayList<>();
+        // Itinerary stops mostly repeat a few countries and cities. Resolving each one once
+        // keeps a save at a handful of lookups instead of two round trips per stop.
+        Map<String, Country> countries = new HashMap<>();
+        Map<String, City> cities = new HashMap<>();
         for (int index = 0; index < requests.size(); index++) {
             TravelPlaceWriteRequest request = requests.get(index);
-            Country country = locationResolverService.resolveCountry(request.country());
-            City city = locationResolverService.resolveCity(country, request.city());
+            Country country = countries.computeIfAbsent(
+                    request.country().iso2Code().trim().toUpperCase(Locale.ROOT),
+                    iso2 -> locationResolverService.resolveCountry(request.country()));
+            City city = request.city() == null ? null : cities.computeIfAbsent(
+                    country.getIso2Code() + "|" + request.city().nameEn().trim().toLowerCase(Locale.ROOT),
+                    key -> locationResolverService.resolveCity(country, request.city()));
             TravelPlace place = TravelPlace.create(
                     country,
                     city,

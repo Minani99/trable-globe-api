@@ -6,6 +6,8 @@ type AuthState = AuthMember | null | undefined;
 type Listener = (member: AuthState) => void;
 
 let cachedMember: AuthState;
+/** When `cachedMember` was last confirmed, by the server or by `/api/auth/me`. */
+let confirmedAt = 0;
 let currentRequest: Promise<AuthMember | null> | null = null;
 let revision = 0;
 const listeners = new Set<Listener>();
@@ -18,6 +20,7 @@ export function setCachedAuthMember(member: AuthMember | null) {
   revision += 1;
   currentRequest = null;
   cachedMember = member;
+  confirmedAt = Date.now();
   listeners.forEach((listener) => listener(member));
 }
 
@@ -28,8 +31,15 @@ export function subscribeToAuthState(listener: Listener) {
   };
 }
 
-export async function loadAuthMember({ force = false }: { force?: boolean } = {}): Promise<AuthMember | null> {
-  if (!force && cachedMember !== undefined) return cachedMember;
+/**
+ * Resolves the signed-in member, reusing the cached value when possible.
+ *
+ * `maxAgeMs` revalidates a cached value older than that; `force` always revalidates.
+ */
+export async function loadAuthMember(
+  { force = false, maxAgeMs = Infinity }: { force?: boolean; maxAgeMs?: number } = {},
+): Promise<AuthMember | null> {
+  if (!force && cachedMember !== undefined && Date.now() - confirmedAt < maxAgeMs) return cachedMember;
   if (currentRequest) return currentRequest;
 
   const requestRevision = revision;

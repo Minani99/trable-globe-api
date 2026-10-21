@@ -17,6 +17,13 @@ spring:
       hibernate:
         jdbc:
           time_zone: UTC
+          # Saving an itinerary replaces its stops; send those statements in batches
+          # instead of one database round trip each.
+          batch_size: 50
+        order_updates: true
+        # Any lazy association touched while building a list loads in one IN query
+        # rather than one query per row.
+        default_batch_fetch_size: 50
 
 server:
   # Render, Fly, Heroku and Cloud Run all inject PORT and route only to that port. Honour

@@ -18,7 +18,7 @@ public class TravelSharingService {
     public record ShareLink(String token) {}
 
     public ShareLink status(MemberPrincipal member, Long id) {
-        return new ShareLink(travels.findOwnedDetail(id, member.memberId())
+        return new ShareLink(travels.findOwned(id, member.memberId())
                 .orElseThrow(() -> ResourceNotFoundException.travel(id)).getShareToken());
     }
 
