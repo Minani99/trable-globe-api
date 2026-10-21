@@ -92,6 +92,23 @@ button:has(> .app-icon) { gap: .4rem; }
 @media (max-width: 700px) { .trip-flight .trip-flight-route { grid-template-columns: minmax(0, 1fr); } }
 
 /* Keep the route and next stop together, ahead of supporting information. */
+.google-route-preview { margin: 12px 0; min-width: 0; }
+.google-route-preview > button { min-height: 44px; padding: 10px 14px; border: 1px solid currentColor; border-radius: 12px; font-weight: 700; }
+.google-route-canvas { height: 340px; width: 100%; margin-top: 12px; border-radius: 12px; }
+.google-route-preview ol { padding: 0; list-style: none; }
+.google-route-preview li { display: flex; justify-content: space-between; gap: 12px; padding: 10px 0; border-bottom: 1px solid var(--border); }
+.google-route-preview li span { min-width: 0; overflow-wrap: anywhere; }
+.google-route-preview li strong { flex-shrink: 0; }
+.google-route-preview p { font-size: 13px; line-height: 1.6; }
+.visit-order { margin-block: 1rem; padding: 1rem; border: 1px solid var(--border); border-radius: 12px; background: var(--surface); }
+.visit-order__heading { display: flex; flex-wrap: wrap; align-items: center; gap: .75rem; }
+.visit-order__heading > div { flex: 1 1 180px; }
+.visit-order p, .visit-order small { margin-block: .4rem; font-size: .8125rem; color: var(--text-secondary); line-height: 1.6; }
+.visit-order button { display: inline-flex; align-items: center; justify-content: center; gap: .4rem; min-height: 44px; padding: .6rem .8rem; border: 1px solid var(--border-strong); border-radius: 8px; font-weight: 600; font-size: .8125rem; }
+.visit-order__proposal { padding-top: .75rem; }
+.visit-order__proposal ol { display: grid; gap: .5rem; padding-block: .75rem; list-style: none; font-size: .875rem; }
+.visit-order__proposal > div { display: flex; flex-wrap: wrap; gap: .5rem; }
+.visit-order__proposal > div button:first-child { background: var(--accent); color: white; }
 .day-route-next { display: flex; align-items: center; gap: .5rem; min-height: 44px; margin-top: .5rem; color: var(--text-primary); }
 .day-route-next > span { flex-shrink: 0; color: var(--accent-strong); font-size: .75rem; font-weight: 700; }
 .day-route-next > strong { flex: 1; min-width: 0; font-size: .875rem; overflow-wrap: anywhere; }

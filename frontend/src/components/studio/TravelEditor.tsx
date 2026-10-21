@@ -10,6 +10,7 @@ import { TravelWorkspaceContext } from "@/components/planner/MobilePlanningWorks
 import { TravelActionIcon } from "@/components/common/TravelActionIcon";
 import { WeatherIcon } from "@/components/common/WeatherIcon";
 import { GoogleDirectionsPanel } from "@/components/travel/GoogleDirectionsPanel";
+import { VisitOrderSuggestion } from "@/components/studio/VisitOrderSuggestion";
 import { ApiError, apiMutation } from "@/lib/api/client";
 import type { CountryOption } from "@/lib/countries";
 import {
@@ -371,6 +372,23 @@ export function TravelEditor({
     }));
     setDirty(true);
     setOrderNotice(`${moved.placeName || "장소"}을 ${to + 1}번째로 옮겼습니다. 시간은 그대로 유지됩니다.`);
+  }
+
+  function applyVisitOrder(keys: string[]) {
+    const indexes = places.map((place, index) => ({ place, index })).filter(({ place }) => place.visitedAt === activePlanDate).map(({ index }) => index);
+    const byKey = new Map(indexes.map((index) => [places[index].key, places[index]]));
+    if (pending || keys.length !== indexes.length || new Set(keys).size !== indexes.length || keys.some((key) => !byKey.has(key))) return;
+    const next = [...places];
+    indexes.forEach((index, position) => { next[index] = byKey.get(keys[position])!; });
+    setPlaces(next);
+    setPhotos((current) => current.map((photo) => {
+      if (photo.placeIndex === "") return photo;
+      const key = places[Number(photo.placeIndex)]?.key;
+      const index = next.findIndex((place) => place.key === key);
+      return { ...photo, placeIndex: index < 0 ? "" : String(index) };
+    }));
+    setExpandedPlace(null);
+    setDirty(true);
   }
 
   function movePlace(index: number, direction: -1 | 1) {
@@ -1026,6 +1044,9 @@ export function TravelEditor({
             </li>
           ))}
         </ol>
+        {planningMode ? <VisitOrderSuggestion key={activePlanDate} disabled={pending}
+          stops={activeDayPlaces.map(({ place }) => ({ key: place.key, placeName: place.placeName, latitude: isPlanningPlaceholder(place) ? null : coordinate(place.latitude), longitude: coordinate(place.longitude), startTime: place.startTime }))}
+          onApply={applyVisitOrder} /> : null}
         <GoogleDirectionsPanel compact
           activeDate={planningMode ? activePlanDate : undefined}
           stops={(planningMode ? activeDayPlaces.map(({ place }) => place) : places).map((place) => ({
