@@ -332,8 +332,7 @@ export function TravelRouteMap({ places, compact = false, placeNumbers, focusedP
           </p>
         </div>
         <p id="travel-route-map-help" className="travel-route-map-help">
-          {compact ? "화면은 위아래로 스크롤할 수 있어요. 지도를 움직이려면 지도 이동을 켜세요. " : ""}
-          번호는 방문 순서입니다. 장소 목록에서도 위치를 선택할 수 있어요. 실제 도로와 교통편은 Google Maps 경로 보기에서 확인하세요.
+          {compact ? "위아래로 스크롤하세요. 지도 이동을 켜면 지도를 끌 수 있어요." : "번호는 방문 순서입니다. 장소 목록에서도 위치를 선택할 수 있어요. 실제 도로와 교통편은 Google Maps 경로 보기에서 확인하세요."}
         </p>
       </div>
 
