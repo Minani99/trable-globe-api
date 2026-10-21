@@ -49,12 +49,16 @@ export function MobileTripCompanion({
   const [pendingSyncCount, setPendingSyncCount] = useState(0);
   const [viewDate, setViewDate] = useState(() => clampDateToTravel(initialDate ?? today, travel.startDate, travel.endDate));
   const [pendingPlaceId, setPendingPlaceId] = useState<number | null>(null);
+  const [focusedMapPlaceId, setFocusedMapPlaceId] = useState<number | null>(null);
   const mutationLock = useRef(false);
   const composerRef = useRef<HTMLFieldSetElement>(null);
   const photoInputRef = useRef<HTMLInputElement>(null);
   const travelDates = useMemo(() => datesBetween(currentTravel.startDate, currentTravel.endDate), [currentTravel.endDate, currentTravel.startDate]);
   const dayNumber = Math.max(1, Math.min(currentTravel.durationDays, differenceInDays(currentTravel.startDate, viewDate) + 1));
   const dayPlaces = useMemo(() => placesForDay(currentTravel.places, viewDate), [viewDate, currentTravel.places]);
+  const locatedDayPlaces = useMemo(() => dayPlaces.filter((place) => isDirectionsStopLocated({ ...place, key: place.id })), [dayPlaces]);
+  const dayPlaceNumbers = useMemo(() => Object.fromEntries(dayPlaces.map((place, index) => [place.id, index + 1])), [dayPlaces]);
+  const activeMapPlaceId = focusedMapPlaceId ?? locatedDayPlaces[0]?.id;
   const viewingToday = viewDate === today;
   const nextPlace = dayPlaces.find((place) => !place.completedAt) ?? null;
   const selectedPlace = dayPlaces.find((place) => place.id === selectedPlaceId) ?? nextPlace ?? dayPlaces[0] ?? null;
@@ -199,7 +203,7 @@ export function MobileTripCompanion({
   }
 
   function openComposer(type: "note" | "photo") {
-    const place = selectedPlace ?? dayPlaces[0];
+    const place = dayPlaces.find((place) => place.id === focusedMapPlaceId) ?? selectedPlace ?? dayPlaces[0];
     setSelectedPlaceId(place?.id ?? null);
     setNote(type === "note" ? place?.memo ?? "" : "");
     setStatus(null);
@@ -307,6 +311,7 @@ export function MobileTripCompanion({
               disabled={pendingAction !== null}
               onClick={() => {
                 setViewDate(date);
+                setFocusedMapPlaceId(null);
                 setSelectedPlaceId(null);
                 setComposer(null);
                 setStatus(null);
@@ -347,8 +352,8 @@ export function MobileTripCompanion({
         {dayPlaces.length ? <section className="day-route-overview" aria-label="하루 동선 한눈에 보기">
           <header><AppIcon name="route" /><h3>하루 동선</h3><span>{dayPlaces.length}곳</span></header>
           {nextPlace ? <a className="day-route-next" href={googleMapsUrl(nextPlace)} target="_blank" rel="noreferrer" aria-label={`다음 방문 ${nextPlace.placeName} · 지도에서 위치 보기`}><span>다음 방문</span><strong>{dayPlaces.indexOf(nextPlace) + 1}. {nextPlace.placeName}</strong><AppIcon name="pin" /></a> : null}
-          <ol className="day-route-stops">{dayPlaces.map((place, index) => <li key={place.id}><b>{index + 1}</b><span>{place.placeName}</span></li>)}</ol>
-          <DayMap key={viewDate} compact placeNumbers={Object.fromEntries(dayPlaces.map((place, index) => [place.id, index + 1]))} places={dayPlaces.filter((place) => isDirectionsStopLocated({ ...place, key: place.id }))} />
+          <ol className="day-route-stops" aria-label="지도에서 볼 장소 선택">{dayPlaces.map((place, index) => <li key={place.id}><button type="button" aria-pressed={activeMapPlaceId === place.id} aria-label={`${index + 1}번째 ${place.placeName} 지도에서 선택`} disabled={!isDirectionsStopLocated({ ...place, key: place.id })} onClick={() => setFocusedMapPlaceId(place.id)}><b>{index + 1}</b><span>{place.placeName}</span>{place.completedAt ? <small>완료</small> : null}</button></li>)}</ol>
+          <DayMap key={viewDate} compact focusedPlaceId={focusedMapPlaceId} onPlaceSelect={setFocusedMapPlaceId} placeNumbers={dayPlaceNumbers} places={locatedDayPlaces} />
           <GoogleDirectionsPanel compact activeDate={viewDate} stops={dayPlaces.map((place) => ({ ...place, key: place.id }))} />
         </section> : null}
       </> : null}
@@ -406,7 +411,7 @@ export function MobileTripCompanion({
         <fieldset ref={composerRef} disabled={pendingAction !== null} className="mobile-trip-companion__composer" aria-label={composer === "note" ? "빠른 메모" : "빠른 사진 기록"}>
           <header><strong>{composer === "note" ? "메모 남기기" : "사진 기록하기"}</strong><button type="button" onClick={() => setComposer(null)} aria-label="빠른 기록 닫기"><AppIcon name="close" /></button></header>
           {dayPlaces.length > 1 ? (
-            <label><span>연결할 일정</span><select value={selectedPlace?.id ?? ""} onChange={(event) => { const id = Number(event.target.value); const place = dayPlaces.find((item) => item.id === id); setSelectedPlaceId(id); if (composer === "note") setNote(place?.memo ?? ""); }}>{dayPlaces.map((place) => <option key={place.id} value={place.id}>{formatTime(place.startTime) ?? "시간 미정"} · {place.placeName}</option>)}</select></label>
+            <label><span>연결할 일정</span><select value={selectedPlace?.id ?? ""} onChange={(event) => { const id = Number(event.target.value); const place = dayPlaces.find((item) => item.id === id); setSelectedPlaceId(id); if (composer === "note") setNote(place?.memo ?? ""); }}>{dayPlaces.map((place, index) => <option key={place.id} value={place.id}>{index + 1}번째 · {place.placeName}</option>)}</select></label>
           ) : selectedPlace ? <p className="mobile-trip-companion__composer-place">{selectedPlace.placeName}</p> : null}
           {composer === "note" ? (
             <><label><span>한 줄 메모</span><textarea value={note} maxLength={1000} rows={3} onChange={(event) => setNote(event.target.value)} placeholder="기억하고 싶은 내용을 적어주세요" /></label><button className="mobile-trip-companion__composer-submit" type="button" disabled={pendingAction !== null} onClick={() => void saveNote()}>{pendingAction === "note" ? "저장 중…" : "메모 저장"}</button></>

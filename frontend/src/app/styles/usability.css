@@ -39,6 +39,12 @@ button:has(> .app-icon) { gap: .4rem; }
 .day-route-overview > header > span { margin-left: auto; color: var(--text-secondary); font-size: .8125rem; }
 .day-route-stops { display: flex; flex-wrap: wrap; gap: .5rem; padding: .75rem 0; margin: 0; list-style: none; }
 .day-route-stops li { display: flex; align-items: center; gap: .35rem; max-width: 100%; font-size: .8125rem; overflow-wrap: anywhere; }
+.day-route-stops button { display: flex; align-items: center; gap: .4rem; min-width: 0; min-height: 44px; max-width: 100%; padding: .35rem .65rem; border: 1px solid var(--border); border-radius: 999px; text-align: left; }
+.day-route-stops button[aria-pressed="true"] { border-color: var(--accent-strong); background: var(--accent-soft); }
+.day-route-stops button:focus-visible { outline: 2px solid var(--accent-strong); outline-offset: 2px; }
+.day-route-stops small { flex-shrink: 0; color: var(--text-secondary); }
+.travel-route-explorer.is-compact .travel-route-map-controls { flex-wrap: wrap; }
+.travel-route-map-controls button[aria-pressed="true"] { background: var(--accent-soft); color: var(--accent-strong); }
 .day-route-stops b, .trip-stop-number { display: grid; flex-shrink: 0; place-items: center; width: 28px; height: 28px; border-radius: 50%; background: var(--accent-soft); color: var(--accent-strong); font-size: .8125rem; font-weight: 700; }
 .mobile-trip-companion .mobile-trip-companion__timeline li { grid-template-columns: 2rem minmax(0, 1fr) 3rem; }
 .trip-stop-number { grid-column: 1; grid-row: 1; }

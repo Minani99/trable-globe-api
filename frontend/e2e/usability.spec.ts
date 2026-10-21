@@ -62,6 +62,41 @@ for (const width of [320, 390, 768]) {
     const route = page.getByRole("region", { name: "하루 동선 한눈에 보기" });
     await expect(route.locator(".day-route-stops li")).toHaveText(["1교토역", "2기요미즈데라", "3니시키 시장"]);
     await expect(route.locator(".day-route-next")).toContainText("1. 교토역");
+    const map = route.locator(".travel-route-map-canvas");
+    await expect(map).toHaveCSS("touch-action", "pan-y pinch-zoom");
+    await route.getByRole("button", { name: "2번째 기요미즈데라 지도에서 선택", exact: true }).click();
+    await expect(map.locator(".travel-route-map-active strong")).toHaveText("기요미즈데라");
+    await route.getByRole("button", { name: "전체 장소 위치 맞춤" }).click();
+    await map.getByRole("button", { name: "3번째 장소 니시키 시장", exact: true }).click();
+    await expect(route.getByRole("button", { name: "3번째 니시키 시장 지도에서 선택", exact: true })).toHaveAttribute("aria-pressed", "true");
+    await route.getByRole("button", { name: "지도 이동 켜기", exact: true }).click();
+    await expect(map).toHaveCSS("touch-action", "none");
+    await route.getByRole("button", { name: "지도 이동 끄기", exact: true }).click();
+    await expect(map).toHaveCSS("touch-action", "pan-y pinch-zoom");
+    if (width === 320) {
+      await map.scrollIntoViewIfNeeded();
+      const box = (await map.boundingBox())!;
+      const scrollBefore = await page.evaluate(() => window.scrollY);
+      const cdp = await page.context().newCDPSession(page);
+      const x = box.x + 30;
+      const y = box.y + box.height * 0.7;
+      await cdp.send("Input.dispatchTouchEvent", { type: "touchStart", touchPoints: [{ x, y }] });
+      for (let step = 1; step <= 5; step += 1) {
+        await cdp.send("Input.dispatchTouchEvent", { type: "touchMove", touchPoints: [{ x, y: y - step * 18 }] });
+        await page.waitForTimeout(30);
+      }
+      await cdp.send("Input.dispatchTouchEvent", { type: "touchEnd", touchPoints: [] });
+      await cdp.detach();
+      await expect.poll(() => page.evaluate(() => window.scrollY)).toBeGreaterThan(scrollBefore + 20);
+    }
+    await page.getByRole("navigation", { name: "여행 중 바로 기록" }).getByRole("button", { name: "메모", exact: true }).click();
+    const composer = page.getByRole("group", { name: "빠른 메모", exact: true });
+    await expect(composer.locator("option:checked")).toHaveText("3번째 · 니시키 시장");
+    await composer.getByRole("textbox", { name: "한 줄 메모" }).fill("니시키 시장에 남길 메모");
+    await route.getByRole("button", { name: "2번째 기요미즈데라 지도에서 선택", exact: true }).click();
+    await expect(composer.locator("option:checked")).toHaveText("3번째 · 니시키 시장");
+    await expect(composer.getByRole("textbox", { name: "한 줄 메모" })).toHaveValue("니시키 시장에 남길 메모");
+    await composer.getByRole("button", { name: "빠른 기록 닫기" }).click();
     const routeBox = await route.boundingBox();
     const weatherBox = await page.locator(".trip-forecast").boundingBox();
     expect(routeBox!.y).toBeLessThan(weatherBox!.y);
