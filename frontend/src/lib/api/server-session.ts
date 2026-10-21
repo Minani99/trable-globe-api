@@ -9,6 +9,10 @@ import type { AuthMember } from "@/types";
 
 export const SESSION_COOKIE = "travel_globe_session";
 
+export async function hasSessionCookie(): Promise<boolean> {
+  return Boolean((await cookies()).get(SESSION_COOKIE)?.value);
+}
+
 export async function authenticatedBackendGet<T>(path: string): Promise<T | null> {
   const token = (await cookies()).get(SESSION_COOKIE)?.value;
   if (!token) {

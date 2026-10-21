@@ -120,10 +120,6 @@ public class Travel extends BaseTimeEntity {
         newPlaces.forEach(this::addPlace);
     }
 
-    public boolean isOwnedBy(Long memberId) {
-        return member != null && member.getId() != null && member.getId().equals(memberId);
-    }
-
     public List<TravelPlace> getPlaces() {
         return Collections.unmodifiableList(places);
     }

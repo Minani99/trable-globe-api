@@ -319,18 +319,6 @@
   font-size: var(--text-sm);
 }
 
-.trip-flight .trip-flight-route__arrow {
-  display: grid;
-  width: 2.25rem;
-  height: 2.25rem;
-  place-items: center;
-  margin-bottom: 0.2rem;
-  padding: 0;
-  border-radius: 50%;
-  background: var(--accent-soft);
-  color: var(--accent-strong);
-}
-
 .trip-flight__dates {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -405,12 +393,6 @@
 
   .trip-flight .trip-flight-route {
     grid-template-columns: minmax(0, 1fr);
-  }
-
-  .trip-flight .trip-flight-route__arrow {
-    justify-self: center;
-    margin: -0.2rem 0;
-    transform: rotate(90deg);
   }
 }
 

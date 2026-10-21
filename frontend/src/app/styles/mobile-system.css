@@ -199,10 +199,9 @@
     .profile-world__summary,
     .travel-detail-section__heading
   ) > p:not(.eyebrow),
-  .studio-hero > div:first-child > p:last-child,
-  .settings-hero > div:first-child > p,
-  .travel-editor-hero > p:last-child,
-  .plan-hero > p:last-child {
+.studio-hero > div:first-child > p:last-child,
+.travel-editor-hero > p:last-child,
+.plan-hero > p:last-child {
     max-width: 38rem;
     font-size: var(--mobile-copy)!important;
     line-height: 1.62;
@@ -242,25 +241,19 @@
   }
 
   .auth-form label > span,
-  .auth-form__field > label > span,
-  .settings-profile label > span,
-  .studio-account label > span {
+.auth-form__field > label > span {
     font-size: var(--mobile-copy-small)!important;
   }
 
   .auth-form label small,
-  .auth-form__field > small,
-  .settings-field-help {
+.auth-form__field > small {
     font-size: var(--mobile-caption)!important;
     line-height: 1.55;
   }
 
   .auth-form > button,
-  .auth-form--action .auth-form__primary-link,
-  .auth-password-field__toggle,
-  .settings-session-logout,
-  .studio-form-actions button,
-  .studio-account__identity-actions button {
+.auth-form--action .auth-form__primary-link,
+.auth-password-field__toggle {
     min-height: 3rem;
     font-size: var(--text-sm);
   }
@@ -269,53 +262,10 @@
     padding-top: 0.8rem;
   }
 
-  .settings-workspace {
-    padding-top: 0.5rem;
-  }
-
-  .settings-section-nav {
-    position: sticky;
-    top: 3.45rem;
-    z-index: 18;
-    display: flex;
-    gap: 0.4rem;
-    margin-inline: calc(var(--mobile-gutter) * -1);
-    padding: 0.55rem var(--mobile-gutter);
-    overflow-x: auto;
-    background: color-mix(in srgb, var(--background) 92%, transparent);
-    backdrop-filter: blur(16px);
-  }
-
-  .settings-section-nav a {
-    flex: 0 0 auto;
-    min-width: 6.6rem;
-    min-height: 2.75rem;
-    font-size: var(--text-sm);
-  }
-
-  .settings-layout .settings-card {
-    padding: 1rem;
-    border-radius: var(--mobile-card-radius);
-  }
-
-  .settings-avatar {
-    grid-template-columns: 3.75rem minmax(0, 1fr);
-    padding: 0.8rem;
-  }
-
-  .settings-avatar__preview {
-    width: 3.75rem;
-    height: 3.75rem;
-  }
-
   /* Landing keeps the one-screen promise while remaining readable. */
   .landing-hero {
     gap: 0.65rem;
     padding: 0.75rem var(--mobile-gutter) 0.65rem;
-  }
-
-  .landing-kicker {
-    font-size: var(--text-xs);
   }
 
   .landing-title {
@@ -329,13 +279,6 @@
     font-size: var(--text-sm);
   }
 
-  .landing-globe-stats dt,
-  .landing-globe-context span {
-    font-size: var(--text-xs);
-  }
-
-  .landing-globe-stats dd,
-  .landing-globe-context strong,
   .landing-landmark-card :is(strong, span, a) {
     font-size: var(--text-xs);
   }
@@ -438,43 +381,6 @@
     font-size: var(--text-sm);
   }
 
-  .studio-live,
-  .studio-resume-card,
-  .studio-plan-launch,
-  .studio-memory-ready,
-  .studio-onboarding,
-  .studio-travels {
-    border-radius: var(--mobile-card-radius);
-  }
-
-  .studio-resume-card {
-    gap: 0.9rem;
-    padding: 1rem;
-  }
-
-  .studio-resume-card__content h3 {
-    font-size: 1.45rem;
-  }
-
-  .studio-resume-card__action,
-  .studio-plan-list__action {
-    font-size: var(--text-sm);
-  }
-
-  .studio-plan-list {
-    grid-template-columns: 1fr;
-  }
-
-  .studio-plan-list a:not(.studio-plan-list__travel-view) {
-    min-height: 10rem;
-    padding: 1rem;
-  }
-
-  .studio-plan-list__travel-view {
-    min-height: 2.35rem !important;
-    font-size: var(--text-xs);
-  }
-
   .activity-feed__item :is(strong, p, time),
   .studio-travel-list :is(strong, p, span) {
     font-size: var(--mobile-copy-small)!important;
@@ -490,45 +396,6 @@
   .travel-editor-hero {
     padding-block: 0.7rem 1rem;
     margin-bottom: 0.4rem;
-  }
-
-  .plan-builder__mobile-progress,
-  .travel-editor__mobile-progress {
-    top: 3.45rem;
-    padding: 0.7rem 0.8rem;
-  }
-
-  .plan-builder__mobile-progress > div strong,
-  .travel-editor__mobile-progress > div strong,
-  .plan-builder__mobile-nav strong,
-  .travel-editor__mobile-nav strong {
-    font-size: var(--text-sm);
-  }
-
-  .plan-builder__mobile-nav small,
-  .travel-editor__mobile-nav small,
-  .plan-builder__mobile-progress > div span,
-  .travel-editor__mobile-progress > div span {
-    font-size: var(--text-xs)!important;
-  }
-
-  .plan-builder__mobile-nav,
-  .travel-editor__mobile-nav,
-  .mobile-planning-workspace__nav {
-    right: var(--mobile-gutter);
-    bottom: calc(var(--mobile-safe-bottom) + var(--mobile-context-nav-gap));
-    left: var(--mobile-gutter);
-    grid-template-columns: minmax(4.9rem, auto) minmax(0, 1fr) minmax(4.9rem, auto);
-    min-height: var(--mobile-context-nav-height);
-    max-width: min(34rem, calc(100vw - (var(--mobile-gutter) * 2)));
-    padding: 0.4rem;
-  }
-
-  .plan-builder__mobile-nav button,
-  .travel-editor__mobile-nav button,
-  .mobile-planning-workspace__nav button {
-    min-height: 3rem;
-    font-size: var(--text-sm);
   }
 
   body:has(.plan-builder) .plan-shell,
@@ -557,8 +424,6 @@
     padding-bottom: 0;
   }
 
-  .plan-step[data-mobile-active="true"],
-  .plan-summary[data-mobile-active="true"],
   .travel-editor__section[data-mobile-active="true"] {
     min-height: 0;
   }
@@ -572,33 +437,26 @@
     font-size: 1.35rem!important;
   }
 
-  .travel-editor__section-heading div > p:last-child,
-  .plan-step__intro,
-  .plan-summary__promise {
+  .travel-editor__section-heading div > p:last-child {
     font-size: var(--mobile-copy-small)!important;
     line-height: 1.55;
   }
 
   .travel-editor__places > li,
-  .travel-editor__photos > li,
-  .plan-step,
-  .plan-summary,
-  .trip-preparation,
-  .travel-checklist,
-  .travel-planning-board {
+.travel-editor__photos > li,
+.trip-preparation,
+.travel-checklist,
+.travel-planning-board {
     border-radius: var(--mobile-card-radius);
   }
 
   .place-picker__search,
-  .place-picker__manual-fields,
-  .travel-editor__fields,
-  .travel-editor__photo-fields {
+.travel-editor__fields {
     grid-template-columns: minmax(0, 1fr);
   }
 
   .place-picker__search button,
-  .travel-editor__add-row button,
-  .travel-editor__footer button {
+.travel-editor__add-row button {
     min-height: 3rem;
     font-size: var(--text-sm);
   }
@@ -684,9 +542,7 @@
     padding-top: 2.25rem;
   }
 
-  .travel-detail-nav-card,
-  .travel-detail-place,
-  .travel-detail-photo-card {
+  .travel-detail-nav-card {
     border-radius: var(--mobile-card-radius);
   }
 
@@ -726,11 +582,6 @@
     grid-column: 1;
   }
 
-  .plan-builder__mobile-nav,
-  .travel-editor__mobile-nav {
-    grid-template-columns: 4.75rem minmax(0, 1fr) 4.75rem;
-  }
-
   .mobile-trip-companion.is-page {
     padding: 0.85rem;
   }
@@ -740,10 +591,6 @@
   .landing-hero {
     gap: 0.45rem;
     padding-top: 0.45rem;
-  }
-
-  .landing-kicker {
-    margin-bottom: 0.25rem;
   }
 
   .landing-title {

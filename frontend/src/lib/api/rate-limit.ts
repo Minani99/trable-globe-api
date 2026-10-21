@@ -109,8 +109,3 @@ function positiveInt(value: string | undefined, fallback: number): number {
   const parsed = Number(value);
   return Number.isFinite(parsed) && parsed > 0 ? Math.floor(parsed) : fallback;
 }
-
-/** Test seam: forget every counter. */
-export function resetRateLimits() {
-  windows.clear();
-}

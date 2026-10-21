@@ -14,9 +14,14 @@ export const metadata: Metadata = {
 };
 
 export default async function DiscoverPage() {
-  const member = await getCurrentMember();
-  const recommendations = member
-    ? await authenticatedBackendGet<MemberDiscovery[]>("/api/private/discovery/recommendations?limit=8")
+  // The session check and personalised recommendations run together; the public list is
+  // only fetched when there is no usable session (no cookie or an expired one).
+  const [member, personalRecommendations] = await Promise.all([
+    getCurrentMember(),
+    authenticatedBackendGet<MemberDiscovery[]>("/api/private/discovery/recommendations?limit=8"),
+  ]);
+  const recommendations = member && personalRecommendations
+    ? personalRecommendations
     : await apiGet<MemberDiscovery[]>("/api/discovery/recommendations?limit=8");
 
   return (

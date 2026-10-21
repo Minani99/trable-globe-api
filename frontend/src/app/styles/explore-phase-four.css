@@ -206,11 +206,6 @@
   font-size: var(--text-xs);
 }
 
-.member-card__bio,
-.member-card__stats {
-  display: none;
-}
-
 .member-card__footprint {
   display: grid;
   gap: 0.42rem;

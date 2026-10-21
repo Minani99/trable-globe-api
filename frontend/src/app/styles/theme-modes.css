@@ -55,30 +55,11 @@
     0 0 84px rgba(110, 190, 220, 0.18);
 }
 
-:root:not([data-theme="dark"]) .landing-globe-image {
-  filter: saturate(0.94) contrast(1.01);
-}
-
-:root:not([data-theme="dark"]) .landing-globe-link:hover .landing-globe-image {
-  filter: saturate(1.04) contrast(1.02) brightness(1.015);
-}
-
 :root:not([data-theme="dark"]) .landing-globe-vignette {
   background:
     linear-gradient(90deg, rgba(246, 249, 248, 0.34), transparent 24%),
     linear-gradient(0deg, rgba(238, 246, 248, 0.48), transparent 28%),
     radial-gradient(circle at 66% 43%, transparent 45%, rgba(194, 220, 230, 0.2));
-}
-
-:root:not([data-theme="dark"]) .landing-globe-grid {
-  opacity: 0.38;
-  background-image:
-    linear-gradient(rgba(37, 101, 125, 0.07) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(37, 101, 125, 0.06) 1px, transparent 1px);
-}
-
-:root:not([data-theme="dark"]) .landing-globe-meta {
-  color: rgba(27, 77, 96, 0.62);
 }
 
 :root:not([data-theme="dark"]) .landing-landmark-card {
@@ -90,54 +71,6 @@
 :root:not([data-theme="dark"]) .landing-globe-link:hover .landing-landmark-card {
   border-color: var(--accent-border);
   background: rgba(255, 255, 255, 0.9);
-}
-
-:root:not([data-theme="dark"]) .landing-globe-cta {
-  border-color: rgba(68, 111, 128, 0.24);
-  background: rgba(255, 255, 255, 0.88);
-  box-shadow: 0 12px 34px rgba(37, 82, 98, 0.14);
-}
-
-@keyframes landing-title-in {
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-@keyframes landing-reveal-up {
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-@keyframes landing-image-curtain {
-  to {
-    transform: translateX(102%);
-  }
-}
-
-@keyframes landing-signal {
-  0% {
-    opacity: 0.7;
-    transform: scale(0.5);
-  }
-  72%,
-  100% {
-    opacity: 0;
-    transform: scale(1.8);
-  }
-}
-
-@keyframes landing-scroll-line {
-  0%,
-  100% {
-    transform: translateX(-110%);
-  }
-  50% {
-    transform: translateX(190%);
-  }
 }
 
 @media (max-width: 1023px) {
@@ -153,28 +86,9 @@
   .landing-globe-scene {
     min-height: min(78vw, 650px);
   }
-
-  .landing-scroll-cue {
-    display: none;
-  }
-
-  .landing-archive {
-    grid-template-columns: 1fr;
-  }
-
-  .landing-archive__visual {
-    min-height: min(78vw, 38rem);
-  }
-
-  .landing-archive__copy {
-    max-width: 42rem;
-  }
 }
 
 @media (max-width: 639px) {
-  .theme-toggle__label {
-    display: none;
-  }
 
   .landing-title {
     font-size: clamp(2.45rem, 11vw, 3.45rem);
@@ -196,102 +110,10 @@
     min-height: 112vw;
   }
 
-  .landing-globe-meta {
-    top: 1rem;
-    right: 1rem;
-    left: 1rem;
-  }
-
-  .landing-globe-meta span:last-child {
-    display: none;
-  }
-
   .landing-landmark-card {
     right: 0.85rem;
     bottom: 0.85rem;
     left: auto;
     min-width: min(19rem, calc(100% - 1.7rem));
-  }
-
-  .landing-globe-cta {
-    opacity: 1;
-    transform: translate(-50%, -50%) scale(1);
-  }
-
-  .landing-assurance {
-    max-width: 22rem;
-  }
-
-  .landing-archive {
-    gap: 2.6rem;
-    padding-bottom: 7rem;
-  }
-
-  .landing-archive__visual {
-    min-height: 122vw;
-    border-radius: var(--radius-lg);
-  }
-
-  .landing-archive__photo--one {
-    width: 67%;
-  }
-
-  .landing-archive__photo--two {
-    width: 55%;
-  }
-
-  .landing-archive__photo strong {
-    padding: 0.85rem;
-    font-size: var(--text-md);
-    line-height: 1.35;
-    word-break: keep-all;
-  }
-
-  .landing-archive__stamp {
-    right: 5%;
-    top: 18%;
-    width: 4.7rem;
-    height: 4.7rem;
-  }
-
-  .landing-archive__copy h2 {
-    font-size: clamp(2.35rem, 12vw, 3.5rem);
-  }
-
-  .landing-ownership__heading {
-    grid-template-columns: 1fr;
-    gap: 1.5rem;
-  }
-
-  .landing-ownership__heading > p {
-    justify-self: start;
-  }
-
-  .landing-promise-grid {
-    grid-template-columns: 1fr;
-  }
-
-  .landing-promise-grid li {
-    min-height: 0;
-    padding: 1.7rem 0;
-  }
-
-  .landing-promise-grid li + li {
-    padding-left: 0;
-    border-top: 1px solid var(--border);
-    border-left: 0;
-  }
-
-  .landing-promise-grid h3 {
-    margin-top: 1.6rem;
-  }
-
-  .landing-final-cta {
-    align-items: flex-start;
-    flex-direction: column;
-  }
-
-  .landing-final-cta__actions {
-    justify-content: flex-start;
   }
 }

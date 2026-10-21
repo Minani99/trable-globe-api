@@ -106,12 +106,6 @@
  * essay, not a dashboard.
  */
 @layer components {
-  .text-display {
-    font-size: clamp(2.4rem, 6vw, 4.25rem);
-    line-height: 1.02;
-    letter-spacing: -0.035em;
-    font-weight: 300;
-  }
 
   .text-heading {
     font-family: var(--font-editorial);
@@ -141,12 +135,6 @@
     text-wrap: pretty;
     word-break: keep-all;
     overflow-wrap: anywhere;
-  }
-
-  .text-caption {
-    font-size: var(--text-sm);
-    line-height: 1.5;
-    color: var(--text-tertiary);
   }
 
   /* Small uppercase label above a heading or beside a statistic. */

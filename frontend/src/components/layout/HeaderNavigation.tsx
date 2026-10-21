@@ -17,6 +17,8 @@ import {
 import { globePath } from "@/lib/config";
 import type { AuthMember } from "@/types";
 
+const AUTH_REVALIDATE_MS = 30_000;
+
 interface HeaderNavigationProps {
   username?: string;
   initialMember?: AuthMember | null;
@@ -40,9 +42,11 @@ export function HeaderNavigation({ initialMember }: HeaderNavigationProps) {
 
   useEffect(() => {
     // Public layouts do not have an authoritative server-side member prop. Revalidate
-    // after every route change so an expired/revoked cookie cannot leave a stale avatar
-    // and authenticated navigation visible in the persistent header.
-    if (initialMember === undefined) void loadAuthMember({ force: true });
+    // on route changes so an expired/revoked cookie cannot leave a stale avatar and
+    // authenticated navigation visible in the persistent header. A check from the last
+    // few seconds is still trustworthy, so rapid menu hops do not each cost a request;
+    // a 401 from any API call also signs the header out immediately.
+    if (initialMember === undefined) void loadAuthMember({ maxAgeMs: AUTH_REVALIDATE_MS });
   }, [initialMember, pathname]);
 
   const globeActive = pathname === globePath;
@@ -55,10 +59,10 @@ export function HeaderNavigation({ initialMember }: HeaderNavigationProps) {
       <nav aria-label="주요 메뉴" className="site-desktop-nav">
         {member ? (
           <>
-            <Link prefetch={false} href={globePath} className="site-nav-link site-nav-link--globe" aria-current={globeActive ? "page" : undefined}>
+            <Link href={globePath} className="site-nav-link site-nav-link--globe" aria-current={globeActive ? "page" : undefined}>
               지구본
             </Link>
-            <Link prefetch={false} href="/studio" className="site-nav-link" aria-current={journeysActive ? "page" : undefined}>
+            <Link href="/studio" className="site-nav-link" aria-current={journeysActive ? "page" : undefined}>
               내 여행
             </Link>
             <Link href="/discover" className="site-nav-link" aria-current={discoverActive ? "page" : undefined}>
@@ -155,7 +159,6 @@ function MobileNavLink({
   return (
     <Link
       href={href}
-      prefetch={false}
       className={`site-mobile-bottom-nav__item${emphasized ? " is-emphasized" : ""}${avatar ? " has-avatar" : ""}`}
       aria-current={active ? "page" : undefined}
     >

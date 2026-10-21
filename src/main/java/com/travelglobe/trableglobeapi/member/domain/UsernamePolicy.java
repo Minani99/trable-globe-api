@@ -33,9 +33,4 @@ public final class UsernamePolicy {
         }
         return null;
     }
-
-    public static boolean isReserved(String rawUsername) {
-        String username = Member.normalizeUsername(rawUsername);
-        return username != null && RESERVED.contains(username);
-    }
 }
