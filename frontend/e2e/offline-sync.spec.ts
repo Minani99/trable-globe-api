@@ -14,7 +14,7 @@ test("부분 동기화 실패와 새로고침 후에도 미전송 완료·메모
   await page.route("**/api/weather/forecast?**", (route) => route.fulfill({ json: { success: true, data: { available: false, days: [] } } }));
   await page.goto(`/studio/travels/${travel.id}/go`);
   const key = `travel-globe:trip-queue:v1:${username}:${travel.id}`;
-  await page.evaluate(({ key, ids }) => localStorage.setItem(key, JSON.stringify(ids.map((placeId, index) => ({ id: `queued-${index}`, placeId, memo: `오프라인 메모 ${index + 1}`, completed: true, createdAt: "2026-10-22T00:00:00.000Z" })))), { key, ids: travel.places.map((p: { id: number }) => p.id) });
+  await page.evaluate(({ key, ids }: { key: string; ids: number[] }) => localStorage.setItem(key, JSON.stringify(ids.map((placeId, index) => ({ id: `queued-${index}`, placeId, memo: `오프라인 메모 ${index + 1}`, completed: true, createdAt: "2026-10-22T00:00:00.000Z" })))), { key, ids: travel.places.map((p: { id: number }) => p.id) });
   let release: () => void = () => {};
   const gate = new Promise<void>((resolve) => { release = resolve; });
   let firstRequested = false;
