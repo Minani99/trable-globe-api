@@ -22,14 +22,11 @@
 .travel-editor .travel-editor__places > .editor-stop { padding: 0; border: 0; border-bottom: 1px solid var(--border); border-radius: 0; background: transparent; }
 .editor-stop__summary { display: grid; width: 100%; grid-template-columns: 4rem minmax(0, 1fr) auto; align-items: center; gap: 1rem; min-height: 5rem; padding: 1rem .5rem; text-align: left; }
 .editor-stop__summary:hover { background: var(--surface-raised); }
-.editor-stop__time { color: var(--accent); font-size: .875rem; font-variant-numeric: tabular-nums; }
 .editor-stop__summary strong { display: block; font-size: .9375rem; font-weight: 600; }
 .editor-stop__summary small { display: block; margin-top: .3rem; color: var(--text-secondary); font-size: .75rem; }
 .editor-stop__edit { color: var(--text-tertiary); font-size: .75rem; white-space: nowrap; }
 .editor-stop__body { padding: 1.5rem; border-top: 1px solid var(--border); background: var(--surface-raised); }
 .travel-editor .plan-itinerary__progress { display: none; }
-.travel-editor .plan-itinerary__view-switch { padding: .5rem 0; border: 0; background: transparent; }
-.travel-editor .plan-itinerary__view-switch > div:first-child { display: none; }
 .travel-editor .plan-itinerary__toolbar { padding: .75rem 0 1.25rem; border: 0; background: transparent; }
 .travel-editor .plan-itinerary__toolbar > div:first-child { display: none; }
 .travel-editor .plan-itinerary__days { padding: 0 0 .75rem; border: 0; }

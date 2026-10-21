@@ -78,8 +78,7 @@ body {
   cursor: not-allowed;
 }
 
-.eyebrow,
-.landing-kicker {
+.eyebrow {
   display: none !important;
 }
 
@@ -511,8 +510,6 @@ main :where(button) {
 }
 
 /* Lists as rows: hub, discover, checklists --------------------------------- */
-.studio-plan-list,
-.studio-travel-list,
 .member-grid {
   gap: 0.6rem !important;
 }
@@ -543,128 +540,16 @@ main :where(button) {
 }
 
 /* Workspaces: clear hierarchy without nested promotional cards. ------------- */
-.studio-index {
-  display: flex;
-  gap: 1.5rem;
-  overflow-x: auto;
-  margin: -0.75rem 0 2rem;
-  border-bottom: 1px solid var(--border);
-}
 
 @media (min-width: 1000px) {
   .landing-title { font-size: clamp(2.6rem, 3.5vw, 3.2rem); max-width: none; }
 }
-
-.landing-copy .landing-guide-trigger {
-  padding: 0.5rem 0;
-  border: 0;
-  background: transparent;
-  box-shadow: none;
-  color: var(--text-secondary);
-  font-weight: 500;
-}
-.landing-copy .landing-guide-trigger > span { display: none; }
-.landing-copy .landing-guide-trigger::after { display: none; }
-.landing-primary-cta__arrow { background: transparent; color: inherit; }
-.studio-index a {
-  display: inline-flex;
-  align-items: center;
-  flex-shrink: 0;
-  gap: 0.5rem;
-  min-height: 3rem;
-  font-size: var(--text-sm);
-  white-space: nowrap;
-}
-.studio-index a:hover { color: var(--accent); }
-.studio-index span { color: var(--text-secondary); font-variant-numeric: tabular-nums; }
 .studio-page h2[id] { scroll-margin-top: 6rem; }
-.studio-page .studio-resume-card {
-  gap: 0.85rem 1.5rem;
-  padding: 1.25rem;
-  border-radius: var(--radius-xs);
-  border-color: var(--border-strong);
-  background: var(--surface);
-  box-shadow: none;
-  transform: none;
-}
-.studio-page .studio-resume-card:hover { border-color: var(--accent); }
-.studio-page .studio-resume-card__content h3 { font-size: 1.35rem; line-height: 1.5; letter-spacing: -0.025em; white-space: normal; overflow-wrap: anywhere; }
-.studio-page .studio-resume-card__topline span { padding: 0; border: 0; background: transparent; }
-.studio-page .studio-plans { padding-top: 0.5rem; }
 .studio-page .studio-activity { padding-top: 2.5rem; }
 .studio-page .studio-activity__empty { border: 0; border-radius: 0; background: var(--surface-raised); }
 .studio-page .studio-activity__empty > span { display: none; }
 .studio-page .studio-activity__empty { grid-template-columns: minmax(0, 1fr) auto; }
 .studio-page .studio-primary-action span { background: transparent; color: inherit; }
-.studio-page .studio-resume-card__country {
-  background: var(--surface-raised);
-  border-radius: var(--radius-xs);
-}
-.studio-page .studio-resume-card__action { color: var(--accent); }
-.studio-page .studio-travel-view-action {
-  position: static;
-  display: flex;
-  justify-content: space-between;
-  min-height: 3rem;
-  margin-top: 0.5rem;
-  padding-inline: 1rem;
-  border-color: var(--border);
-  color: var(--text-secondary);
-  font-size: var(--text-sm);
-}
-.studio-page .studio-hero--continuing .studio-hero__actions {
-  flex-direction: row;
-}
-.studio-page .studio-hero--continuing .studio-hero__actions > a {
-  min-width: 0;
-  width: auto;
-  font-size: .8125rem;
-}
-.studio-page .studio-plan-list > li {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
-  gap: 0.75rem;
-  align-items: center;
-  border-bottom: 1px solid var(--border);
-}
-.studio-page .studio-plan-list__travel-view {
-  position: static;
-  display: flex;
-  align-items: center;
-  min-height: 2.75rem !important;
-}
-.studio-page .studio-plan-list > li > a:first-child {
-  border: 0;
-  background: transparent;
-  min-height: 0;
-}
-.studio-page .studio-live {
-  border-radius: var(--radius-xs);
-  border: 1px solid var(--border);
-  border-left: 3px solid var(--accent);
-  background: var(--surface-raised);
-}
-.studio-page .studio-onboarding {
-  margin-block: 1.5rem;
-  padding: 1rem 0;
-  border: 0;
-  border-block: 1px solid var(--border);
-  border-radius: 0;
-  background: transparent;
-}
-.studio-onboarding > summary {
-  display: flex;
-  min-height: 2.75rem;
-  align-items: center;
-  justify-content: space-between;
-  list-style: none;
-}
-.studio-onboarding > summary::-webkit-details-marker { display: none; }
-.studio-onboarding > summary h2 { font-size: var(--text-base); }
-.studio-onboarding > summary::after { content: "+"; font-size: 1.25rem; }
-.studio-onboarding[open] > summary::after { content: "−"; }
-.studio-onboarding > summary > span { display: none; }
-.studio-onboarding[open] > ol { margin-top: 1rem; }
 
 /* In-trip view: an itinerary, not another editor dashboard. ------------------ */
 .travel-day-page { background: var(--background); }
@@ -841,9 +726,6 @@ main :where(button) {
 @media (max-width: 700px) {
   .studio-page .studio-hero__actions { display: flex; flex-wrap: wrap; }
   .studio-page .studio-hero__actions > a { flex: 1; white-space: nowrap; }
-  .studio-page .studio-plan-list > li { grid-template-columns: minmax(0, 1fr); gap: 0; padding-bottom: 0.75rem; }
-  .studio-page .studio-plan-list__travel-view { justify-self: end; }
-  .studio-index { gap: 1rem; margin-bottom: 1.25rem; }
   .travel-day-page .travel-day-page__hero { gap: 0.75rem; }
   .travel-day-page .mobile-trip-companion.is-page { gap: 1rem; }
   html[data-mobile-keyboard] .site-mobile-bottom-nav { visibility: hidden; }
@@ -876,7 +758,6 @@ main :where(button) {
 
 .profile-globe-card,
 .profile-globe-card__canvas,
-.travel-route-map,
 .travel-gallery,
 .journey-summary {
   border-radius: var(--radius-lg) !important;
@@ -947,8 +828,6 @@ main :where(button) {
   }
 }
 
-
-
 /* Shared editorial layout: quiet surfaces, content-led hierarchy. */
 .page-caption { margin: 0 0 .85rem; color: var(--accent-strong); font-size: .75rem; font-weight: 600; letter-spacing: .02em; }
 .site-header { background: var(--surface) !important; backdrop-filter: none !important; }
@@ -964,8 +843,12 @@ main :where(button) {
 .site-shell { max-width: 1184px; }
 .studio-shell { max-width: 1040px; }
 .travel-editor-shell { max-width: 1080px; padding-bottom: 3rem; }
-.studio-hero, .travel-editor-hero, .discover-hero, .settings-hero { padding-block: 1.25rem !important; margin-bottom: 1.75rem !important; }
-.studio-hero h1, .travel-editor-hero h1, .discover-hero h1, .settings-hero h1 { font-weight: 600 !important; font-size: clamp(1.75rem, 3vw, 2.25rem) !important; letter-spacing: -.035em !important; }
+.studio-hero,
+.travel-editor-hero,
+.discover-hero { padding-block: 1.25rem !important; margin-bottom: 1.75rem !important; }
+.studio-hero h1,
+.travel-editor-hero h1,
+.discover-hero h1 { font-weight: 600 !important; font-size: clamp(1.75rem, 3vw, 2.25rem) !important; letter-spacing: -.035em !important; }
 .studio-hero .page-caption, .travel-editor-hero .page-caption, .discover-hero .page-caption { font-size: .75rem !important; color: var(--accent-strong) !important; margin-bottom: .7rem; }
 .studio-hero > div > p:last-child, .travel-editor-hero > p:last-child, .discover-hero > p:last-child { margin-top: .65rem; font-size: .875rem !important; }
 .studio-primary-action, .studio-secondary-action { min-height: 2.75rem; border-radius: var(--radius-xs) !important; font-weight: 500 !important; }
@@ -995,10 +878,6 @@ main :where(button) {
 .discover-search { max-width: 38rem; margin-top: 0; padding: 0; border: 0; background: transparent; }
 .discover-search__field { border-radius: var(--radius-xs) !important; }
 .discover-search > p { font-size: .8125rem; }
-.trip-preparation__grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-.trip-action-card { border-radius: var(--radius-xs) !important; padding: 1.5rem; }
-.trip-action-card__icon { display: none; }
-.trip-action-card__copy h3 { font-size: 1.125rem; }
 .plan-builder .pb-form { border: 0; border-radius: 0; overflow: visible; }
 .plan-builder .pb-step { padding: 1.5rem 0 2rem; }
 .plan-builder .pb-step__heading { display: block; }
@@ -1025,11 +904,14 @@ main :where(button) {
   .landing-hero .landing-intro { display: block; font-size: .875rem !important; max-width: 25rem; }
   .landing-hero .landing-secondary-cta { display: inline-flex; }
   .landing-hero .landing-globe-frame { height: 24rem !important; }
-  .studio-hero, .travel-editor-hero, .discover-hero, .settings-hero { padding-block: .75rem !important; margin-bottom: 1rem !important; }
-  .studio-hero h1, .travel-editor-hero h1, .discover-hero h1, .settings-hero h1 { font-size: 1.625rem !important; line-height: 1.3 !important; }
+  .studio-hero,
+.travel-editor-hero,
+.discover-hero { padding-block: .75rem !important; margin-bottom: 1rem !important; }
+  .studio-hero h1,
+.travel-editor-hero h1,
+.discover-hero h1 { font-size: 1.625rem !important; line-height: 1.3 !important; }
   .studio-hero__actions { display: flex; gap: .75rem; margin-top: .5rem; }
   .studio-hero__actions a { flex: 1; justify-content: center; }
-  .trip-preparation__grid { grid-template-columns: minmax(0, 1fr); }
   body:has(.travel-editor) .travel-editor-shell { padding-bottom: 6rem !important; }
   .plan-builder .pb-step { padding: .75rem 0 1rem; }
   .plan-builder .pb-mobile-nav { right: 0; left: 0; bottom: 0; max-width: none; padding: .75rem 1rem calc(.75rem + env(safe-area-inset-bottom)); border-radius: 0; border-inline: 0; border-bottom: 0; box-shadow: none; }

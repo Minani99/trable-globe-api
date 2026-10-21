@@ -22,5 +22,3 @@ export const countryOptions: CountryOption[] = countries
     };
   })
   .sort((a, b) => a.nameKo.localeCompare(b.nameKo, "ko"));
-
-export const countryByIso2 = new Map(countryOptions.map((country) => [country.iso2Code, country]));

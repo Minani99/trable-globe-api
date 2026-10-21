@@ -30,7 +30,6 @@ button:has(> .app-icon) { gap: .4rem; }
 .trip-forecast__source a { text-decoration: underline; text-underline-offset: 3px; }
 .trip-forecast__error { display: flex; align-items: center; flex-wrap: wrap; gap: .75rem; }
 .trip-forecast__error button { display: inline-flex; align-items: center; gap: .4rem; min-height: 44px; padding: .5rem .8rem; border: 1px solid var(--border-strong); border-radius: 8px; }
-.trip-preparation__grid { grid-template-columns: minmax(0, 1fr); }
 
 /* One daily route, with the same numbered stops on the map and in the checklist. */
 .day-route-overview { min-width: 0; padding: 1rem; border: 1px solid var(--border); border-radius: 16px; background: var(--surface); }
@@ -85,14 +84,12 @@ button:has(> .app-icon) { gap: .4rem; }
 
 .travel-day-page__nav { display: flex; flex-wrap: wrap; gap: .5rem; }
 .travel-day-page__nav a { display: inline-flex; align-items: center; gap: .5rem; justify-content: center; min-height: 44px; padding: .6rem .8rem; border: 1px solid var(--border-strong); border-radius: 10px; background: var(--surface); font-size: .875rem; color: var(--text-primary); }
-.trip-preparation__grid { display: grid; margin-inline: 0; padding-inline: 0; overflow: visible; }
 .trip-flight-route { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 .trip-flight-route input { font-size: 16px; min-height: 44px; }
 .travel-editor__photo-actions { flex-wrap: wrap; }
 .travel-editor__photo-actions button { display: inline-flex; align-items: center; gap: .3rem; min-height: 44px; width: auto; }
 @media (max-width: 700px) {
   .trip-flight-route { grid-template-columns: minmax(0, 1fr); gap: 1rem; }
-  .trip-action-card.is-flight { padding: 1rem; min-width: 0; }
 }
 
 .trip-forecast__days .weather-icon { width: 20px; height: 20px; }

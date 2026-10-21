@@ -157,18 +157,6 @@
     white-space: nowrap;
   }
 
-  .mobile-journey-capture__edit {
-    display: flex;
-    min-height: 2.9rem;
-    align-items: center;
-    justify-content: space-between;
-    padding-inline: 1rem;
-    border-top: 1px solid var(--border);
-    color: var(--text-secondary);
-    font-size: var(--text-xs);
-    font-weight: 650;
-  }
-
   .mobile-travel-quick-nav {
     position: sticky;
     top: 4rem;

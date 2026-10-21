@@ -15,12 +15,6 @@
   display: none;
 }
 
-.profile-globe-card__profile {
-  top: 4.15rem;
-  left: 1.25rem;
-  width: min(20rem, calc(100% - 2.5rem));
-}
-
 .profile-globe-dock {
   overflow: hidden;
   border: 1px solid color-mix(in srgb, var(--border-strong) 78%, transparent);
@@ -160,8 +154,7 @@
   animation: globe-dock-reveal 0.24s ease both;
 }
 
-.profile-globe-dock .panel,
-.profile-globe-card__profile .profile-globe-dock .panel {
+.profile-globe-dock .panel {
   width: 100%;
   border: 0;
   border-radius: 0;
@@ -354,16 +347,6 @@
     min-height: 22rem;
   }
 
-  .profile-globe-card__profile {
-    position: absolute;
-    top: 3.2rem;
-    right: 4.5rem;
-    left: 0.7rem;
-    z-index: 8;
-    width: auto;
-    margin: 0;
-  }
-
   .profile-globe-dock__stats {
     display: none;
   }
@@ -476,9 +459,6 @@
 }
 
 @media (max-width: 380px) {
-  .profile-globe-card__profile {
-    right: 4.1rem;
-  }
 
   .profile-globe-dock__identity small {
     display: none;

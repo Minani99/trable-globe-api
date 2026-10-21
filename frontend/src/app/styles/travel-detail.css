@@ -640,21 +640,6 @@
   -webkit-line-clamp: 2;
 }
 
-.travel-itinerary__arrow {
-  align-self: center;
-  color: var(--text-tertiary);
-  font-size: var(--text-sm);
-  transition:
-    color 0.2s ease,
-    transform 0.2s ease;
-}
-
-.travel-itinerary__list button:hover .travel-itinerary__arrow,
-.travel-itinerary__list button.is-active .travel-itinerary__arrow {
-  color: var(--accent-strong);
-  transform: translate(0.1rem, -0.1rem);
-}
-
 /* Photo story */
 .travel-gallery {
   display: grid;
@@ -993,14 +978,6 @@
     gap: 0.55rem;
   }
 
-  .site-mobile-account {
-    display: none;
-  }
-
-  .site-menu-toggle {
-    display: none;
-  }
-
   .site-mobile-bottom-nav {
     position: fixed;
     right: 0;
@@ -1108,11 +1085,6 @@
     min-height: 2.45rem;
     padding-left: 0.9rem;
     font-size: var(--text-xs);
-  }
-
-  .landing-primary-cta__arrow {
-    width: 1.85rem;
-    height: 1.85rem;
   }
 
   .landing-globe-link,

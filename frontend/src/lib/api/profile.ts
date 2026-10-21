@@ -1,7 +1,6 @@
 import { apiGet } from "@/lib/api/client";
 import type {
   ProfileRecapCustomization,
-  TravelStatistics,
   TravelSummary,
   UserProfile,
   VisitedCountry,
@@ -11,10 +10,6 @@ const base = (username: string) => `/api/profiles/${encodeURIComponent(username)
 
 export function fetchProfile(username: string): Promise<UserProfile> {
   return apiGet<UserProfile>(base(username));
-}
-
-export function fetchStatistics(username: string): Promise<TravelStatistics> {
-  return apiGet<TravelStatistics>(`${base(username)}/statistics`);
 }
 
 export function fetchVisitedCountries(username: string): Promise<VisitedCountry[]> {

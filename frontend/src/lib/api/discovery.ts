@@ -17,14 +17,6 @@ export function searchMembers(query: string, authenticated: boolean): Promise<Me
     : apiGet<MemberDiscovery[]>(`/api/discovery/search${suffix}`);
 }
 
-export function fetchRecommendations(): Promise<MemberDiscovery[]> {
-  return apiSessionGet<MemberDiscovery[]>("/api/private/discovery/recommendations?limit=8");
-}
-
-export function fetchPublicRecommendations(): Promise<MemberDiscovery[]> {
-  return apiGet<MemberDiscovery[]>("/api/discovery/recommendations?limit=8");
-}
-
 export function fetchMemberConnections(
   username: string,
   kind: ConnectionKind,

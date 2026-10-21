@@ -65,11 +65,6 @@
   height: 1.65rem;
 }
 
-.settings-profile,
-.studio-account {
-  scroll-margin-top: 5.5rem;
-}
-
 .profile-panel__identity {
   display: flex;
   align-items: center;
@@ -374,12 +369,6 @@ a.profile-panel__identity:focus-visible {
   stroke-linejoin: round;
 }
 
-.country-detail__more {
-  padding: 0.45rem 0.5rem 0;
-  color: var(--text-tertiary);
-  font-size: var(--text-xs);
-}
-
 .profile-panel__social button {
   min-height: 2rem;
   padding: 0.2rem 0;
@@ -551,14 +540,11 @@ a.profile-panel__identity:focus-visible {
   transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease, transform 0.2s ease;
 }
 
-.profile-panel__primary-action,
-.profile-globe-card__profile .follow-action,
-.profile-globe-card__profile .follow-button {
+.profile-panel__primary-action {
   width: 100%;
 }
 
-.profile-panel__primary-action,
-.profile-globe-card__profile .follow-action {
+.profile-panel__primary-action {
   margin-top: 1rem;
 }
 
@@ -935,18 +921,6 @@ a.profile-panel__identity:focus-visible {
   font-size: var(--text-xs);
 }
 
-.member-card__bio {
-  display: -webkit-box;
-  min-height: 3rem;
-  margin-top: 1.2rem;
-  overflow: hidden;
-  color: var(--text-secondary);
-  font-size: var(--text-sm);
-  line-height: 1.65;
-  -webkit-box-orient: vertical;
-  -webkit-line-clamp: 2;
-}
-
 .member-card__reason {
   display: inline-flex;
   align-self: flex-start;
@@ -968,31 +942,6 @@ a.profile-panel__identity:focus-visible {
 
 .member-card__reason strong {
   font-weight: 650;
-}
-
-.member-card__stats {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  margin-top: 1.2rem;
-  padding-block: 0.9rem;
-  border-block: 1px solid var(--border);
-}
-
-.member-card__stats div + div {
-  padding-left: 0.7rem;
-  border-left: 1px solid var(--border);
-}
-
-.member-card__stats dt {
-  color: var(--text-tertiary);
-  font-size: var(--text-xs);
-}
-
-.member-card__stats dd {
-  margin-top: 0.35rem;
-  color: var(--text-primary);
-  font-family: var(--font-mono);
-  font-size: var(--text-base);
 }
 
 .member-card__actions {

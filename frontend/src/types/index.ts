@@ -137,14 +137,6 @@ export interface TravelDetail {
   nextTravel: TravelNavigationLink | null;
 }
 
-export interface HealthStatus {
-  status: string;
-  database?: string;
-  serverTime: string;
-  commit?: string | null;
-  environment?: string | null;
-}
-
 export interface ProfileRecapCustomization {
   year: number;
   narrative: string | null;
