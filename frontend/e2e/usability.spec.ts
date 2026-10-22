@@ -100,7 +100,7 @@ for (const width of [320, 390, 768]) {
     await composer.getByRole("button", { name: "빠른 기록 닫기" }).click();
     const routeBox = await route.boundingBox();
     const weatherBox = await page.locator(".trip-forecast").boundingBox();
-    expect(routeBox!.y).toBeLessThan(weatherBox!.y);
+    expect(weatherBox!.y).toBeLessThan(routeBox!.y);
     const directions = route.getByRole("link", { name: /Google Maps에서 경로 보기/ });
     const url = new URL((await directions.getAttribute("href"))!);
     expect(url.searchParams.get("origin")).toBe("34.9858,135.7588");
