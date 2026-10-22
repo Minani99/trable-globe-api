@@ -21,7 +21,6 @@ const ignoreHover = () => undefined;
 interface LandingWorld {
   profile: UserProfile;
   countries: VisitedCountry[];
-  travels: TravelSummary[];
 }
 
 interface LandingWorldRequest {
@@ -37,6 +36,7 @@ export function LandingGlobePreview() {
     () => undefined,
   );
   const [worldRequest, setWorldRequest] = useState<LandingWorldRequest | null>(null);
+  const [travelRequest, setTravelRequest] = useState<{ username: string; travels: TravelSummary[] } | null>(null);
   const [selectedCode, setSelectedCode] = useState<string | null>(null);
   const [hoveredCountry, setHoveredCountry] = useState<GlobeCountryHover | null>(null);
   const [selectedCountry, setSelectedCountry] = useState<GlobeCountryHover | null>(null);
@@ -45,7 +45,7 @@ export function LandingGlobePreview() {
   const isOwnWorld = member !== undefined && member !== null;
   const resolvedRequest = worldRequest?.username === username ? worldRequest : null;
   const world = resolvedRequest?.world ?? null;
-  const routeArcs = useMemo(() => buildGlobeTimeline(world?.travels ?? []).arcs, [world?.travels]);
+  const routeArcs = useMemo(() => buildGlobeTimeline(travelRequest?.username === username ? travelRequest.travels : []).arcs, [travelRequest, username]);
 
   useEffect(() => {
     if (member === undefined) {
@@ -57,16 +57,20 @@ export function LandingGlobePreview() {
     Promise.all([
       fetchProfile(username),
       fetchVisitedCountries(username),
-      fetchTravels(username),
     ])
-      .then(([profile, countries, travels]) => {
+      .then(([profile, countries]) => {
         if (active) {
-          setWorldRequest({ username, world: { profile, countries, travels }, failed: false });
+          setWorldRequest({ username, world: { profile, countries }, failed: false });
         }
       })
       .catch(() => {
         if (active) setWorldRequest({ username, world: null, failed: true });
       });
+
+    // Route history is optional enrichment: it must not delay or erase the globe summary.
+    void fetchTravels(username)
+      .then((travels) => { if (active) setTravelRequest({ username, travels }); })
+      .catch(() => { if (active) setTravelRequest({ username, travels: [] }); });
 
     return () => {
       active = false;
