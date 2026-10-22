@@ -118,6 +118,18 @@ export function applyPlaceUpdate(
   };
 }
 
+/** Server responses may contain only the first acknowledged edit. Keep the rest visible. */
+export function applyQueuedPlaceUpdates(travel: TravelDetail, updates: QueuedPlaceUpdate[]): TravelDetail {
+  return updates.reduce((current, operation) => ({
+    ...current,
+    places: current.places.map((place) => place.id === operation.placeId ? {
+      ...place,
+      memo: operation.memo,
+      completedAt: operation.completed ? place.completedAt ?? operation.createdAt : null,
+    } : place),
+  }), travel);
+}
+
 export function clearOfflineTravelData(username: string): void {
   const storage = getStorage();
   if (!storage) return;

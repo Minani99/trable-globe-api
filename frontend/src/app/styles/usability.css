@@ -98,6 +98,7 @@ button:has(> .app-icon) { gap: .4rem; }
 
 /* Keep the route and next stop together, ahead of supporting information. */
 .google-route-preview { margin: 12px 0; min-width: 0; }
+.mobile-trip-companion__connectivity button { min-height: 44px; margin-top: .5rem; padding: .5rem .75rem; border: 1px solid var(--border-strong); border-radius: 8px; font-weight: 600; }
 .google-route-preview > button { min-height: 44px; padding: 10px 14px; border: 1px solid currentColor; border-radius: 12px; font-weight: 700; }
 .google-route-canvas { height: 340px; width: 100%; margin-top: 12px; border-radius: 12px; }
 .google-route-preview ol { padding: 0; list-style: none; }
