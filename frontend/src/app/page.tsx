@@ -12,8 +12,8 @@ export default function LandingPage() {
       <SiteHeader />
 
       <main id="main" className="landing-main landing-main--journal flex flex-1 flex-col overflow-hidden">
-        {/* Each section is a full-width band so the globe, the story and the plan/record
-            examples read as separate screens instead of one continuous column. */}
+        {/* Each section is a full-width band so the globe, the story, planning, recording
+            and browsing read as separate screens instead of one continuous column. */}
         <div className="landing-band landing-band--hero">
           <section aria-labelledby="landing-title" className="landing-hero site-shell">
             <div className="landing-copy relative z-10">
@@ -49,9 +49,7 @@ export default function LandingPage() {
           </section>
         </div>
 
-        <div className="landing-band landing-band--overview">
-          <LandingOverview />
-        </div>
+        <LandingOverview />
       </main>
 
       <SiteFooter compact />

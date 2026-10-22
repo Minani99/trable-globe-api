@@ -1,8 +1,9 @@
 /* Landing sections
  *
  * Last in the ordered stylesheet (see globals.css). The globe, the photo story and the
- * plan/record examples are full-width bands with their own background, so the first
- * screen is the globe alone and each later section starts as a clearly new screen.
+ * planning, recording and browsing examples are full-width bands with their own
+ * background, so the first screen is the globe alone and each later section starts as a
+ * clearly new screen.
  */
 .landing-band {
   position: relative;
@@ -35,13 +36,14 @@
   border-top: 0;
 }
 
-.landing-band--overview {
-  padding-block: clamp(1rem, 2.5vw, 2rem);
+/* Planning, recording and browsing alternate with the bands above. */
+.landing-band--plan,
+.landing-band--browse {
   background: var(--surface);
 }
 
-.landing-band--overview > .landing-overview > :first-child {
-  border-top: 0;
+.landing-band--record {
+  background: var(--journal-canvas);
 }
 
 .landing-scroll-hint {
@@ -89,10 +91,5 @@
 
   .landing-band--journal > .landing-journal {
     padding-block: 3rem 3.5rem;
-  }
-
-  /* The examples themselves are hidden on phones; drop their empty band too. */
-  .landing-band--overview {
-    display: none;
   }
 }

@@ -21,7 +21,8 @@ test("모바일 메인은 여행 시작과 국가 탐색을 제공한다", async
   await expect(bottomNavigation).toBeVisible();
   await expect(bottomNavigation.getByRole("link")).toHaveCount(4);
   await expect(page.getByRole("button", { name: "메뉴 열기" })).toBeHidden();
-  await expect(page.getByRole("region", { name: "계획과 기록", includeHidden: true })).toBeHidden();
+  await expect(page.locator(".landing-band--plan, .landing-band--record, .landing-band--browse")).toHaveCount(3);
+  for (const band of await page.locator(".landing-band--plan, .landing-band--record, .landing-band--browse").all()) await expect(band).toBeHidden();
 
   const globeCanvas = page.locator(".landing-globe-live canvas").first();
   await expect(globeCanvas).toBeVisible();
