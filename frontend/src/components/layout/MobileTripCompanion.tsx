@@ -65,7 +65,7 @@ export function MobileTripCompanion({
   const viewingToday = viewDate === today;
   const nextPlace = dayPlaces.find((place) => !place.completedAt) ?? null;
   const selectedPlace = dayPlaces.find((place) => place.id === selectedPlaceId) ?? nextPlace ?? dayPlaces[0] ?? null;
-  const location = dayPlaces[0] ?? currentTravel.places[0];
+  const location = dayPlaces.find((place) => place.id === focusedMapPlaceId) ?? dayPlaces[0];
   const completedCount = dayPlaces.filter((place) => place.completedAt).length;
 
   useEffect(() => {
@@ -364,6 +364,8 @@ export function MobileTripCompanion({
         </div>
       ) : null}
 
+      {location ? <TripWeather compact={variant === "page"} latitude={location.latitude} longitude={location.longitude} startDate={viewDate} endDate={viewDate} label={location.placeName} /> : null}
+
       {variant === "page" ? <>
         {dayPlaces.length ? <section className="day-route-overview" aria-label="하루 동선 한눈에 보기">
           <header><AppIcon name="route" /><h3>하루 동선</h3><span>{dayPlaces.length}곳</span></header>
@@ -392,7 +394,6 @@ export function MobileTripCompanion({
         </div>
       )}
 
-      {location ? <TripWeather compact={variant === "page"} latitude={location.latitude} longitude={location.longitude} startDate={viewDate} endDate={viewDate} label={location.city?.nameKo ?? location.country.nameKo} /> : null}
 
       {dayPlaces.length ? (
         <ol className="mobile-trip-companion__timeline" aria-label={`${currentTravel.title} ${viewingToday ? "오늘 일정" : `${dayNumber}일차 일정`}`}>

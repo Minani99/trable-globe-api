@@ -143,3 +143,7 @@ button:has(> .app-icon) { gap: .4rem; }
   .travel-editor .plan-itinerary__toolbar { padding: .75rem; }
   .travel-editor .editor-order-hint { font-size: .75rem; margin-block: .5rem; }
 }
+
+.trip-forecast > header { flex-wrap: wrap; }
+.trip-forecast > header > strong { min-width: 0; overflow-wrap: anywhere; }
+.trip-forecast .trip-forecast__advice { padding: .65rem .8rem; border-radius: 8px; background: var(--accent-soft); color: var(--text-primary); }
