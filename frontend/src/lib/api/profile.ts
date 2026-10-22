@@ -8,16 +8,29 @@ import type {
 
 const base = (username: string) => `/api/profiles/${encodeURIComponent(username)}`;
 
+// Share only requests that are currently running. Completed data is never cached,
+// so returning after editing a trip still fetches the latest profile.
+const pendingReads = new Map<string, Promise<unknown>>();
+function sharedProfileRead<T>(path: string): Promise<T> {
+  const pending = pendingReads.get(path);
+  if (pending) return pending as Promise<T>;
+  const request = apiGet<T>(path).finally(() => {
+    if (pendingReads.get(path) === request) pendingReads.delete(path);
+  });
+  pendingReads.set(path, request);
+  return request;
+}
+
 export function fetchProfile(username: string): Promise<UserProfile> {
-  return apiGet<UserProfile>(base(username));
+  return sharedProfileRead<UserProfile>(base(username));
 }
 
 export function fetchVisitedCountries(username: string): Promise<VisitedCountry[]> {
-  return apiGet<VisitedCountry[]>(`${base(username)}/countries`);
+  return sharedProfileRead<VisitedCountry[]>(`${base(username)}/countries`);
 }
 
 export function fetchTravels(username: string): Promise<TravelSummary[]> {
-  return apiGet<TravelSummary[]>(`${base(username)}/travels`);
+  return sharedProfileRead<TravelSummary[]>(`${base(username)}/travels`);
 }
 
 export function fetchProfileRecaps(username: string): Promise<ProfileRecapCustomization[]> {

@@ -42,13 +42,14 @@ export function LandingGlobePreview() {
   const [selectedCountry, setSelectedCountry] = useState<GlobeCountryHover | null>(null);
   const [centeredCountry, setCenteredCountry] = useState<GlobeCountryHover | null>(null);
   const username = member?.username ?? siteConfig.demoUsername;
+  const authResolved = member !== undefined;
   const isOwnWorld = member !== undefined && member !== null;
   const resolvedRequest = worldRequest?.username === username ? worldRequest : null;
   const world = resolvedRequest?.world ?? null;
   const routeArcs = useMemo(() => buildGlobeTimeline(travelRequest?.username === username ? travelRequest.travels : []).arcs, [travelRequest, username]);
 
   useEffect(() => {
-    if (member === undefined) {
+    if (!authResolved) {
       void loadAuthMember();
       return;
     }
@@ -75,7 +76,7 @@ export function LandingGlobePreview() {
     return () => {
       active = false;
     };
-  }, [member, username]);
+  }, [authResolved, username]);
 
   const resolvedSelectedCountry = selectedCountry?.code === selectedCode
     ? selectedCountry
