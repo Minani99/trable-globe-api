@@ -1,0 +1,95 @@
+/* Landing sections
+ *
+ * Last in the ordered stylesheet (see globals.css). The globe, the photo story and the
+ * planning, recording and browsing examples are full-width bands with their own
+ * background, so the first screen is the globe alone and each later section starts as a
+ * clearly new screen.
+ */
+.landing-band {
+  position: relative;
+  width: 100%;
+}
+
+.landing-band + .landing-band {
+  border-top: 1px solid var(--border);
+}
+
+.landing-band--hero {
+  display: flex;
+  flex-direction: column;
+  min-height: calc(100svh - 4.25rem);
+  background: var(--surface);
+}
+
+.landing-band--hero > .landing-hero.site-shell {
+  flex: 1;
+  align-content: center;
+  background: transparent !important;
+}
+
+.landing-band--journal {
+  background: var(--journal-canvas);
+}
+
+.landing-band--journal > .landing-journal {
+  padding-block: clamp(4.5rem, 9vw, 7.5rem);
+  border-top: 0;
+}
+
+/* Planning, recording and browsing alternate with the bands above. */
+.landing-band--plan,
+.landing-band--browse {
+  background: var(--surface);
+}
+
+.landing-band--record {
+  background: var(--journal-canvas);
+}
+
+.landing-scroll-hint {
+  display: inline-flex;
+  align-self: center;
+  align-items: center;
+  gap: 0.35rem;
+  min-height: 2.75rem;
+  margin-bottom: 0.75rem;
+  padding-inline: 0.75rem;
+  color: var(--text-secondary);
+  font-size: 0.75rem;
+}
+
+.landing-scroll-hint svg {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.landing-scroll-hint:hover,
+.landing-scroll-hint:focus-visible {
+  color: var(--accent-strong);
+}
+
+@media (min-width: 1000px) {
+  /* The hero owns the whole first screen, so on tall displays the globe uses that height
+   * instead of leaving bands of empty space above and below it. */
+  .landing-band--hero .landing-hero .landing-globe-frame {
+    height: clamp(32rem, min(100svh - 15rem, 50vw), 46rem) !important;
+  }
+}
+
+@media (max-width: 700px) {
+  /* The bottom navigation covers the end of the first screen on phones. */
+  .landing-band--hero {
+    min-height: calc(100svh - 3.5rem - var(--mobile-bottom-nav-height) - env(safe-area-inset-bottom));
+  }
+
+  .landing-scroll-hint {
+    display: none;
+  }
+
+  .landing-band--journal > .landing-journal {
+    padding-block: 3rem 3.5rem;
+  }
+}

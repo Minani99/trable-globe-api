@@ -9,12 +9,15 @@ const EXAMPLE_STOPS = [
   { time: "15:00", place: "가모강", category: "산책" },
 ] as const;
 
-/** Static examples: no extra client bundle, fake controls or scroll animation. */
+/**
+ * Static examples: no extra client bundle, fake controls or scroll animation. Planning,
+ * recording and browsing are separate full-width bands so each reads as its own section.
+ */
 export function LandingOverview() {
   return (
-    <section className={`landing-overview site-shell ${styles.overview}`} aria-label="계획과 기록">
-      <div className={styles.features}>
-        <article className={styles.feature} aria-labelledby="plan-overview-title">
+    <>
+      <section className={`landing-band landing-band--plan ${styles.band}`} aria-labelledby="plan-overview-title">
+        <div className={`site-shell ${styles.feature}`}>
           <div className={styles.copy}>
             <p className={styles.eyebrow}>여행 전</p>
             <h2 id="plan-overview-title">일정은 한곳에.</h2>
@@ -45,9 +48,11 @@ export function LandingOverview() {
           <Link className={styles.link} href="/studio/plans/new">
             여행 계획 만들기 <Arrow />
           </Link>
-        </article>
+        </div>
+      </section>
 
-        <article className={styles.feature} aria-labelledby="record-overview-title">
+      <section className={`landing-band landing-band--record ${styles.band}`} aria-labelledby="record-overview-title">
+        <div className={`site-shell ${styles.feature} ${styles.featureReversed}`}>
           <div className={styles.copy}>
             <p className={styles.eyebrow}>여행 후</p>
             <h2 id="record-overview-title">다녀온 여행은 기록으로.</h2>
@@ -75,14 +80,20 @@ export function LandingOverview() {
           <Link className={styles.link} href={profilePath(siteConfig.demoUsername)}>
             샘플 기록 보기 <Arrow />
           </Link>
-        </article>
-      </div>
+        </div>
+      </section>
 
-      <div className={styles.browse}>
-        <p>다른 사람들의 여행도 둘러보세요.</p>
-        <Link className={styles.link} href="/discover">공개 여행 둘러보기 <Arrow /></Link>
-      </div>
-    </section>
+      <section className={`landing-band landing-band--browse ${styles.band}`} aria-labelledby="browse-overview-title">
+        <div className={`site-shell ${styles.browse}`}>
+          <div className={styles.copy}>
+            <p className={styles.eyebrow}>둘러보기</p>
+            <h2 id="browse-overview-title">다른 사람들의 여행도 둘러보세요.</h2>
+            <p className={styles.description}>공개된 여행 기록에서 다음 여행지를 찾아보세요.</p>
+          </div>
+          <Link className={styles.link} href="/discover">공개 여행 둘러보기 <Arrow /></Link>
+        </div>
+      </section>
+    </>
   );
 }
 
