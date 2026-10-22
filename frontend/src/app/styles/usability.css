@@ -55,6 +55,14 @@ button:has(> .app-icon) { gap: .4rem; }
 .travel-route-explorer.is-compact .travel-route-map-toolbar > div:first-child { display: none; }
 .travel-route-explorer.is-compact .travel-route-map-controls { width: 100%; justify-content: flex-end; }
 .travel-route-explorer.is-compact .travel-route-map-active { display: none; }
+/* Google owns pan, pinch and wheel on its map, so the container must not swallow touches
+ * (an ancestor's touch-action applies to the map too). The place card moves to the top so
+ * Google's controls, logo and terms at the bottom stay visible. */
+.travel-route-explorer .travel-route-map-canvas.is-google { cursor: auto; touch-action: auto; user-select: auto; }
+.travel-route-map-canvas.is-google::after { display: none; }
+.travel-route-map-canvas.is-google .travel-route-map-active { top: 1rem; right: auto; bottom: auto; left: 1rem; max-width: calc(100% - 4.5rem); }
+.travel-route-map-google { position: absolute; inset: 0; background: var(--surface-raised); }
+.travel-route-map-google__loading { position: absolute; inset: 0; display: grid; place-items: center; color: var(--text-secondary); font-size: var(--text-sm); }
 .travel-route-explorer.is-compact .travel-route-map-help { font-size: .6875rem; line-height: 1.5; }
 .travel-route-map-controls button { min-height: 44px; min-width: 44px; }
 .day-route-overview .google-directions { margin-top: 1rem; padding: .75rem; }

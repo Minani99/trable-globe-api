@@ -1,4 +1,4 @@
-import { expect, test } from "@playwright/test";
+import { expect, test } from "./fixtures";
 
 test("MapTiler 지도를 안전한 MapLibre 렌더러로 열고 높이를 유지한다", async ({ page }) => {
   const suffix = Date.now().toString(36);

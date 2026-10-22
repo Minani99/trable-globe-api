@@ -1,4 +1,4 @@
-import { expect, test } from "@playwright/test";
+import { expect, test } from "./fixtures";
 
 test("둘러보기는 공개 여행이 있는 프로필만 추천하고 새 친구는 검색으로 찾는다", async ({ page }) => {
   const suffix = Date.now().toString(36);

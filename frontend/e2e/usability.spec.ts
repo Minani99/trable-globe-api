@@ -1,4 +1,4 @@
-import { expect, test } from "@playwright/test";
+import { expect, test } from "./fixtures";
 
 for (const width of [320, 390, 768]) {
   test(`${width}px 설정·여행 준비·하루 동선이 잘리지 않고 순서를 유지한다`, async ({ page }, testInfo) => {

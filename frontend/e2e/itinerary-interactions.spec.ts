@@ -1,4 +1,4 @@
-import { expect, test, type Page } from "@playwright/test";
+import { blockGoogleMaps, expect, test, type Page } from "./fixtures";
 
 const country = { iso2Code: "JP", iso3Code: "JPN", nameEn: "Japan", nameKo: "일본", latitude: 36.204824, longitude: 138.252924 };
 async function register(page: Page) {
@@ -82,6 +82,7 @@ test("미래의 비공개 계획을 링크로 공유·복사하고 공유를 끈
   await expect(input).toHaveValue(/\/share\//);
   const url = await input.inputValue();
   const visitorContext = await browser.newContext();
+  await blockGoogleMaps(visitorContext);
   const visitor = await visitorContext.newPage();
   await visitor.goto(url);
   await expect(visitor.getByRole("heading", { name: "교토의 세 장소", exact: true })).toBeVisible();

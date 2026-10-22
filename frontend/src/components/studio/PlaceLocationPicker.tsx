@@ -23,6 +23,7 @@ import type {
   PlaceRecommendationCategory,
 } from "@/lib/place-recommendations";
 import { PLACE_RECOMMENDATION_DETAILS } from "@/lib/place-recommendations";
+import { googleMapsApiKey } from "@/lib/google-maps-loader";
 
 interface LocationSelection {
   name: string;
@@ -86,6 +87,11 @@ const MapTilerMapCanvas = dynamic(() => import("./MapTilerMapCanvas"), {
   loading: () => <div role="status" className="place-map-dialog__provider-map">지도를 불러오는 중…</div>,
 });
 
+const GooglePickerMapCanvas = dynamic(() => import("./GooglePickerMapCanvas"), {
+  ssr: false,
+  loading: () => <div role="status" className="place-map-dialog__provider-map">지도를 불러오는 중…</div>,
+});
+
 let mapsConfigPromise: Promise<MapsConfig> | null = null;
 
 export function PlaceLocationPicker({
@@ -140,6 +146,16 @@ export function PlaceLocationPicker({
     : null);
   const activeIdeaConfig = PLACE_IDEA_QUERIES.find((idea) => idea.label === activeIdea) ?? null;
   const detailOptions = activeIdeaConfig ? PLACE_RECOMMENDATION_DETAILS[activeIdeaConfig.category] : [];
+  // Search keeps its own provider: Places API coordinates may only be cached for 30 days,
+  // while trips store their stops permanently. Google is used for the map itself.
+  const [googleMapFailed, setGoogleMapFailed] = useState(false);
+  const mapProvider = googleMapsApiKey && !googleMapFailed
+    ? "google"
+    : provider === "maptiler" && apiKey ? "maptiler" : "fallback";
+  const handleGoogleMapUnavailable = useCallback(() => {
+    setGoogleMapFailed(true);
+    setStatus("Google 지도를 불러오지 못해 기본 지도로 전환했습니다.");
+  }, []);
   const handleMapUnavailable = useCallback(() => {
     setProvider("fallback");
     setApiKey(null);
@@ -565,10 +581,16 @@ export function PlaceLocationPicker({
             <header>
               <button type="button" className="place-map-dialog__close" onClick={() => setMapOpen(false)} aria-label="지도 닫기"><AppIcon name="close" /></button>
               <div><strong>위치 조정</strong><span>{countryName} · 지도를 움직여 핀에 맞추세요</span></div>
-              <span className="place-map-dialog__provider" translate="no">{provider === "maptiler" ? "MapTiler" : "OpenStreetMap"}</span>
+              <span className="place-map-dialog__provider" translate="no">{mapProvider === "google" ? "Google 지도" : mapProvider === "maptiler" ? "MapTiler" : "OpenStreetMap"}</span>
             </header>
             <div className="place-map-dialog__canvas">
-              {provider === "maptiler" && apiKey ? (
+              {mapProvider === "google" ? (
+                <GooglePickerMapCanvas
+                  initialCenter={mapStartCenter}
+                  onCenterChange={setDraftCenter}
+                  onUnavailable={handleGoogleMapUnavailable}
+                />
+              ) : mapProvider === "maptiler" && apiKey ? (
                 <MapTilerMapCanvas
                   apiKey={apiKey}
                   initialCenter={mapStartCenter}

@@ -1,4 +1,4 @@
-import { expect, test } from "@playwright/test";
+import { expect, test } from "./fixtures";
 
 test("팔로워와 팔로잉 목록에서 사람을 확인하고 다시 교류할 수 있다", async ({ page }, testInfo) => {
   const suffix = Date.now().toString(36);

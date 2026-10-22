@@ -1,4 +1,4 @@
-import { expect, test } from "@playwright/test";
+import { expect, test } from "./fixtures";
 
 test("모바일 메인은 여행 시작과 국가 탐색을 제공한다", async ({ page }) => {
   const pageErrors: string[] = [];

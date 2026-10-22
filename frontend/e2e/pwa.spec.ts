@@ -1,4 +1,4 @@
-import { expect, test } from "@playwright/test";
+import { expect, test } from "./fixtures";
 
 test("설치 가능한 앱 정보와 개인정보를 저장하지 않는 오프라인 셸을 제공한다", async ({ page }, testInfo) => {
   const manifestResponse = await page.request.get("/manifest.webmanifest");

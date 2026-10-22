@@ -1,4 +1,4 @@
-import { expect, test, type Locator, type Page } from "@playwright/test";
+import { blockGoogleMaps, expect, test, type Locator, type Page } from "./fixtures";
 import { buildGoogleDirectionsSegments, type GoogleDirectionsStop } from "../src/lib/google-directions";
 
 function stops(count: number): GoogleDirectionsStop[] {
@@ -111,6 +111,7 @@ test("모바일 일정의 날짜·순서·이동수단이 실제 경로에 반�
   expect(token).toBeTruthy();
 
   const visitorContext = await browser.newContext({ viewport: { width: 390, height: 844 } });
+  await blockGoogleMaps(visitorContext);
   try {
     const visitor = await visitorContext.newPage();
     await visitor.goto(new URL(`/share/${token}`, page.url()).toString());

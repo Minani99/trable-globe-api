@@ -1,4 +1,4 @@
-import { expect, test } from "@playwright/test";
+import { expect, test } from "./fixtures";
 
 test("끝난 계획을 모바일 마무리 화면에서 대표 장면과 기록으로 공개한다", async ({ page }, testInfo) => {
   const suffix = Date.now().toString(36);

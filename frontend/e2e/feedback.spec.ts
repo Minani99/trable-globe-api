@@ -1,4 +1,4 @@
-import { expect, test } from "@playwright/test";
+import { expect, test } from "./fixtures";
 
 test("베타 피드백은 오류 맥락과 기기를 채우고 모바일 공유로 이어진다", async ({ page }) => {
   await page.addInitScript(() => {

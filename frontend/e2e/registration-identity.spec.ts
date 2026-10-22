@@ -1,4 +1,4 @@
-import { expect, test } from "@playwright/test";
+import { expect, test } from "./fixtures";
 
 test("샘플 세계를 미리 보고 가입 후 내 세계와 가입 정보를 바로 고친다", async ({ page }) => {
   await page.goto("/");

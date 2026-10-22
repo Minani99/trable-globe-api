@@ -1,4 +1,4 @@
-import { expect, test } from "@playwright/test";
+import { expect, test } from "./fixtures";
 
 test("여행 시간축을 따라 개인 지구본이 성장하고 현재로 돌아온다", async ({ page }) => {
   // The CI browser renders the WebGL globe in software. Keep this journey's

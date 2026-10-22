@@ -1,4 +1,4 @@
-import { expect, test, type Page } from "@playwright/test";
+import { expect, test, type Page } from "./fixtures";
 import { journeyGroups, nextJourneyAction } from "../src/lib/journey-next-action";
 import type { OwnedTravelSummary } from "../src/types";
 

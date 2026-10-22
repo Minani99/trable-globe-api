@@ -1,4 +1,4 @@
-import { expect, test } from "@playwright/test";
+import { expect, test } from "./fixtures";
 
 test("여행 기록이 늦거나 실패해도 지구본 통계는 먼저 표시된다", async ({ page }) => {
   await page.route("**/api/auth/me", route => route.fulfill({ json: { success: true, data: null } }));

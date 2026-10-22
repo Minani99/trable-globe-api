@@ -1,4 +1,4 @@
-import { expect, test } from "@playwright/test";
+import { expect, test } from "./fixtures";
 
 test("헤더 로그아웃 상태가 페이지 이동보다 먼저 반영된다", async ({ page }) => {
   const suffix = Date.now().toString(36);
