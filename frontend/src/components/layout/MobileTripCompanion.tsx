@@ -166,15 +166,20 @@ export function MobileTripCompanion({
 
   function saveOfflinePlaceUpdate(place: TravelPlace, completed: boolean, nextMemo: string | null, message: string) {
     const optimisticTravel = applyPlaceUpdate(currentTravel, place.id, nextMemo, completed);
-    setCurrentTravel(optimisticTravel);
     const queue = queuePlaceUpdate(username, currentTravel.id, {
       placeId: place.id,
       memo: nextMemo,
       completed,
     });
+    if (!queue) {
+      setStatus("기기에 저장하지 못했습니다. 저장 공간이나 브라우저 설정을 확인한 뒤 다시 시도해 주세요. 작성 중인 메모는 복사해 두세요.");
+      return false;
+    }
+    setCurrentTravel(optimisticTravel);
     setPendingSyncCount(queue.length);
     setOnline(false);
     setStatus(`${message} 연결되면 자동으로 반영됩니다.`);
+    return true;
   }
 
   async function updatePlace(place: TravelPlace, completed: boolean, nextMemo = place.memo ?? "") {
@@ -229,8 +234,7 @@ export function MobileTripCompanion({
     setStatus(null);
     const normalizedMemo = note.trim() || null;
     if (!navigator.onLine) {
-      saveOfflinePlaceUpdate(selectedPlace, Boolean(selectedPlace.completedAt), normalizedMemo, "메모를 기기에 저장했습니다.");
-      setComposer(null);
+      if (saveOfflinePlaceUpdate(selectedPlace, Boolean(selectedPlace.completedAt), normalizedMemo, "메모를 기기에 저장했습니다.")) setComposer(null);
       setPendingAction(null);
       mutationLock.current = false;
       return;
@@ -248,8 +252,7 @@ export function MobileTripCompanion({
       setStatus(`${selectedPlace.placeName}에 메모를 남겼어요.`);
     } catch (error) {
       if (error instanceof ApiError && error.isUnreachable) {
-        saveOfflinePlaceUpdate(selectedPlace, Boolean(selectedPlace.completedAt), normalizedMemo, "메모를 기기에 저장했습니다.");
-        setComposer(null);
+        if (saveOfflinePlaceUpdate(selectedPlace, Boolean(selectedPlace.completedAt), normalizedMemo, "메모를 기기에 저장했습니다.")) setComposer(null);
       } else {
         setStatus(error instanceof ApiError ? error.message : "메모를 저장하지 못했습니다.");
       }

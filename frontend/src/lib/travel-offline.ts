@@ -68,7 +68,7 @@ export function queuePlaceUpdate(
   username: string,
   travelId: number,
   update: Omit<QueuedPlaceUpdate, "id" | "createdAt">,
-): QueuedPlaceUpdate[] {
+): QueuedPlaceUpdate[] | null {
   const operation: QueuedPlaceUpdate = {
     ...update,
     id: `${Date.now()}-${Math.random().toString(36).slice(2)}`,
@@ -76,8 +76,7 @@ export function queuePlaceUpdate(
   };
   const queue = readQueuedPlaceUpdates(username, travelId).filter((item) => item.placeId !== update.placeId);
   queue.push(operation);
-  writeQueue(username, travelId, queue);
-  return queue;
+  return writeQueue(username, travelId, queue) ? queue : null;
 }
 
 export function readQueuedPlaceUpdates(username: string, travelId: number): QueuedPlaceUpdate[] {
@@ -145,15 +144,15 @@ export function clearOfflineTravelData(username: string): void {
   if (storage.getItem(ACTIVE_USER_KEY) === username) storage.removeItem(ACTIVE_USER_KEY);
 }
 
-function writeQueue(username: string, travelId: number, queue: QueuedPlaceUpdate[]): void {
+function writeQueue(username: string, travelId: number, queue: QueuedPlaceUpdate[]): boolean {
   const storage = getStorage();
-  if (!storage) return;
+  if (!storage) return false;
   try {
     if (queue.length) storage.setItem(queueKey(username, travelId), JSON.stringify(queue));
     else storage.removeItem(queueKey(username, travelId));
+    return true;
   } catch {
-    // The caller still keeps the optimistic state in memory and reports the
-    // connectivity problem instead of crashing the travel screen.
+    return false;
   }
 }
 
@@ -211,5 +210,9 @@ function queueKey(username: string, travelId: number): string {
 }
 
 function getStorage(): Storage | null {
-  return typeof window === "undefined" ? null : window.localStorage;
+  try {
+    return typeof window === "undefined" ? null : window.localStorage;
+  } catch {
+    return null;
+  }
 }
