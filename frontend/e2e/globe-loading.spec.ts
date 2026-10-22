@@ -1,4 +1,4 @@
-import { expect, test } from "@playwright/test";
+import { expect, test } from "./fixtures";
 
 test("지구본을 다시 열면 국가 경계 데이터를 재사용한다", async ({ page }) => {
   let requests = 0;

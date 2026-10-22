@@ -1,4 +1,4 @@
-import { expect, test } from "@playwright/test";
+import { expect, test } from "./fixtures";
 
 test("지구본 정보와 계정 메뉴는 방문 횟수 레이어 위에 표시된다", async ({ page }, testInfo) => {
   await page.setViewportSize({ width: 1440, height: 960 });

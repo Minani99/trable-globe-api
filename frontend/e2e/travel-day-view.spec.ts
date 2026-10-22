@@ -1,4 +1,4 @@
-import { expect, test } from "@playwright/test";
+import { expect, test } from "./fixtures";
 
 test("미래 여행도 여행용 보기에서 날짜별로 확인할 수 있다", async ({ page }, testInfo) => {
   const suffix = Date.now().toString(36);

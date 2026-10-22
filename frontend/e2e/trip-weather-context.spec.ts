@@ -1,4 +1,4 @@
-import { expect, test } from "@playwright/test";
+import { expect, test } from "./fixtures";
 test("모바일 날씨는 동선 위에서 선택 장소의 예보를 보여준다", async ({ page }) => {
   const username = `sync_${Date.now().toString(36)}`;
   expect((await page.request.post("/api/auth/register", { data: { username, displayName: "동기화 여행자", email: `${username}@example.com`, password: "offline-sync-password-42" } })).ok()).toBe(true);

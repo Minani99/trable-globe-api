@@ -1,4 +1,4 @@
-import { expect, test } from "@playwright/test";
+import { expect, test } from "./fixtures";
 test("기기 저장 실패 시 완료로 표시하지 않고 메모 입력을 유지한다", async ({ page }) => {
   const username = `sync_${Date.now().toString(36)}`;
   expect((await page.request.post("/api/auth/register", { data: { username, displayName: "동기화 여행자", email: `${username}@example.com`, password: "offline-sync-password-42" } })).ok()).toBe(true);

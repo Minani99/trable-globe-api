@@ -1,4 +1,4 @@
-import { expect, test, type Page } from "@playwright/test";
+import { expect, test, type Page } from "./fixtures";
 import { suggestVisitOrder } from "../src/lib/itinerary-order";
 
 test("순서 제안은 양 끝과 모든 장소를 보존하고 입력을 변경하지 않는다", () => {

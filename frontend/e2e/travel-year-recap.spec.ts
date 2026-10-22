@@ -1,4 +1,4 @@
-import { expect, test } from "@playwright/test";
+import { expect, test } from "./fixtures";
 
 test("내 연도 리캡의 문장과 대표 여행을 모바일에서도 편집한다", async ({ page }, testInfo) => {
   const suffix = Date.now().toString(36);

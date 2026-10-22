@@ -1,4 +1,4 @@
-import { expect, test } from "@playwright/test";
+import { expect, test } from "./fixtures";
 
 test("회원가입부터 프로필 완성, 첫 여행 공개와 공유까지 이어진다", async ({ page }) => {
   page.on("pageerror", (error) => console.error(`[browser page] ${error.message}`));

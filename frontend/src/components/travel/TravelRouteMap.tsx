@@ -4,6 +4,8 @@ import type { PointerEvent, WheelEvent } from "react";
 import { useEffect, useMemo, useRef, useState } from "react";
 
 import { GoogleDirectionsPanel } from "@/components/travel/GoogleDirectionsPanel";
+import { GoogleRouteMapCanvas } from "@/components/travel/GoogleRouteMapCanvas";
+import { googleMapsApiKey } from "@/lib/google-maps-loader";
 import { formatDate } from "@/lib/utils/format";
 import type { TravelPlace } from "@/types";
 
@@ -55,6 +57,12 @@ export function TravelRouteMap({ places, compact = false, placeNumbers, focusedP
   const [isDragging, setIsDragging] = useState(false);
   const [loadedTileCount, setLoadedTileCount] = useState(0);
   const [allowMapMove, setAllowMapMove] = useState(false);
+  // Google is the map whenever a key is configured; the tile map below remains the fallback
+  // for builds without a key and for a key Google rejects at runtime.
+  const [googleUnavailable, setGoogleUnavailable] = useState(false);
+  const useGoogle = Boolean(googleMapsApiKey) && !googleUnavailable;
+  const [focusRequest, setFocusRequest] = useState<{ id: number; sequence: number } | null>(null);
+  const [fitRequest, setFitRequest] = useState(0);
   const canvasRef = useRef<HTMLDivElement | null>(null);
   const panState = useRef<PanState | null>(null);
   const measuredWidthRef = useRef<number | null>(null);
@@ -67,6 +75,7 @@ export function TravelRouteMap({ places, compact = false, placeNumbers, focusedP
     const frame = requestAnimationFrame(() => {
       const target = lngLatToWorld(focusLng, focusLat, 15);
       setSelectedId(focusedPlaceId);
+      setFocusRequest((current) => ({ id: focusedPlaceId, sequence: (current?.sequence ?? 0) + 1 }));
       setZoom(15);
       setCenter({ x: target.x, y: target.y });
     });
@@ -111,7 +120,7 @@ export function TravelRouteMap({ places, compact = false, placeNumbers, focusedP
       canvas.removeEventListener("wheel", preventPageScroll);
       resizeObserver.disconnect();
     };
-  }, [places, compact, allowMapMove]);
+  }, [places, compact, allowMapMove, useGoogle]);
 
   const viewport = useMemo(
     () => buildViewport(places, center.x, center.y, zoom, viewportSize.width, viewportSize.height),
@@ -126,6 +135,16 @@ export function TravelRouteMap({ places, compact = false, placeNumbers, focusedP
   if (!selectedPlace || places.length === 0) {
     return <p className="text-body">지도에 표시할 방문 장소가 없습니다.</p>;
   }
+
+  const activePlaceCard = (
+    <div className="travel-route-map-active" aria-live="polite">
+      <span>{String(placeNumbers?.[selectedPlace.id] ?? selectedIndex + 1).padStart(2, "0")}</span>
+      <div>
+        <strong>{selectedPlace.placeName}</strong>
+        <p>{[selectedPlace.city?.nameKo, selectedPlace.country.nameKo].filter(Boolean).join(" · ")}</p>
+      </div>
+    </div>
+  );
 
   const mapLocationLabel = (
     selectedPlace.city?.nameEn ?? selectedPlace.country.iso2Code
@@ -143,6 +162,10 @@ export function TravelRouteMap({ places, compact = false, placeNumbers, focusedP
   };
 
   const resetViewport = () => {
+    if (useGoogle) {
+      setFitRequest((count) => count + 1);
+      return;
+    }
     const fitted = createInitialView(places, viewportSize.width, viewportSize.height);
     setZoom(fitted.zoom);
     setCenter({ x: fitted.centerX, y: fitted.centerY });
@@ -152,6 +175,7 @@ export function TravelRouteMap({ places, compact = false, placeNumbers, focusedP
     const targetZoom = Math.max(zoom, 15);
     const nextCenter = lngLatToWorld(place.longitude, place.latitude, targetZoom);
     setSelectedId(place.id);
+    setFocusRequest((current) => ({ id: place.id, sequence: (current?.sequence ?? 0) + 1 }));
     onPlaceSelect?.(place.id);
     setZoom(targetZoom);
     setCenter({ x: nextCenter.x, y: nextCenter.y });
@@ -209,14 +233,31 @@ export function TravelRouteMap({ places, compact = false, placeNumbers, focusedP
             <p className="travel-route-map-toolbar__hint">장소 위치를 살펴보세요 · 실제 이동 경로는 Google Maps에서 확인</p>
           </div>
           <div className="travel-route-map-controls" role="toolbar" aria-label="장소 위치 지도 확대·축소">
-            {compact ? <button type="button" aria-pressed={allowMapMove} onClick={() => setAllowMapMove(!allowMapMove)}>{allowMapMove ? "지도 이동 끄기" : "지도 이동 켜기"}</button> : null}
-            <button type="button" onClick={() => updateZoom(zoom + 1)} aria-label="지도 확대">+</button>
-            <button type="button" onClick={() => updateZoom(zoom - 1)} aria-label="지도 축소">−</button>
+            {compact && !useGoogle ? <button type="button" aria-pressed={allowMapMove} onClick={() => setAllowMapMove(!allowMapMove)}>{allowMapMove ? "지도 이동 끄기" : "지도 이동 켜기"}</button> : null}
+            {!useGoogle ? <>
+              <button type="button" onClick={() => updateZoom(zoom + 1)} aria-label="지도 확대">+</button>
+              <button type="button" onClick={() => updateZoom(zoom - 1)} aria-label="지도 축소">−</button>
+            </> : null}
             <button type="button" onClick={resetViewport} aria-label="전체 장소 위치 맞춤">전체 보기</button>
           </div>
         </div>
 
-        <div
+        {useGoogle ? (
+          <div className="travel-route-map-canvas is-google">
+            <GoogleRouteMapCanvas
+              places={places}
+              numberOf={(place, index) => placeNumbers?.[place.id] ?? index + 1}
+              selectedId={selectedPlace.id}
+              focusRequest={focusRequest}
+              fitRequest={fitRequest}
+              cooperative={compact}
+              label={`${places.map((place) => place.placeName).join(", ")} 방문 순서를 보여주는 Google 지도`}
+              onSelect={selectPlace}
+              onUnavailable={() => setGoogleUnavailable(true)}
+            />
+            {activePlaceCard}
+          </div>
+        ) : <div
           ref={canvasRef}
           className={`travel-route-map-canvas${isDragging ? " is-dragging" : ""}`}
           style={compact ? { touchAction: allowMapMove ? "none" : "pan-y pinch-zoom", overscrollBehavior: allowMapMove ? "contain" : "auto" } : undefined}
@@ -318,21 +359,15 @@ export function TravelRouteMap({ places, compact = false, placeNumbers, focusedP
             </div>
           ) : null}
 
-          <div className="travel-route-map-active" aria-live="polite">
-            <span>{String(placeNumbers?.[selectedPlace.id] ?? selectedIndex + 1).padStart(2, "0")}</span>
-            <div>
-              <strong>{selectedPlace.placeName}</strong>
-              <p>{[selectedPlace.city?.nameKo, selectedPlace.country.nameKo].filter(Boolean).join(" · ")}</p>
-            </div>
-          </div>
+          {activePlaceCard}
 
           <p className="travel-route-map-zoom" aria-live="polite">{mapLocationLabel} · Z{zoom}</p>
           <p className="travel-route-map-attribution">
             © <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noreferrer">OpenStreetMap contributors</a>
           </p>
-        </div>
+        </div>}
         <p id="travel-route-map-help" className="travel-route-map-help">
-          {compact ? "위아래로 스크롤하세요. 지도 이동을 켜면 지도를 끌 수 있어요." : "번호는 방문 순서입니다. 장소 목록에서도 위치를 선택할 수 있어요. 실제 도로와 교통편은 Google Maps 경로 보기에서 확인하세요."}
+          {compact ? (useGoogle ? "한 손가락으로는 화면이 스크롤되고, 두 손가락으로 지도를 움직이거나 확대할 수 있어요." : "위아래로 스크롤하세요. 지도 이동을 켜면 지도를 끌 수 있어요.") : "번호는 방문 순서입니다. 장소 목록에서도 위치를 선택할 수 있어요. 실제 도로와 교통편은 Google Maps 경로 보기에서 확인하세요."}
         </p>
       </div>
 

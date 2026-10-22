@@ -1,4 +1,4 @@
-import { expect, test } from "@playwright/test";
+import { expect, test } from "./fixtures";
 
 test("부분 동기화 실패와 새로고침 후에도 미전송 완료·메모를 보존한다", async ({ page }) => {
   const username = `sync_${Date.now().toString(36)}`;

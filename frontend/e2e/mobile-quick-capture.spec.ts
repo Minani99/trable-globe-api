@@ -1,4 +1,4 @@
-import { expect, test } from "@playwright/test";
+import { expect, test } from "./fixtures";
 
 test("진행 중인 여행은 모바일 어디서나 장소·사진·메모로 바로 이어진다", async ({ page }, testInfo) => {
   const suffix = Date.now().toString(36);

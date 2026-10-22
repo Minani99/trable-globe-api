@@ -1,4 +1,4 @@
-import { expect, test } from "@playwright/test";
+import { expect, test } from "./fixtures";
 
 test("내 지구본과 내 정보가 서로 다른 역할로 열린다", async ({ page }) => {
   const suffix = Date.now().toString(36);

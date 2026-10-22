@@ -1,4 +1,4 @@
-import { expect, test } from "@playwright/test";
+import { expect, test } from "./fixtures";
 
 test("다른 여행자의 공개 일정을 새 날짜의 내 계획으로 가져온다", async ({ page }) => {
   const suffix = Date.now().toString(36);

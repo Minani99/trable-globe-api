@@ -1,4 +1,4 @@
-import { expect, test } from "@playwright/test";
+import { expect, test } from "./fixtures";
 
 test("여행 화면은 작은 화면과 다크 모드에서도 읽히고 저장 상태를 구분한다", async ({ page }, testInfo) => {
   const username = `launch_${Date.now().toString(36)}`;

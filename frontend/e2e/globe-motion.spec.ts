@@ -1,4 +1,4 @@
-import { expect, test } from "@playwright/test";
+import { expect, test } from "./fixtures";
 
 test("국가 호버가 회전을 끊거나 마커를 다시 만들지 않는다", async ({ page }, testInfo) => {
   await page.emulateMedia({ reducedMotion: "no-preference" });

@@ -1,4 +1,4 @@
-import { expect, test } from "@playwright/test";
+import { expect, test } from "./fixtures";
 
 test("메인 소개는 두 가지 예시와 실제 이동 링크만 제공한다", async ({ page }, testInfo) => {
   const errors: string[] = [];

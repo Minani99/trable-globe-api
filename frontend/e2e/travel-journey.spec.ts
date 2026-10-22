@@ -1,4 +1,4 @@
-import { expect, test } from "@playwright/test";
+import { expect, test } from "./fixtures";
 
 test("공개 여행 기록을 읽고 모바일에서 일정과 사진을 가로 탐색한다", async ({ page }) => {
   const pageErrors: string[] = [];

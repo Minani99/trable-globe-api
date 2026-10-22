@@ -1,4 +1,4 @@
-import { expect, test } from "@playwright/test";
+import { expect, test } from "./fixtures";
 
 test("여행 사진은 모바일에서 로드되고 로그인 동작을 가리지 않는다", async ({ page }, testInfo) => {
   await page.setViewportSize({ width: 390, height: 844 });

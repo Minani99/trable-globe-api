@@ -1,4 +1,4 @@
-import { expect, test } from "@playwright/test";
+import { expect, test } from "./fixtures";
 
 test("작성 중 세션이 끝나면 내용을 유지한 채 다시 로그인할 수 있다", async ({ page }) => {
   const suffix = Date.now().toString(36);
