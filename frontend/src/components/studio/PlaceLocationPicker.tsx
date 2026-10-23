@@ -133,6 +133,13 @@ export function PlaceLocationPicker({
     [initialName, cityName].filter(Boolean).join(" · "),
   );
   const requestIdRef = useRef(0);
+  const searchControllerRef = useRef<AbortController | null>(null);
+  const cancelSearch = useCallback(() => {
+    requestIdRef.current += 1;
+    searchControllerRef.current?.abort();
+    searchControllerRef.current = null;
+  }, []);
+  useEffect(() => () => cancelSearch(), [cancelSearch]);
   const searchInputRef = useRef<HTMLInputElement>(null);
   useEffect(() => {
     if (!focusSearch) return;
@@ -191,14 +198,18 @@ export function PlaceLocationPicker({
   }, [mapOpen]);
 
   const searchPlaces = useCallback(async (searchQuery: string) => {
+    cancelSearch();
+    setResults([]);
     const trimmed = searchQuery.trim();
     if (trimmed.length < 2) {
-      setResults([]);
+      setSearching(false);
       if (queryTouched) setStatus("장소 이름을 두 글자 이상 입력해 주세요.");
       return;
     }
 
-    const requestId = ++requestIdRef.current;
+    const requestId = requestIdRef.current;
+    const controller = new AbortController();
+    searchControllerRef.current = controller;
     setSearching(true);
     setStatus(null);
     const searchWithFallback = async () => {
@@ -209,6 +220,7 @@ export function PlaceLocationPicker({
         lng: String(searchOrigin.longitude),
       });
       const response = await fetch(`/api/locations/search?${params}`, {
+        signal: controller.signal,
         headers: { Accept: "application/json" },
         cache: "no-store",
       });
@@ -265,7 +277,7 @@ export function PlaceLocationPicker({
     } finally {
       if (requestId === requestIdRef.current) setSearching(false);
     }
-  }, [apiKey, countryCode, provider, queryTouched, routeAnchor, searchOrigin.latitude, searchOrigin.longitude]);
+  }, [apiKey, cancelSearch, countryCode, provider, queryTouched, routeAnchor, searchOrigin.latitude, searchOrigin.longitude]);
 
   useEffect(() => {
     if (provider !== "maptiler" || !queryTouched) return;
@@ -274,6 +286,8 @@ export function PlaceLocationPicker({
   }, [provider, query, queryTouched, searchPlaces]);
 
   function commitSelection(selection: LocationSelection) {
+    cancelSearch();
+    setSearching(false);
     onSelect(selection);
     setQuery(selection.name);
     setQueryTouched(false);
@@ -298,6 +312,8 @@ export function PlaceLocationPicker({
     idea: (typeof PLACE_IDEA_QUERIES)[number],
     detail = "all",
   ) {
+    cancelSearch();
+    setResults([]);
     const area = cityName.trim() || countryName;
     const detailOption = PLACE_RECOMMENDATION_DETAILS[idea.category].find((option) => option.id === detail)
       ?? PLACE_RECOMMENDATION_DETAILS[idea.category][0];
@@ -313,6 +329,8 @@ export function PlaceLocationPicker({
     }
 
     const requestId = ++requestIdRef.current;
+    const controller = new AbortController();
+    searchControllerRef.current = controller;
     setSearching(true);
     try {
       const params = new URLSearchParams({
@@ -322,7 +340,7 @@ export function PlaceLocationPicker({
         lng: String(recommendationOrigin.longitude),
       });
       if (travelPreferences.length) params.set("preferences", travelPreferences.join(","));
-      const response = await fetch(`/api/places/recommend?${params}`, { cache: "no-store" });
+      const response = await fetch(`/api/places/recommend?${params}`, { cache: "no-store", signal: controller.signal });
       const body = await response.json() as {
         success: boolean;
         data: PlaceRecommendation[] | null;
@@ -484,6 +502,10 @@ export function PlaceLocationPicker({
           ref={searchInputRef}
           value={query}
           onChange={(event) => {
+            cancelSearch();
+            setSearching(false);
+            setResults([]);
+            setStatus(null);
             setQuery(event.target.value);
             setActiveIdea(null);
             setQueryTouched(true);
