@@ -48,9 +48,32 @@ test("다른 여행자의 공개 일정을 새 날짜의 내 계획으로 가져
   await expect(page.getByText("내 여행에 일정 복사")).toBeVisible();
   const newStartDate = new Date().toLocaleDateString("en-CA", { timeZone: "Asia/Seoul" });
   await page.getByLabel("새 출발일").fill(newStartDate);
-  await page.getByRole("button", { name: "2일 일정 복사" }).click();
+  await expect(page.locator(".shared-itinerary-save__period")).toContainText(newStartDate);
+  let requests = 0;
+  let release = () => {};
+  const gate = new Promise<void>(resolve => { release = resolve; });
+  await page.route("**/api/private/travels", async route => {
+    if (route.request().method() !== "POST") return route.continue();
+    requests += 1;
+    if (requests === 1) return route.fulfill({ status: 503, json: { success: false, message: "잠시 후 다시 시도해 주세요.", data: null } });
+    await gate;
+    await route.continue();
+  });
+  const copy = page.getByRole("button", { name: "2일 일정 복사" });
+  await copy.click();
+  await expect(page.locator(".shared-itinerary-save__panel").getByRole("alert")).toContainText("잠시 후 다시 시도해 주세요.");
+  await expect(page.getByLabel("새 출발일")).toHaveValue(newStartDate);
+  await expect(copy).toBeEnabled();
+  try {
+    await copy.click();
+    await expect.poll(() => requests).toBe(2);
+    await expect(page.getByLabel("새 출발일")).toBeDisabled();
+    await expect(page.getByRole("button", { name: /내 계획으로 복사/ })).toBeDisabled();
+    await expect(page.getByRole("button", { name: "계획에 담는 중…" })).toBeDisabled();
+  } finally { release(); }
 
   await expect(page).toHaveURL(/\/studio\/travels\/\d+\/edit\?plan=1&source=/, { timeout: 30_000 });
+  expect(requests).toBe(2);
   await expect(page.getByRole("heading", { name: "도쿄 주말 산책" })).toBeVisible();
   await page.getByRole("button", { name: /도쿄역.*편집/ }).click();
   await expect(page.getByRole("textbox", { name: "장소 이름" }).first()).toHaveValue("도쿄역");
