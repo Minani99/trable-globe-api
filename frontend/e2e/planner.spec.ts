@@ -188,6 +188,7 @@ test("몇 번의 선택으로 여행 계획을 만들고 일차별 일정으로 
   // Cost saves must not replace a budget draft that has not been saved yet.
   await page.getByRole("spinbutton", { name: "총예산" }).fill("1800000");
   await page.getByRole("combobox", { name: "통화", exact: true }).selectOption("USD");
+  await expect(page.getByRole("region", { name: "예산과 예약" }).getByRole("status")).toContainText("비용은 현재 저장된 KRW 기준입니다.");
   await page.locator("summary", { hasText: "비용 추가" }).click();
   await page.getByRole("textbox", { name: "새 비용 이름" }).fill("왕복 항공권");
   await page.getByRole("spinbutton", { name: "예상 비용" }).fill("450000");

@@ -182,6 +182,8 @@ export function TravelPlanningBoard({
         </form>
       </header>
 
+      {Number(budget) !== planning.targetAmount || currency !== planning.currency ? <p role="status">총예산·통화 변경은 위 ‘저장’ 버튼을 눌러 적용해 주세요. 비용은 현재 저장된 {planning.currency} 기준입니다.</p> : null}
+
       <div className="travel-budget-summary">
         <BudgetMetric label="예상 비용" amount={planning.estimatedAmount} currency={planning.currency} />
         <BudgetMetric label="결제 완료" amount={planning.paidAmount} currency={planning.currency} />
