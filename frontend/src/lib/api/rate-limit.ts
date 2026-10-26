@@ -12,11 +12,12 @@ import "server-only";
  * costs a 310,000-round PBKDF2 verification on a 0.1-CPU instance. A few hundred
  * attempts a minute is a password guessing run and a way to stall the whole service.
  *
- * What it is not: the counters live in the instance's memory, so a request served by a
- * cold instance starts from zero and the ceiling is really "per instance". That blunts
- * a naive script and an accidental retry loop, which is the beta's threat model. Real
- * enforcement needs a shared store (Upstash, Redis) and should arrive before the service
- * is public.
+ * Where the counters live: with Upstash Redis configured (`UPSTASH_REDIS_REST_URL` and
+ * `UPSTASH_REDIS_REST_TOKEN`, or the `KV_REST_API_*` names the Vercel integration sets)
+ * every serverless instance shares one counter per caller, so the limit holds however
+ * many instances are serving. Without it, or when the store does not answer in time,
+ * the counters fall back to this instance's memory: a per-instance speed bump rather
+ * than a shared ceiling, and never a reason to refuse a sign-in.
  */
 
 /** Requests per window, per IP, per action. */
@@ -25,6 +26,10 @@ const DEFAULT_WINDOW_SECONDS = 60;
 
 const LIMIT = positiveInt(process.env.AUTH_RATE_LIMIT, DEFAULT_LIMIT);
 const WINDOW_MS = positiveInt(process.env.AUTH_RATE_LIMIT_WINDOW_SECONDS, DEFAULT_WINDOW_SECONDS) * 1000;
+
+/** A slow store must not hold up sign-in; past this the in-memory counter decides. */
+const SHARED_STORE_TIMEOUT_MS = 800;
+const SHARED_KEY_PREFIX = "travel-globe:rate-limit:";
 
 /** Stop the map from growing without bound on a long-lived instance. */
 const MAX_TRACKED_KEYS = 10_000;
@@ -47,10 +52,18 @@ export interface RateLimitResult {
  * @param action separate bucket per action, so failing to sign in never blocks a reset
  * @param request used only to read the caller's address
  */
-export function checkRateLimit(action: string, request: Request): RateLimitResult {
-  const now = Date.now();
+export async function checkRateLimit(action: string, request: Request): Promise<RateLimitResult> {
   const key = `${action}:${clientAddress(request)}`;
+  const shared = sharedStore();
+  if (shared) {
+    const result = await checkSharedLimit(shared, key).catch(() => null);
+    if (result) return result;
+  }
+  return checkMemoryLimit(key);
+}
 
+function checkMemoryLimit(key: string): RateLimitResult {
+  const now = Date.now();
   const existing = windows.get(key);
   if (!existing || existing.resetAt <= now) {
     evictExpired(now);
@@ -59,13 +72,55 @@ export function checkRateLimit(action: string, request: Request): RateLimitResul
   }
 
   existing.count += 1;
-  if (existing.count > LIMIT) {
-    return {
-      allowed: false,
-      retryAfterSeconds: Math.max(1, Math.ceil((existing.resetAt - now) / 1000)),
-    };
+  return limitResult(existing.count, existing.resetAt - now);
+}
+
+function limitResult(count: number, remainingMs: number): RateLimitResult {
+  if (count > LIMIT) {
+    return { allowed: false, retryAfterSeconds: Math.max(1, Math.ceil(remainingMs / 1000)) };
   }
   return { allowed: true, retryAfterSeconds: 0 };
+}
+
+interface SharedStore {
+  url: string;
+  token: string;
+}
+
+function sharedStore(): SharedStore | null {
+  const url = (process.env.UPSTASH_REDIS_REST_URL || process.env.KV_REST_API_URL)?.trim().replace(/\/+$/, "");
+  const token = (process.env.UPSTASH_REDIS_REST_TOKEN || process.env.KV_REST_API_TOKEN)?.trim();
+  return url && token ? { url, token } : null;
+}
+
+/**
+ * One round trip: start the window if this is the first attempt, count this attempt and
+ * read how long the window has left. Keys hold a hash of the address, never the address.
+ */
+async function checkSharedLimit(store: SharedStore, key: string): Promise<RateLimitResult | null> {
+  const storeKey = `${SHARED_KEY_PREFIX}${await sha256(key)}`;
+  const response = await fetch(`${store.url}/pipeline`, {
+    method: "POST",
+    headers: { Authorization: `Bearer ${store.token}`, "Content-Type": "application/json" },
+    body: JSON.stringify([
+      ["SET", storeKey, "0", "PX", String(WINDOW_MS), "NX"],
+      ["INCR", storeKey],
+      ["PTTL", storeKey],
+    ]),
+    cache: "no-store",
+    signal: AbortSignal.timeout(SHARED_STORE_TIMEOUT_MS),
+  });
+  if (!response.ok) return null;
+  const replies = (await response.json()) as Array<{ result?: unknown; error?: string }>;
+  const count = Number(replies[1]?.result);
+  const remainingMs = Number(replies[2]?.result);
+  if (!Number.isFinite(count) || count < 1) return null;
+  return limitResult(count, remainingMs > 0 ? remainingMs : WINDOW_MS);
+}
+
+async function sha256(value: string): Promise<string> {
+  const digest = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(value));
+  return Array.from(new Uint8Array(digest), (byte) => byte.toString(16).padStart(2, "0")).join("");
 }
 
 /**
