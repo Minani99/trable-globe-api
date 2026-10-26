@@ -55,7 +55,9 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        shard: ["1/2", "2/2"]
+        # Keep the growing browser suite within the per-job timeout without
+        # dropping journeys or increasing contention inside each browser worker.
+        shard: ["1/4", "2/4", "3/4", "4/4"]
     container:
       image: mcr.microsoft.com/playwright:v1.62.1-noble
       options: --user 1001
