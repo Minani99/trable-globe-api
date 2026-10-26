@@ -6,7 +6,7 @@ import { AppIcon } from "@/components/common/AppIcon";
 import { useEffect, useState } from "react";
 
 import { MobileTripCompanion } from "@/components/layout/MobileTripCompanion";
-import { readCachedActiveTravel, type CachedTravel } from "@/lib/travel-offline";
+import { isOfflineTravelStorageKey, OFFLINE_TRAVEL_CLEARED_EVENT, readCachedActiveTravel, type CachedTravel } from "@/lib/travel-offline";
 import { todayInKorea } from "@/lib/utils/date";
 
 type ActiveTravel = { username: string; cached: CachedTravel };
@@ -16,7 +16,23 @@ export function OfflineTripShell() {
   const today = todayInKorea();
 
   useEffect(() => {
-    queueMicrotask(() => setActiveTravel(readCachedActiveTravel(today)));
+    let active = true;
+    const refresh = () => {
+      if (active) setActiveTravel(readCachedActiveTravel(today));
+    };
+    const onStorage = (event: StorageEvent) => {
+      if (isOfflineTravelStorageKey(event.key)) refresh();
+    };
+    queueMicrotask(refresh);
+    window.addEventListener("storage", onStorage);
+    window.addEventListener(OFFLINE_TRAVEL_CLEARED_EVENT, refresh);
+    window.addEventListener("focus", refresh);
+    return () => {
+      active = false;
+      window.removeEventListener("storage", onStorage);
+      window.removeEventListener(OFFLINE_TRAVEL_CLEARED_EVENT, refresh);
+      window.removeEventListener("focus", refresh);
+    };
   }, [today]);
 
   return (
@@ -51,6 +67,7 @@ export function OfflineTripShell() {
               </ol>
             </section>
             <MobileTripCompanion
+              key={`${activeTravel.username}:${activeTravel.cached.travel.id}`}
               travel={activeTravel.cached.travel}
               today={today}
               username={activeTravel.username}

@@ -82,6 +82,31 @@ test("저장된 오늘 일정을 네트워크 없이 현장 화면으로 연다"
   await expect(page.getByText("오프라인 모드", { exact: true })).toBeVisible();
   await expect(page.locator("html")).not.toHaveCSS("overflow-x", "scroll");
   await page.screenshot({ path: testInfo.outputPath("offline-trip-mobile.png"), fullPage: true });
+
+  // Storage changes in a second tab must remove the already-rendered private trip.
+  const otherTab = await page.context().newPage();
+  await otherTab.goto("/about");
+  await otherTab.evaluate(() => localStorage.removeItem("travel-globe:trip-active-user:v1"));
+  await expect(page.getByRole("heading", { name: "저장된 오늘 일정이 없어요" })).toBeVisible();
+  await expect(page.getByText("서울숲", { exact: true })).toHaveCount(0);
+
+  await otherTab.evaluate(() => {
+    const cached = JSON.parse(localStorage.getItem("travel-globe:trip-cache:v1:offline_user:901")!);
+    cached.travel.title = "다른 계정의 여행";
+    cached.travel.owner.username = "other_user";
+    cached.travel.places[0].placeName = "새 계정의 장소";
+    localStorage.setItem("travel-globe:trip-cache:v1:other_user:901", JSON.stringify(cached));
+    localStorage.setItem("travel-globe:trip-index:v1:other_user", "[901]");
+    localStorage.setItem("travel-globe:trip-active-user:v1", "other_user");
+  });
+  await expect(page.getByRole("list", { name: "다른 계정의 여행 오늘 일정" })).toContainText("새 계정의 장소");
+  await expect(page.getByText("서울숲", { exact: true })).toHaveCount(0);
+  await page.evaluate(() => {
+    localStorage.clear();
+    window.dispatchEvent(new Event("travel-globe:offline-travel-cleared"));
+  });
+  await expect(page.getByRole("heading", { name: "저장된 오늘 일정이 없어요" })).toBeVisible();
+  await otherTab.close();
 });
 
 test("여행 화면에서 홈 화면 설치 안내를 실행하고 닫을 수 있다", async ({ page }, testInfo) => {

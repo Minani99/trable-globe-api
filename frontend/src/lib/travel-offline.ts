@@ -5,6 +5,12 @@ const INDEX_PREFIX = "travel-globe:trip-index:v1:";
 const QUEUE_PREFIX = "travel-globe:trip-queue:v1:";
 const ACTIVE_USER_KEY = "travel-globe:trip-active-user:v1";
 const MAX_CACHED_TRAVELS = 5;
+export const OFFLINE_TRAVEL_CLEARED_EVENT = "travel-globe:offline-travel-cleared";
+
+/** Other tabs receive storage events; the tab clearing its own data needs an event too. */
+export function isOfflineTravelStorageKey(key: string | null): boolean {
+  return key === null || key === ACTIVE_USER_KEY || key.startsWith(INDEX_PREFIX) || key.startsWith(CACHE_PREFIX);
+}
 
 export interface CachedTravel {
   savedAt: string;
@@ -142,6 +148,7 @@ export function clearOfflineTravelData(username: string): void {
     )) storage.removeItem(key);
   }
   if (storage.getItem(ACTIVE_USER_KEY) === username) storage.removeItem(ACTIVE_USER_KEY);
+  window.dispatchEvent(new Event(OFFLINE_TRAVEL_CLEARED_EVENT));
 }
 
 function writeQueue(username: string, travelId: number, queue: QueuedPlaceUpdate[]): boolean {
