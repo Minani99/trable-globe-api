@@ -185,15 +185,43 @@ test("몇 번의 선택으로 여행 계획을 만들고 일차별 일정으로 
   await page.getByRole("spinbutton", { name: "총예산" }).fill("1500000");
   await page.getByRole("button", { name: "저장", exact: true }).click();
   await expect(page.getByText("₩1,500,000", { exact: true })).toBeVisible();
+  // Cost saves must not replace a budget draft that has not been saved yet.
+  await page.getByRole("spinbutton", { name: "총예산" }).fill("1800000");
+  await page.getByRole("combobox", { name: "통화", exact: true }).selectOption("USD");
+  await expect(page.getByRole("region", { name: "예산과 예약" }).getByRole("status")).toContainText("비용은 현재 저장된 KRW 기준입니다.");
   await page.locator("summary", { hasText: "비용 추가" }).click();
   await page.getByRole("textbox", { name: "새 비용 이름" }).fill("왕복 항공권");
   await page.getByRole("spinbutton", { name: "예상 비용" }).fill("450000");
   // Focusing an input must not hide a toolbar that reappears under the submit tap.
   await expect(workspaceTabs).toBeVisible();
   const expenseButton = page.getByRole("button", { name: "비용 추가", exact: true });
+  let expenseRequests = 0;
+  let releaseExpense!: () => void;
+  const expenseGate = new Promise<void>(resolve => { releaseExpense = resolve; });
+  await page.route("**/api/private/travels/*/planning/expenses", async route => {
+    if (route.request().method() !== "POST") return route.continue();
+    expenseRequests += 1;
+    if (expenseRequests > 1) return route.continue();
+    await expenseGate;
+    return route.fulfill({ status: 503, json: { success: false, data: null, message: "비용 저장을 다시 시도해 주세요." } });
+  });
+  await expenseButton.evaluate(button => { (button as HTMLButtonElement).click(); (button as HTMLButtonElement).click(); });
+  await expect.poll(() => expenseRequests).toBe(1);
+  await expect(page.getByRole("textbox", { name: "새 비용 이름" })).toBeDisabled();
+  await expect(page.getByRole("spinbutton", { name: "총예산" })).toBeDisabled();
+  releaseExpense();
+  await expect(page.getByRole("region", { name: "예산과 예약" }).getByRole("alert")).toContainText("비용 저장을 다시 시도해 주세요.");
+  await expect(page.getByRole("textbox", { name: "새 비용 이름" })).toHaveValue("왕복 항공권");
+  await expect(page.getByRole("spinbutton", { name: "예상 비용" })).toHaveValue("450000");
   await expenseButton.evaluate((button) => button.scrollIntoView({ block: "center" }));
   await expenseButton.click();
   await expect(page.getByText("왕복 항공권", { exact: true })).toBeVisible();
+  expect(expenseRequests).toBe(2);
+  await expect(page.getByRole("spinbutton", { name: "총예산" })).toHaveValue("1800000");
+  await expect(page.getByRole("combobox", { name: "통화", exact: true })).toHaveValue("USD");
+  await expect(page.locator(".travel-expense-list li")).toHaveCount(1);
+  await page.getByRole("spinbutton", { name: "총예산" }).fill("1500000");
+  await page.getByRole("combobox", { name: "통화", exact: true }).selectOption("KRW");
   await page.getByRole("button", { name: "왕복 항공권 수정" }).click();
   await page.getByRole("textbox", { name: "비용 이름 수정" }).fill("왕복 항공권·수하물");
   await page.getByRole("spinbutton", { name: "비용 금액 수정" }).fill("480000");
