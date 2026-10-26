@@ -146,10 +146,40 @@ test("몇 번의 선택으로 여행 계획을 만들고 일차별 일정으로 
   await expect(page.locator(".travel-checklist__items li").first()).toHaveClass(/is-complete/);
   const newChecklistItem = page.getByRole("textbox", { name: "새 준비 항목" });
   await newChecklistItem.fill("공항철도 예약");
+  await page.getByRole("combobox", { name: "항목 분류" }).selectOption("RESERVATION");
+  let taskRequests = 0;
+  let releaseTaskRequest!: () => void;
+  const taskGate = new Promise<void>((resolve) => { releaseTaskRequest = resolve; });
+  await page.route("**/api/private/travels/*/tasks", async (route) => {
+    if (route.request().method() !== "POST") return route.continue();
+    taskRequests += 1;
+    if (taskRequests > 1) return route.continue();
+    await taskGate;
+    return route.fulfill({ status: 503, json: { success: false, data: null, message: "준비 항목 저장을 다시 시도해 주세요." } });
+  });
+  // Korean composition confirmation must not submit a partially composed title.
+  await newChecklistItem.dispatchEvent("keydown", { key: "Enter", isComposing: true });
+  await expect(newChecklistItem).toBeEnabled();
+  expect(taskRequests).toBe(0);
+  // Two key events in the same browser turn must still make only one request.
+  await newChecklistItem.evaluate((input) => {
+    input.dispatchEvent(new KeyboardEvent("keydown", { key: "Enter", bubbles: true }));
+    input.dispatchEvent(new KeyboardEvent("keydown", { key: "Enter", bubbles: true }));
+  });
+  await expect.poll(() => taskRequests).toBe(1);
+  await expect(newChecklistItem).toBeDisabled();
+  await expect(page.getByRole("combobox", { name: "항목 분류" })).toBeDisabled();
+  releaseTaskRequest();
+  await expect(page.getByRole("region", { name: "여행 준비 체크리스트" }).getByRole("alert")).toContainText("준비 항목 저장을 다시 시도해 주세요.");
+  await expect(newChecklistItem).toHaveValue("공항철도 예약");
+  await expect(page.getByRole("combobox", { name: "항목 분류" })).toHaveValue("RESERVATION");
   const addChecklistItem = page.getByRole("button", { name: "추가", exact: true });
   await expect(addChecklistItem).toBeEnabled();
   await addChecklistItem.click();
   await expect(page.getByText("공항철도 예약", { exact: true })).toBeVisible();
+  expect(taskRequests).toBe(2);
+  await expect(page.locator(".travel-checklist__items li")).toHaveCount(7);
+  await expect(newChecklistItem).toHaveValue("");
   await workspaceTabs.getByRole("tab", { name: "예산·예약", exact: true }).click();
   await expect(page.getByRole("heading", { name: "예산과 예약" })).toBeVisible();
   await page.getByRole("spinbutton", { name: "총예산" }).fill("1500000");
