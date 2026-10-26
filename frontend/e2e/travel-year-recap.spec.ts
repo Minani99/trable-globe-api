@@ -158,11 +158,35 @@ test("연도 리캡 이미지를 저장하고 링크와 네이티브 공유로 �
   expect(comparisonNarrative).toBeTruthy();
 
   const recapActions = page.locator(".recap-actions");
+  let imageAttempts = 0;
+  let releaseImage!: () => void;
+  const imageGate = new Promise<void>(resolve => { releaseImage = resolve; });
+  await page.route("**/api/og/profile?**", async route => {
+    imageAttempts += 1;
+    if (imageAttempts > 1) return route.continue();
+    await imageGate;
+    // A proxy returning HTML with HTTP 200 must not be saved as a PNG.
+    return route.fulfill({ status: 200, contentType: "text/html", body: "Temporarily unavailable" });
+  });
+  let popups = 0;
+  page.on("popup", () => { popups += 1; });
+  await recapActions.getByRole("button", { name: "이미지 저장" }).evaluate(button => {
+    (button as HTMLButtonElement).click();
+    (button as HTMLButtonElement).click();
+  });
+  await expect.poll(() => imageAttempts).toBe(1);
+  await expect(recapActions.getByRole("button", { name: "이미지 준비 중" })).toBeDisabled();
+  await expect(recapActions.getByRole("button", { name: "리캡 공유" })).toBeDisabled();
+  releaseImage();
+  await expect(recapActions.getByRole("status")).toContainText("이미지를 준비하지 못했어요");
+  await expect(recapActions.getByRole("link", { name: "리캡 이미지 직접 열기" })).toHaveAttribute("href", /\/api\/og\/profile\?.*year=2026/);
+  expect(popups).toBe(0);
   const downloadPromise = page.waitForEvent("download");
   await recapActions.getByRole("button", { name: "이미지 저장" }).click();
   const download = await downloadPromise;
   expect(download.suggestedFilename()).toBe("travel-globe-traveler-2026.png");
-  await expect(recapActions.getByRole("status")).toHaveText("리캡 이미지를 저장했습니다.");
+  await expect(recapActions.getByRole("status")).toHaveText("리캡 이미지 다운로드를 시작했습니다.");
+  await expect(recapActions.getByRole("link", { name: "리캡 이미지 직접 열기" })).toHaveCount(0);
 
   await recapActions.getByRole("button", { name: "리캡 공유" }).click();
   await expect(recapActions.getByRole("status")).toHaveText("리캡 링크를 복사했습니다.");
@@ -193,7 +217,7 @@ test("연도 리캡 이미지를 저장하고 링크와 네이티브 공유로 �
   await expect.poll(() => page.evaluate(() => (
     window as typeof window & { sharedRecapText?: string }
   ).sharedRecapText)).toContain(comparisonNarrative!);
-  expect(recapImageRequests).toBe(1);
+  expect(recapImageRequests).toBe(2);
   expect(pageErrors).toEqual([]);
 });
 
