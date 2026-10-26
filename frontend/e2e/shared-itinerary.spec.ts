@@ -41,7 +41,7 @@ test("다른 여행자의 공개 일정을 새 날짜의 내 계획으로 가져
   const shareUrl = await sharing.getByRole("textbox", { name: "공유 링크" }).inputValue();
   expect(shareUrl).toContain("/share/");
   await page.evaluate(() => {
-    const state = { calls: [] as ShareData[], copied: [] as string[], finish: (_cancel: boolean) => {} };
+    const state: { calls: ShareData[]; copied: string[]; finish: (cancel: boolean) => void } = { calls: [], copied: [], finish: () => {} };
     Object.assign(window, { shareTest: state });
     Object.defineProperty(navigator, "share", { configurable: true, value: (data: ShareData) => {
       state.calls.push(data);
