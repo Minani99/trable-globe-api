@@ -54,7 +54,7 @@ test("미래 여행도 여행용 보기에서 날짜별로 확인할 수 있다"
   await expect(itineraryCopy.getByRole("textbox", { name: "보낼 내용" })).toHaveValue(expectedFirstDay);
   await itineraryCopy.getByRole("button", { name: "일정 내용 복사" }).click();
   await expect(itineraryCopy.getByRole("status")).toContainText("하루 일정을 복사했어요");
-  expect(await page.evaluate(() => navigator.clipboard.readText())).toBe(expectedFirstDay);
+  expect((await page.evaluate(() => navigator.clipboard.readText())).replace(/\r\n/g, "\n")).toBe(expectedFirstDay);
   const tripActions = page.getByRole("navigation", { name: "여행 중 바로 기록" });
   await expect(tripActions.getByRole("link", { name: "일정 편집" })).toBeVisible();
   await expect(tripActions.getByRole("link", { name: "계획 편집" })).toHaveCount(0);
