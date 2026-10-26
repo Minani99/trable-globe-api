@@ -113,6 +113,14 @@ up to 15 minutes to propagate.
 
 ### Monitoring and alarms
 
+Application errors are written to the Vercel function log as one JSON line each with
+`"type":"app_error"`: uncaught browser errors, rejected promises and error-boundary screens
+report through `/api/client-errors` (path without query, error text and stack, browser
+string, release). Set `SENTRY_DSN` in Vercel to also send these, and server rendering
+errors from `src/instrumentation.ts`, to a Sentry project. Search the log for `app_error`
+when a beta tester reports a broken screen; the error number shown on the screen is the
+`digest` field.
+
 The Worker records failures in Cloudflare Observability. It does not itself send
 email alerts. The separate `Production smoke` GitHub workflow checks the backend,
 profile and frontend every two hours; configure GitHub failure notifications.

@@ -3,6 +3,8 @@
 import Link from "next/link";
 import { useEffect } from "react";
 
+import { reportClientError } from "@/lib/report-client-error";
+
 export function RouteErrorState({
   error,
   reset,
@@ -20,6 +22,7 @@ export function RouteErrorState({
   if (error.digest) feedbackParams.set("requestId", error.digest);
   useEffect(() => {
     console.error(error);
+    reportClientError(error, { kind: "route-error" });
   }, [error]);
 
   return (
