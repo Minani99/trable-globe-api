@@ -22,16 +22,19 @@ function recapFilename(username: string, year: number | null): string {
 export function RecapActions({ displayName, username, year, shareText }: RecapActionsProps) {
   const [status, setStatus] = useState<string | null>(null);
   const [busyAction, setBusyAction] = useState<"download" | "share" | null>(null);
+  const actionPending = useRef(false);
+  const [failedImagePath, setFailedImagePath] = useState<string | null>(null);
   const imagePath = profileRecapImagePath(username, year);
   const fileRequestRef = useRef<{ path: string; request: Promise<File> } | null>(null);
 
   function fetchRecapFile(): Promise<File> {
     if (fileRequestRef.current?.path === imagePath) return fileRequestRef.current.request;
 
-    const request = fetch(imagePath)
+    const request = fetch(imagePath, { signal: AbortSignal.timeout(30_000) })
       .then(async (response) => {
         if (!response.ok) throw new Error("Recap image request failed");
         const blob = await response.blob();
+        if (blob.type.split(";", 1)[0] !== "image/png" || blob.size === 0) throw new Error("Invalid recap image");
         return new File([blob], recapFilename(username, year), { type: "image/png" });
       })
       .catch((error: unknown) => {
@@ -43,6 +46,9 @@ export function RecapActions({ displayName, username, year, shareText }: RecapAc
   }
 
   async function downloadRecap() {
+    if (actionPending.current) return;
+    actionPending.current = true;
+    setFailedImagePath(null);
     setStatus(null);
     setBusyAction("download");
     try {
@@ -55,16 +61,19 @@ export function RecapActions({ displayName, username, year, shareText }: RecapAc
       anchor.click();
       anchor.remove();
       window.setTimeout(() => URL.revokeObjectURL(objectUrl), 0);
-      setStatus("리캡 이미지를 저장했습니다.");
+      setStatus("리캡 이미지 다운로드를 시작했습니다.");
     } catch {
-      window.open(imagePath, "_blank", "noopener,noreferrer");
-      setStatus("이미지를 새 창에서 열었습니다.");
+      setFailedImagePath(imagePath);
+      setStatus("이미지를 준비하지 못했어요. 다시 시도하거나 아래 링크로 직접 열어 주세요.");
     } finally {
+      actionPending.current = false;
       setBusyAction(null);
     }
   }
 
   async function shareRecap() {
+    if (actionPending.current) return;
+    actionPending.current = true;
     setStatus(null);
     setBusyAction("share");
     const scope = recapScope(year);
@@ -90,6 +99,7 @@ export function RecapActions({ displayName, username, year, shareText }: RecapAc
           text: shareText,
           url: shareUrl.toString(),
         });
+        setStatus("리캡 링크를 공유했습니다.");
         return;
       }
 
@@ -104,6 +114,7 @@ export function RecapActions({ displayName, username, year, shareText }: RecapAc
         setStatus("주소창의 링크를 복사해 주세요.");
       }
     } finally {
+      actionPending.current = false;
       setBusyAction(null);
     }
   }
@@ -123,6 +134,7 @@ export function RecapActions({ displayName, username, year, shareText }: RecapAc
       <span className="recap-actions__status" role="status" aria-live="polite">
         {status}
       </span>
+      {failedImagePath === imagePath ? <a className="recap-actions__fallback" href={imagePath} target="_blank" rel="noreferrer">리캡 이미지 직접 열기</a> : null}
     </div>
   );
 }

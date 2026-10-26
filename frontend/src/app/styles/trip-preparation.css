@@ -620,6 +620,16 @@
   font-size: var(--text-xs);
 }
 
+.recap-actions__fallback {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  width: fit-content;
+  color: var(--accent);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
 .travel-recap__edit-trigger {
   width: fit-content;
   min-height: 2.35rem;
