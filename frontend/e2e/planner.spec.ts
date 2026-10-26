@@ -170,7 +170,7 @@ test("몇 번의 선택으로 여행 계획을 만들고 일차별 일정으로 
   await expect(newChecklistItem).toBeDisabled();
   await expect(page.getByRole("combobox", { name: "항목 분류" })).toBeDisabled();
   releaseTaskRequest();
-  await expect(page.getByRole("alert")).toContainText("준비 항목 저장을 다시 시도해 주세요.");
+  await expect(page.getByRole("region", { name: "여행 준비 체크리스트" }).getByRole("alert")).toContainText("준비 항목 저장을 다시 시도해 주세요.");
   await expect(newChecklistItem).toHaveValue("공항철도 예약");
   await expect(page.getByRole("combobox", { name: "항목 분류" })).toHaveValue("RESERVATION");
   const addChecklistItem = page.getByRole("button", { name: "추가", exact: true });
