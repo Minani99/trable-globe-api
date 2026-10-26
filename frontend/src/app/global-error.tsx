@@ -3,6 +3,8 @@
 import { useEffect } from "react";
 import Link from "next/link";
 
+import { reportClientError } from "@/lib/report-client-error";
+
 export default function GlobalError({
   error,
   reset,
@@ -14,6 +16,7 @@ export default function GlobalError({
   if (error.digest) feedbackParams.set("requestId", error.digest);
   useEffect(() => {
     console.error("[ui] unrecoverable render error", error);
+    reportClientError(error, { kind: "global-error" });
   }, [error]);
 
   return (

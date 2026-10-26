@@ -172,7 +172,10 @@ Before accepting real user records:
 6. Redeploy both services and repeat the smoke test.
 7. Confirm Neon history retention and complete the restore rehearsal in [`operations.md`](./operations.md).
 8. Verify the Resend sending domain and run the email verification/reset smoke tests.
-9. Add rate limits for registration, login and account-link requests at the edge.
+9. Connect Upstash Redis to the Vercel project (`UPSTASH_REDIS_REST_URL`/`UPSTASH_REDIS_REST_TOKEN`,
+   or the integration's `KV_REST_API_*`) so sign-in, registration and account-link limits are
+   shared by every serverless instance, and keep edge rate limits for registration, login and
+   account-link requests as the first line.
 10. Add the two production URLs as GitHub repository variables and verify one manual smoke run.
 11. Add `MAPTILER_API_KEY` to Vercel Production and Preview, then restrict that key's allowed
     origins to the corresponding frontend domains in MapTiler Cloud.

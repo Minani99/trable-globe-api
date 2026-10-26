@@ -10,7 +10,7 @@ export const metadata: Metadata = {
 export default function PrivacyPage() {
   return (
     <BetaInfoPage
-      eyebrow="Beta data guide · 2026.08.27"
+      eyebrow="Beta data guide · 2026.10.26"
       title="내 여행 데이터가 어떻게 쓰이는지 먼저 알려드립니다."
       intro="이 문서는 소수 지인을 위한 비공개 베타의 데이터 안내입니다. 공개 출시 전 운영자 정보, 보관 기간과 국외 처리 내용을 확정한 정식 개인정보 처리방침으로 교체합니다."
     >
@@ -25,6 +25,7 @@ export default function PrivacyPage() {
           <li>여행 계획 작성·저장, 기록과 지구본·프로필 표시</li>
           <li>공유, 친구 찾기, 차단·신고와 서비스 안전 유지</li>
           <li>오류 확인과 장애 대응을 위한 요청 경로·상태·처리 시간 기록</li>
+          <li>화면 오류가 나면 오류 내용, 오류가 난 화면 경로(검색어·링크 토큰 제외)와 브라우저 종류를 기록해 원인 확인에 사용</li>
         </ul>
       </section>
       <section>
@@ -34,7 +35,7 @@ export default function PrivacyPage() {
       <section>
         <h2>어디에서 처리되나요?</h2>
         <p>앱 안에서 Google 경로 지도를 열면 선택한 장소 좌표와 이동수단이 Google Maps Platform으로 전달됩니다. 경로 결과는 서비스의 데이터베이스나 브라우저 저장소에 저장하지 않습니다. Google의 처리는 <a href="https://policies.google.com/privacy" target="_blank" rel="noopener noreferrer">Google 개인정보처리방침</a>을 참고하세요.</p>
-        <p>현재 베타는 Vercel(화면), Render(서버), Neon(데이터베이스), Cloudflare R2(사진), Resend(계정 이메일)를 사용합니다. 지도·장소·날씨 기능을 사용할 때 MapTiler, OpenStreetMap 관련 서비스와 Open-Meteo에 검색어 또는 위치·날짜가 전달될 수 있습니다.</p>
+        <p>현재 베타는 Vercel(화면), Render(서버), Neon(데이터베이스), Cloudflare R2(사진), Resend(계정 이메일)를 사용합니다. 오류 기록 서비스(Sentry)를 연결한 경우 위의 오류 기록이 그곳에도 전달됩니다. 지도·장소·날씨 기능을 사용할 때 MapTiler, OpenStreetMap 관련 서비스와 Open-Meteo에 검색어 또는 위치·날짜가 전달될 수 있습니다.</p>
       </section>
       <section>
         <h2>내 정보는 어떻게 관리하나요?</h2>

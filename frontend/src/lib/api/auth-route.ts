@@ -61,7 +61,7 @@ export async function handleAuthStart(request: Request, action: "login" | "regis
       { status: 403 },
     );
   }
-  const limit = checkRateLimit(action, request);
+  const limit = await checkRateLimit(action, request);
   if (!limit.allowed) {
     return tooManyRequests(limit.retryAfterSeconds);
   }
@@ -113,7 +113,7 @@ export async function forwardPublicAuth(request: Request, path: string) {
     );
   }
   // Keyed by path so a reset attempt never eats the budget for verification.
-  const limit = checkRateLimit(path, request);
+  const limit = await checkRateLimit(path, request);
   if (!limit.allowed) {
     return tooManyRequests(limit.retryAfterSeconds);
   }

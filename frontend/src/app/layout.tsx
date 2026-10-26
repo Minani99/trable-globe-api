@@ -4,6 +4,7 @@ import { Geist, Geist_Mono, Noto_Sans_KR } from "next/font/google";
 import { AppFeedback } from "@/components/common/AppFeedback";
 import { MobileViewport } from "@/components/common/MobileViewport";
 import { BackendWarmup } from "@/components/common/BackendWarmup";
+import { ErrorReporter } from "@/components/common/ErrorReporter";
 import { PwaManager } from "@/components/common/PwaManager";
 import { SessionExpiryNotice } from "@/components/common/SessionExpiryNotice";
 import { siteConfig } from "@/lib/config";
@@ -94,6 +95,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
           본문으로 건너뛰기
         </a>
         <BackendWarmup />
+        <ErrorReporter />
         <PwaManager />
         <AppFeedback />
         <MobileViewport />
