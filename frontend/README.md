@@ -16,6 +16,17 @@ bun dev
 
 Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
+## Tests
+
+```bash
+npm run test:unit   # logic tests in ./unit, no browser or backend, about 2 seconds
+npm run test:e2e    # browser journeys in ./e2e, starts the API and the dev server
+```
+
+Pure scheduling and conversion rules live next to their components
+(`travel-editor-model.ts`, `plan-builder-model.ts`, `globe-geometry.ts`) so they can be
+unit tested directly.
+
 You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
 
 This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.

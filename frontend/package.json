@@ -8,6 +8,7 @@
     "start": "next start",
     "lint": "eslint",
     "typecheck": "next typegen && tsc --noEmit",
+    "test:unit": "NODE_PATH=unit/stubs playwright test -c playwright.unit.config.ts",
     "test:e2e": "playwright test",
     "geo:build": "node scripts/build-geo-data.mjs",
     "airports:build": "node scripts/build-airport-data.mjs",
