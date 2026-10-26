@@ -9,6 +9,8 @@ import {
   useTripWeather,
   WEATHER_SOURCE_LABEL,
   weatherLabel,
+  weatherSummary,
+  weatherTravelAdvice,
   type TripWeather,
   type WeatherDay,
 } from "@/lib/weather";
@@ -37,6 +39,7 @@ export function TripWeatherPanel({
   const weather = state.weather;
   const days = weather?.days ?? [];
   const rainyForecast = days.filter((day) => day.source === "forecast" && isRainyDay(day));
+  const advice = weatherTravelAdvice(days);
   const sources = [...new Set(days.map((day) => day.source))];
 
   return (
@@ -45,11 +48,11 @@ export function TripWeatherPanel({
         <span className="trip-weather__badge" aria-hidden="true"><Icon name={rainyForecast.length ? "umbrella" : "weather-partly"} /></span>
         <div>
           <small>{destinationLabel} 날씨</small>
-          <h2 id="trip-weather-heading">{heading(state.status, weather, rainyForecast)}</h2>
+          <h2 id="trip-weather-heading">{heading(state.status, weather)}</h2>
           <p>{description(state.status, weather, destinationLabel)}</p>
         </div>
-        {rainyForecast.length ? (
-          <a className="trip-weather__action" href="#itinerary-editor">비 오는 날 일정 점검</a>
+        {advice ? (
+          <a className="trip-weather__action" href="#itinerary-editor">날씨에 맞춰 일정 점검</a>
         ) : null}
       </header>
 
@@ -92,20 +95,15 @@ function WeatherDayCard({ day, dayNumber }: { day: WeatherDay; dayNumber: number
   );
 }
 
-function heading(status: string, weather: TripWeather | null, rainyForecast: WeatherDay[]): string {
+function heading(status: string, weather: TripWeather | null): string {
   if (status === "loading" || status === "idle") return "여행 기간 날씨를 확인하고 있어요";
   if (status === "error" || !weather) return "날씨를 잠시 불러오지 못했어요";
-  if (!weather.days.length) return "이 기간의 날씨 정보가 아직 없어요";
-  if (rainyForecast.length) return `비 예보 ${rainyForecast.length}일 · 우산을 챙기세요`;
-  if (weather.days.some((day) => day.source === "forecast")) return "여행 기간에 큰 비 소식은 없어요";
-  const typicalRain = weather.days.filter((day) => day.source === "climate" && isRainyDay(day)).length;
-  if (typicalRain) return `이맘때는 ${typicalRain}일 정도 비가 자주 와요`;
-  return "이맘때는 대체로 맑은 편이에요";
+  return weatherSummary(weather.days);
 }
 
 function description(status: string, weather: TripWeather | null, destinationLabel: string): string {
   if (status === "loading" || status === "idle") return "날짜별 기온과 비 소식을 모으는 중입니다.";
-  if (status === "error" || !weather) return "일정은 안전하게 저장되어 있어요. 잠시 후 다시 열어 주세요.";
+  if (status === "error" || !weather) return "날씨 연결을 확인하지 못했어요. 아래에서 다시 확인해 주세요.";
   if (!weather.days.length) return "여행 날짜와 장소를 확인해 주세요.";
   const maxes = weather.days.map((day) => day.temperatureMax).filter((value): value is number => value != null);
   const mins = weather.days.map((day) => day.temperatureMin).filter((value): value is number => value != null);
