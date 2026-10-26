@@ -1,7 +1,7 @@
 "use client";
 
 import { AppIcon } from "@/components/common/AppIcon";
-import { KeyboardEvent, useMemo, useState } from "react";
+import { KeyboardEvent, useMemo, useRef, useState } from "react";
 
 import { ApiError, apiMutation } from "@/lib/api/client";
 import type { TravelTask, TravelTaskCategory } from "@/types";
@@ -19,11 +19,14 @@ export function TravelChecklist({ travelId, initialTasks }: { travelId: number; 
   const [title, setTitle] = useState("");
   const [category, setCategory] = useState<TravelTaskCategory>("OTHER");
   const [pendingKey, setPendingKey] = useState<string | null>(null);
+  const mutationPending = useRef(false);
   const [error, setError] = useState<string | null>(null);
   const completedCount = useMemo(() => tasks.filter((task) => task.completed).length, [tasks]);
   const progress = tasks.length ? Math.round((completedCount / tasks.length) * 100) : 0;
 
   async function toggle(task: TravelTask) {
+    if (mutationPending.current) return;
+    mutationPending.current = true;
     const key = `toggle-${task.id}`;
     setPendingKey(key);
     setError(null);
@@ -39,13 +42,15 @@ export function TravelChecklist({ travelId, initialTasks }: { travelId: number; 
       setTasks((current) => current.map((item) => item.id === task.id ? task : item));
       setError(cause instanceof ApiError ? cause.message : "준비 항목을 저장하지 못했습니다.");
     } finally {
+      mutationPending.current = false;
       setPendingKey(null);
     }
   }
 
   async function addTask() {
     const nextTitle = title.trim();
-    if (!nextTitle) return;
+    if (!nextTitle || mutationPending.current) return;
+    mutationPending.current = true;
     setPendingKey("create");
     setError(null);
     try {
@@ -59,11 +64,14 @@ export function TravelChecklist({ travelId, initialTasks }: { travelId: number; 
     } catch (cause) {
       setError(cause instanceof ApiError ? cause.message : "준비 항목을 추가하지 못했습니다.");
     } finally {
+      mutationPending.current = false;
       setPendingKey(null);
     }
   }
 
   async function remove(task: TravelTask) {
+    if (mutationPending.current) return;
+    mutationPending.current = true;
     const key = `delete-${task.id}`;
     setPendingKey(key);
     setError(null);
@@ -76,12 +84,13 @@ export function TravelChecklist({ travelId, initialTasks }: { travelId: number; 
     } catch (cause) {
       setError(cause instanceof ApiError ? cause.message : "준비 항목을 삭제하지 못했습니다.");
     } finally {
+      mutationPending.current = false;
       setPendingKey(null);
     }
   }
 
   return (
-    <section className="travel-checklist" aria-labelledby="travel-checklist-heading">
+    <section className="travel-checklist" aria-labelledby="travel-checklist-heading" aria-busy={pendingKey !== null}>
       <header>
         <div>
           <h2 id="travel-checklist-heading">여행 준비 체크리스트</h2>
@@ -123,8 +132,8 @@ export function TravelChecklist({ travelId, initialTasks }: { travelId: number; 
       ) : <p className="travel-checklist__empty">필요한 준비 항목을 아래에서 바로 추가해 보세요.</p>}
 
       <div className="travel-checklist__composer">
-        <label><span className="sr-only">새 준비 항목</span><input value={title} onChange={(event) => setTitle(event.target.value)} onKeyDown={(event: KeyboardEvent<HTMLInputElement>) => { if (event.key === "Enter") { event.preventDefault(); void addTask(); } }} maxLength={120} placeholder="예: 공항철도 예약" /></label>
-        <label><span className="sr-only">항목 분류</span><select value={category} onChange={(event) => setCategory(event.target.value as TravelTaskCategory)}>{Object.entries(CATEGORY_LABELS).map(([value, label]) => <option key={value} value={value}>{label}</option>)}</select></label>
+        <label><span className="sr-only">새 준비 항목</span><input disabled={pendingKey !== null} value={title} onChange={(event) => setTitle(event.target.value)} onKeyDown={(event: KeyboardEvent<HTMLInputElement>) => { if (event.key === "Enter" && !event.nativeEvent.isComposing && event.nativeEvent.keyCode !== 229) { event.preventDefault(); void addTask(); } }} maxLength={120} placeholder="예: 공항철도 예약" /></label>
+        <label><span className="sr-only">항목 분류</span><select disabled={pendingKey !== null} value={category} onChange={(event) => setCategory(event.target.value as TravelTaskCategory)}>{Object.entries(CATEGORY_LABELS).map(([value, label]) => <option key={value} value={value}>{label}</option>)}</select></label>
         <button type="button" onClick={() => void addTask()} disabled={pendingKey !== null || !title.trim()}><AppIcon name="plus" />{pendingKey === "create" ? "추가 중…" : "추가"}</button>
       </div>
       {error ? <p className="travel-checklist__error" role="alert">{error}</p> : null}
