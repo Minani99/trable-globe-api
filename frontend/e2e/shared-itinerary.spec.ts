@@ -33,6 +33,41 @@ test("다른 여행자의 공개 일정을 새 날짜의 내 계획으로 가져
   expect(sourceResponse.status()).toBe(201);
   const sourceBody = await sourceResponse.json();
   const sourceId = sourceBody.data.id as number;
+  await page.setViewportSize({ width: 320, height: 740 });
+  await page.goto(`/studio/travels/${sourceId}/edit?plan=1`);
+  const sharing = page.locator(".plan-share-panel");
+  await sharing.locator("summary").click();
+  await sharing.getByRole("button", { name: "일정 공유 링크 만들기" }).click();
+  const shareUrl = await sharing.getByRole("textbox", { name: "공유 링크" }).inputValue();
+  expect(shareUrl).toContain("/share/");
+  await page.evaluate(() => {
+    const state: { calls: ShareData[]; copied: string[]; finish: (cancel: boolean) => void } = { calls: [], copied: [], finish: () => {} };
+    Object.assign(window, { shareTest: state });
+    Object.defineProperty(navigator, "share", { configurable: true, value: (data: ShareData) => {
+      state.calls.push(data);
+      return new Promise<void>((resolve, reject) => { state.finish = cancel => cancel ? reject(new DOMException("Cancelled", "AbortError")) : resolve(); });
+    } });
+    Object.defineProperty(navigator, "clipboard", { configurable: true, value: { writeText: async (value: string) => { state.copied.push(value); } } });
+  });
+  const send = sharing.getByRole("button", { name: "일정 보내기", exact: true });
+  await send.evaluate(button => { (button as HTMLButtonElement).click(); (button as HTMLButtonElement).click(); });
+  await expect(send).toBeDisabled();
+  await expect(sharing.getByRole("button", { name: "공유 끄기" })).toBeDisabled();
+  const shared = await page.evaluate(() => (window as unknown as { shareTest: { calls: ShareData[] } }).shareTest.calls);
+  expect(shared).toHaveLength(1);
+  expect(shared[0].url).toBe(shareUrl);
+  await page.evaluate(() => (window as unknown as { shareTest: { finish: (cancel: boolean) => void } }).shareTest.finish(true));
+  await expect(send).toBeEnabled();
+  await expect(sharing.getByRole("status")).toBeEmpty();
+  expect(await page.evaluate(() => (window as unknown as { shareTest: { copied: string[] } }).shareTest.copied)).toEqual([]);
+  await send.click();
+  await page.evaluate(() => (window as unknown as { shareTest: { finish: (cancel: boolean) => void } }).shareTest.finish(false));
+  await expect(sharing.getByRole("status")).toHaveText("일정을 공유했습니다.");
+  await page.evaluate(() => Object.defineProperty(navigator, "share", { configurable: true, value: undefined }));
+  await send.click();
+  await expect(sharing.getByRole("status")).toHaveText("공유 링크를 복사했습니다.");
+  expect(await page.evaluate(() => (window as unknown as { shareTest: { copied: string[] } }).shareTest.copied)).toEqual([shareUrl]);
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
   await page.request.post("/api/auth/logout");
 
   const registerResponse = await page.request.post("/api/auth/register", { data: {
