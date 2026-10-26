@@ -142,6 +142,28 @@ export const WEATHER_SOURCE_LABEL: Record<WeatherSource, string> = {
   climate: "평년",
 };
 
+/** Only actual forecasts should drive packing and on-trip advice. */
+export function weatherTravelAdvice(days: WeatherDay[]): string | null {
+  const forecasts = days.filter((day) => day.source === "forecast");
+  if (forecasts.some((day) => weatherTone(day.weatherCode) === "storm")) return "뇌우 예보가 있어요. 야외 활동 전 최신 예보를 확인하고 실내 대안을 준비하세요.";
+  if (forecasts.some((day) => weatherTone(day.weatherCode) === "snow")) return "눈 예보가 있어요. 미끄럼에 대비하고 이동 시간을 여유 있게 잡으세요.";
+  if (forecasts.some(isRainyDay)) return "비 예보가 있어요. 우산을 챙기고 야외 일정의 이동 시간을 여유 있게 잡으세요.";
+  return null;
+}
+
+export function weatherSummary(days: WeatherDay[]): string {
+  const forecasts = days.filter((day) => day.source === "forecast");
+  if (forecasts.some((day) => weatherTone(day.weatherCode) === "storm")) return "뇌우 예보 · 야외 일정을 확인하세요";
+  if (forecasts.some((day) => weatherTone(day.weatherCode) === "snow")) return "눈 예보 · 이동에 여유를 두세요";
+  const rainyForecast = forecasts.filter(isRainyDay);
+  if (rainyForecast.length) return `비 예보 ${rainyForecast.length}일 · 우산을 챙기세요`;
+  if (forecasts.length) return "예보가 제공된 날짜의 날씨를 확인하세요";
+  const climate = days.filter((day) => day.source === "climate");
+  if (climate.length) return "평년 날씨를 참고해 준비하세요";
+  if (days.length) return "여행 기간의 지난 날씨 기록이에요";
+  return "이 기간의 날씨 정보가 아직 없어요";
+}
+
 export function formatTemperatureRange(day: WeatherDay): string {
   const max = day.temperatureMax == null ? null : Math.round(day.temperatureMax);
   const min = day.temperatureMin == null ? null : Math.round(day.temperatureMin);
