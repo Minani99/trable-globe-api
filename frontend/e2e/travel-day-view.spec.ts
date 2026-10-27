@@ -48,6 +48,13 @@ test("미래 여행도 여행용 보기에서 날짜별로 확인할 수 있다"
   await expect(page.getByRole("heading", { name: "도쿄 2일 여행" })).toBeVisible();
   await expect(page.getByRole("heading", { name: "1일차 일정" })).toBeVisible();
   await expect(page.getByRole("list", { name: "도쿄 2일 여행 1일차 일정" })).toContainText("도쿄역");
+  const itineraryCopy = page.locator(".day-itinerary-copy");
+  await itineraryCopy.locator("summary").click();
+  const expectedFirstDay = `도쿄 2일 여행\n${firstDay} 하루 일정\n\n1. 도쿄역 · 10:00 · 90분`;
+  await expect(itineraryCopy.getByRole("textbox", { name: "보낼 내용" })).toHaveValue(expectedFirstDay);
+  await itineraryCopy.getByRole("button", { name: "일정 내용 복사" }).click();
+  await expect(itineraryCopy.getByRole("status")).toContainText("하루 일정을 복사했어요");
+  expect((await page.evaluate(() => navigator.clipboard.readText())).replace(/\r\n/g, "\n")).toBe(expectedFirstDay);
   const tripActions = page.getByRole("navigation", { name: "여행 중 바로 기록" });
   await expect(tripActions.getByRole("link", { name: "일정 편집" })).toBeVisible();
   await expect(tripActions.getByRole("link", { name: "계획 편집" })).toHaveCount(0);
@@ -57,6 +64,16 @@ test("미래 여행도 여행용 보기에서 날짜별로 확인할 수 있다"
   await expect(page.getByRole("heading", { name: "2일차 일정" })).toBeVisible();
   await expect(page.getByRole("list", { name: "도쿄 2일 여행 2일차 일정" })).toContainText("시부야 스카이");
   await expect(page).toHaveURL(new RegExp(`date=${secondDay}`));
+  await itineraryCopy.locator("summary").click();
+  await expect(itineraryCopy.getByRole("status")).toBeEmpty();
+  const preview = itineraryCopy.getByRole("textbox", { name: "보낼 내용" });
+  await expect(preview).toHaveValue(`도쿄 2일 여행\n${secondDay} 하루 일정\n\n1. 시부야 스카이 · 18:00 · 90분`);
+  await page.evaluate(() => Object.defineProperty(navigator, "clipboard", { configurable: true, value: { writeText: async () => { throw new DOMException("Denied", "NotAllowedError"); } } }));
+  await itineraryCopy.getByRole("button", { name: "일정 내용 복사" }).click();
+  await expect(itineraryCopy.getByRole("status")).toContainText("자동 복사를 사용할 수 없어요");
+  await expect(preview).toBeFocused();
+  expect(await preview.evaluate(node => { const input = node as HTMLTextAreaElement; return input.selectionEnd - input.selectionStart === input.value.length; })).toBe(true);
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
   await page.reload();
   await expect(page.getByRole("heading", { name: "2일차 일정" })).toBeVisible();
   await expect(tripActions.getByRole("link", { name: "일정 편집" })).toHaveAttribute("href", `/studio/travels/${travelId}/edit?date=${secondDay}#travel-place-editor`);
@@ -95,7 +112,7 @@ function place(placeName: string, visitedAt: string, startTime: string, latitude
     visitedAt,
     startTime,
     durationMinutes: 90,
-    memo: null,
+    memo: "개인 예약번호는 공유하지 않기",
   };
 }
 
