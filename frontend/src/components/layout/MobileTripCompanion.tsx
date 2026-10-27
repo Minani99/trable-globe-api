@@ -6,6 +6,7 @@ import dynamic from "next/dynamic";
 import { GoogleDirectionsPanel } from "@/components/travel/GoogleDirectionsPanel";
 import { TripWeather } from "@/components/travel/TripWeather";
 import { DayItineraryCopy } from "@/components/travel/DayItineraryCopy";
+import { DayReservations } from "@/components/travel/DayReservations";
 import { isDirectionsStopLocated } from "@/lib/google-directions";
 
 const DayMap = dynamic(() => import("@/components/travel/TravelRouteMap").then((module) => module.TravelRouteMap), { loading: () => <div className="day-map-placeholder" role="status">장소 지도를 불러오는 중…</div> });
@@ -418,6 +419,7 @@ export function MobileTripCompanion({
         </ol>
       ) : null}
 
+      {variant === "page" ? <DayReservations key={`${username}:${currentTravel.id}`} travelId={currentTravel.id} date={viewDate} online={online} /> : null}
       {variant === "page" && dayPlaces.length ? <DayItineraryCopy key={viewDate} title={currentTravel.title} date={viewDate} places={dayPlaces} /> : null}
 
       <nav className="mobile-trip-companion__actions" aria-label="여행 중 바로 기록">

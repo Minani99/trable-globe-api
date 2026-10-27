@@ -35,6 +35,19 @@ test("미래 여행도 여행용 보기에서 날짜별로 확인할 수 있다"
   });
   expect(travelResponse.status()).toBe(201);
   const travelId = (await travelResponse.json()).data.id as number;
+  for (const reservation of [
+    { title: "도쿄행 항공편", category: "FLIGHT", reservationDate: firstDay, memo: "출발 2시간 전 체크인", confirmed: true },
+    { title: "시부야 호텔", category: "STAY", reservationDate: secondDay, memo: "체크인 15:00\n예약번호 HOTEL-123", confirmed: false },
+  ]) {
+    expect((await page.request.post(`/api/private/travels/${travelId}/planning/reservations`, { data: reservation })).ok()).toBe(true);
+  }
+  let reservationRequests = 0;
+  let failReservations = true;
+  await page.route(`**/api/private/travels/${travelId}/planning`, async route => {
+    reservationRequests += 1;
+    if (failReservations) return route.fulfill({ status: 503, json: { success: false, data: null, message: "잠시 후 다시 시도해 주세요." } });
+    return route.continue();
+  });
 
   await page.route("**/api/weather/forecast?**", async (route) => {
     await route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify({ success: true, data: { available: false, availableFrom: null, days: [] }, message: null }) });
@@ -48,6 +61,16 @@ test("미래 여행도 여행용 보기에서 날짜별로 확인할 수 있다"
   await expect(page.getByRole("heading", { name: "도쿄 2일 여행" })).toBeVisible();
   await expect(page.getByRole("heading", { name: "1일차 일정" })).toBeVisible();
   await expect(page.getByRole("list", { name: "도쿄 2일 여행 1일차 일정" })).toContainText("도쿄역");
+  const reservations = page.getByRole("region", { name: "선택한 날짜 예약" });
+  await expect(reservations).toContainText("예약 정보를 불러오지 못했어요");
+  await expect(reservations).not.toContainText("등록한 예약이 없어요");
+  failReservations = false;
+  await reservations.getByRole("button", { name: "예약 다시 확인" }).click();
+  await expect(reservations).toContainText("도쿄행 항공편");
+  await expect(reservations).toContainText("예약 확정");
+  await expect(reservations).not.toContainText("시부야 호텔");
+  const requestsAfterLoad = reservationRequests;
+  await expect(reservations.getByRole("link", { name: "예약 관리" })).toHaveAttribute("href", `/studio/travels/${travelId}/edit?plan=1#travel-budget`);
   const itineraryCopy = page.locator(".day-itinerary-copy");
   await itineraryCopy.locator("summary").click();
   const expectedFirstDay = `도쿄 2일 여행\n${firstDay} 하루 일정\n\n1. 도쿄역 · 10:00 · 90분`;
@@ -64,6 +87,11 @@ test("미래 여행도 여행용 보기에서 날짜별로 확인할 수 있다"
   await expect(page.getByRole("heading", { name: "2일차 일정" })).toBeVisible();
   await expect(page.getByRole("list", { name: "도쿄 2일 여행 2일차 일정" })).toContainText("시부야 스카이");
   await expect(page).toHaveURL(new RegExp(`date=${secondDay}`));
+  await expect(reservations).toContainText("시부야 호텔");
+  await expect(reservations).toContainText("예약번호 HOTEL-123");
+  await expect(reservations).toContainText("확인 필요");
+  await expect(reservations).not.toContainText("도쿄행 항공편");
+  expect(reservationRequests).toBe(requestsAfterLoad);
   await itineraryCopy.locator("summary").click();
   await expect(itineraryCopy.getByRole("status")).toBeEmpty();
   const preview = itineraryCopy.getByRole("textbox", { name: "보낼 내용" });
