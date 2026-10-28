@@ -70,6 +70,15 @@ test("미래 여행도 여행용 보기에서 날짜별로 확인할 수 있다"
   await expect(reservations).toContainText("예약 확정");
   await expect(reservations).not.toContainText("시부야 호텔");
   const requestsAfterLoad = reservationRequests;
+  const reservationScope = reservations.getByRole("group", { name: "예약 보기 범위" });
+  await reservationScope.getByRole("button", { name: "여행 전체 2", exact: true }).click();
+  await expect(reservations.getByRole("heading", { name: "여행 전체 예약" })).toBeVisible();
+  await expect(reservations).toContainText("도쿄행 항공편");
+  await expect(reservations).toContainText("시부야 호텔");
+  await expect(reservations.locator("time")).toHaveText([`이용 날짜 ${firstDay}`, `이용 날짜 ${secondDay}`]);
+  expect(reservationRequests).toBe(requestsAfterLoad);
+  await reservationScope.getByRole("button", { name: "이 날짜 1", exact: true }).click();
+  await expect(reservations).not.toContainText("시부야 호텔");
   await expect(reservations.getByRole("link", { name: "예약 관리" })).toHaveAttribute("href", `/studio/travels/${travelId}/edit?plan=1#travel-budget`);
   const itineraryCopy = page.locator(".day-itinerary-copy");
   await itineraryCopy.locator("summary").click();
