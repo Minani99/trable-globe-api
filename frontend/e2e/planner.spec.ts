@@ -154,7 +154,8 @@ test("몇 번의 선택으로 여행 계획을 만들고 일차별 일정으로 
   await checklistFilters.getByRole("button", { name: "완료 1", exact: true }).click();
   await expect(page.locator(".travel-checklist__items li")).toHaveCount(1);
   const newChecklistItem = page.getByRole("textbox", { name: "새 준비 항목" });
-  await newChecklistItem.fill("공항철도 예약");
+  const checklistTitle = "공항철도 예약 확인서와 여권 사본 챙기기 ReservationConfirmationABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+  await newChecklistItem.fill(checklistTitle);
   await page.getByRole("combobox", { name: "항목 분류" }).selectOption("RESERVATION");
   let taskRequests = 0;
   let releaseTaskRequest!: () => void;
@@ -180,12 +181,32 @@ test("몇 번의 선택으로 여행 계획을 만들고 일차별 일정으로 
   await expect(page.getByRole("combobox", { name: "항목 분류" })).toBeDisabled();
   releaseTaskRequest();
   await expect(page.getByRole("region", { name: "여행 준비 체크리스트" }).getByRole("alert")).toContainText("준비 항목 저장을 다시 시도해 주세요.");
-  await expect(newChecklistItem).toHaveValue("공항철도 예약");
+  await expect(newChecklistItem).toHaveValue(checklistTitle);
   await expect(page.getByRole("combobox", { name: "항목 분류" })).toHaveValue("RESERVATION");
   const addChecklistItem = page.getByRole("button", { name: "추가", exact: true });
   await expect(addChecklistItem).toBeEnabled();
   await addChecklistItem.click();
-  await expect(page.getByText("공항철도 예약", { exact: true })).toBeVisible();
+  const savedChecklistTitle = page.getByText(checklistTitle, { exact: true });
+  await expect(savedChecklistTitle).toBeVisible();
+  await page.setViewportSize({ width: 320, height: 740 });
+  const checklistLayout = await savedChecklistTitle.evaluate((title) => {
+    const row = title.closest("li")!;
+    const toggle = row.querySelector("button")!.getBoundingClientRect();
+    const remove = row.querySelector(".travel-checklist__delete")!.getBoundingClientRect();
+    return {
+      titleWidth: title.clientWidth, contentWidth: title.scrollWidth,
+      titleHeight: title.clientHeight, contentHeight: title.scrollHeight,
+      toggleHeight: toggle.height, toggleBottom: toggle.bottom, deleteTop: remove.top,
+      pageWidth: document.documentElement.scrollWidth, viewportWidth: window.innerWidth,
+    };
+  });
+  expect(checklistLayout.contentWidth).toBeLessThanOrEqual(checklistLayout.titleWidth + 1);
+  expect(checklistLayout.contentHeight).toBeLessThanOrEqual(checklistLayout.titleHeight + 1);
+  expect(checklistLayout.toggleHeight).toBeGreaterThanOrEqual(44);
+  expect(checklistLayout.deleteTop).toBeGreaterThanOrEqual(checklistLayout.toggleBottom);
+  expect(checklistLayout.pageWidth).toBeLessThanOrEqual(checklistLayout.viewportWidth + 1);
+  await page.getByRole("region", { name: "여행 준비 체크리스트" }).screenshot({ path: "test-results/checklist-mobile.png" });
+  await page.setViewportSize({ width: 390, height: 844 });
   expect(taskRequests).toBe(2);
   await expect(checklistFilters.getByRole("button", { name: "남은 항목 6", exact: true })).toHaveAttribute("aria-pressed", "true");
   await expect(page.locator(".travel-checklist__items li")).toHaveCount(6);
