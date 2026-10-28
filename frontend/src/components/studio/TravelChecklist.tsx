@@ -21,7 +21,9 @@ export function TravelChecklist({ travelId, initialTasks }: { travelId: number; 
   const [pendingKey, setPendingKey] = useState<string | null>(null);
   const mutationPending = useRef(false);
   const [error, setError] = useState<string | null>(null);
+  const [filter, setFilter] = useState<"all" | "remaining" | "completed">("all");
   const completedCount = useMemo(() => tasks.filter((task) => task.completed).length, [tasks]);
+  const visibleTasks = tasks.filter((task) => filter === "all" || (filter === "completed" ? task.completed : !task.completed));
   const progress = tasks.length ? Math.round((completedCount / tasks.length) * 100) : 0;
 
   async function toggle(task: TravelTask) {
@@ -61,6 +63,7 @@ export function TravelChecklist({ travelId, initialTasks }: { travelId: number; 
       );
       if (next) setTasks(next);
       setTitle("");
+      setFilter((current) => current === "completed" ? "remaining" : current);
     } catch (cause) {
       setError(cause instanceof ApiError ? cause.message : "준비 항목을 추가하지 못했습니다.");
     } finally {
@@ -103,9 +106,21 @@ export function TravelChecklist({ travelId, initialTasks }: { travelId: number; 
         </div>
       </header>
 
-      {tasks.length ? (
+      <div className="travel-checklist__filters" role="group" aria-label="준비 항목 보기">
+        {([
+          ["all", "전체", tasks.length],
+          ["remaining", "남은 항목", tasks.length - completedCount],
+          ["completed", "완료", completedCount],
+        ] as const).map(([value, label, count]) => (
+          <button key={value} type="button" aria-pressed={filter === value} onClick={() => setFilter(value)}>
+            {label} <span>{count}</span>
+          </button>
+        ))}
+      </div>
+
+      {visibleTasks.length ? (
         <ul className="travel-checklist__items">
-          {tasks.map((task) => (
+          {visibleTasks.map((task) => (
             <li key={task.id} className={task.completed ? "is-complete" : undefined}>
               <button
                 type="button"
@@ -129,7 +144,10 @@ export function TravelChecklist({ travelId, initialTasks }: { travelId: number; 
             </li>
           ))}
         </ul>
-      ) : <p className="travel-checklist__empty">필요한 준비 항목을 아래에서 바로 추가해 보세요.</p>}
+      ) : <p className="travel-checklist__empty" role="status">{!tasks.length
+        ? "필요한 준비 항목을 아래에서 바로 추가해 보세요."
+        : filter === "remaining" ? "준비를 모두 마쳤어요. 완료한 항목은 ‘완료’에서 다시 확인할 수 있습니다."
+          : "아직 완료한 항목이 없습니다. 챙긴 항목에 체크해 주세요."}</p>}
 
       <div className="travel-checklist__composer">
         <label><span className="sr-only">새 준비 항목</span><input disabled={pendingKey !== null} value={title} onChange={(event) => setTitle(event.target.value)} onKeyDown={(event: KeyboardEvent<HTMLInputElement>) => { if (event.key === "Enter" && !event.nativeEvent.isComposing && event.nativeEvent.keyCode !== 229) { event.preventDefault(); void addTask(); } }} maxLength={120} placeholder="예: 공항철도 예약" /></label>

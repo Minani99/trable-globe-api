@@ -142,8 +142,17 @@ test("몇 번의 선택으로 여행 계획을 만들고 일차별 일정으로 
   await expect(workspaceTabs.getByRole("tab", { name: "준비물", exact: true })).toHaveAttribute("aria-selected", "true");
   await expect(page.getByRole("heading", { name: "여행 준비 체크리스트" })).toBeVisible();
   await expect(page.locator(".travel-checklist__items li")).toHaveCount(6);
+  const checklistFilters = page.getByRole("group", { name: "준비 항목 보기" });
+  await checklistFilters.getByRole("button", { name: "완료 0", exact: true }).click();
+  await expect(page.getByText("아직 완료한 항목이 없습니다. 챙긴 항목에 체크해 주세요.")).toBeVisible();
+  await checklistFilters.getByRole("button", { name: "전체 6", exact: true }).click();
   await page.getByRole("button", { name: "항공·교통편 확인 완료로 변경" }).click();
   await expect(page.locator(".travel-checklist__items li").first()).toHaveClass(/is-complete/);
+  await checklistFilters.getByRole("button", { name: "남은 항목 5", exact: true }).click();
+  await expect(page.locator(".travel-checklist__items li")).toHaveCount(5);
+  await expect(page.getByRole("button", { name: "항공·교통편 확인 미완료로 변경" })).toHaveCount(0);
+  await checklistFilters.getByRole("button", { name: "완료 1", exact: true }).click();
+  await expect(page.locator(".travel-checklist__items li")).toHaveCount(1);
   const newChecklistItem = page.getByRole("textbox", { name: "새 준비 항목" });
   await newChecklistItem.fill("공항철도 예약");
   await page.getByRole("combobox", { name: "항목 분류" }).selectOption("RESERVATION");
@@ -178,6 +187,9 @@ test("몇 번의 선택으로 여행 계획을 만들고 일차별 일정으로 
   await addChecklistItem.click();
   await expect(page.getByText("공항철도 예약", { exact: true })).toBeVisible();
   expect(taskRequests).toBe(2);
+  await expect(checklistFilters.getByRole("button", { name: "남은 항목 6", exact: true })).toHaveAttribute("aria-pressed", "true");
+  await expect(page.locator(".travel-checklist__items li")).toHaveCount(6);
+  await checklistFilters.getByRole("button", { name: "전체 7", exact: true }).click();
   await expect(page.locator(".travel-checklist__items li")).toHaveCount(7);
   await expect(newChecklistItem).toHaveValue("");
   await workspaceTabs.getByRole("tab", { name: "예산·예약", exact: true }).click();
