@@ -82,6 +82,41 @@
   gap: 0.55rem;
 }
 
+.travel-checklist__filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+.travel-checklist__filters button {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  min-height: 44px;
+  padding: 0.5rem 0.7rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+  color: var(--text-secondary);
+  font-size: var(--text-xs);
+}
+
+.travel-checklist__filters button[aria-pressed="true"] {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+  color: var(--text-primary);
+  font-weight: 700;
+}
+
+.travel-checklist__filters button:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+}
+
+.travel-checklist__filters span {
+  font-variant-numeric: tabular-nums;
+}
+
 .travel-checklist__items li {
   display: grid;
   min-width: 0;
