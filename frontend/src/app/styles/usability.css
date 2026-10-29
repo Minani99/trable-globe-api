@@ -52,6 +52,11 @@ button:has(> .app-icon) { gap: .4rem; }
 .day-reservations li > strong { display: block; margin: .35rem 0; overflow-wrap: anywhere; }
 .day-reservations p { color: var(--text-secondary); font-size: .8125rem; line-height: 1.6; white-space: pre-wrap; overflow-wrap: anywhere; }
 .day-reservations .is-confirmed { color: var(--accent); }
+.day-reservations__scope { display: flex; flex-wrap: wrap; gap: .5rem; margin-block: .5rem; }
+.day-reservations__scope button { min-height: 44px; padding: .5rem .75rem; border: 1px solid var(--border); border-radius: 8px; color: var(--text-secondary); font-size: .8125rem; }
+.day-reservations__scope button[aria-pressed="true"] { border-color: var(--accent); background: var(--accent-soft); color: var(--text-primary); font-weight: 700; }
+.day-reservations__scope button:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+.day-reservations time { display: block; margin-bottom: .35rem; color: var(--text-secondary); font-size: .8125rem; }
 .day-route-overview > header { display: flex; align-items: center; gap: .5rem; }
 .day-route-overview > header h3 { font-size: 1rem; font-weight: 700; }
 .day-route-overview > header > span { margin-left: auto; color: var(--text-secondary); font-size: .8125rem; }
