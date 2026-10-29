@@ -51,6 +51,15 @@ export function TravelPlanningBoard({
   const [editingExpenseId, setEditingExpenseId] = useState<number | null>(null);
   const [editingReservationId, setEditingReservationId] = useState<number | null>(null);
   const basePath = `/api/private/travels/${travelId}/planning`;
+  const expenseBreakdown = EXPENSE_CATEGORIES.map(category => {
+    const expenses = planning.expenses.filter(expense => expense.category === category.value);
+    return {
+      ...category,
+      count: expenses.length,
+      total: expenses.reduce((sum, expense) => sum + expense.amount, 0),
+      unpaid: expenses.reduce((sum, expense) => sum + (expense.paid ? 0 : expense.amount), 0),
+    };
+  }).filter(category => category.count > 0);
   const progress = planning.targetAmount > 0
     ? Math.min(100, Math.round((planning.estimatedAmount / planning.targetAmount) * 100))
     : 0;
@@ -190,6 +199,20 @@ export function TravelPlanningBoard({
         <BudgetMetric label={planning.remainingAmount < 0 ? "예산 초과" : "남은 예산"} amount={Math.abs(planning.remainingAmount)} currency={planning.currency} danger={planning.remainingAmount < 0} />
         <div className="travel-budget-summary__progress" aria-label={`총예산의 ${progress}% 사용 예정`}><span><i style={{ width: `${progress}%` }} /></span><small>{planning.targetAmount > 0 ? `${progress}% 사용 예정` : "총예산을 입력해 보세요"}</small></div>
       </div>
+
+      {expenseBreakdown.length ? <details className="travel-expense-breakdown">
+        <summary>분류별 비용 요약</summary>
+        <p>등록한 예상 비용 기준입니다. 미결제는 아직 결제 완료로 표시하지 않은 금액입니다.</p>
+        <ul aria-label="분류별 비용">
+          {expenseBreakdown.map(category => <li key={category.value}>
+            <div><strong>{category.label}</strong><span>{category.count}건</span></div>
+            <dl>
+              <div><dt>예상 합계</dt><dd>{formatMoney(category.total, planning.currency)}</dd></div>
+              <div><dt>미결제</dt><dd>{formatMoney(category.unpaid, planning.currency)}</dd></div>
+            </dl>
+          </li>)}
+        </ul>
+      </details> : null}
 
       <div className="travel-planning-grid">
         <PlanningPanel title="예상 비용" count={planning.expenses.length} description="결제 전 비용도 먼저 적어두세요.">
