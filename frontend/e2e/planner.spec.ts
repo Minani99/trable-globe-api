@@ -253,6 +253,10 @@ test("몇 번의 선택으로 여행 계획을 만들고 일차별 일정으로 
   await expect(page.getByRole("spinbutton", { name: "총예산" })).toHaveValue("1800000");
   await expect(page.getByRole("combobox", { name: "통화", exact: true })).toHaveValue("USD");
   await expect(page.locator(".travel-expense-list li")).toHaveCount(1);
+  await page.locator("summary", { hasText: "분류별 비용 요약" }).click();
+  const expenseBreakdown = page.getByRole("list", { name: "분류별 비용", exact: true });
+  await expect(expenseBreakdown).toContainText("교통");
+  await expect(expenseBreakdown.locator("dd")).toHaveText(["₩450,000", "₩450,000"]);
   await page.getByRole("spinbutton", { name: "총예산" }).fill("1500000");
   await page.getByRole("combobox", { name: "통화", exact: true }).selectOption("KRW");
   await page.getByRole("button", { name: "왕복 항공권 수정" }).click();
@@ -261,6 +265,23 @@ test("몇 번의 선택으로 여행 계획을 만들고 일차별 일정으로 
   await page.getByRole("button", { name: "변경 저장" }).click();
   await expect(page.getByText("왕복 항공권·수하물", { exact: true })).toBeVisible();
   await page.getByRole("button", { name: "왕복 항공권·수하물 결제 완료로 변경" }).click();
+  await expect(expenseBreakdown.locator("dd")).toHaveText(["₩480,000", "₩0"]);
+  await expect(expenseBreakdown).toContainText("1건");
+  for (const expense of [
+    { title: "공항철도", amount: "12000", category: "TRANSPORT" },
+    { title: "첫날 점심", amount: "8000", category: "FOOD" },
+  ]) {
+    await page.getByRole("textbox", { name: "새 비용 이름" }).fill(expense.title);
+    await page.getByRole("spinbutton", { name: "예상 비용" }).fill(expense.amount);
+    await page.getByRole("combobox", { name: "비용 분류", exact: true }).selectOption(expense.category);
+    await expenseButton.click();
+    await expect(page.locator(".travel-expense-list")).toContainText(expense.title);
+  }
+  await expect(expenseBreakdown.locator("li")).toHaveCount(2);
+  await expect(expenseBreakdown.locator("li").first()).toContainText("2건");
+  await expect(expenseBreakdown.locator("dd")).toHaveText(["₩492,000", "₩12,000", "₩8,000", "₩8,000"]);
+  expect(await expenseBreakdown.evaluate(node => node.scrollWidth <= node.clientWidth)).toBe(true);
+  await page.locator(".travel-expense-breakdown").screenshot({ path: "test-results/expense-breakdown-mobile.png" });
   await page.locator("summary", { hasText: "예약 추가" }).click();
   await page.getByRole("textbox", { name: "새 예약 이름" }).fill("도쿄 호텔 체크인");
   const reservationButton = page.getByRole("button", { name: "예약 추가", exact: true });
