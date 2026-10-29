@@ -1,6 +1,7 @@
 "use client";
 
 import { AppIcon } from "@/components/common/AppIcon";
+import { ExpenseExport } from "@/components/studio/ExpenseExport";
 import { FormEvent, useRef, useState } from "react";
 
 import { ApiError, apiMutation } from "@/lib/api/client";
@@ -216,6 +217,7 @@ export function TravelPlanningBoard({
 
       <div className="travel-planning-grid">
         <PlanningPanel title="예상 비용" count={planning.expenses.length} description="결제 전 비용도 먼저 적어두세요.">
+          <ExpenseExport travelId={travelId} expenses={planning.expenses} currency={planning.currency} disabled={pending} />
           {planning.expenses.length ? <ul className="travel-expense-list">{planning.expenses.map((expense) => (
             editingExpenseId === expense.id ? (
               <li key={expense.id} className="is-editing"><form className="travel-plan-inline-edit" onSubmit={(event) => updateExpense(event, expense)}>

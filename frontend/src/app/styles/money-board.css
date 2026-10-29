@@ -3,6 +3,12 @@
  * Part of the ordered stylesheet - see globals.css. Later files override this one.
  */
 /* One compact board for trip money and bookings. */
+.travel-expense-export { margin-block: .75rem; }
+.travel-expense-export button { min-height: 44px; max-width: 100%; padding: .5rem .75rem; border: 1px solid var(--border-strong); border-radius: var(--radius-sm); color: var(--text-primary); font-size: .8125rem; font-weight: 700; }
+.travel-expense-export button:disabled { opacity: .5; cursor: not-allowed; }
+.travel-expense-export p { margin-top: .35rem; color: var(--text-secondary); font-size: .75rem; line-height: 1.6; overflow-wrap: anywhere; }
+.travel-expense-export p:empty { display: none; }
+.travel-expense-export button:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
 .travel-expense-breakdown { min-width: 0; border: 1px solid var(--border); border-radius: var(--radius-sm); padding: .75rem; }
 .travel-expense-breakdown summary { min-height: 44px; align-content: center; cursor: pointer; font-weight: 700; }
 .travel-expense-breakdown > p { color: var(--text-secondary); font-size: .8125rem; line-height: 1.6; }

@@ -1,4 +1,5 @@
 import { expect, test } from "./fixtures";
+import { readFile } from "node:fs/promises";
 
 test("몇 번의 선택으로 여행 계획을 만들고 일차별 일정으로 이어간다", async ({ page }) => {
   const suffix = Date.now().toString(36);
@@ -215,6 +216,8 @@ test("몇 번의 선택으로 여행 계획을 만들고 일차별 일정으로 
   await expect(newChecklistItem).toHaveValue("");
   await workspaceTabs.getByRole("tab", { name: "예산·예약", exact: true }).click();
   await expect(page.getByRole("heading", { name: "예산과 예약" })).toBeVisible();
+  const exportExpenses = page.getByRole("button", { name: "비용 내역 CSV 다운로드" });
+  await expect(exportExpenses).toBeDisabled();
   await page.getByRole("spinbutton", { name: "총예산" }).fill("1500000");
   await page.getByRole("button", { name: "저장", exact: true }).click();
   await expect(page.getByText("₩1,500,000", { exact: true })).toBeVisible();
@@ -241,6 +244,7 @@ test("몇 번의 선택으로 여행 계획을 만들고 일차별 일정으로 
   await expenseButton.evaluate(button => { (button as HTMLButtonElement).click(); (button as HTMLButtonElement).click(); });
   await expect.poll(() => expenseRequests).toBe(1);
   await expect(page.getByRole("textbox", { name: "새 비용 이름" })).toBeDisabled();
+  await expect(exportExpenses).toBeDisabled();
   await expect(page.getByRole("spinbutton", { name: "총예산" })).toBeDisabled();
   releaseExpense();
   await expect(page.getByRole("region", { name: "예산과 예약" }).getByRole("alert")).toContainText("비용 저장을 다시 시도해 주세요.");
@@ -280,6 +284,16 @@ test("몇 번의 선택으로 여행 계획을 만들고 일차별 일정으로 
   await expect(expenseBreakdown.locator("li")).toHaveCount(2);
   await expect(expenseBreakdown.locator("li").first()).toContainText("2건");
   await expect(expenseBreakdown.locator("dd")).toHaveText(["₩492,000", "₩12,000", "₩8,000", "₩8,000"]);
+  const downloadEvent = page.waitForEvent("download");
+  await exportExpenses.click();
+  const expenseDownload = await downloadEvent;
+  expect(expenseDownload.suggestedFilename()).toMatch(/^travel-\d+-expenses\.csv$/);
+  const csv = await readFile((await expenseDownload.path())!, "utf8");
+  expect(csv.charCodeAt(0)).toBe(0xfeff);
+  expect(csv).toContain('"왕복 항공권·수하물","교통",480000,"KRW","결제 완료"');
+  expect(csv).toContain('"공항철도","교통",12000,"KRW","미결제"');
+  expect(csv).toContain('"첫날 점심","식비",8000,"KRW","미결제"');
+  expect(csv.trim().split("\r\n")).toHaveLength(4);
   expect(await expenseBreakdown.evaluate(node => node.scrollWidth <= node.clientWidth)).toBe(true);
   await page.locator(".travel-expense-breakdown").screenshot({ path: "test-results/expense-breakdown-mobile.png" });
   await page.locator("summary", { hasText: "예약 추가" }).click();
