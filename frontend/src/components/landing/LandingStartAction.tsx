@@ -29,17 +29,21 @@ export function LandingStartAction() {
   useEffect(() => {
     if (!member) return;
     let active = true;
+    let controller: AbortController | null = null;
     const refresh = () => {
       if (document.visibilityState === "hidden") return;
-      apiSessionGet<OwnedTravelSummary[]>("/api/private/travels").then((travels) => {
-        if (active) setJourney({ username: member.username, action: nextJourneyAction(travels, todayInKorea()) });
+      controller?.abort();
+      const request = new AbortController();
+      controller = request;
+      apiSessionGet<OwnedTravelSummary[]>("/api/private/travels", { signal: request.signal }).then((travels) => {
+        if (active && !request.signal.aborted) setJourney({ username: member.username, action: nextJourneyAction(travels, todayInKorea()) });
       }).catch(() => {
-        if (active) setJourney(null);
+        if (active && !request.signal.aborted) setJourney(null);
       });
     };
     refresh();
     document.addEventListener("visibilitychange", refresh);
-    return () => { active = false; document.removeEventListener("visibilitychange", refresh); };
+    return () => { active = false; controller?.abort(); document.removeEventListener("visibilitychange", refresh); };
   }, [member]);
 
   if (member === undefined) {

@@ -11,7 +11,14 @@ const LABELS: Record<TravelReservationCategory, string> = {
 };
 type Result = { key: string; reservations: TravelReservation[] } | { key: string; error: true };
 
-export function DayReservations({ travelId, date, online }: { travelId: number; date: string; online: boolean }) {
+type ReservationProps = { travelId: number; date: string; online: boolean };
+
+export function DayReservations(props: ReservationProps) {
+  // Reconnection must start fresh rather than display the previous online result.
+  return <ReservationPanel key={`${props.travelId}:${props.online}`} {...props} />;
+}
+
+function ReservationPanel({ travelId, date, online }: ReservationProps) {
   const [attempt, setAttempt] = useState(0);
   const [scope, setScope] = useState<"day" | "trip">("day");
   const [unconfirmedOnly, setUnconfirmedOnly] = useState(false);
@@ -20,10 +27,11 @@ export function DayReservations({ travelId, date, online }: { travelId: number; 
   useEffect(() => {
     if (!online) return;
     let active = true;
-    void apiSessionGet<TravelPlanning>(`/api/private/travels/${travelId}/planning`)
+    const controller = new AbortController();
+    void apiSessionGet<TravelPlanning>(`/api/private/travels/${travelId}/planning`, { signal: controller.signal })
       .then(planning => { if (active) setResult({ key, reservations: planning.reservations }); })
       .catch(() => { if (active) setResult({ key, error: true }); });
-    return () => { active = false; };
+    return () => { active = false; controller.abort(); };
   }, [travelId, online, key]);
   const current = result?.key === key ? result : null;
   const allReservations = current && "reservations" in current ? current.reservations : null;

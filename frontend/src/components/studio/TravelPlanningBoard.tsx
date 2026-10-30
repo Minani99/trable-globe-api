@@ -62,7 +62,7 @@ export function TravelPlanningBoard({
     };
   }).filter(category => category.count > 0);
   const progress = planning.targetAmount > 0
-    ? Math.min(100, Math.round((planning.estimatedAmount / planning.targetAmount) * 100))
+    ? Math.round((planning.estimatedAmount / planning.targetAmount) * 100)
     : 0;
 
   async function mutate(path: string, method: "POST" | "PATCH" | "DELETE", body?: unknown) {
@@ -198,7 +198,7 @@ export function TravelPlanningBoard({
         <BudgetMetric label="예상 비용" amount={planning.estimatedAmount} currency={planning.currency} />
         <BudgetMetric label="결제 완료" amount={planning.paidAmount} currency={planning.currency} />
         <BudgetMetric label={planning.remainingAmount < 0 ? "예산 초과" : "남은 예산"} amount={Math.abs(planning.remainingAmount)} currency={planning.currency} danger={planning.remainingAmount < 0} />
-        <div className="travel-budget-summary__progress" aria-label={`총예산의 ${progress}% 사용 예정`}><span><i style={{ width: `${progress}%` }} /></span><small>{planning.targetAmount > 0 ? `${progress}% 사용 예정` : "총예산을 입력해 보세요"}</small></div>
+        <div className="travel-budget-summary__progress" aria-label={`총예산의 ${progress}% 사용 예정`}><span><i style={{ width: `${Math.min(100, progress)}%` }} /></span><small>{planning.targetAmount > 0 ? `${progress}% 사용 예정` : "총예산을 입력해 보세요"}</small></div>
       </div>
 
       {expenseBreakdown.length ? <details className="travel-expense-breakdown">

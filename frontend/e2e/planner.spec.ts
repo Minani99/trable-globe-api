@@ -294,6 +294,10 @@ test("몇 번의 선택으로 여행 계획을 만들고 일차별 일정으로 
   expect(csv).toContain('"공항철도","교통",12000,"KRW","미결제"');
   expect(csv).toContain('"첫날 점심","식비",8000,"KRW","미결제"');
   expect(csv.trim().split("\r\n")).toHaveLength(4);
+  await page.getByRole("spinbutton", { name: "총예산" }).fill("200000");
+  await page.getByRole("button", { name: "저장", exact: true }).click();
+  await expect(page.locator(".travel-budget-summary__progress")).toContainText("250% 사용 예정");
+  await expect(page.locator(".travel-budget-summary__progress i")).toHaveAttribute("style", "width: 100%;");
   expect(await expenseBreakdown.evaluate(node => node.scrollWidth <= node.clientWidth)).toBe(true);
   await page.locator(".travel-expense-breakdown").screenshot({ path: "test-results/expense-breakdown-mobile.png" });
   await page.locator("summary", { hasText: "예약 추가" }).click();

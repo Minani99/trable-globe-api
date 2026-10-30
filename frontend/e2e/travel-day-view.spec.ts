@@ -43,9 +43,11 @@ test("미래 여행도 여행용 보기에서 날짜별로 확인할 수 있다"
   }
   let reservationRequests = 0;
   let failReservations = true;
+  let reservationGate: Promise<void> | null = null;
   await page.route(`**/api/private/travels/${travelId}/planning`, async route => {
     reservationRequests += 1;
     if (failReservations) return route.fulfill({ status: 503, json: { success: false, data: null, message: "잠시 후 다시 시도해 주세요." } });
+    if (reservationGate) await reservationGate;
     return route.continue();
   });
 
@@ -135,6 +137,21 @@ test("미래 여행도 여행용 보기에서 날짜별로 확인할 수 있다"
   await page.getByRole("button", { name: "시부야 스카이 미완료로 변경" }).click();
   await expect(complete).toHaveAttribute("aria-pressed", "false");
   await expect(page.getByRole("link", { name: /지도에서 위치 보기/ })).toHaveAttribute("href", /google\.com\/maps\/search/);
+
+  // A delayed reconnect must not present the last online response as fresh data.
+  await expect(reservations).toContainText("시부야 호텔");
+  await page.context().setOffline(true);
+  await expect(reservations).toContainText("인터넷 연결 후 확인할 수 있어요");
+  let releaseReservations!: () => void;
+  reservationGate = new Promise<void>(resolve => { releaseReservations = resolve; });
+  await page.context().setOffline(false);
+  await expect(reservations).toHaveAttribute("aria-busy", "true");
+  await expect(reservations).toContainText("예약을 확인하고 있어요");
+  await expect(reservations).not.toContainText("시부야 호텔");
+  releaseReservations();
+  reservationGate = null;
+  await expect(reservations).toContainText("시부야 호텔");
+  await expect(reservations).toHaveAttribute("aria-busy", "false");
 
   const layout = await page.evaluate(() => ({
     viewportWidth: window.innerWidth,

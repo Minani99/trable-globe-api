@@ -30,6 +30,23 @@ test("메인과 내 여행에서 계획·오늘 일정·기록의 다음 행동�
   await expect(page.locator(".landing-primary-cta")).toHaveText(/새 여행 계획/);
 
   const past = await createTrip(page, "다녀온 여행", offset(today, -3), offset(today, -1));
+  let refreshRequests = 0;
+  let releaseOldRefresh!: () => void;
+  const oldRefreshGate = new Promise<void>(resolve => { releaseOldRefresh = resolve; });
+  await page.route("**/api/private/travels", async route => {
+    refreshRequests += 1;
+    if (refreshRequests !== 1) return route.continue();
+    await oldRefreshGate;
+    await route.fulfill({ json: { success: true, data: [], message: null } });
+  });
+  await page.evaluate(() => document.dispatchEvent(new Event("visibilitychange")));
+  await expect.poll(() => refreshRequests).toBe(1);
+  const cancelledRefresh = page.waitForEvent("requestfailed", { predicate: request => request.url().endsWith("/api/private/travels") });
+  await page.evaluate(() => document.dispatchEvent(new Event("visibilitychange")));
+  await cancelledRefresh;
+  releaseOldRefresh();
+  await expect(page.locator(".landing-primary-cta")).toHaveAttribute("href", `/studio/travels/${past}/edit?finish=1`);
+  await page.unroute("**/api/private/travels");
   await checkAction(page, "여행 기록하기", `/studio/travels/${past}/edit?finish=1`);
   const later = await createTrip(page, "나중에 갈 여행", offset(today, 30), offset(today, 32));
   const upcoming = await createTrip(page, "곧 떠날 여행", offset(today, 5), offset(today, 7));
