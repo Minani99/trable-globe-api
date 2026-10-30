@@ -39,7 +39,8 @@ export function TravelChecklist({ travelId, initialTasks }: { travelId: number; 
         "PATCH",
         { completed: !task.completed },
       );
-      if (next) setTasks(next);
+      if (!next) throw new ApiError(500, "저장된 준비 항목을 확인하지 못했습니다. 다시 시도해 주세요.");
+      setTasks(next);
     } catch (cause) {
       setTasks((current) => current.map((item) => item.id === task.id ? task : item));
       setError(cause instanceof ApiError ? cause.message : "준비 항목을 저장하지 못했습니다.");
@@ -61,7 +62,8 @@ export function TravelChecklist({ travelId, initialTasks }: { travelId: number; 
         "POST",
         { title: nextTitle, category },
       );
-      if (next) setTasks(next);
+      if (!next) throw new ApiError(500, "저장된 준비 항목을 확인하지 못했습니다. 다시 시도해 주세요.");
+      setTasks(next);
       setTitle("");
       setFilter((current) => current === "completed" ? "remaining" : current);
     } catch (cause) {
@@ -83,7 +85,8 @@ export function TravelChecklist({ travelId, initialTasks }: { travelId: number; 
         `/api/private/travels/${travelId}/tasks/${task.id}`,
         "DELETE",
       );
-      if (next) setTasks(next);
+      if (!next) throw new ApiError(500, "저장된 준비 항목을 확인하지 못했습니다. 다시 시도해 주세요.");
+      setTasks(next);
     } catch (cause) {
       setError(cause instanceof ApiError ? cause.message : "준비 항목을 삭제하지 못했습니다.");
     } finally {

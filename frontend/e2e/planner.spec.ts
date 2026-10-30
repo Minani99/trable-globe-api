@@ -164,6 +164,7 @@ test("몇 번의 선택으로 여행 계획을 만들고 일차별 일정으로 
   await page.route("**/api/private/travels/*/tasks", async (route) => {
     if (route.request().method() !== "POST") return route.continue();
     taskRequests += 1;
+    if (taskRequests === 2) return route.fulfill({ json: { success: true, data: null, message: null } });
     if (taskRequests > 1) return route.continue();
     await taskGate;
     return route.fulfill({ status: 503, json: { success: false, data: null, message: "준비 항목 저장을 다시 시도해 주세요." } });
@@ -187,6 +188,10 @@ test("몇 번의 선택으로 여행 계획을 만들고 일차별 일정으로 
   const addChecklistItem = page.getByRole("button", { name: "추가", exact: true });
   await expect(addChecklistItem).toBeEnabled();
   await addChecklistItem.click();
+  await expect(page.getByRole("region", { name: "여행 준비 체크리스트" }).getByRole("alert")).toContainText("저장된 준비 항목을 확인하지 못했습니다");
+  await expect(newChecklistItem).toHaveValue(checklistTitle);
+  await expect(checklistFilters.getByRole("button", { name: "완료 1", exact: true })).toHaveAttribute("aria-pressed", "true");
+  await addChecklistItem.click();
   const savedChecklistTitle = page.getByText(checklistTitle, { exact: true });
   await expect(savedChecklistTitle).toBeVisible();
   await page.setViewportSize({ width: 320, height: 740 });
@@ -208,7 +213,7 @@ test("몇 번의 선택으로 여행 계획을 만들고 일차별 일정으로 
   expect(checklistLayout.pageWidth).toBeLessThanOrEqual(checklistLayout.viewportWidth + 1);
   await page.getByRole("region", { name: "여행 준비 체크리스트" }).screenshot({ path: "test-results/checklist-mobile.png" });
   await page.setViewportSize({ width: 390, height: 844 });
-  expect(taskRequests).toBe(2);
+  expect(taskRequests).toBe(3);
   await expect(checklistFilters.getByRole("button", { name: "남은 항목 6", exact: true })).toHaveAttribute("aria-pressed", "true");
   await expect(page.locator(".travel-checklist__items li")).toHaveCount(6);
   await checklistFilters.getByRole("button", { name: "전체 7", exact: true }).click();
