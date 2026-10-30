@@ -95,8 +95,8 @@ export async function apiGet<T>(path: string): Promise<T> {
 }
 
 /** Authenticated same-origin GET through the cookie-backed Next.js proxy. */
-export async function apiSessionGet<T>(path: string): Promise<T> {
-  const response = await sameOriginFetch(path, { method: "GET" });
+export async function apiSessionGet<T>(path: string, options: { signal?: AbortSignal } = {}): Promise<T> {
+  const response = await sameOriginFetch(path, { method: "GET", signal: options.signal });
   return unwrapEnvelope<T>(response, { requireData: true });
 }
 
@@ -121,7 +121,9 @@ async function sameOriginFetch(path: string, init: RequestInit): Promise<Respons
       credentials: "same-origin",
       cache: "no-store",
       headers: { Accept: "application/json", ...(init.headers ?? {}) },
-      signal: AbortSignal.timeout(SESSION_REQUEST_TIMEOUT_MS),
+      signal: init.signal
+        ? AbortSignal.any([init.signal, AbortSignal.timeout(SESSION_REQUEST_TIMEOUT_MS)])
+        : AbortSignal.timeout(SESSION_REQUEST_TIMEOUT_MS),
     });
     if (response.status === 401) {
       const envelope = await readEnvelope<unknown>(response.clone());
@@ -129,6 +131,7 @@ async function sameOriginFetch(path: string, init: RequestInit): Promise<Respons
     }
     return response;
   } catch {
+    if (init.signal?.aborted) throw init.signal.reason;
     throw new ApiError(0, UNREACHABLE_MESSAGE);
   }
 }
@@ -159,7 +162,7 @@ async function unwrapEnvelope<T>(
     throw error;
   }
 
-  if (requireData && envelope.data === null) {
+  if (requireData && envelope.data == null) {
     throw new ApiError(response.status, "응답 본문이 비어 있습니다.", null, requestId);
   }
 
@@ -169,7 +172,11 @@ async function unwrapEnvelope<T>(
 /** Tolerates a non-JSON body (proxy error page, empty 500) instead of throwing a SyntaxError. */
 export async function readEnvelope<T>(response: Response): Promise<ApiEnvelope<T> | null> {
   try {
-    return (await response.json()) as ApiEnvelope<T>;
+    const value: unknown = await response.json();
+    if (!value || typeof value !== "object" || Array.isArray(value)
+      || !("success" in value) || typeof value.success !== "boolean"
+      || !("data" in value)) return null;
+    return value as ApiEnvelope<T>;
   } catch {
     return null;
   }
