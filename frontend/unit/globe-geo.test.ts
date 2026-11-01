@@ -18,10 +18,11 @@ test("slow or malformed geography can retry without poisoning the shared cache",
       expect(getCachedCountryFeatures()).toEqual([]);
     }
     const feature = { type: "Feature", id: "JPN", properties: { iso2: "JP", iso3: "JPN", nameEn: "Japan", nameKo: "일본" }, geometry: { type: "Polygon", coordinates: [[[130, 30], [140, 30], [140, 40], [130, 30]]] } };
+    const withoutId = { type: "Feature", properties: { iso2: null, iso3: null, nameEn: "Region", nameKo: "지역" }, geometry: feature.geometry };
     let requests = 0;
-    globalThis.fetch = async () => { requests += 1; return Response.json({ features: [feature] }); };
+    globalThis.fetch = async () => { requests += 1; return Response.json({ features: [feature, withoutId] }); };
     const [first, second] = await Promise.all([loadCountryFeatures(), loadCountryFeatures()]);
-    expect(first).toEqual([feature]);
+    expect(first).toEqual([feature, withoutId]);
     expect(first).toBe(second);
     expect(await loadCountryFeatures()).toBe(first);
     expect(getCachedCountryFeatures()).toBe(first);

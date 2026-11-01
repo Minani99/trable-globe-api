@@ -1,6 +1,6 @@
 export interface CountryFeature {
   type: "Feature";
-  id: string;
+  id?: string;
   properties: { iso2: string | null; iso3: string | null; nameEn: string; nameKo: string };
   geometry: {
     type: "Polygon" | "MultiPolygon";
@@ -41,7 +41,7 @@ function isCountryFeature(value: unknown): value is CountryFeature {
   if (!value || typeof value !== "object") return false;
   const feature = value as Partial<CountryFeature>;
   return feature.type === "Feature"
-    && typeof feature.id === "string"
+    && (feature.id === undefined || typeof feature.id === "string")
     && typeof feature.properties?.nameEn === "string"
     && typeof feature.properties?.nameKo === "string"
     && (feature.geometry?.type === "Polygon" || feature.geometry?.type === "MultiPolygon")
