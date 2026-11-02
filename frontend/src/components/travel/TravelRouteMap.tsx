@@ -66,12 +66,14 @@ export function TravelRouteMap({ places, compact = false, placeNumbers, focusedP
   const canvasRef = useRef<HTMLDivElement | null>(null);
   const panState = useRef<PanState | null>(null);
   const measuredWidthRef = useRef<number | null>(null);
+  const preserveViewRef = useRef(false);
   const focusedPlace = places.find((place) => place.id === focusedPlaceId);
   const focusLat = focusedPlace?.latitude;
   const focusLng = focusedPlace?.longitude;
 
   useEffect(() => {
     if (focusedPlaceId == null || focusLat == null || focusLng == null) return;
+    preserveViewRef.current = true;
     const frame = requestAnimationFrame(() => {
       const target = lngLatToWorld(focusLng, focusLat, 15);
       setSelectedId(focusedPlaceId);
@@ -107,7 +109,7 @@ export function TravelRouteMap({ places, compact = false, placeNumbers, focusedP
       setMeasured(true);
 
       const previousWidth = measuredWidthRef.current;
-      if (previousWidth === null || Math.abs(previousWidth - nextSize.width) >= 64) {
+      if (!preserveViewRef.current && (previousWidth === null || Math.abs(previousWidth - nextSize.width) >= 64)) {
         const fitted = createInitialView(places, nextSize.width, nextSize.height);
         setZoom(fitted.zoom);
         setCenter({ x: fitted.centerX, y: fitted.centerY });
@@ -155,6 +157,7 @@ export function TravelRouteMap({ places, compact = false, placeNumbers, focusedP
     if (clamped === zoom) {
       return;
     }
+    preserveViewRef.current = true;
     const lngLat = worldToLngLat(center.x, center.y, zoom);
     const nextWorld = lngLatToWorld(lngLat.lng, lngLat.lat, clamped);
     setZoom(clamped);
@@ -162,6 +165,7 @@ export function TravelRouteMap({ places, compact = false, placeNumbers, focusedP
   };
 
   const resetViewport = () => {
+    preserveViewRef.current = false;
     if (useGoogle) {
       setFitRequest((count) => count + 1);
       return;
@@ -172,6 +176,7 @@ export function TravelRouteMap({ places, compact = false, placeNumbers, focusedP
   };
 
   const selectPlace = (place: TravelPlace) => {
+    preserveViewRef.current = true;
     const targetZoom = Math.max(zoom, 15);
     const nextCenter = lngLatToWorld(place.longitude, place.latitude, targetZoom);
     setSelectedId(place.id);
@@ -208,6 +213,7 @@ export function TravelRouteMap({ places, compact = false, placeNumbers, focusedP
     if (!previous || previous.pointerId !== event.pointerId) {
       return;
     }
+    preserveViewRef.current = true;
     const bounds = event.currentTarget.getBoundingClientRect();
     const pixelScaleX = viewportSize.width / bounds.width;
     const pixelScaleY = viewportSize.height / bounds.height;
