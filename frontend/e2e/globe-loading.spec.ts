@@ -19,12 +19,15 @@ test("지구본을 다시 열면 국가 경계 데이터를 재사용한다", as
   expect(requests).toBe(1);
 });
 
-test("국가 경계 요청 실패가 다음 지구본 진입에 남지 않는다", async ({ page }) => {
+for (const failure of ["http", "invalid-data"] as const) {
+test(`국가 경계 요청 실패가 다음 지구본 진입에 남지 않는다 (${failure})`, async ({ page }) => {
   let unavailable = true;
   let requests = 0;
   await page.route("**/geo/countries.geo.json", async (route) => {
     requests += 1;
-    if (unavailable) await route.fulfill({ status: 503, body: "Unavailable" });
+    if (unavailable) await route.fulfill(failure === "http"
+      ? { status: 503, body: "Unavailable" }
+      : { status: 200, json: { features: [{}] } });
     else await route.continue();
   });
   await page.goto("/");
@@ -41,3 +44,4 @@ test("국가 경계 요청 실패가 다음 지구본 진입에 남지 않는다
   await expect.poll(() => requests).toBe(failedRequests + 1);
   await expect(error).toHaveCount(0);
 });
+}
