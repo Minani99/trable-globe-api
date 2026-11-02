@@ -47,6 +47,7 @@ export async function loadAuthMember(
     credentials: "same-origin",
     headers: { Accept: "application/json" },
     cache: "no-store",
+    signal: AbortSignal.timeout(20_000),
   })
     .then(async (response) => {
       if (response.status === 401) return null;
