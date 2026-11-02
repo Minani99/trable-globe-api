@@ -66,6 +66,21 @@ for (const width of [320, 390, 768]) {
     await expect(map).toHaveCSS("touch-action", "pan-y pinch-zoom");
     await route.getByRole("button", { name: "2번째 기요미즈데라 지도에서 선택", exact: true }).click();
     await expect(map.locator(".travel-route-map-active strong")).toHaveText("기요미즈데라");
+    // Rotation/resizing must preserve the focused location and zoom, not fit all stops.
+    const marker = map.getByRole("button", { name: "2번째 장소 기요미즈데라", exact: true });
+    const markerOffset = () => marker.evaluate((node) => {
+      const circle = node.querySelector("circle")!;
+      const svg = node.closest("svg")!;
+      return Math.abs(Number(circle.getAttribute("cx")) - svg.viewBox.baseVal.width / 2);
+    });
+    await expect.poll(markerOffset).toBeLessThan(1);
+    const mapWidth = await map.locator("svg").getAttribute("viewBox");
+    await page.setViewportSize({ width: width + 180, height: 600 });
+    await expect(map.locator("svg")).not.toHaveAttribute("viewBox", mapWidth!);
+    await expect.poll(markerOffset).toBeLessThan(1);
+    await expect(marker).toHaveAttribute("aria-pressed", "true");
+    await page.setViewportSize({ width, height: 844 });
+    await expect.poll(markerOffset).toBeLessThan(1);
     await route.getByRole("button", { name: "전체 장소 위치 맞춤" }).click();
     await map.getByRole("button", { name: "3번째 장소 니시키 시장", exact: true }).click();
     await expect(route.getByRole("button", { name: "3번째 니시키 시장 지도에서 선택", exact: true })).toHaveAttribute("aria-pressed", "true");
