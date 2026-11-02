@@ -80,13 +80,12 @@ export function ProfileEditor({ member }: { member: AuthMember }) {
         bio: formData.get("bio"),
         profileImageUrl: nextImageUrl,
       });
-      if (result) {
-        setSavedMember(result);
-        setCachedAuthMember(result);
-        setImageUrl(result.profileImageUrl ?? "");
-        setImageFile(null);
-        setPreviewUrl(null);
-      }
+      if (!result) throw new ApiError(500, "저장된 프로필을 확인하지 못했습니다. 다시 시도해 주세요.");
+      setSavedMember(result);
+      setCachedAuthMember(result);
+      setImageUrl(result.profileImageUrl ?? "");
+      setImageFile(null);
+      setPreviewUrl(null);
       if (previousImageUrl && previousImageUrl !== nextImageUrl) {
         void deleteUploadedPhoto({ publicUrl: previousImageUrl }).catch(() => undefined);
       }

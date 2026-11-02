@@ -1,4 +1,4 @@
-import { ApiError, apiMutation } from "@/lib/api/client";
+import { ApiError, apiMutation, apiSessionGet } from "@/lib/api/client";
 
 export interface UploadConfiguration {
   configured: boolean;
@@ -18,6 +18,7 @@ export interface PhotoUploadResult {
 export const MAX_SOURCE_IMAGE_BYTES = 30 * 1024 * 1024;
 const MAX_IMAGE_EDGE = 2560;
 const OPTIMIZE_ABOVE_BYTES = 2 * 1024 * 1024;
+const UPLOAD_TIMEOUT_MS = 120_000;
 
 interface UploadTicket {
   objectKey: string;
@@ -27,10 +28,7 @@ interface UploadTicket {
 }
 
 export async function getUploadConfiguration(): Promise<UploadConfiguration> {
-  const response = await fetch("/api/uploads/presign", { headers: { Accept: "application/json" }, cache: "no-store" });
-  const body = (await response.json()) as { success: boolean; data: UploadConfiguration | null; message: string | null };
-  if (!response.ok || !body.success || !body.data) throw new ApiError(response.status, body.message ?? "업로드 설정을 확인하지 못했습니다.");
-  return body.data;
+  return apiSessionGet<UploadConfiguration>("/api/uploads/presign");
 }
 
 export async function uploadPhoto(file: File, onProgress: (progress: number) => void): Promise<PhotoUploadResult> {
@@ -45,6 +43,7 @@ export async function uploadPhoto(file: File, onProgress: (progress: number) => 
   await new Promise<void>((resolve, reject) => {
     const request = new XMLHttpRequest();
     request.open("PUT", ticket.uploadUrl);
+    request.timeout = UPLOAD_TIMEOUT_MS;
     request.setRequestHeader("Content-Type", prepared.file.type);
     request.upload.onprogress = (event) => {
       if (event.lengthComputable) onProgress(Math.round((event.loaded / event.total) * 100));
@@ -59,6 +58,7 @@ export async function uploadPhoto(file: File, onProgress: (progress: number) => 
     };
     request.onerror = () => reject(new ApiError(0, "사진 저장소에 연결하지 못했습니다. 잠시 후 다시 시도해 주세요."));
     request.onabort = () => reject(new ApiError(0, "사진 업로드가 취소되었습니다."));
+    request.ontimeout = () => reject(new ApiError(0, "사진 업로드 시간이 초과되었습니다. 연결 상태를 확인한 뒤 다시 시도해 주세요."));
     request.send(prepared.file);
   });
 
