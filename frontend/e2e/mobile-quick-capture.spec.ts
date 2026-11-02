@@ -48,6 +48,7 @@ test("진행 중인 여행은 모바일 어디서나 장소·사진·메모로 �
   });
   let uploadedBytes = 0;
   let uploadedContentType = "";
+  let stallUpload = true;
   await page.route("**/api/uploads/presign", async (route) => {
     if (route.request().method() === "GET") {
       await route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify({ success: true, data: { configured: true, maxBytes: 10 * 1024 * 1024, maxPhotos: 30, acceptedTypes: ["image/jpeg", "image/png", "image/webp"] }, message: null }) });
@@ -56,6 +57,11 @@ test("진행 중인 여행은 모바일 어디서나 장소·사진·메모로 �
     await route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify({ success: true, data: { objectKey: "members/test/photos/optimized.webp", uploadUrl: "https://upload.travel-globe.test/optimized.webp", publicUrl: "https://images.travel-globe.test/optimized.webp", expiresInSeconds: 300 }, message: null }) });
   });
   await page.route("https://upload.travel-globe.test/**", async (route) => {
+    if (stallUpload) {
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      await route.abort().catch(() => undefined);
+      return;
+    }
     uploadedBytes = route.request().postDataBuffer()?.length ?? 0;
     uploadedContentType = route.request().headers()["content-type"] ?? "";
     await route.fulfill({ status: 200, body: "" });
@@ -103,6 +109,21 @@ test("진행 중인 여행은 모바일 어디서나 장소·사진·메모로 �
   await expect(quickPhoto.locator('input[type="file"]')).toHaveAttribute("capture", "environment");
   const tinyPng = Buffer.from("iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=", "base64");
   const largePhoto = Buffer.concat([tinyPng, Buffer.alloc(3 * 1024 * 1024)]);
+  // Exercise the browser's real XHR timeout without waiting two minutes in CI.
+  await page.evaluate(() => {
+    const descriptor = Object.getOwnPropertyDescriptor(XMLHttpRequest.prototype, "timeout")!;
+    Object.defineProperty(XMLHttpRequest.prototype, "timeout", {
+      ...descriptor,
+      set(value: number) {
+        descriptor.set!.call(this, value > 0 ? 50 : value);
+        Object.defineProperty(XMLHttpRequest.prototype, "timeout", descriptor);
+      },
+    });
+  });
+  await quickPhoto.locator('input[type="file"]').setInputFiles({ name: "large-photo.png", mimeType: "image/png", buffer: largePhoto });
+  await expect(capture.getByText(/사진 업로드 시간이 초과되었습니다/)).toBeVisible();
+  await expect(quickPhoto.getByRole("button", { name: "카메라 또는 사진 선택" })).toBeEnabled();
+  stallUpload = false;
   await quickPhoto.locator('input[type="file"]').setInputFiles({ name: "large-photo.png", mimeType: "image/png", buffer: largePhoto });
   await expect(capture.getByText(/사진을 기록했어요\. 3\.0MB →/)).toBeVisible();
   expect(uploadedContentType).toBe("image/webp");
