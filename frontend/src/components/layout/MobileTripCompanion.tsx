@@ -44,6 +44,7 @@ export function MobileTripCompanion({
   const [composer, setComposer] = useState<"note" | "photo" | null>(null);
   const [selectedPlaceId, setSelectedPlaceId] = useState<number | null>(null);
   const [note, setNote] = useState("");
+  const noteDrafts = useRef(new Map<number, string>());
   const [pendingAction, setPendingAction] = useState<"place" | "note" | "photo" | null>(null);
   const [uploadProgress, setUploadProgress] = useState(0);
   const [status, setStatus] = useState<string | null>(null);
@@ -224,7 +225,7 @@ export function MobileTripCompanion({
   function openComposer(type: "note" | "photo") {
     const place = dayPlaces.find((place) => place.id === focusedMapPlaceId) ?? selectedPlace ?? dayPlaces[0];
     setSelectedPlaceId(place?.id ?? null);
-    setNote(type === "note" ? place?.memo ?? "" : "");
+    setNote(type === "note" && place ? noteDrafts.current.get(place.id) ?? place.memo ?? "" : "");
     setStatus(null);
     setComposer(type);
   }
@@ -235,8 +236,12 @@ export function MobileTripCompanion({
     setPendingAction("note");
     setStatus(null);
     const normalizedMemo = note.trim() || null;
+    const finishNote = () => {
+      noteDrafts.current.delete(selectedPlace.id);
+      setComposer(null);
+    };
     if (!navigator.onLine) {
-      if (saveOfflinePlaceUpdate(selectedPlace, Boolean(selectedPlace.completedAt), normalizedMemo, "메모를 기기에 저장했습니다.")) setComposer(null);
+      if (saveOfflinePlaceUpdate(selectedPlace, Boolean(selectedPlace.completedAt), normalizedMemo, "메모를 기기에 저장했습니다.")) finishNote();
       setPendingAction(null);
       mutationLock.current = false;
       return;
@@ -250,11 +255,11 @@ export function MobileTripCompanion({
       removeQueuedUpdatesForPlace(username, currentTravel.id, selectedPlace.id);
       setPendingSyncCount(readQueuedPlaceUpdates(username, currentTravel.id).length);
       setCurrentTravel(applyQueuedPlaceUpdates(result, readQueuedPlaceUpdates(username, currentTravel.id)));
-      setComposer(null);
+      finishNote();
       setStatus(`${selectedPlace.placeName}에 메모를 남겼어요.`);
     } catch (error) {
       if (error instanceof ApiError && error.isUnreachable) {
-        if (saveOfflinePlaceUpdate(selectedPlace, Boolean(selectedPlace.completedAt), normalizedMemo, "메모를 기기에 저장했습니다.")) setComposer(null);
+        if (saveOfflinePlaceUpdate(selectedPlace, Boolean(selectedPlace.completedAt), normalizedMemo, "메모를 기기에 저장했습니다.")) finishNote();
       } else {
         setStatus(error instanceof ApiError ? error.message : "메모를 저장하지 못했습니다.");
       }
@@ -433,10 +438,10 @@ export function MobileTripCompanion({
         <fieldset ref={composerRef} disabled={busy} className="mobile-trip-companion__composer" aria-label={composer === "note" ? "빠른 메모" : "빠른 사진 기록"}>
           <header><strong>{composer === "note" ? "메모 남기기" : "사진 기록하기"}</strong><button type="button" onClick={() => setComposer(null)} aria-label="빠른 기록 닫기"><AppIcon name="close" /></button></header>
           {dayPlaces.length > 1 ? (
-            <label><span>연결할 일정</span><select value={selectedPlace?.id ?? ""} onChange={(event) => { const id = Number(event.target.value); const place = dayPlaces.find((item) => item.id === id); setSelectedPlaceId(id); if (composer === "note") setNote(place?.memo ?? ""); }}>{dayPlaces.map((place, index) => <option key={place.id} value={place.id}>{index + 1}번째 · {place.placeName}</option>)}</select></label>
+            <label><span>연결할 일정</span><select value={selectedPlace?.id ?? ""} onChange={(event) => { const id = Number(event.target.value); const place = dayPlaces.find((item) => item.id === id); setSelectedPlaceId(id); if (composer === "note") setNote(noteDrafts.current.get(id) ?? place?.memo ?? ""); }}>{dayPlaces.map((place, index) => <option key={place.id} value={place.id}>{index + 1}번째 · {place.placeName}</option>)}</select></label>
           ) : selectedPlace ? <p className="mobile-trip-companion__composer-place">{selectedPlace.placeName}</p> : null}
           {composer === "note" ? (
-            <><label><span>한 줄 메모</span><textarea value={note} maxLength={1000} rows={3} onChange={(event) => setNote(event.target.value)} placeholder="기억하고 싶은 내용을 적어주세요" /></label><button className="mobile-trip-companion__composer-submit" type="button" disabled={busy} onClick={() => void saveNote()}>{pendingAction === "note" ? "저장 중…" : "메모 저장"}</button></>
+            <><label><span>한 줄 메모</span><textarea value={note} maxLength={1000} rows={3} onChange={(event) => { setNote(event.target.value); if (selectedPlace) noteDrafts.current.set(selectedPlace.id, event.target.value); }} placeholder="기억하고 싶은 내용을 적어주세요" /></label><button className="mobile-trip-companion__composer-submit" type="button" disabled={busy} onClick={() => void saveNote()}>{pendingAction === "note" ? "저장 중…" : "메모 저장"}</button></>
           ) : (
             <><input ref={photoInputRef} type="file" accept="image/jpeg,image/png,image/webp" capture="environment" onChange={(event) => { const file = event.target.files?.[0]; if (file) void addPhoto(file); }} /><button className="mobile-trip-companion__composer-submit" type="button" disabled={busy || !online} onClick={() => photoInputRef.current?.click()}>{pendingAction === "photo" ? `업로드 ${uploadProgress}%` : online ? "카메라 또는 사진 선택" : "연결 후 사진 올리기"}</button><small>{online ? "선택한 사진은 이 일정에 바로 저장됩니다." : "완료 체크와 메모는 지금도 저장할 수 있습니다."}</small></>
           )}

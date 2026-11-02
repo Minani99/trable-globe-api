@@ -104,6 +104,16 @@ test("미래 여행도 여행용 보기에서 날짜별로 확인할 수 있다"
   await expect(tripActions.getByRole("link", { name: "계획 편집" })).toHaveCount(0);
   await expect(page.getByRole("navigation", { name: "여행용 보기 메뉴" }).getByRole("link", { name: "계획 편집" })).toBeVisible();
 
+  await tripActions.getByRole("button", { name: "메모", exact: true }).click();
+  const noteComposer = page.getByRole("group", { name: "빠른 메모", exact: true });
+  await noteComposer.getByRole("textbox", { name: "한 줄 메모" }).fill("");
+  await page.getByRole("button", { name: /DAY 2/ }).click();
+  await tripActions.getByRole("button", { name: "메모", exact: true }).click();
+  await expect(noteComposer.getByRole("textbox", { name: "한 줄 메모" })).toHaveValue("개인 예약번호는 공유하지 않기");
+  await page.getByRole("button", { name: /DAY 1/ }).click();
+  await tripActions.getByRole("button", { name: "메모", exact: true }).click();
+  // An intentionally cleared draft must not restore the previous saved memo.
+  await expect(noteComposer.getByRole("textbox", { name: "한 줄 메모" })).toHaveValue("");
   await page.getByRole("button", { name: /DAY 2/ }).click();
   await expect(page.getByRole("heading", { name: "2일차 일정" })).toBeVisible();
   await expect(page.getByRole("list", { name: "도쿄 2일 여행 2일차 일정" })).toContainText("시부야 스카이");
