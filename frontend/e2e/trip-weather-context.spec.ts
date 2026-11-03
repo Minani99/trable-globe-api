@@ -11,7 +11,9 @@ test("모바일 날씨는 동선 위에서 선택 장소의 예보를 보여준�
   expect(response.status()).toBe(201);
   const travel = (await response.json()).data;
   await page.setViewportSize({ width: 320, height: 740 });
+  let invalidWeather = true;
   await page.route("**/api/weather/forecast?**", route => {
+    if (invalidWeather) return route.fulfill({ json: { success: true, data: { available: true, days: [null] } } });
     const params = new URL(route.request().url()).searchParams;
     const second = params.get("latitude") === "35.01";
     return route.fulfill({ json: { success: true, data: {
@@ -21,6 +23,10 @@ test("모바일 날씨는 동선 위에서 선택 장소의 예보를 보여준�
   });
   await page.goto(`/studio/travels/${travel.id}/go`);
   const first = page.getByRole("region", { name: "첫 장소 여행 날씨" });
+  await expect(first).toContainText("날씨를 불러오지 못했어요");
+  await expect(page.getByRole("region", { name: "하루 동선 한눈에 보기" })).toBeVisible();
+  invalidWeather = false;
+  await first.getByRole("button", { name: "다시 확인", exact: true }).click();
   await expect(first).toContainText("맑음");
   const weatherBox = await first.boundingBox();
   const routeBox = await page.getByRole("region", { name: "하루 동선 한눈에 보기" }).boundingBox();

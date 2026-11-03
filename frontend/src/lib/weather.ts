@@ -55,14 +55,39 @@ export function fetchTripWeather(query: WeatherQuery, { force = false }: { force
   });
   const promise = fetch(`/api/weather/forecast?${params}`, { signal: AbortSignal.timeout(15_000) })
     .then(async (response) => {
-      const body = await response.json() as { success: boolean; data: TripWeather | null; message: string | null };
-      if (!response.ok || !body.success || !body.data) throw new Error(body.message ?? "weather request failed");
-      return body.data;
+      const body: unknown = await response.json();
+      if (!response.ok || !isRecord(body) || body.success !== true) throw new Error("weather request failed");
+      return parseTripWeather(body.data);
     });
   if (cache.size >= 24) cache.delete(cache.keys().next().value!);
   cache.set(key, { at: Date.now(), promise });
   promise.catch(() => { if (cache.get(key)?.promise === promise) cache.delete(key); });
   return promise;
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return value !== null && typeof value === "object" && !Array.isArray(value);
+}
+
+function parseTripWeather(value: unknown): TripWeather {
+  const invalid = () => new Error("Invalid weather response");
+  if (!isRecord(value) || typeof value.available !== "boolean" || !Array.isArray(value.days)
+    || (value.availableFrom != null && !isIsoDate(value.availableFrom))) throw invalid();
+  const nullableNumber = (number: unknown): number | null => {
+    if (number == null) return null;
+    if (typeof number !== "number" || !Number.isFinite(number)) throw invalid();
+    return number;
+  };
+  const days = value.days.map((day): WeatherDay => {
+    if (!isRecord(day) || !isIsoDate(day.date) || typeof day.weatherCode !== "number" || !Number.isFinite(day.weatherCode)
+      || (day.source !== "forecast" && day.source !== "observed" && day.source !== "climate")) throw invalid();
+    return {
+      date: day.date, weatherCode: day.weatherCode, source: day.source as WeatherSource,
+      temperatureMin: nullableNumber(day.temperatureMin), temperatureMax: nullableNumber(day.temperatureMax),
+      precipitationProbability: nullableNumber(day.precipitationProbability), precipitationSum: nullableNumber(day.precipitationSum),
+    };
+  });
+  return { available: value.available, availableFrom: value.availableFrom == null ? null : value.availableFrom as string, days };
 }
 
 export type TripWeatherState =
