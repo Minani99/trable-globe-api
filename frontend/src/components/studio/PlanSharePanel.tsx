@@ -22,6 +22,7 @@ export function PlanSharePanel({ travelId, dirty, pendingSave }: { travelId: num
     setPending(true);
     try {
       const result = await apiSessionGet<{ token: string | null }>(endpoint);
+      if (result.token !== null && !isShareToken(result.token)) throw new Error("Invalid sharing response");
       update(result.token);
       setLoaded(true);
       setMessage("");
@@ -34,6 +35,7 @@ export function PlanSharePanel({ travelId, dirty, pendingSave }: { travelId: num
     setPending(true);
     try {
       const result = await apiMutation<{ token: string }>(endpoint, enable ? "POST" : "DELETE");
+      if (enable && !isShareToken(result?.token)) throw new ApiError(500, "공유 링크를 확인하지 못했어요. 다시 시도해 주세요.");
       update(result?.token ?? null);
       setMessage(enable ? "공유 링크가 준비됐어요. 아래에서 복사해 전달하세요." : "공유를 껐습니다. 이전 링크로는 더 이상 열 수 없어요.");
     } catch (cause) { setMessage(cause instanceof ApiError ? cause.message : "공유 설정을 바꾸지 못했어요."); }
@@ -75,4 +77,8 @@ export function PlanSharePanel({ travelId, dirty, pendingSave }: { travelId: num
       <p role="status">{message}</p>
     </div>
   </details>;
+}
+
+function isShareToken(value: unknown): value is string {
+  return typeof value === "string" && value.trim().length > 0;
 }

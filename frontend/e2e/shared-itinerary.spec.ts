@@ -36,7 +36,21 @@ test("다른 여행자의 공개 일정을 새 날짜의 내 계획으로 가져
   await page.setViewportSize({ width: 320, height: 740 });
   await page.goto(`/studio/travels/${sourceId}/edit?plan=1`);
   const sharing = page.locator(".plan-share-panel");
+  let invalidLookup = true;
+  let invalidCreate = true;
+  await page.route(`**/api/private/travels/${sourceId}/share`, route => {
+    if (route.request().method() === "GET" && invalidLookup) return route.fulfill({ json: { success: true, data: {} } });
+    if (route.request().method() === "POST" && invalidCreate) return route.fulfill({ json: { success: true, data: null } });
+    return route.continue();
+  });
   await sharing.locator("summary").click();
+  await expect(sharing.getByRole("status")).toContainText("공유 설정을 불러오지 못했어요");
+  invalidLookup = false;
+  await sharing.getByRole("button", { name: "다시 불러오기" }).click();
+  await sharing.getByRole("button", { name: "일정 공유 링크 만들기" }).click();
+  await expect(sharing.getByRole("status")).toContainText("공유 링크를 확인하지 못했어요");
+  await expect(sharing.getByRole("textbox", { name: "공유 링크" })).toHaveCount(0);
+  invalidCreate = false;
   await sharing.getByRole("button", { name: "일정 공유 링크 만들기" }).click();
   const shareUrl = await sharing.getByRole("textbox", { name: "공유 링크" }).inputValue();
   expect(shareUrl).toContain("/share/");
