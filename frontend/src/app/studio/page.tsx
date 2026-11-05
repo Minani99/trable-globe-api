@@ -9,15 +9,14 @@ import { TravelLibrary } from "@/components/studio/TravelLibrary";
 import { nextJourneyAction } from "@/lib/journey-next-action";
 import { authenticatedBackendGet, getCurrentMember } from "@/lib/api/server-session";
 import { todayInKorea } from "@/lib/utils/date";
-import type { ActivityEvent, OwnedTravelSummary } from "@/types";
+import type { OwnedTravelSummary } from "@/types";
 import { Icon } from "@/components/common/Icon";
 
 export const metadata: Metadata = { title: "내 여행", robots: { index: false, follow: false } };
 
 export default async function StudioPage() {
-  const [member, travelRecords, activity] = await Promise.all([
+  const [member, travelRecords] = await Promise.all([
     getCurrentMember(), authenticatedBackendGet<OwnedTravelSummary[]>("/api/private/travels"),
-    authenticatedBackendGet<ActivityEvent[]>("/api/private/activity?limit=8"),
   ]);
   if (!member) redirect("/login?next=/studio");
   const travels = travelRecords ?? [];
@@ -33,7 +32,7 @@ export default async function StudioPage() {
         </header>
         {nextAction ? <JourneyNextCard action={nextAction} /> : null}
         <TravelLibrary travels={travels} today={today} />
-        <ActivityDisclosure events={activity ?? []} />
+        <ActivityDisclosure />
       </div>
     </main>
     <SiteFooter compact />
