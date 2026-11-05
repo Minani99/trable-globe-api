@@ -45,11 +45,49 @@ for (const width of [320, 390, 768, 1280]) {
     expect(airport!.width).toBeGreaterThan(120);
     expect(mapRequests).toBe(0);
     await page.screenshot({ path: testInfo.outputPath(`flights-${width}.png`), fullPage: true });
+    if (width <= 700) {
+      for (const name of ["준비물", "예산·예약", "사진·메모", "여행 정보"]) {
+        await tabs.getByRole("tab", { name, exact: true }).click();
+        await assertFits();
+        const overflowing = await page.locator('main input:visible, main select:visible, main textarea:visible').evaluateAll(nodes => nodes.filter(node => {
+          const box = node.getBoundingClientRect();
+          return box.left < 0 || box.right > innerWidth + 1;
+        }).map(node => node.getAttribute('aria-label') || node.outerHTML.slice(0, 120)));
+        expect(overflowing, `${name} 입력란`).toEqual([]);
+      }
+    }
     await tabs.getByRole("tab", { name: "일정", exact: true }).click();
     const planningMap = page.getByRole("region", { name: "계획 중인 장소 지도" });
     await expect(planningMap.locator(".travel-route-marker")).toHaveCount(3);
     await planningMap.getByRole("button", { name: "2번째 장소 기요미즈데라", exact: true }).click();
     await expect(page.getByRole("textbox", { name: "장소 이름", exact: true })).toHaveValue("기요미즈데라");
+    await assertFits();
+    const clippedFields = await page.locator('.editor-stop__body:not([hidden])').evaluate(root => {
+      return [...root.querySelectorAll('input, select, textarea, button')].filter(node => {
+        const box = node.getBoundingClientRect();
+        return box.width > 0 && (box.left < 0 || box.right > innerWidth + 1);
+      }).map(node => node.outerHTML.slice(0, 180));
+    });
+    expect(clippedFields).toEqual([]);
+    if (width <= 700) {
+      const expanded = page.locator('.editor-stop__body:not([hidden])');
+      const time = expanded.getByLabel("시작 시간", { exact: true });
+      const duration = expanded.getByRole("combobox", { name: /^머무는 시간/ });
+      const timeBox = (await time.boundingBox())!;
+      const durationBox = (await duration.boundingBox())!;
+      expect(timeBox.x + timeBox.width).toBeLessThanOrEqual(width);
+      expect(timeBox.y + timeBox.height <= durationBox.y || timeBox.x + timeBox.width <= durationBox.x).toBeTruthy();
+      const search = page.locator(".place-picker__search");
+      const iconBox = (await search.locator(".place-picker__search-icon").boundingBox())!;
+      const inputBox = (await search.locator("input").boundingBox())!;
+      expect(Math.abs(iconBox.y - inputBox.y)).toBeLessThan(2);
+      await page.setViewportSize({ width, height: 568 });
+      await page.getByRole("button", { name: "편집 닫기", exact: true }).scrollIntoViewIfNeeded();
+      await expect(page.getByRole("button", { name: "편집 닫기", exact: true })).toBeInViewport();
+      await page.getByRole("button", { name: "편집 닫기", exact: true }).click({ trial: true });
+      await page.setViewportSize({ width, height: 844 });
+    }
+    await page.screenshot({ path: testInfo.outputPath(`expanded-editor-${width}.png`), fullPage: true });
     await page.getByRole("button", { name: "편집 닫기", exact: true }).click();
     await planningMap.getByRole("button", { name: "지도 접기", exact: true }).click();
     await expect(planningMap.locator(".travel-route-map-canvas")).toHaveCount(0);
