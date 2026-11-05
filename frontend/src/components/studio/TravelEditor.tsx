@@ -11,6 +11,7 @@ import { TravelActionIcon } from "@/components/common/TravelActionIcon";
 import { WeatherIcon } from "@/components/common/WeatherIcon";
 import { GoogleDirectionsPanel } from "@/components/travel/GoogleDirectionsPanel";
 import { VisitOrderSuggestion } from "@/components/studio/VisitOrderSuggestion";
+import { PlanningRoutePreview } from "@/components/studio/PlanningRoutePreview";
 import { ApiError, apiMutation } from "@/lib/api/client";
 import type { CountryOption } from "@/lib/countries";
 import {
@@ -948,7 +949,8 @@ export function TravelEditor({
             </div>
           </div>
         ) : null}
-        <p className="editor-order-hint" id="stop-drag-help">방문 순서대로 놓아주세요. ⋮⋮ 손잡이를 끌거나, 손잡이에 초점을 두고 ↑ ↓ 키로 옮길 수 있어요.</p>
+        <div className="planning-itinerary-workspace"><div className="planning-itinerary-list">
+        <p className="editor-order-hint" id="stop-drag-help">손잡이를 끌어 방문 순서를 바꾸세요. 키보드 ↑ ↓로도 이동할 수 있어요.</p>
         <p className="editor-order-notice" role="status">{orderNotice}</p>
         <ol className="travel-editor__places">
           {places.map((place, index) => planningMode && activePlanDate && place.visitedAt !== activePlanDate ? null : (
@@ -1017,6 +1019,8 @@ export function TravelEditor({
         {planningMode ? <VisitOrderSuggestion key={activePlanDate} disabled={pending}
           stops={activeDayPlaces.map(({ place }) => ({ key: place.key, placeName: place.placeName, latitude: isPlanningPlaceholder(place) ? null : coordinate(place.latitude), longitude: coordinate(place.longitude), startTime: place.startTime }))}
           onApply={applyVisitOrder} /> : null}
+        </div><aside className="planning-itinerary-map">
+        {mobileEditorStep === 1 ? <PlanningRoutePreview key={planningMode ? activePlanDate : "all"} places={planningMode ? activeDayPlaces.map(({ place }) => place) : places} countries={countries} focusedKey={expandedPlace} onSelect={setExpandedPlace} /> : null}
         <GoogleDirectionsPanel compact
           activeDate={planningMode ? activePlanDate : undefined}
           stops={(planningMode ? activeDayPlaces.map(({ place }) => place) : places).map((place) => ({
@@ -1024,6 +1028,7 @@ export function TravelEditor({
             latitude: coordinate(place.latitude), longitude: coordinate(place.longitude), visitedAt: place.visitedAt,
           }))}
         />
+        </aside></div>
         {!planningMode ? <div className="travel-editor__add-row"><p>방문 순서를 바꾸면 Google Maps 경로에도 바로 반영됩니다.</p><button type="button" onClick={() => { const next = emptyPlace(places.at(-1)?.countryCode ?? "KR"); setPlaces((current) => [...current, next]); setExpandedPlace(next.key); setDirty(true); }}><Icon name="plus" /> 장소 추가</button></div> : null}
         </div>
       </div></section>

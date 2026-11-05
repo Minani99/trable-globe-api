@@ -65,6 +65,7 @@ export function MobileTripCompanion({
   const locatedDayPlaces = useMemo(() => dayPlaces.filter((place) => isDirectionsStopLocated({ ...place, key: place.id })), [dayPlaces]);
   const dayPlaceNumbers = useMemo(() => Object.fromEntries(dayPlaces.map((place, index) => [place.id, index + 1])), [dayPlaces]);
   const activeMapPlaceId = focusedMapPlaceId ?? locatedDayPlaces[0]?.id;
+  const selectedMapPlace = locatedDayPlaces.find((place) => place.id === activeMapPlaceId);
   const viewingToday = viewDate === today;
   const nextPlace = dayPlaces.find((place) => !place.completedAt) ?? null;
   const selectedPlace = dayPlaces.find((place) => place.id === selectedPlaceId) ?? nextPlace ?? dayPlaces[0] ?? null;
@@ -318,6 +319,25 @@ export function MobileTripCompanion({
   }
 
   const editPath = `/studio/travels/${currentTravel.id}/edit`;
+  const itinerary = dayPlaces.length ? (
+    <ol className={`mobile-trip-companion__timeline${variant === "page" ? " day-route-stops" : ""}`} aria-label={`${currentTravel.title} ${viewingToday ? "오늘 일정" : `${dayNumber}일차 일정`}`}>
+      {dayPlaces.map((place, index) => <li key={place.id} className={`${place.id === nextPlace?.id ? "is-next " : ""}${place.completedAt ? "is-complete " : ""}${activeMapPlaceId === place.id ? "is-selected" : ""}`}>
+        <span className="trip-stop-number" aria-label={`${index + 1}번째 장소`}>{index + 1}</span>
+        <button type="button" aria-label={`${place.placeName} ${place.completedAt ? "미완료로 변경" : "완료"}`} aria-pressed={Boolean(place.completedAt)} disabled={busy}
+          onClick={() => void updatePlace(place, !place.completedAt)} aria-busy={pendingPlaceId === place.id}>
+          <span aria-hidden="true">{pendingPlaceId === place.id ? "…" : place.completedAt ? "✓" : ""}</span><small>{pendingPlaceId === place.id ? "저장 중" : place.completedAt ? "완료됨" : "완료"}</small>
+        </button>
+        {variant === "page" ? <div className="day-stop-content">
+          <button type="button" aria-pressed={activeMapPlaceId === place.id} aria-label={`${index + 1}번째 ${place.placeName} 지도에서 선택`}
+            disabled={!isDirectionsStopLocated({ ...place, key: place.id })} onClick={() => setFocusedMapPlaceId(place.id)}>
+            <strong>{place.placeName}</strong>
+            <small>{[place.startTime ? formatTime(place.startTime) : null, place.city?.nameKo ?? place.country.nameKo, place.durationMinutes ? formatDuration(place.durationMinutes) : null].filter(Boolean).join(" · ")}</small>
+          </button>
+          {place.memo ? <p>{place.memo}</p> : null}
+        </div> : <a href={googleMapsUrl(place)} target="_blank" rel="noreferrer"><strong>{place.placeName}</strong><small>{place.startTime ? `${formatTime(place.startTime)} · ` : ""}{place.city?.nameKo ?? place.country.nameKo}{place.durationMinutes ? ` · ${formatDuration(place.durationMinutes)}` : ""}{place.memo ? ` · ${place.memo}` : ""}</small></a>}
+      </li>)}
+    </ol>
+  ) : null;
   return (
     <section className={`mobile-trip-companion is-${variant}`} aria-labelledby={`mobile-trip-${variant}-${currentTravel.id}`}>
       <header className="mobile-trip-companion__heading">
@@ -383,9 +403,13 @@ export function MobileTripCompanion({
         {dayPlaces.length ? <section className="day-route-overview" aria-label="하루 동선 한눈에 보기">
           <header><AppIcon name="route" /><h3>하루 동선</h3><span>{dayPlaces.length}곳</span></header>
           {nextPlace ? <a className="day-route-next" href={googleMapsUrl(nextPlace)} target="_blank" rel="noreferrer" aria-label={`다음 방문 ${nextPlace.placeName} · 지도에서 위치 보기`}><span>다음 방문</span><strong>{dayPlaces.indexOf(nextPlace) + 1}. {nextPlace.placeName}</strong><AppIcon name="pin" /></a> : null}
-          <ol className="day-route-stops" aria-label="지도에서 볼 장소 선택">{dayPlaces.map((place, index) => <li key={place.id}><button type="button" aria-pressed={activeMapPlaceId === place.id} aria-label={`${index + 1}번째 ${place.placeName} 지도에서 선택`} disabled={!isDirectionsStopLocated({ ...place, key: place.id })} onClick={() => setFocusedMapPlaceId(place.id)}><b>{index + 1}</b><span>{place.placeName}</span>{place.completedAt ? <small>완료</small> : null}</button></li>)}</ol>
+          <div className="day-route-workspace">
+          <div className="day-route-list"><div className="day-route-list__heading"><strong>방문 순서</strong><span>장소를 누르면 지도에서 보여요</span></div>{itinerary}</div>
+          <div className="day-route-map-panel">
           <DayMap key={viewDate} compact focusedPlaceId={focusedMapPlaceId} onPlaceSelect={setFocusedMapPlaceId} placeNumbers={dayPlaceNumbers} places={locatedDayPlaces} />
+          {selectedMapPlace ? <a className="day-route-selected" href={`https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(`${selectedMapPlace.latitude},${selectedMapPlace.longitude}`)}`} target="_blank" rel="noreferrer"><div><small>선택한 장소</small><strong>{selectedMapPlace.placeName}</strong></div><span><AppIcon name="pin" />길찾기</span></a> : null}
           <GoogleDirectionsPanel compact activeDate={viewDate} stops={dayPlaces.map((place) => ({ ...place, key: place.id }))} />
+          </div></div>
         </section> : null}
       </> : null}
 
@@ -408,27 +432,7 @@ export function MobileTripCompanion({
       )}
 
 
-      {dayPlaces.length ? (
-        <ol className="mobile-trip-companion__timeline" aria-label={`${currentTravel.title} ${viewingToday ? "오늘 일정" : `${dayNumber}일차 일정`}`}>
-          {dayPlaces.map((place, index) => (
-            <li key={place.id} className={`${place.id === nextPlace?.id ? "is-next " : ""}${place.completedAt ? "is-complete" : ""}`.trim()}>
-              <span className="trip-stop-number" aria-label={`${index + 1}번째 장소`}>{index + 1}</span>
-              <button
-                type="button"
-                aria-label={`${place.placeName} ${place.completedAt ? "미완료로 변경" : "완료"}`}
-                aria-pressed={Boolean(place.completedAt)}
-                disabled={busy}
-                onClick={() => void updatePlace(place, !place.completedAt)}
-                aria-busy={pendingPlaceId === place.id}
-              ><span aria-hidden="true">{pendingPlaceId === place.id ? "…" : place.completedAt ? "✓" : ""}</span><small>{pendingPlaceId === place.id ? "저장 중" : place.completedAt ? "완료됨" : "완료"}</small></button>
-              <a href={googleMapsUrl(place)} target="_blank" rel="noreferrer">
-                <strong>{place.placeName}</strong>
-                <small>{place.startTime ? `${formatTime(place.startTime)} · ` : ""}{place.city?.nameKo ?? place.country.nameKo}{place.durationMinutes ? ` · ${formatDuration(place.durationMinutes)}` : ""}{place.memo ? ` · ${place.memo}` : ""}</small>
-              </a>
-            </li>
-          ))}
-        </ol>
-      ) : null}
+      {variant === "sheet" ? itinerary : null}
 
       {variant === "page" ? <DayReservations key={`${username}:${currentTravel.id}`} travelId={currentTravel.id} date={viewDate} online={online} /> : null}
       {variant === "page" && dayPlaces.length ? <DayItineraryCopy key={viewDate} title={currentTravel.title} date={viewDate} places={dayPlaces} /> : null}
