@@ -41,12 +41,33 @@ test("부분 동기화 실패와 새로고침 후에도 미전송 완료·메모
   expect(await page.evaluate((key) => JSON.parse(localStorage.getItem(key)!).length, key)).toBe(1);
   const cacheKey = `travel-globe:trip-cache:v1:${username}:${travel.id}`;
   await expect.poll(() => page.evaluate((key) => JSON.parse(localStorage.getItem(key)!).travel.places[1].memo, cacheKey)).toBe("오프라인 메모 2");
+  await page.clock.install();
   await page.reload();
   await expect(page.getByText("동기화 테스트 연결 오류", { exact: true })).toBeVisible();
   await expect(page.getByRole("progressbar", { name: "완료한 일정" })).toHaveAttribute("value", "2");
   await expect(page.locator(".mobile-trip-companion__timeline")).toContainText("오프라인 메모 2");
+  await expect(page.getByRole("button", { name: "다시 동기화", exact: true })).toBeEnabled();
+  await page.evaluate(() => {
+    const original = window.fetch;
+    Object.assign(window, { hiddenSyncRequests: 0 });
+    window.fetch = (...args) => {
+      if (args[1]?.method === "PATCH") {
+        const state = window as unknown as { hiddenSyncRequests: number };
+        state.hiddenSyncRequests += 1;
+      }
+      return original(...args);
+    };
+    Object.defineProperty(document, "hidden", { configurable: true, value: true });
+    document.dispatchEvent(new Event("visibilitychange"));
+  });
+  await page.clock.fastForward(16_000);
+  expect(await page.evaluate(() => (window as unknown as { hiddenSyncRequests: number }).hiddenSyncRequests)).toBe(0);
+  expect(await page.evaluate((key) => JSON.parse(localStorage.getItem(key)!).length, key)).toBe(1);
   await page.unroute(pattern);
-  await page.getByRole("button", { name: "다시 동기화", exact: true }).click();
+  await page.evaluate(() => {
+    Reflect.deleteProperty(document, "hidden");
+    document.dispatchEvent(new Event("visibilitychange"));
+  });
   await expect(page.getByText("오프라인 기록을 모두 동기화했습니다.", { exact: true })).toBeVisible();
   expect(await page.evaluate((key) => localStorage.getItem(key), key)).toBeNull();
   const saved = (await (await page.request.get(`/api/private/travels/${travel.id}`, { maxRetries: 2 })).json()).data;

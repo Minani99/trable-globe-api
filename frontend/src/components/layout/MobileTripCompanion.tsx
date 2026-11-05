@@ -140,6 +140,10 @@ export function MobileTripCompanion({
       setOnline(false);
     }
 
+    function handleVisibility() {
+      if (!document.hidden) handleOnline();
+    }
+
     retrySyncRef.current = handleOnline;
 
     queueMicrotask(() => {
@@ -153,8 +157,9 @@ export function MobileTripCompanion({
     window.addEventListener("online", handleOnline);
     window.addEventListener("offline", handleOffline);
     window.addEventListener("focus", handleOnline);
+    document.addEventListener("visibilitychange", handleVisibility);
     const retryTimer = window.setInterval(() => {
-      if (navigator.onLine && readQueuedPlaceUpdates(username, travelId).length) void syncPendingUpdates();
+      if (!document.hidden && navigator.onLine && readQueuedPlaceUpdates(username, travelId).length) void syncPendingUpdates();
     }, 15_000);
 
     return () => {
@@ -163,6 +168,7 @@ export function MobileTripCompanion({
       window.removeEventListener("online", handleOnline);
       window.removeEventListener("offline", handleOffline);
       window.removeEventListener("focus", handleOnline);
+      document.removeEventListener("visibilitychange", handleVisibility);
       window.clearInterval(retryTimer);
     };
   }, [travel.id, username]);
