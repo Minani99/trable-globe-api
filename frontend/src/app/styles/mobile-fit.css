@@ -1,0 +1,21 @@
+/* Let controls fit their card, not just the viewport. */
+@media (max-width: 700px) {
+  .travel-editor :is(.travel-editor__fields, .travel-editor__time-fields) > * { min-width: 0; }
+  .travel-editor :is(input, select, textarea) { min-width: 0; max-width: 100%; box-sizing: border-box; }
+  .travel-editor .place-picker__search { display: grid; grid-template-columns: 2.4rem minmax(0, 1fr); gap: 0; }
+  .travel-editor .place-picker__search-icon { grid-column: 1; grid-row: 1; }
+  .travel-editor .place-picker__search input { grid-column: 2; grid-row: 1; width: 100%; border-radius: 0 var(--radius-sm) var(--radius-sm) 0; }
+  .travel-editor .place-picker__search button { grid-column: 1 / -1; margin: .5rem 0 0; width: 100%; }
+  .editor-stop__summary > span { min-width: 0; }
+  .editor-stop__summary :is(strong, small), .editor-savebar__status { overflow-wrap: anywhere; }
+  .editor-stop__footer { flex-wrap: wrap; gap: .5rem; }
+  .editor-savebar { gap: .5rem; }
+  .editor-savebar__status { flex: 1; }
+  .travel-day-page .day-route-next, .day-route-selected { min-width: 0; }
+  .travel-day-page .mobile-trip-companion__composer :is(select, textarea) { min-width: 0; width: 100%; max-width: 100%; font-size: 16px; }
+  html[data-mobile-keyboard] .travel-day-page .mobile-trip-companion__actions { visibility: hidden; pointer-events: none; }
+}
+@media (max-width: 420px) {
+  .travel-editor .travel-editor__time-fields { grid-template-columns: minmax(0, 1fr); }
+  .travel-editor .travel-editor__time-fields :is(input, select) { width: 100%; }
+}
