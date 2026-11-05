@@ -1,6 +1,6 @@
 import { expect, test } from "./fixtures";
 
-for (const width of [320, 390, 768]) {
+for (const width of [320, 390, 768, 1280]) {
   test(`${width}px 설정·여행 준비·하루 동선이 잘리지 않고 순서를 유지한다`, async ({ page }, testInfo) => {
     await page.setViewportSize({ width, height: 844 });
     const username = `ux_${width}_${Date.now().toString(36)}`;
@@ -46,6 +46,14 @@ for (const width of [320, 390, 768]) {
     expect(mapRequests).toBe(0);
     await page.screenshot({ path: testInfo.outputPath(`flights-${width}.png`), fullPage: true });
     await tabs.getByRole("tab", { name: "일정", exact: true }).click();
+    const planningMap = page.getByRole("region", { name: "계획 중인 장소 지도" });
+    await expect(planningMap.locator(".travel-route-marker")).toHaveCount(3);
+    await planningMap.getByRole("button", { name: "2번째 장소 기요미즈데라", exact: true }).click();
+    await expect(page.getByRole("textbox", { name: "장소 이름", exact: true })).toHaveValue("기요미즈데라");
+    await page.getByRole("button", { name: "편집 닫기", exact: true }).click();
+    await planningMap.getByRole("button", { name: "지도 접기", exact: true }).click();
+    await expect(planningMap.locator(".travel-route-map-canvas")).toHaveCount(0);
+    await planningMap.getByRole("button", { name: "지도 펼치기", exact: true }).click();
     const remove = page.getByRole("button", { name: "여행 삭제", exact: true });
     await expect(remove).toBeVisible();
     const target = await remove.boundingBox();
@@ -60,12 +68,15 @@ for (const width of [320, 390, 768]) {
     const dayResponse = await page.goto(`/studio/travels/${id}/go`);
     expect(dayResponse?.status()).toBe(200);
     const route = page.getByRole("region", { name: "하루 동선 한눈에 보기" });
-    await expect(route.locator(".day-route-stops li")).toHaveText(["1교토역", "2기요미즈데라", "3니시키 시장"]);
+    await expect(route.locator(".day-route-stops li strong")).toHaveText(["교토역", "기요미즈데라", "니시키 시장"]);
     await expect(route.locator(".day-route-next")).toContainText("1. 교토역");
     const map = route.locator(".travel-route-map-canvas");
     await expect(map).toHaveCSS("touch-action", "pan-y pinch-zoom");
     await route.getByRole("button", { name: "2번째 기요미즈데라 지도에서 선택", exact: true }).click();
     await expect(map.locator(".travel-route-map-active strong")).toHaveText("기요미즈데라");
+    const selectedDirections = new URL((await route.locator(".day-route-selected").getAttribute("href"))!);
+    expect(selectedDirections.pathname).toBe("/maps/dir/");
+    expect(selectedDirections.searchParams.get("destination")).toBe("34.9949,135.785");
     // Rotation/resizing must preserve the focused location and zoom, not fit all stops.
     const marker = map.getByRole("button", { name: "2번째 장소 기요미즈데라", exact: true });
     const markerOffset = () => marker.evaluate((node) => {
@@ -75,7 +86,7 @@ for (const width of [320, 390, 768]) {
     });
     await expect.poll(markerOffset).toBeLessThan(1);
     const mapWidth = await map.locator("svg").getAttribute("viewBox");
-    await page.setViewportSize({ width: width + 180, height: 600 });
+    await page.setViewportSize({ width: width > 900 ? 768 : width + 180, height: 600 });
     await expect(map.locator("svg")).not.toHaveAttribute("viewBox", mapWidth!);
     await expect.poll(markerOffset).toBeLessThan(1);
     await expect(marker).toHaveAttribute("aria-pressed", "true");
