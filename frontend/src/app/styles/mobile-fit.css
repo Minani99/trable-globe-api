@@ -19,3 +19,10 @@
   .travel-editor .travel-editor__time-fields { grid-template-columns: minmax(0, 1fr); }
   .travel-editor .travel-editor__time-fields :is(input, select) { width: 100%; }
 }
+
+/* Landscape phones need a height constraint even when wider than the mobile breakpoint. */
+@media (max-height: 500px) {
+  .place-map-dialog { padding: max(.5rem, env(safe-area-inset-top)) max(.5rem, env(safe-area-inset-right)) max(.5rem, env(safe-area-inset-bottom)) max(.5rem, env(safe-area-inset-left)); }
+  .place-map-dialog__sheet { height: 100%; max-height: 100%; min-height: 0; }
+  .place-map-dialog__canvas { height: auto; min-height: 0; }
+}
