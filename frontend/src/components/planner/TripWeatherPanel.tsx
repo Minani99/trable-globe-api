@@ -43,7 +43,7 @@ export function TripWeatherPanel({
   const sources = [...new Set(days.map((day) => day.source))];
 
   return (
-    <section className="trip-weather" aria-labelledby="trip-weather-heading" aria-busy={state.status === "loading"}>
+    <section className={`trip-weather${!days.length && state.status !== "loading" ? " is-summary" : ""}`} aria-labelledby="trip-weather-heading" aria-busy={state.status === "loading"}>
       <header className="trip-weather__header">
         <span className="trip-weather__badge" aria-hidden="true"><Icon name={rainyForecast.length ? "umbrella" : "weather-partly"} /></span>
         <div>

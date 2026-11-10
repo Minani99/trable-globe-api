@@ -2,9 +2,9 @@ import { expect, test } from "./fixtures";
 
 /**
  * Design-system guard: one geometry scale, flat content surfaces, no pills.
- * Radii come from tokens.css (xs 6 · sm 10 · md 14 · lg 20 · xl 28).
+ * Radii come from tokens.css (xs 6 · sm 8 · md 12 · lg 16 · xl 24).
  */
-const RADIUS_SCALE = [0, 6, 10, 14, 20, 28];
+const RADIUS_SCALE = [0, 6, 8, 12, 16, 24];
 
 function onScale(value: number) {
   return RADIUS_SCALE.some((step) => Math.abs(step - value) <= 0.6);

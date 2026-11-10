@@ -41,6 +41,14 @@
   gap: 0.9rem;
 }
 
+/* Missing forecasts should remain useful without pushing the itinerary away. */
+.trip-weather.is-summary { padding: .75rem 0; border: 0; border-bottom: 1px solid var(--border); border-radius: 0; background: transparent; }
+.trip-weather.is-summary .trip-weather__badge { width: 2rem; height: 2rem; border: 0; background: transparent; }
+.trip-weather.is-summary .trip-weather__header { gap: .65rem; }
+.trip-weather.is-summary .trip-weather__header h2 { font-size: .875rem; font-weight: 550; }
+.trip-weather.is-summary .trip-weather__header p { font-size: .75rem; }
+.trip-weather.is-summary .trip-weather__footer { margin-top: .35rem; padding-top: 0; border: 0; }
+
 .trip-weather__badge {
   display: grid;
   width: 2.75rem;

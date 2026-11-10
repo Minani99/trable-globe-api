@@ -42,7 +42,9 @@
 .editor-savebar__actions { display: flex; align-items: center; gap: 1.25rem; flex-shrink: 0; font-size: .875rem; }
 .editor-savebar__actions button { min-width: 6rem; min-height: 2.75rem; padding: .65rem 1.25rem; border-radius: var(--radius-xs); background: var(--accent); color: var(--accent-ink); font-weight: 600; }
 .editor-savebar__actions button:disabled { opacity: .6; }
-.editor-manage { display: flex; gap: 1.5rem; padding: 1.25rem 0; color: var(--text-secondary); font-size: .75rem; }
+.editor-manage { display: flex; flex-wrap: wrap; gap: .75rem; padding: 1.25rem 0; color: var(--text-secondary); font-size: .8125rem; }
+.editor-manage button { display: inline-flex; align-items: center; justify-content: center; gap: .5rem; min-height: 44px; padding: .65rem .85rem; border: 1px solid var(--border); border-radius: 6px; background: var(--surface); }
+.editor-manage button.destructive-action { border-color: color-mix(in srgb, var(--danger) 35%, var(--border)); color: var(--danger); }
 .editor-manage button:first-child { color: var(--danger); }
 .editor-trip-note { display: grid; gap: .5rem; margin-bottom: 1.5rem; font-size: .8125rem; }
 .editor-trip-note textarea { width: 100%; padding: .85rem; border: 1px solid var(--border); border-radius: var(--radius-xs); background: var(--surface); font-size: .9375rem; resize: vertical; }

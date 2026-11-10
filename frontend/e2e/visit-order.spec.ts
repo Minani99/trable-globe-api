@@ -78,14 +78,25 @@ test("Google 지도는 클릭 후 조회하고 변경된 이동수단으로 구�
   await expect(page.locator(".google-route-canvas")).toHaveCount(0);
 });
 
-test("Google 조회 실패 시 가짜 시간 없이 외부 경로 링크를 유지한다", async ({ page }) => {
+test("Google 조회 실패 시 외부 링크를 유지하고 같은 화면에서 재시도한다", async ({ page }) => {
   test.skip(!process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY, "브라우저 공개 키가 설정된 빌드에서 실행");
   await page.addInitScript(() => {
-    (window as unknown as Record<string, unknown>).google = { maps: { importLibrary: async () => { throw new Error("Provider unavailable"); } } };
+    const root = window as unknown as Record<string, unknown>;
+    let calls = 0;
+    class MockMap { fitBounds() {} }
+    class Bounds { extend() {} }
+    class Marker { setMap() {} }
+    root.google = { maps: { LatLngBounds: Bounds, importLibrary: async (name: string) => name === "maps" ? { Map: MockMap } : name === "marker" ? { Marker } : { Route: { computeRoutes: async (request: { intermediates: unknown[] }) => {
+      if (++calls === 1) throw new Error("Provider unavailable");
+      return { routes: [{ path: [{ lat: 35, lng: 135 }], durationMillis: 900000, distanceMeters: 1500, legs: Array.from({ length: request.intermediates.length + 1 }, () => ({ durationMillis: 300000 })), createPolylines: () => [{ setMap() {} }] }] };
+    } } } } };
   });
   await seed(page);
   await page.getByRole("button", { name: "앱에서 경로·이동시간 보기" }).click();
   await expect(page.getByRole("alert").filter({ hasText: "이 경로를 불러오지 못했어요" })).toBeVisible();
   await expect(page.getByRole("link", { name: /Google Maps에서 경로 보기/ })).toBeVisible();
   await expect(page.getByText(/이동 약/)).toHaveCount(0);
+  await page.locator(".google-route-preview").getByRole("button", { name: "다시 시도" }).click();
+  await expect(page.getByText("이동 약 15분", { exact: true })).toBeVisible();
+  await expect(page.locator(".google-route-preview [role=alert]")).toHaveCount(0);
 });

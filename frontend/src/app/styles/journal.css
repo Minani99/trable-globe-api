@@ -22,10 +22,10 @@ html[data-theme="dark"] {
 .landing-main--journal .landing-primary-cta { border-radius: var(--radius-md) !important; min-height: 3.25rem; padding-inline: 1.4rem; }
 .landing-main--journal .landing-secondary-cta { border-radius: var(--radius-md) !important; min-height: 3.25rem; background: transparent; box-shadow: none !important; }
 .landing-main--journal .landing-globe-link { grid-area: globe; width: 100%; }
-.landing-main--journal .landing-hero .landing-globe-frame { height: clamp(32rem, 46vw, 39rem) !important; border: 1px solid var(--border) !important; border-radius: var(--radius-xl) !important; background: var(--surface) !important; box-shadow: none !important; }
+.landing-main--journal .landing-hero .landing-globe-frame { height: clamp(32rem, 46vw, 39rem) !important; border: 0 !important; border-radius: 0 !important; background: var(--surface) !important; box-shadow: none !important; }
 .landing-main--journal .landing-world-summary { padding: 1.1rem 1.25rem; }
 .landing-main--journal .landing-globe-live { bottom: 4.5rem; }
-.landing-main--journal .landing-landmark-card { right: .85rem !important; bottom: .85rem !important; left: .85rem !important; border-radius: var(--radius-md) !important; background: var(--surface-raised) !important; }
+.landing-main--journal .landing-landmark-card { right: .85rem !important; bottom: .85rem !important; left: .85rem !important; border: 0 !important; border-top: 1px solid var(--border) !important; border-radius: 0 !important; background: var(--surface) !important; box-shadow: none !important; }
 .landing-globe-caption { display: flex; align-items: center; justify-content: space-between; gap: .75rem; padding-inline: .3rem; font-size: .75rem; color: var(--text-secondary); }
 .landing-globe-caption a { display: inline-flex; align-items: center; gap: .4rem; min-height: 2.75rem; color: var(--accent-strong); font-weight: 600; white-space: nowrap; }
 .landing-journal { display: grid; grid-template-columns: minmax(0, .72fr) minmax(0, 1.28fr); align-items: center; gap: clamp(2rem, 6vw, 5rem); padding-block: 3rem; border-top: 1px solid var(--border); }

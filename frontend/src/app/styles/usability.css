@@ -7,7 +7,7 @@ button:has(> .app-icon) { gap: .4rem; }
 :is(.travel-checklist__delete, .travel-plan-delete) { display: inline-flex !important; align-items: center; justify-content: center; gap: .35rem; width: auto !important; min-width: 70px; min-height: 44px; padding: .5rem .65rem !important; border: 1px solid color-mix(in srgb, #c34432 35%, var(--border)) !important; border-radius: 8px; background: var(--surface) !important; color: #b53625 !important; opacity: 1 !important; font-size: .8125rem !important; }
 [data-theme="dark"] :is(.travel-checklist__delete, .travel-plan-delete, .destructive-action) { color: #ff9a89 !important; }
 :is(.travel-checklist__delete, .travel-plan-delete):disabled { opacity: .5 !important; }
-.editor-manage { display: flex; align-items: center; flex-wrap: wrap; gap: .75rem; margin: 1.5rem 0 2rem; padding: 1.25rem; border: 1px solid var(--border-strong); border-radius: 14px; background: var(--surface); }
+.editor-manage { display: flex; align-items: center; flex-wrap: wrap; gap: .75rem; margin: 1.5rem 0 2rem; padding: 1.25rem 0; border: 0; border-top: 1px solid var(--border); border-radius: 0; background: transparent; }
 .editor-manage > div { flex: 1 1 100%; }
 .editor-manage strong { color: var(--text-primary); font-size: .95rem; }
 .editor-manage p { margin: .35rem 0 0; color: var(--text-secondary); font-size: .8125rem; line-height: 1.6; }
@@ -134,7 +134,17 @@ button:has(> .app-icon) { gap: .4rem; }
 /* Keep the route and next stop together, ahead of supporting information. */
 .google-route-preview { margin: 12px 0; min-width: 0; }
 .mobile-trip-companion__connectivity button { min-height: 44px; margin-top: .5rem; padding: .5rem .75rem; border: 1px solid var(--border-strong); border-radius: 8px; font-weight: 600; }
-.google-route-preview > button { min-height: 44px; padding: 10px 14px; border: 1px solid currentColor; border-radius: 12px; font-weight: 700; }
+.google-route-preview > .google-route-preview__toggle { display: flex; align-items: center; gap: .65rem; width: 100%; min-height: 48px; padding: .85rem 1rem; border: 1px solid var(--accent); border-radius: 8px; background: var(--accent); color: var(--accent-ink); font-size: .875rem; font-weight: 650; text-align: left; }
+.google-route-preview__toggle span { flex: 1; min-width: 0; }
+.google-route-preview__toggle .ui-icon { flex-shrink: 0; }
+.google-route-preview__toggle:hover { background: var(--accent-strong); }
+.google-route-preview__result { position: relative; }
+.google-route-preview__status { padding: 1rem; background: var(--surface-raised); border-radius: 8px; }
+.google-route-preview__error { display: grid; gap: .75rem; padding: 1rem; margin-top: .75rem; background: var(--surface-raised); border-left: 3px solid var(--warning); }
+.google-route-preview__error button { display: inline-flex; justify-self: start; align-items: center; gap: .4rem; min-height: 44px; padding: .5rem .75rem; border: 1px solid var(--border-strong); border-radius: 6px; background: var(--surface); }
+.google-route-preview__total { display: flex; align-items: baseline; flex-wrap: wrap; gap: .5rem 1rem; margin-top: 1rem; }
+.google-route-preview__total strong { font-size: 1.25rem; letter-spacing: -.03em; }
+.google-route-preview__total span, .google-route-preview__caption { color: var(--text-secondary); }
 .google-route-canvas { height: 340px; width: 100%; margin-top: 12px; border-radius: 12px; }
 .google-route-preview ol { padding: 0; list-style: none; }
 .google-route-preview li { display: flex; justify-content: space-between; gap: 12px; padding: 10px 0; border-bottom: 1px solid var(--border); }

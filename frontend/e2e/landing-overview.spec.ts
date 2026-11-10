@@ -1,6 +1,6 @@
 import { expect, test } from "./fixtures";
 
-const sectionNames = ["일정은 한곳에.", "다녀온 여행은 기록으로.", "다른 사람들의 여행도 둘러보세요."];
+const sectionNames = ["준비부터 동선까지.", "다녀온 여행은 기록으로.", "다른 사람들의 여행도 둘러보세요."];
 
 test("메인 소개는 여행 전·후·둘러보기를 각각의 섹션으로 나누고 실제 이동 링크만 제공한다", async ({ page }, testInfo) => {
   const errors: string[] = [];

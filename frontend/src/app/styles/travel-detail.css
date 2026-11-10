@@ -17,8 +17,7 @@
 
 .travel-card:hover {
   border-color: var(--accent-border);
-  box-shadow: 0 1.2rem 3rem rgba(37, 62, 68, 0.11);
-  transform: translateY(-5px);
+  box-shadow: var(--shadow-sm);
 }
 
 .travel-card__media {
@@ -31,9 +30,7 @@
 }
 
 .travel-detail-page {
-  background:
-    radial-gradient(circle at 12% 4%, color-mix(in srgb, var(--globe-ocean) 16%, transparent), transparent 25rem),
-    var(--background);
+  background: var(--background);
 }
 
 .travel-detail-breadcrumb {
@@ -68,11 +65,11 @@
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
   background: var(--surface);
-  box-shadow: 0 2.25rem 6rem rgba(37, 62, 68, 0.11);
+  box-shadow: none;
 }
 
 :root[data-theme="dark"] .travel-detail-hero {
-  box-shadow: 0 2.25rem 6rem rgba(0, 0, 0, 0.32);
+  box-shadow: none;
 }
 
 .travel-detail-hero__media {
@@ -232,7 +229,7 @@
 }
 
 .travel-detail-section {
-  padding-top: clamp(6rem, 10vw, 9.5rem);
+  padding-top: clamp(3rem, 6vw, 5rem);
   scroll-margin-top: 5rem;
 }
 
@@ -285,11 +282,11 @@
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
   background: var(--surface);
-  box-shadow: 0 1.8rem 5rem rgba(37, 62, 68, 0.09);
+  box-shadow: none;
 }
 
 :root[data-theme="dark"] .travel-route-explorer {
-  box-shadow: 0 1.8rem 5rem rgba(0, 0, 0, 0.26);
+  box-shadow: none;
 }
 
 .travel-route-map-shell {
@@ -302,10 +299,10 @@
   align-items: center;
   justify-content: space-between;
   gap: 1rem;
-  min-height: 4.8rem;
-  padding: 1rem 1.25rem 1rem 1.5rem;
-  border-bottom: 1px solid color-mix(in srgb, var(--map-land-stroke) 34%, transparent);
-  background: color-mix(in srgb, var(--map-ocean) 88%, var(--surface));
+  min-height: 3.75rem;
+  padding: .65rem 1rem;
+  border-bottom: 1px solid var(--border);
+  background: var(--surface);
 }
 
 .travel-route-map-toolbar__hint {

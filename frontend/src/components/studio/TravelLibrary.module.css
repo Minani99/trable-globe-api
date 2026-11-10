@@ -4,9 +4,9 @@
 .heading h2 span { margin-left: .5rem; color: var(--text-tertiary); font-size: .875rem; font-weight: 400; }
 .search input { width: 15rem; min-height: 2.5rem; padding: .6rem .85rem; border: 1px solid var(--border); border-radius: var(--radius-xs); background: var(--surface); font-size: .8125rem; }
 .list { list-style: none; margin: 0; padding: 0; }
-.row { display: grid; grid-template-columns: 5rem minmax(0, 1fr) auto; align-items: center; gap: 1.25rem; padding: 1.25rem .25rem; border-bottom: 1px solid var(--border); border-radius: var(--radius-sm); }
+.row { display: grid; grid-template-columns: 7rem minmax(0, 1fr) auto; align-items: center; gap: 1.25rem; padding: 1.25rem 0; border-bottom: 1px solid var(--border); border-radius: 0; }
 .row:hover { background: var(--surface-raised); }
-.cover { width: 5rem; height: 5rem; border-radius: var(--radius-sm); }
+.cover { width: 7rem; height: 5.5rem; border-radius: 8px; object-fit: cover; }
 .copy { min-width: 0; display: grid; gap: .4rem; }
 .copy strong { font-size: 1rem; font-weight: 600; overflow-wrap: anywhere; }
 .copy > span, .meta small { color: var(--text-secondary); font-size: .8125rem; }
