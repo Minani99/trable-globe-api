@@ -5,7 +5,7 @@
  *
  * System summary
  * - Canvas: white. Neutral separators distinguish work areas, not nested cards.
- * - Geometry: ONE radius scale (xs 6 · sm 10 · md 14 · lg 20 · xl 28). Circles are
+ * - Geometry: ONE radius scale (xs 6 · sm 8 · md 12 · lg 16 · xl 24). Circles are
  *   reserved for avatars and status dots. No pills.
  * - Type: 15px body, 13px secondary, 12px caption floor. Headings tight, 650 weight.
  * - Colour: one accent (terracotta) for actions, ocean for informational links, the
@@ -54,10 +54,10 @@
   --map-marker-border: #c24d1e;
 
   --radius-xs: 6px;
-  --radius-sm: 10px;
-  --radius-md: 14px;
-  --radius-lg: 20px;
-  --radius-xl: 28px;
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-xl: 24px;
 
   --shadow-sm: 0 1px 2px rgba(22, 25, 29, 0.05), 0 1px 1px rgba(22, 25, 29, 0.03);
   --shadow-md: 0 10px 30px -14px rgba(22, 25, 29, 0.22), 0 2px 6px -2px rgba(22, 25, 29, 0.06);

@@ -242,11 +242,10 @@ export default async function TravelDetailPage(
           <section id="route" aria-labelledby="route-heading" className="travel-detail-section">
             <div className="travel-detail-section__heading">
               <div>
-                <h2 id="route-heading">경로와 하루의 흐름</h2>
+                <h2 id="route-heading">일정과 동선</h2>
               </div>
               <p>
-                지도에서 방문 지점을 선택하고, 확대하거나 이동해 보세요. 장소별 날짜와 메모는
-                방문 순서에 맞춰 이어집니다.
+                날짜별 경로를 확인하고, 장소를 선택해 메모를 살펴보세요.
               </p>
             </div>
 

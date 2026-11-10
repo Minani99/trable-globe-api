@@ -27,7 +27,7 @@ export default async function StudioPage() {
     <main id="main" className="studio-page flex-1">
       <div className="site-shell studio-shell">
         <header className="studio-hero">
-          <div><p className="page-caption">나의 여행 노트</p><h1>내 여행</h1><p>다가오는 여행부터, 오래 기억할 여행까지.</p></div>
+          <div><p className="page-caption">TRAVEL GLOBE</p><h1>내 여행</h1><p>계획 중인 일정과 다녀온 여행을 관리하세요.</p></div>
           <div className="studio-hero__actions"><Link href="/studio/travels/new" className="studio-secondary-action">지난 여행 기록</Link><Link href="/studio/plans/new" className="studio-primary-action"><Icon name="plus" /> 새 여행 계획</Link></div>
         </header>
         {nextAction ? <JourneyNextCard action={nextAction} /> : null}

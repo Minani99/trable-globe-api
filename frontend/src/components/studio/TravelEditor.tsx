@@ -949,8 +949,12 @@ export function TravelEditor({
             </div>
           </div>
         ) : null}
-        <div className="planning-itinerary-workspace"><div className="planning-itinerary-list">
-        <p className="editor-order-hint" id="stop-drag-help">손잡이를 끌어 방문 순서를 바꾸세요. 키보드 ↑ ↓로도 이동할 수 있어요.</p>
+        <nav className="planning-view-links" aria-label="일정과 지도 바로가기">
+          <a href={`#${editorTabsId}-places`}><Icon name="checklist" />장소 목록</a>
+          <a href={`#${editorTabsId}-map`}><Icon name="pin" />지도·경로 보기</a>
+        </nav>
+        <div className="planning-itinerary-workspace"><div id={`${editorTabsId}-places`} className="planning-itinerary-list">
+        <p className="editor-order-hint" id="stop-drag-help">손잡이로 순서 변경<span className="sr-only">. 키보드 위·아래 방향키로도 이동할 수 있습니다.</span></p>
         <p className="editor-order-notice" role="status">{orderNotice}</p>
         <ol className="travel-editor__places">
           {places.map((place, index) => planningMode && activePlanDate && place.visitedAt !== activePlanDate ? null : (
@@ -1019,7 +1023,7 @@ export function TravelEditor({
         {planningMode ? <VisitOrderSuggestion key={activePlanDate} disabled={pending}
           stops={activeDayPlaces.map(({ place }) => ({ key: place.key, placeName: place.placeName, latitude: isPlanningPlaceholder(place) ? null : coordinate(place.latitude), longitude: coordinate(place.longitude), startTime: place.startTime }))}
           onApply={applyVisitOrder} /> : null}
-        </div><aside className="planning-itinerary-map">
+        </div><aside id={`${editorTabsId}-map`} className="planning-itinerary-map">
         {mobileEditorStep === 1 ? <PlanningRoutePreview key={planningMode ? activePlanDate : "all"} places={planningMode ? activeDayPlaces.map(({ place }) => place) : places} countries={countries} focusedKey={expandedPlace} onSelect={setExpandedPlace} /> : null}
         <GoogleDirectionsPanel compact
           activeDate={planningMode ? activePlanDate : undefined}

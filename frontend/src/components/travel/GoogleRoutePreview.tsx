@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useId, useRef, useState } from "react";
+import { Icon } from "@/components/common/Icon";
 import { googleMapsApiKey, loadGoogleMaps } from "@/lib/google-maps-loader";
 import { isDirectionsStopLocated, type GoogleDirectionsStop, type GoogleTravelMode } from "@/lib/google-directions";
 
@@ -8,12 +9,13 @@ const apiKey = googleMapsApiKey;
 
 export function GoogleRoutePreview({ stops, mode }: { stops: GoogleDirectionsStop[]; mode: GoogleTravelMode }) {
   const [open, setOpen] = useState(false);
+  const panelId = useId();
   if (!apiKey || stops.length < 2) return null;
   const supported = stops.length <= 27 && stops.every(isDirectionsStopLocated) && (mode !== "transit" || stops.length === 2);
   if (!supported) return <p>앱 내 지도는 위치가 지정된 2~27곳을 지원해요. 대중교통의 여러 구간은 아래 Google Maps 링크에서 확인해 주세요.</p>;
   return <div className="google-route-preview">
-    <button type="button" aria-expanded={open} onClick={() => setOpen(!open)}>{open ? "경로 지도 접기" : "앱에서 경로·이동시간 보기"}</button>
-    {open ? <RouteCanvas key={JSON.stringify([stops, mode])} stops={stops} mode={mode} /> : null}
+    <button className="google-route-preview__toggle" type="button" aria-expanded={open} aria-controls={panelId} onClick={() => setOpen(!open)}><Icon name="pin" /><span>{open ? "경로 지도 접기" : "앱에서 경로·이동시간 보기"}</span><Icon name={open ? "chevron-up" : "chevron-down"} /></button>
+    <div id={panelId} hidden={!open}>{open ? <RouteCanvas key={JSON.stringify([stops, mode])} stops={stops} mode={mode} /> : null}</div>
   </div>;
 }
 
@@ -27,6 +29,7 @@ function RouteCanvas({ stops, mode }: { stops: GoogleDirectionsStop[]; mode: Goo
   const element = useRef<HTMLDivElement>(null);
   const [result, setResult] = useState<google.maps.routes.Route | null>(null);
   const [error, setError] = useState(false);
+  const [attempt, setAttempt] = useState(0);
   const signature = JSON.stringify(stops);
   useEffect(() => {
     const stops: GoogleDirectionsStop[] = JSON.parse(signature);
@@ -64,14 +67,14 @@ function RouteCanvas({ stops, mode }: { stops: GoogleDirectionsStop[]; mode: Goo
     }
     show().catch(() => { if (!cancelled) { window.clearTimeout(timer); setError(true); } });
     return () => { cancelled = true; window.clearTimeout(timer); polylines.forEach((line) => line.setMap(null)); markers.forEach((marker) => marker.setMap(null)); };
-  }, [signature, mode]);
-  return <div>
-    {!result && !error ? <p role="status">Google에서 경로를 찾고 있어요…</p> : null}
-    {error ? <p role="alert">이 경로를 불러오지 못했어요. 아래 Google Maps에서 확인하거나 지도를 접었다 다시 열어 주세요.</p> : null}
+  }, [signature, mode, attempt]);
+  return <div className="google-route-preview__result" aria-busy={!result && !error}>
+    {!result && !error ? <p className="google-route-preview__status" role="status">Google에서 경로를 찾고 있어요…</p> : null}
+    {error ? <div className="google-route-preview__error"><p role="alert">이 경로를 불러오지 못했어요. 아래 Google Maps에서도 확인할 수 있습니다.</p><button type="button" onClick={() => { setError(false); setResult(null); setAttempt(value => value + 1); }}><Icon name="refresh" /> 다시 시도</button></div> : null}
     <div ref={element} className="google-route-canvas" aria-label="Google 실제 이동 경로 지도" hidden={error} />
     {result ? <>
-      <p><strong>이동 약 {duration(result.durationMillis)}</strong>{result.distanceMeters !== undefined ? ` · ${(result.distanceMeters / 1000).toFixed(1)}km` : ""}</p>
-      <p>조회 시점의 예상 이동시간이며, 장소 체류·예약 시간은 포함하지 않습니다.</p>
+      <p className="google-route-preview__total"><strong>이동 약 {duration(result.durationMillis)}</strong>{result.distanceMeters !== undefined ? <span>{(result.distanceMeters / 1000).toFixed(1)}km</span> : null}</p>
+      <p className="google-route-preview__caption">예상 이동시간 · 장소 체류시간 제외</p>
       <ol>{result.legs?.map((leg, index) => <li key={index}><span>{index + 1}. {stops[index].placeName} → {stops[index + 1].placeName}</span><strong>{duration(leg.durationMillis)}</strong></li>)}</ol>
       {result.warnings?.map((warning, index) => <p key={index}>{warning}</p>)}
     </> : null}

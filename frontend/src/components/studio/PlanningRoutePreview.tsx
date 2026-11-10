@@ -26,7 +26,7 @@ export function PlanningRoutePreview({ places, countries, focusedKey, onSelect }
     return [stop];
   }), [places, countries]);
   return <section className="planning-route-preview" aria-label="계획 중인 장소 지도">
-    <header><div><small>선택한 날짜</small><strong>지도에서 동선 확인</strong></div><button type="button" aria-expanded={open} onClick={() => setOpen(value => !value)}>{open ? "지도 접기" : "지도 펼치기"}</button></header>
+    <header><div><small>선택한 날짜 · 장소 {mapped.length}곳</small><strong>방문 장소</strong></div><button type="button" aria-expanded={open} onClick={() => setOpen(value => !value)}>{open ? "지도 접기" : "지도 펼치기"}</button></header>
     {open ? mapped.length ? <RouteMap compact places={mapped} placeNumbers={Object.fromEntries(mapped.map(place => [place.id, place.id]))}
       focusedPlaceId={places.findIndex(place => place.key === focusedKey) + 1 || null}
       onPlaceSelect={id => { const place = places[id - 1]; if (place) onSelect(place.key); }} />

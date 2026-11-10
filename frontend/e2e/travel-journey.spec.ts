@@ -6,7 +6,7 @@ test("공개 여행 기록을 읽고 모바일에서 일정과 사진을 가로 
 
   await page.goto("/traveler/travel/1");
   await expect(page.getByRole("heading", { name: "Taipei, again." })).toBeVisible();
-  await expect(page.getByRole("heading", { name: "경로와 하루의 흐름" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "일정과 동선" })).toBeVisible();
   await expect(page.locator(".travel-itinerary__list")).toContainText("DAY 01");
   await expect(page.locator(".travel-gallery li")).toHaveCount(3);
   await expect(page.getByRole("heading", { name: "샘플 여행자님의 여행 기록" })).toBeVisible();

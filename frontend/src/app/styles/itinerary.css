@@ -10,7 +10,7 @@
 .editor-order-notice:empty { display: none; }
 .editor-stop__footer { display: flex; align-items: center; justify-content: space-between; margin-top: 1.25rem; padding-top: 1rem; border-top: 1px solid var(--border); }
 .editor-stop__footer button { min-height: 44px; padding: .6rem .9rem; border-radius: 10px; background: var(--surface-raised); }
-.editor-stop__footer .editor-stop__delete { color: var(--danger); background: transparent; text-decoration: underline; text-underline-offset: .2em; }
+.editor-stop__footer .editor-stop__delete { color: var(--danger); background: var(--surface); border: 1px solid color-mix(in srgb, var(--danger) 35%, var(--border)); text-decoration: none; }
 .plan-share-panel { margin: 1rem 0 2rem; border: 1px solid var(--border); border-radius: 16px; background: var(--surface); overflow: hidden; }
 .plan-share-panel summary { min-height: 56px; padding: 1rem; cursor: pointer; font-weight: 650; }
 .plan-share-panel summary span { margin-left: .5rem; font-size: .75rem; font-weight: 400; color: var(--text-secondary); }

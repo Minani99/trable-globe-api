@@ -43,7 +43,7 @@ export function GoogleDirectionsPanel({ stops, activeDate, compact = false }: Go
       <div className="google-directions__heading">
         <div>
           <h3 id={headingId}>실제 이동 경로</h3>
-          {!compact ? <p>현재 방문 순서로 Google Maps 추천 경로를 확인하세요.</p> : null}
+          {!compact ? <p>방문 순서에 따른 Google Maps 경로</p> : null}
         </div>
         <div className="google-directions__modes" role="group" aria-label="경로 이동수단">
           {TRAVEL_MODES.map((item) => (
@@ -86,7 +86,6 @@ export function GoogleDirectionsPanel({ stops, activeDate, compact = false }: Go
         {skipped.length ? <p>위치가 미정인 {skipped.length}곳은 제외하고 앞뒤 경로를 나눴어요.</p> : null}
         {mode === "transit" && segments.length > 1 ? <p>대중교통은 장소 사이 구간별로 확인할 수 있어요.</p> : null}
         {mode !== "transit" && segments.length > 1 && segments.some((segment) => segment.stops.length === 5) ? <p>긴 일정은 빠짐없이 확인할 수 있도록 최대 5곳씩 나눴어요.</p> : null}
-        {segments.length && !compact ? <p>Google Maps 앱 또는 웹에서 소요 시간과 이동 방법을 확인합니다.</p> : null}
       </div>
     </section>
   );

@@ -4,9 +4,9 @@ import { profilePath, siteConfig } from "@/lib/config";
 import styles from "./LandingOverview.module.css";
 
 const EXAMPLE_STOPS = [
-  { time: "10:00", place: "후시미 이나리", category: "관광" },
-  { time: "12:30", place: "니시키 시장", category: "점심" },
-  { time: "15:00", place: "가모강", category: "산책" },
+  { order: "01", place: "후시미 이나리", category: "관광" },
+  { order: "02", place: "니시키 시장", category: "점심" },
+  { order: "03", place: "가모강", category: "산책" },
 ] as const;
 
 /**
@@ -20,8 +20,8 @@ export function LandingOverview() {
         <div className={`site-shell ${styles.feature}`}>
           <div className={styles.copy}>
             <p className={styles.eyebrow}>여행 전</p>
-            <h2 id="plan-overview-title">일정은 한곳에.</h2>
-            <p className={styles.description}>가고 싶은 장소와 예약, 메모를 날짜별로 정리하세요.</p>
+            <h2 id="plan-overview-title">준비부터 동선까지.</h2>
+            <p className={styles.description}>항공권, 준비물, 예산을 챙기고 일정을 만드세요. 방문 순서에 맞는 이동 경로는 Google 지도로 확인합니다.</p>
           </div>
 
           <figure className={styles.preview}>
@@ -36,8 +36,8 @@ export function LandingOverview() {
             </div>
             <ol className={styles.schedule}>
               {EXAMPLE_STOPS.map((stop) => (
-                <li key={stop.time}>
-                  <span className={styles.time}>{stop.time}</span>
+                <li key={stop.order}>
+                  <span className={styles.time}>{stop.order}</span>
                   <span>{stop.place}</span>
                   <span className={styles.category}>{stop.category}</span>
                 </li>

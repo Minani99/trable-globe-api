@@ -30,9 +30,10 @@
   justify-content: space-between;
   gap: 1.25rem 2rem;
   margin-bottom: 1.75rem;
-  padding: clamp(1.25rem, 3vw, 1.75rem);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-lg);
+  padding: .5rem 0 1.75rem;
+  border: 0;
+  border-bottom: 1px solid var(--border);
+  border-radius: 0;
   background: var(--surface);
 }
 
