@@ -174,3 +174,28 @@ test("위치 조정은 Google 지도를 손가락 하나로 움직이고 가운�
   });
   await expect(dialog.getByText("35.681236, 139.767125", { exact: true })).toBeVisible();
 });
+
+
+test("공개 여행 지도는 모바일 화면 스크롤을 가로채지 않는다", async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await mockGoogleMaps(page);
+  await page.goto("/traveler/travel/2#route");
+  const route = page.getByRole("region", { name: "일정과 동선", exact: true });
+  await expect(route.locator(".mock-google-map")).toHaveAttribute("data-gesture-handling", "cooperative");
+  await expect(route.locator(".travel-route-map-canvas")).toHaveCSS("touch-action", "auto");
+  await expect(route.getByText("한 손가락으로 화면을 스크롤하고, 두 손가락으로 지도를 움직이세요.")).toBeVisible();
+});
+
+test("공개 여행의 기본 지도도 스크롤을 허용하고 이동을 켜고 끌 수 있다", async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await mockGoogleMaps(page, { failImport: true });
+  await page.goto("/traveler/travel/2#route");
+  const route = page.getByRole("region", { name: "일정과 동선", exact: true });
+  const canvas = route.locator(".travel-route-map-canvas");
+  await expect(canvas).toHaveCSS("touch-action", "pan-y pinch-zoom");
+  await route.getByRole("button", { name: "지도 이동 켜기", exact: true }).click();
+  await expect(canvas).toHaveCSS("touch-action", "none");
+  await route.getByRole("button", { name: "지도 이동 끄기", exact: true }).click();
+  await expect(canvas).toHaveCSS("touch-action", "pan-y pinch-zoom");
+  expect(await page.evaluate(() => document.documentElement.scrollWidth - innerWidth)).toBeLessThanOrEqual(1);
+});
