@@ -41,3 +41,7 @@
 @media (prefers-reduced-motion: reduce) {
   .google-directions *, .google-directions *::before, .google-directions *::after { transition: none; }
 }
+
+.travel-route-days { min-width: 0; }
+.travel-route-days__tabs { margin: 0 0 1rem; }
+.travel-route-days__tabs span { font-size: .75rem; }

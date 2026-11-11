@@ -7,6 +7,7 @@ import type { TravelPlace } from "@/types";
 
 interface GoogleRouteMapCanvasProps {
   places: TravelPlace[];
+  route?: google.maps.routes.Route | null;
   numberOf: (place: TravelPlace, index: number) => number;
   selectedId: number;
   /** Changes whenever a place should be brought into view, even the same one again. */
@@ -27,6 +28,7 @@ const FALLBACK_ACCENT = "#c24d1e";
 /** Itinerary stops as numbered markers on an interactive Google map. */
 export function GoogleRouteMapCanvas({
   places,
+  route,
   numberOf,
   selectedId,
   focusRequest,
@@ -137,6 +139,17 @@ export function GoogleRouteMapCanvas({
     // Fitting is an explicit request; a changed place list already refits while rebuilding.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [ready, fitRequest]);
+
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!ready || !map || !route) return;
+    const lines = route.createPolylines();
+    lines.forEach(line => line.setMap(map));
+    const bounds = new google.maps.LatLngBounds();
+    route.path?.forEach(point => bounds.extend(point));
+    map.fitBounds(bounds, 48);
+    return () => lines.forEach(line => line.setMap(null));
+  }, [ready, route]);
 
   return (
     <>

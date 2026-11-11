@@ -119,8 +119,16 @@ test("모바일 일정의 날짜·순서·이동수단이 실제 경로에 반�
     const sharedPanel = visitor.getByRole("region", { name: "실제 이동 경로", exact: true });
     await expectRoutes(sharedPanel, [{ api: "1", origin: "35.005,135.7649", destination: "35.0116,135.7711", waypoints: "34.9858,135.7588", travelmode: "walking" }]);
     await expect(visitor.locator(".travel-route-map-canvas svg polyline")).toHaveCount(0);
-    await expect(visitor.locator(".travel-route-marker")).toHaveCount(5);
-    await sharedPanel.getByRole("group", { name: "경로 날짜 선택" }).getByRole("button", { name: "10.11", exact: true }).click();
+    await expect(visitor.locator(".travel-route-marker")).toHaveCount(3);
+    await expect(visitor.locator(".travel-itinerary__list li")).toHaveCount(3);
+    const cards = await visitor.locator(".travel-itinerary__list li").evaluateAll(items => items.map(item => { const r = item.getBoundingClientRect(); return { x: r.x, y: r.y, right: r.right }; }));
+    expect(cards[1].y).toBeGreaterThan(cards[0].y);
+    expect(cards.every(card => card.x >= 0 && card.right <= 390)).toBe(true);
+    await visitor.getByRole("group", { name: "경로 날짜 선택" }).getByRole("button", { name: /2일차 · 10.11/ }).click();
+    await expect(visitor.locator(".travel-route-marker")).toHaveCount(2);
+    await expect(visitor.locator(".travel-itinerary__list li")).toHaveCount(2);
+    await expect(visitor.locator(".travel-itinerary__list")).not.toContainText("교토역");
+    await expect(visitor.locator(".travel-itinerary__list")).toContainText("DAY 02");
     await expectRoutes(sharedPanel, [{ api: "1", origin: "34.9949,135.785", destination: "35.003,135.778", travelmode: "walking" }]);
     expect(await visitor.evaluate(() => document.documentElement.scrollWidth - innerWidth)).toBeLessThanOrEqual(1);
     await sharedPanel.scrollIntoViewIfNeeded();

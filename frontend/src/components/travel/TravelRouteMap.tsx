@@ -1,7 +1,7 @@
 "use client";
 
 import type { PointerEvent, WheelEvent } from "react";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import { GoogleDirectionsPanel } from "@/components/travel/GoogleDirectionsPanel";
 import { GoogleRouteMapCanvas } from "@/components/travel/GoogleRouteMapCanvas";
@@ -44,7 +44,26 @@ const MIN_ZOOM = 3;
 const MAX_ZOOM = 18;
 
 /** A city map for place locations, paired with Google Maps travel directions. */
-export function TravelRouteMap({ places, compact = false, placeNumbers, focusedPlaceId, onPlaceSelect }: TravelRouteMapProps) {
+export function TravelRouteMap(props: TravelRouteMapProps) {
+  const [selectedDate, setSelectedDate] = useState<string | null>(null);
+  if (props.compact) return <TravelRouteDay {...props} />;
+  const dates = [...new Set(props.places.map(place => place.visitedAt || ""))].sort((a, b) => !a ? 1 : !b ? -1 : a.localeCompare(b));
+  const date = selectedDate !== null && dates.includes(selectedDate) ? selectedDate : dates[0] ?? "";
+  const day = dates.filter(Boolean).indexOf(date) + 1;
+  return <div className="travel-route-days">
+    <div className="google-directions__days travel-route-days__tabs" role="group" aria-label="경로 날짜 선택">
+      {dates.map((value, index) => <button key={value || "undated"} type="button" aria-pressed={date === value} onClick={() => setSelectedDate(value)}>
+        {value ? `${index + 1}일차 · ${Number(value.slice(5, 7))}.${Number(value.slice(8, 10))}` : "날짜 미정"}
+        <span> · {props.places.filter(place => (place.visitedAt || "") === value).length}곳</span>
+      </button>)}
+    </div>
+    <TravelRouteDay key={date} {...props} places={props.places.filter(place => (place.visitedAt || "") === date)} activeDate={date} dayNumber={day} />
+  </div>;
+}
+
+function TravelRouteDay({ places, compact = false, placeNumbers, focusedPlaceId, onPlaceSelect, activeDate, dayNumber }: TravelRouteMapProps & { activeDate?: string; dayNumber?: number }) {
+  const [route, setRoute] = useState<google.maps.routes.Route | null>(null);
+  const receiveRoute = useCallback((value: google.maps.routes.Route | null) => setRoute(value), []);
   const initialView = useMemo(
     () => createInitialView(places, DEFAULT_VIEWPORT.width, DEFAULT_VIEWPORT.height),
     [places],
@@ -232,11 +251,11 @@ export function TravelRouteMap({ places, compact = false, placeNumbers, focusedP
 
   return (
     <div className={`travel-route-explorer${compact ? " is-compact" : ""}`}>
-      {!compact ? <GoogleDirectionsPanel stops={places.map((place) => ({ ...place, key: place.id }))} /> : null}
+      {!compact ? <GoogleDirectionsPanel stops={places.map((place) => ({ ...place, key: place.id }))} activeDate={activeDate} onRoute={useGoogle ? receiveRoute : undefined} /> : null}
       <div className="travel-route-map-shell">
         <div className="travel-route-map-toolbar">
           <div>
-            <p className="travel-route-map-toolbar__hint">장소 위치를 살펴보세요 · 실제 이동 경로는 Google Maps에서 확인</p>
+            <p className="travel-route-map-toolbar__hint">{route ? "Google Maps 이동 경로 · 번호는 방문 순서" : "번호는 방문 순서 · 장소를 선택해 위치를 확인하세요"}</p>
           </div>
           <div className="travel-route-map-controls" role="toolbar" aria-label="장소 위치 지도 확대·축소">
             {!useGoogle ? <button type="button" aria-pressed={allowMapMove} onClick={() => setAllowMapMove(!allowMapMove)}>{allowMapMove ? "지도 이동 끄기" : "지도 이동 켜기"}</button> : null}
@@ -252,6 +271,7 @@ export function TravelRouteMap({ places, compact = false, placeNumbers, focusedP
           <div className="travel-route-map-canvas is-google">
             <GoogleRouteMapCanvas
               places={places}
+              route={route}
               numberOf={(place, index) => placeNumbers?.[place.id] ?? index + 1}
               selectedId={selectedPlace.id}
               focusRequest={focusRequest}
@@ -400,7 +420,7 @@ export function TravelRouteMap({ places, compact = false, placeNumbers, focusedP
                   <span className="travel-itinerary__number">{String(index + 1).padStart(2, "0")}</span>
                   <span className="travel-itinerary__content">
                     <span className="travel-itinerary__meta">
-                      {dayIndex >= 0 ? `DAY ${String(dayIndex + 1).padStart(2, "0")} · ${formatDate(place.visitedAt)}` : `장소 ${index + 1}`}
+                      {dayIndex >= 0 ? `DAY ${String(dayNumber ?? dayIndex + 1).padStart(2, "0")} · ${formatDate(place.visitedAt)}` : `장소 ${index + 1}`}
                     </span>
                     <strong>{place.placeName}</strong>
                     <span className="travel-itinerary__location">

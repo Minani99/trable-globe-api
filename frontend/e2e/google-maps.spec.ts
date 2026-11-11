@@ -9,7 +9,7 @@ test.skip(!process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY, "브라우저 공개 키
 async function mockGoogleMaps(page: Page, { failImport = false }: { failImport?: boolean } = {}) {
   await page.addInitScript((failImport: boolean) => {
     type Listener = () => void;
-    const state = { maps: [] as unknown[], markers: [] as unknown[] };
+    const state = { maps: [] as unknown[], markers: [] as unknown[], requests: 0, lines: [] as Array<{ map: unknown }> };
     const root = window as unknown as Record<string, unknown>;
     root.googleMapsMock = state;
     class LatLng {
@@ -75,6 +75,14 @@ async function mockGoogleMaps(page: Page, { failImport = false }: { failImport?:
       SymbolPath: { CIRCLE: 0 },
       importLibrary: async (name: string) => {
         if (failImport) throw new Error("Provider unavailable");
+        if (name === "routes") return { Route: { computeRoutes: async () => {
+          state.requests += 1;
+          return { routes: [{ path: [{ lat: 35, lng: 135 }], legs: [{ durationMillis: 60000 }, { durationMillis: 120000 }], durationMillis: 180000, distanceMeters: 900, createPolylines: () => {
+            const line = { map: null as unknown, setMap(map: unknown) { this.map = map; } };
+            state.lines.push(line);
+            return [line];
+          } }] };
+        } } };
         return name === "maps" ? { Map: MockMap } : { Marker };
       },
     } };
@@ -198,4 +206,25 @@ test("공개 여행의 기본 지도도 스크롤을 허용하고 이동을 켜�
   await route.getByRole("button", { name: "지도 이동 끄기", exact: true }).click();
   await expect(canvas).toHaveCSS("touch-action", "pan-y pinch-zoom");
   expect(await page.evaluate(() => document.documentElement.scrollWidth - innerWidth)).toBeLessThanOrEqual(1);
+});
+
+test("공유 일정은 기존 지도에 실제 경로를 표시하고 장소 선택 때 재조회하지 않는다", async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await mockGoogleMaps(page);
+  const id = await seedTodayTrip(page);
+  const sharing = await page.request.post(`/api/private/travels/${id}/share`);
+  const token = (await sharing.json()).data.token;
+  await page.goto(`/share/${token}`);
+  await expect(page.locator(".mock-google-map")).toHaveCount(1);
+  const state = () => page.evaluate(() => { const s = (window as unknown as { googleMapsMock: { maps: unknown[]; requests: number; lines: Array<{map: unknown}> } }).googleMapsMock; return { maps: s.maps.length, requests: s.requests, lines: s.lines.filter(line => line.map).length }; });
+  expect((await state()).requests).toBe(0);
+  await page.getByRole("button", { name: "앱에서 경로·이동시간 보기" }).click();
+  await expect(page.getByText("이동 약 3분", { exact: true })).toBeVisible();
+  await expect.poll(state).toEqual({ maps: 1, requests: 1, lines: 1 });
+  await page.locator(".travel-itinerary__list button").nth(1).click();
+  await expect(page.locator(".travel-route-map-active strong")).toHaveText("기요미즈데라");
+  expect(await state()).toEqual({ maps: 1, requests: 1, lines: 1 });
+  await page.getByRole("button", { name: "자동차", exact: true }).click();
+  await expect.poll(state).toEqual({ maps: 1, requests: 1, lines: 0 });
+  await expect(page.getByText("이동 약 3분", { exact: true })).toHaveCount(0);
 });
