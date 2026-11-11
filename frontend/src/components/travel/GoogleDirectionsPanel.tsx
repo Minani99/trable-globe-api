@@ -17,6 +17,7 @@ interface GoogleDirectionsPanelProps {
   /** The planner already provides the date selector and filters its stops. */
   activeDate?: string;
   compact?: boolean;
+  onRoute?: (route: google.maps.routes.Route | null) => void;
 }
 
 const TRAVEL_MODES: Array<{ value: GoogleTravelMode; label: string }> = [
@@ -25,7 +26,7 @@ const TRAVEL_MODES: Array<{ value: GoogleTravelMode; label: string }> = [
   { value: "driving", label: "자동차" },
 ];
 
-export function GoogleDirectionsPanel({ stops, activeDate, compact = false }: GoogleDirectionsPanelProps) {
+export function GoogleDirectionsPanel({ stops, activeDate, compact = false, onRoute }: GoogleDirectionsPanelProps) {
   const headingId = useId();
   const [mode, setMode] = useState<GoogleTravelMode>("walking");
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
@@ -47,7 +48,7 @@ export function GoogleDirectionsPanel({ stops, activeDate, compact = false }: Go
         </div>
         <div className="google-directions__modes" role="group" aria-label="경로 이동수단">
           {TRAVEL_MODES.map((item) => (
-            <button key={item.value} type="button" aria-pressed={mode === item.value} onClick={() => setMode(item.value)}>
+            <button key={item.value} type="button" aria-pressed={mode === item.value} onClick={() => { if (mode !== item.value) { onRoute?.(null); setMode(item.value); } }}>
               {item.label}
             </button>
           ))}
@@ -64,7 +65,7 @@ export function GoogleDirectionsPanel({ stops, activeDate, compact = false }: Go
         </div>
       ) : null}
 
-      <GoogleRoutePreview stops={dayStops} mode={mode} />
+      <GoogleRoutePreview key={onRoute ? JSON.stringify([shownDate, mode]) : undefined} stops={dayStops} mode={mode} onRoute={onRoute} />
       {segments.length ? (
         <div className="google-directions__routes">
           {segments.map((segment, index) => (

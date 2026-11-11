@@ -1,6 +1,6 @@
 import { expect, test } from "./fixtures";
 
-test("공개 여행 기록을 읽고 모바일에서 일정과 사진을 가로 탐색한다", async ({ page }) => {
+test("공개 여행 기록을 읽고 모바일에서 세로 일정과 사진을 탐색한다", async ({ page }) => {
   const pageErrors: string[] = [];
   page.on("pageerror", (error) => pageErrors.push(error.message));
 
@@ -32,7 +32,7 @@ test("공개 여행 기록을 읽고 모바일에서 일정과 사진을 가로 
     };
   });
   expect(mobileLayout.documentWidth).toBeLessThanOrEqual(mobileLayout.viewportWidth + 1);
-  expect(mobileLayout.itineraryScrollable).toBeTruthy();
+  expect(mobileLayout.itineraryScrollable).toBeFalsy();
   expect(mobileLayout.galleryScrollable).toBeTruthy();
   expect(pageErrors).toEqual([]);
 });
