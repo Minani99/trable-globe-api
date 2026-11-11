@@ -93,7 +93,7 @@ export function TravelRouteMap({ places, compact = false, placeNumbers, focusedP
     // React's delegated wheel listener can be passive in some browsers. A native non-passive
     // listener owns the gesture so zooming the map never scrolls the surrounding article.
     const preventPageScroll = (event: globalThis.WheelEvent) => {
-      if (!compact || allowMapMove || event.ctrlKey || event.metaKey) event.preventDefault();
+      if (allowMapMove || event.ctrlKey || event.metaKey) event.preventDefault();
     };
     canvas.addEventListener("wheel", preventPageScroll, { passive: false });
 
@@ -187,13 +187,13 @@ export function TravelRouteMap({ places, compact = false, placeNumbers, focusedP
   };
 
   const handleWheel = (event: WheelEvent<HTMLDivElement>) => {
-    if (compact && !allowMapMove && !event.ctrlKey && !event.metaKey) return;
+    if (!allowMapMove && !event.ctrlKey && !event.metaKey) return;
     event.preventDefault();
     updateZoom(zoom + (event.deltaY > 0 ? -1 : 1));
   };
 
   const handlePointerDown = (event: PointerEvent<HTMLDivElement>) => {
-    if (compact && !allowMapMove && event.pointerType === "touch") return;
+    if (!allowMapMove && event.pointerType === "touch") return;
     if (event.button !== 0) {
       return;
     }
@@ -239,7 +239,7 @@ export function TravelRouteMap({ places, compact = false, placeNumbers, focusedP
             <p className="travel-route-map-toolbar__hint">장소 위치를 살펴보세요 · 실제 이동 경로는 Google Maps에서 확인</p>
           </div>
           <div className="travel-route-map-controls" role="toolbar" aria-label="장소 위치 지도 확대·축소">
-            {compact && !useGoogle ? <button type="button" aria-pressed={allowMapMove} onClick={() => setAllowMapMove(!allowMapMove)}>{allowMapMove ? "지도 이동 끄기" : "지도 이동 켜기"}</button> : null}
+            {!useGoogle ? <button type="button" aria-pressed={allowMapMove} onClick={() => setAllowMapMove(!allowMapMove)}>{allowMapMove ? "지도 이동 끄기" : "지도 이동 켜기"}</button> : null}
             {!useGoogle ? <>
               <button type="button" onClick={() => updateZoom(zoom + 1)} aria-label="지도 확대">+</button>
               <button type="button" onClick={() => updateZoom(zoom - 1)} aria-label="지도 축소">−</button>
@@ -256,7 +256,7 @@ export function TravelRouteMap({ places, compact = false, placeNumbers, focusedP
               selectedId={selectedPlace.id}
               focusRequest={focusRequest}
               fitRequest={fitRequest}
-              cooperative={compact}
+              cooperative
               label={`${places.map((place) => place.placeName).join(", ")} 방문 순서를 보여주는 Google 지도`}
               onSelect={selectPlace}
               onUnavailable={() => setGoogleUnavailable(true)}
@@ -266,7 +266,7 @@ export function TravelRouteMap({ places, compact = false, placeNumbers, focusedP
         ) : <div
           ref={canvasRef}
           className={`travel-route-map-canvas${isDragging ? " is-dragging" : ""}`}
-          style={compact ? { touchAction: allowMapMove ? "none" : "pan-y pinch-zoom", overscrollBehavior: allowMapMove ? "contain" : "auto" } : undefined}
+          style={{ touchAction: allowMapMove ? "none" : "pan-y pinch-zoom", overscrollBehavior: allowMapMove ? "contain" : "auto" }}
           role="application"
           aria-label={`${places.map((place) => place.placeName).join(", ")} 방문 순서를 보여주는 실제 도시 지도`}
           aria-describedby="travel-route-map-help"
@@ -373,7 +373,7 @@ export function TravelRouteMap({ places, compact = false, placeNumbers, focusedP
           </p>
         </div>}
         <p id="travel-route-map-help" className="travel-route-map-help">
-          {compact ? (useGoogle ? "한 손가락으로는 화면이 스크롤되고, 두 손가락으로 지도를 움직이거나 확대할 수 있어요." : "위아래로 스크롤하세요. 지도 이동을 켜면 지도를 끌 수 있어요.") : "번호는 방문 순서입니다. 장소 목록에서도 위치를 선택할 수 있어요. 실제 도로와 교통편은 Google Maps 경로 보기에서 확인하세요."}
+          {useGoogle ? "한 손가락으로 화면을 스크롤하고, 두 손가락으로 지도를 움직이세요." : "화면을 스크롤하려면 지도 이동을 꺼두세요. 지도 이동을 켜면 지도를 끌 수 있어요."}
         </p>
       </div>
 
