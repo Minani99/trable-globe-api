@@ -18,6 +18,7 @@ interface GoogleDirectionsPanelProps {
   activeDate?: string;
   compact?: boolean;
   onRoute?: (route: google.maps.routes.Route | null) => void;
+  keepOpenOnChange?: boolean;
 }
 
 const TRAVEL_MODES: Array<{ value: GoogleTravelMode; label: string }> = [
@@ -26,7 +27,7 @@ const TRAVEL_MODES: Array<{ value: GoogleTravelMode; label: string }> = [
   { value: "driving", label: "자동차" },
 ];
 
-export function GoogleDirectionsPanel({ stops, activeDate, compact = false, onRoute }: GoogleDirectionsPanelProps) {
+export function GoogleDirectionsPanel({ stops, activeDate, compact = false, onRoute, keepOpenOnChange = false }: GoogleDirectionsPanelProps) {
   const headingId = useId();
   const [mode, setMode] = useState<GoogleTravelMode>("walking");
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
@@ -65,7 +66,7 @@ export function GoogleDirectionsPanel({ stops, activeDate, compact = false, onRo
         </div>
       ) : null}
 
-      <GoogleRoutePreview key={onRoute ? JSON.stringify([shownDate, mode]) : undefined} stops={dayStops} mode={mode} onRoute={onRoute} />
+      <GoogleRoutePreview key={onRoute && !keepOpenOnChange ? JSON.stringify([shownDate, mode]) : undefined} stops={dayStops} mode={mode} onRoute={onRoute} />
       {segments.length ? (
         <div className="google-directions__routes">
           {segments.map((segment, index) => (
