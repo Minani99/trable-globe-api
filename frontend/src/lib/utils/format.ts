@@ -49,7 +49,7 @@ export function getYear(value: string): number {
 
 /** `04` - statistics read as a set, so single digits are padded. */
 export function formatStat(value: number): string {
-  return value < 10 ? `0${value}` : String(value);
+  return value.toLocaleString("ko-KR");
 }
 
 /** Social counts stay natural at small values and become compact only when needed. */
@@ -70,4 +70,14 @@ export function formatDuration(durationDays: number): string {
 
 function pad(value: number): string {
   return value < 10 ? `0${value}` : String(value);
+}
+
+/**
+ * Avatar fallback text: the first character of the name people see (a Korean display
+ * name gives "도", not the Latin username's "WA"), falling back to the username.
+ */
+export function avatarInitial(displayName: string | null | undefined, username: string): string {
+  const source = displayName?.trim() || username;
+  const first = Array.from(source)[0] ?? "?";
+  return first.toLocaleUpperCase("ko-KR");
 }

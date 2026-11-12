@@ -18,6 +18,7 @@ export function TravelCard({ travel, username, priority }: TravelCardProps) {
     .filter(Boolean)
     .join(" · ");
   const extraCountries = travel.countries.length - 1;
+  const hasCover = Boolean(travel.coverImageUrl);
 
   return (
     <article className="travel-card group">
@@ -25,19 +26,22 @@ export function TravelCard({ travel, username, priority }: TravelCardProps) {
         href={travelPath(username, travel.id)}
         className="focus-visible:outline-accent-strong block h-full"
       >
-        <div className="travel-card__media relative aspect-[4/3] w-full overflow-hidden">
+        <div className={`travel-card__media relative aspect-[4/3] w-full overflow-hidden${hasCover ? "" : " travel-card__media--placeholder"}`}>
           <TravelImage
             src={travel.coverImageUrl}
             alt={`${travel.title} 대표 이미지`}
             fallbackLabel={travel.primaryCountry?.iso2Code}
             priority={priority}
+            fallbackVariant="map"
             className="h-full w-full object-cover transition-transform duration-700 ease-out group-hover:scale-[1.04]"
           />
-          <div
-            aria-hidden="true"
-            className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent"
-          />
-          <p className="absolute right-3 bottom-3 left-3 font-mono text-[0.68rem] tracking-[0.12em] text-white/80 uppercase">
+          {hasCover ? (
+            <div
+              aria-hidden="true"
+              className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent"
+            />
+          ) : null}
+          <p className="travel-card__place absolute right-3 bottom-3 left-3 text-[0.75rem] font-semibold text-white/90">
             {place}
             {extraCountries > 0 ? ` +${extraCountries}` : ""}
           </p>
@@ -50,8 +54,8 @@ export function TravelCard({ travel, username, priority }: TravelCardProps) {
           </h3>
           <dl className="travel-card__facts" aria-label={`${travel.title} 여행 요약`}>
             <div><dt>기간</dt><dd>{formatDuration(travel.durationDays)}</dd></div>
-            <div><dt>장소</dt><dd>{String(travel.placeCount).padStart(2, "0")}</dd></div>
-            <div><dt>사진</dt><dd>{travel.photoCount > 0 ? String(travel.photoCount).padStart(2, "0") : "—"}</dd></div>
+            <div><dt>장소</dt><dd>{travel.placeCount}곳</dd></div>
+            <div><dt>사진</dt><dd>{travel.photoCount > 0 ? `${travel.photoCount}장` : "없음"}</dd></div>
           </dl>
           <span className="travel-card__open" aria-hidden="true">여행 보기 <i><Icon name="arrow-right" /></i></span>
         </div>

@@ -1,5 +1,6 @@
 "use client";
 
+import { avatarInitial } from "@/lib/utils/format";
 import { useSyncExternalStore } from "react";
 
 import { Icon } from "@/components/common/Icon";
@@ -20,7 +21,7 @@ export function AccountOverview({ member }: { member: AuthMember }) {
         <TravelImage
           src={current.profileImageUrl}
           alt={`${publicDisplayName(current.displayName)} 프로필 사진`}
-          fallbackLabel={current.username.slice(0, 2)}
+          fallbackLabel={avatarInitial(current.displayName, current.username)}
           className="account-hero__avatar"
         />
         <div>

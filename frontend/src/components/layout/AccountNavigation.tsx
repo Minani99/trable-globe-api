@@ -1,5 +1,6 @@
 "use client";
 
+import { avatarInitial } from "@/lib/utils/format";
 import { AppIcon } from "@/components/common/AppIcon";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -88,7 +89,7 @@ export function AccountNavigation({
             <TravelImage
               src={member.profileImageUrl}
               alt="내 프로필 편집"
-              fallbackLabel={member.username.slice(0, 2)}
+              fallbackLabel={avatarInitial(member.displayName, member.username)}
               className="site-member-avatar"
             />
             <span>마이</span>
@@ -128,7 +129,7 @@ export function AccountNavigation({
           <TravelImage
             src={member.profileImageUrl}
             alt=""
-            fallbackLabel={member.username.slice(0, 2)}
+            fallbackLabel={avatarInitial(member.displayName, member.username)}
             className="site-member-avatar"
           />
           <span>

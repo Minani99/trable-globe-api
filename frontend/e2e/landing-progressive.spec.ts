@@ -1,7 +1,7 @@
 import { expect, test } from "./fixtures";
 
 test("여행 기록이 늦거나 실패해도 지구본 통계는 먼저 표시된다", async ({ page }) => {
-  await page.route("**/api/auth/me", route => route.fulfill({ json: { success: true, data: null } }));
+  await page.route("**/api/auth/me*", route => route.fulfill({ json: { success: true, data: null } }));
   await page.route("**/api/profiles/traveler", route => route.fulfill({ json: { success: true, data: {
     username: "traveler", displayName: "샘플 여행자", statistics: { countryCount: 7, travelCount: 12, placeCount: 30 },
   } } }));

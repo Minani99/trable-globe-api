@@ -123,6 +123,8 @@ test("여행 화면에서 홈 화면 설치 안내를 실행하고 닫을 수 �
   expect(registerResponse.status()).toBe(200);
 
   await page.setViewportSize({ width: 390, height: 844 });
+  // The prompt waits for a returning visit so it never covers the first look at a workspace.
+  await page.addInitScript(() => localStorage.setItem("travel-globe:workspace-visits", "1"));
   await page.goto("/studio");
   const install = page.getByLabel("Travel Globe 앱 설치");
   await expect.poll(async () => {

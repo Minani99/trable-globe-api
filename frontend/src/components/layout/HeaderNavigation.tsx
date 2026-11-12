@@ -8,6 +8,7 @@ import { ThemeToggle } from "@/components/theme/ThemeToggle";
 import { AccountNavigation } from "@/components/layout/AccountNavigation";
 import { MobileJourneyCapture } from "@/components/layout/MobileJourneyCapture";
 import { TravelImage } from "@/components/common/TravelImage";
+import { avatarInitial } from "@/lib/utils/format";
 import {
   getCachedAuthMember,
   loadAuthMember,
@@ -134,7 +135,7 @@ function MobileBottomNavigation({
         active={profileActive}
         avatar={member ? {
           src: member.profileImageUrl,
-          fallbackLabel: member.username.slice(0, 2),
+          fallbackLabel: avatarInitial(member.displayName, member.username),
         } : undefined}
       />
     </nav>

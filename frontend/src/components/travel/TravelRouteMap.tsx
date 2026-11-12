@@ -51,12 +51,13 @@ export function TravelRouteMap(props: TravelRouteMapProps) {
   const date = selectedDate !== null && dates.includes(selectedDate) ? selectedDate : dates[0] ?? "";
   const day = dates.filter(Boolean).indexOf(date) + 1;
   return <div className="travel-route-days">
-    <div className="google-directions__days travel-route-days__tabs" role="group" aria-label="경로 날짜 선택">
+    {/* A one-day trip has nothing to choose between, so the selector would only add height. */}
+    {dates.length > 1 ? <div className="google-directions__days travel-route-days__tabs" role="group" aria-label="경로 날짜 선택">
       {dates.map((value, index) => <button key={value || "undated"} type="button" aria-pressed={date === value} onClick={() => setSelectedDate(value)}>
         {value ? `${index + 1}일차 · ${Number(value.slice(5, 7))}.${Number(value.slice(8, 10))}` : "날짜 미정"}
         <span> · {props.places.filter(place => (place.visitedAt || "") === value).length}곳</span>
       </button>)}
-    </div>
+    </div> : null}
     <TravelRouteDay key={date} {...props} places={props.places.filter(place => (place.visitedAt || "") === date)} activeDate={date} dayNumber={day} />
   </div>;
 }
@@ -251,7 +252,8 @@ function TravelRouteDay({ places, compact = false, placeNumbers, focusedPlaceId,
 
   return (
     <div className={`travel-route-explorer${compact ? " is-compact" : ""}`}>
-      {!compact ? <GoogleDirectionsPanel stops={places.map((place) => ({ ...place, key: place.id }))} activeDate={activeDate} onRoute={useGoogle ? receiveRoute : undefined} /> : null}
+      {/* Directions need at least two stops; a single place would only show an empty route panel. */}
+      {!compact && places.length > 1 ? <GoogleDirectionsPanel stops={places.map((place) => ({ ...place, key: place.id }))} activeDate={activeDate} onRoute={useGoogle ? receiveRoute : undefined} /> : null}
       <div className="travel-route-map-shell">
         <div className="travel-route-map-toolbar">
           <div>
@@ -402,7 +404,7 @@ function TravelRouteDay({ places, compact = false, placeNumbers, focusedPlaceId,
           <div>
             <h3>일차별 일정</h3>
           </div>
-          <span>{String(places.length).padStart(2, "0")}곳</span>
+          <span>{places.length}곳</span>
         </div>
 
         <ol className="travel-itinerary__list">

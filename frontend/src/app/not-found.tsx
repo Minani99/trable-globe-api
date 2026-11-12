@@ -17,6 +17,10 @@ export default function NotFound() {
             href: globePath,
             label: "여행 지구본 보기",
           }}
+          secondaryAction={{
+            href: "/discover",
+            label: "다른 여행 둘러보기",
+          }}
         />
       </main>
       <SiteFooter />

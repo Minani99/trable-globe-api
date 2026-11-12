@@ -69,9 +69,12 @@ for (const viewport of [{ width: 360, height: 800 }, { width: 390, height: 844 }
       expect(globeBounds.height).toBeGreaterThanOrEqual(viewport.height * 0.28);
       expect(globeBounds.y).toBeGreaterThan(headingBounds.y + headingBounds.height);
       expect(globeBounds.y + globeBounds.height).toBeLessThanOrEqual(navigationBounds.y + 1);
+      // The start action belongs to the first screen: under the intro, above the globe.
       const actionBounds = (await primaryAction.boundingBox())!;
-      expect(actionBounds.y).toBeGreaterThanOrEqual(globeBounds.y + globeBounds.height);
-      expect(photoBounds.y).toBeGreaterThan(actionBounds.y + actionBounds.height);
+      await expect(primaryAction).toBeInViewport();
+      expect(actionBounds.y).toBeGreaterThan(headingBounds.y + headingBounds.height);
+      expect(actionBounds.y + actionBounds.height).toBeLessThanOrEqual(globeBounds.y + 1);
+      expect(photoBounds.y).toBeGreaterThan(globeBounds.y + globeBounds.height);
     } else {
       expect(globeBounds.width).toBeGreaterThanOrEqual(viewport.width * 0.35);
       expect(globeBounds.height).toBeGreaterThanOrEqual(viewport.height * 0.5);

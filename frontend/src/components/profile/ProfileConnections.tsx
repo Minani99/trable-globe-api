@@ -10,7 +10,7 @@ import {
   fetchMemberConnections,
   type ConnectionKind,
 } from "@/lib/api/discovery";
-import { formatCount } from "@/lib/utils/format";
+import { formatCount, avatarInitial } from "@/lib/utils/format";
 import { publicDisplayName } from "@/lib/utils/profile";
 import type { FollowStatus, MemberConnection } from "@/types";
 
@@ -120,7 +120,7 @@ export function ProfileConnections({
                     <TravelImage
                       src={connection.profileImageUrl}
                       alt=""
-                      fallbackLabel={connection.username.slice(0, 2)}
+                      fallbackLabel={avatarInitial(connection.displayName, connection.username)}
                       className="profile-connection__avatar"
                     />
                     <span>

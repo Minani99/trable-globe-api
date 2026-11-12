@@ -4,7 +4,7 @@ import { useId, useState } from "react";
 
 import { TravelImage } from "@/components/common/TravelImage";
 import { ProfilePanel } from "@/components/profile/ProfilePanel";
-import { formatStat } from "@/lib/utils/format";
+import { formatStat, avatarInitial } from "@/lib/utils/format";
 import { publicDisplayName } from "@/lib/utils/profile";
 import type { MemberSafetyStatus, UserProfile } from "@/types";
 import { Icon } from "@/components/common/Icon";
@@ -35,7 +35,7 @@ export function ProfileGlobeDock({
         <TravelImage
           src={profile.profileImageUrl}
           alt=""
-          fallbackLabel={profile.username.slice(0, 2)}
+          fallbackLabel={avatarInitial(profile.displayName, profile.username)}
           className="profile-globe-dock__avatar"
         />
         <span className="profile-globe-dock__identity">

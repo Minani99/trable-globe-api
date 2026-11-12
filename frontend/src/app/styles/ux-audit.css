@@ -1,0 +1,300 @@
+/*
+ * UX audit fixes (2026-11-12, docs/ux-audit-2026-11-12.md).
+ * Imported last so these targeted corrections win over older section files.
+ */
+
+/* P1-1: trips without a cover show a light route map, not a dark "broken image" tile. */
+.travel-card__media--placeholder .travel-card__place {
+  right: auto;
+  max-width: calc(100% - 1.5rem);
+  padding: 0.3rem 0.6rem;
+  border-radius: var(--radius-xs, 0.375rem);
+  background: color-mix(in srgb, var(--surface) 88%, transparent);
+  color: var(--text-primary);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.06);
+}
+
+.travel-detail-hero__media--placeholder .travel-detail-hero__veil {
+  display: none;
+}
+
+.travel-detail-hero__media--placeholder .travel-detail-hero__location {
+  right: auto;
+  max-width: calc(100% - 2rem);
+  padding: 0.5rem 0.8rem;
+  border-radius: var(--radius-sm);
+  background: color-mix(in srgb, var(--surface) 90%, transparent);
+  color: var(--text-primary);
+}
+
+.travel-detail-hero__media--placeholder .travel-detail-hero__location strong {
+  max-width: none;
+  text-align: left;
+}
+
+@media (max-width: 700px) {
+  /* Without a photo there is nothing to look at, so give the space back to the title. */
+  .travel-detail-hero__media--placeholder {
+    min-height: 9rem !important;
+  }
+}
+
+/* P1-2: on phones the start actions sit right under the intro, inside the first screen. */
+@media (max-width: 700px) {
+  .landing-main--journal .landing-hero.site-shell {
+    grid-template-areas: "copy" "actions" "globe";
+  }
+}
+
+/* P1-3: the mobile year picker is a quiet control, not the heaviest thing on the screen. */
+@media (max-width: 760px) {
+  .travel-year-filter__mobile select {
+    border: 1px solid var(--border) !important;
+    background-color: var(--surface) !important;
+    color: var(--text-primary) !important;
+    font-family: var(--font-sans, inherit) !important;
+    font-size: var(--text-sm) !important;
+    font-weight: 600 !important;
+  }
+}
+
+/* P2-7: a failed forecast is a quiet one-line notice with a text retry in the brand palette. */
+.trip-weather.is-error .trip-weather__badge {
+  color: var(--text-tertiary);
+}
+
+.trip-weather.is-error .trip-weather__header h2 {
+  color: var(--text-primary);
+}
+
+.trip-weather__retry {
+  display: inline-flex;
+  min-height: 2.75rem;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0 0.75rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+  color: var(--text-primary);
+  font-size: var(--text-sm);
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.trip-weather__retry:hover,
+.trip-weather__retry:focus-visible {
+  border-color: var(--accent);
+  color: var(--accent-strong);
+}
+
+.trip-weather__retry svg {
+  width: 1rem;
+  height: 1rem;
+}
+
+@media (max-width: 560px) {
+  .trip-weather.is-error .trip-weather__retry {
+    grid-column: 2;
+    justify-self: start;
+    min-height: 2.75rem;
+  }
+}
+
+/*
+ * P2-8: the profile archive shows one view at a time on every width. Cards, the yearly
+ * timeline and the country index repeat the same trips, so desktop now uses the same
+ * switcher phones already had instead of stacking all three.
+ */
+@media (min-width: 701px) {
+  .profile-archive__mobile-nav {
+    display: inline-flex;
+    gap: 0.25rem;
+    margin: 0 0 0.5rem;
+    padding: 0.3rem;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    background: var(--surface);
+  }
+
+  .profile-archive__mobile-nav button {
+    display: inline-flex;
+    min-height: 2.5rem;
+    align-items: center;
+    gap: 0.35rem;
+    padding-inline: 1rem;
+    border-radius: var(--radius-sm);
+    color: var(--text-secondary);
+    font-size: var(--text-sm);
+    font-weight: 600;
+  }
+
+  .profile-archive__mobile-nav button:hover {
+    color: var(--text-primary);
+  }
+
+  .profile-archive__mobile-nav button span {
+    color: var(--text-tertiary);
+    font-size: var(--text-xs);
+  }
+
+  .profile-archive__mobile-nav button.is-active {
+    background: var(--text-primary);
+    color: var(--background-elevated);
+  }
+
+  .profile-archive__mobile-nav button.is-active span {
+    color: color-mix(in srgb, var(--background-elevated) 72%, transparent);
+  }
+
+  .profile-archive__panel:not(.is-mobile-active) {
+    display: none;
+  }
+
+  .profile-archive__mobile-nav + .profile-archive__panel,
+  .profile-archive__mobile-nav ~ .profile-archive__panel.is-mobile-active {
+    padding-top: 1.5rem;
+  }
+
+  /* The switcher now leads the archive, so the old top gap is no longer needed. */
+  .profile-archive:has(> .profile-archive__mobile-nav) {
+    padding-top: clamp(2.5rem, 4vw, 3.5rem);
+  }
+}
+
+/* P2-9: the step is named once (sticky header); the bottom bar is only back / next. */
+@media (max-width: 760px) {
+  .pb-mobile-nav {
+    grid-template-columns: auto minmax(0, 1fr) !important;
+  }
+
+  .pb-mobile-nav > .pb-primary {
+    width: 100%;
+  }
+}
+
+/* When the flag image is unavailable the code fallback must still be legible. */
+.pb-flag b {
+  font-size: 0.6875rem;
+  color: var(--text-secondary);
+}
+
+/* Breadcrumb buttons need breathing room above the page title. */
+.studio-breadcrumb {
+  margin-bottom: 0.75rem;
+}
+
+/* P2-10: the globe link looked like it carried an unread badge. It is a plain nav item. */
+.site-nav-link--globe::before {
+  content: none !important;
+  display: none !important;
+}
+
+.site-nav-link--globe {
+  color: var(--text-secondary);
+  font-weight: 500;
+}
+
+/* P3-12: the owner's empty gallery offers the way to fill it. */
+.travel-photo-empty__action {
+  display: inline-flex;
+  min-height: 2.75rem;
+  align-items: center;
+  margin-top: 0.75rem;
+  padding: 0 1rem;
+  border: 1px solid var(--border-strong, var(--border));
+  border-radius: var(--radius-sm);
+  color: var(--text-primary);
+  font-size: var(--text-sm);
+  font-weight: 600;
+}
+
+.travel-photo-empty__action:hover,
+.travel-photo-empty__action:focus-visible {
+  border-color: var(--accent);
+  color: var(--accent-strong);
+}
+
+/* P3-13: second recovery action on full-page states. */
+.state-message__secondary {
+  display: inline-flex;
+  min-height: 2.75rem;
+  align-items: center;
+  padding-inline: 0.75rem;
+  color: var(--text-secondary);
+  font-size: var(--text-sm);
+  font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: 0.2em;
+}
+
+.state-message__secondary:hover,
+.state-message__secondary:focus-visible {
+  color: var(--accent-strong);
+}
+
+/* P3-14: footer links and the wordmark meet the 24px minimum target (WCAG 2.5.8). */
+.site-footer ul a {
+  display: inline-flex;
+  min-height: 2rem;
+  align-items: center;
+}
+
+.site-wordmark {
+  min-height: 2.75rem;
+}
+
+@media (max-width: 700px) {
+  .site-footer ul a {
+    min-height: 2.75rem;
+  }
+
+  .site-footer ul {
+    column-gap: 1rem;
+    row-gap: 0;
+  }
+}
+
+/* P3-16: zero reactions read as an invitation, not as an empty scoreboard. */
+.travel-social__invite {
+  margin-top: 0.4rem;
+  color: var(--text-secondary);
+  font-size: var(--text-sm);
+}
+
+/*
+ * P2-5: Korean labels use the sans face with natural spacing. Hangul in the mono stack
+ * falls back to Noto Sans KR anyway, so the only visible effect of mono + tracking was
+ * stretched words ("여 행  기 간"). Wide tracking stays on Latin-only eyebrows.
+ */
+:is(
+  .travel-detail-stats dt,
+  .travel-detail-stats dd,
+  .travel-card__facts dt,
+  .travel-card__facts dd,
+  .travel-card__date,
+  .travel-detail-breadcrumb span,
+  .profile-globe-card__meta span,
+  .profile-world-summary__stats dt,
+  .travel-route-map-controls button,
+  .travel-itinerary__header span,
+  .travel-itinerary__meta,
+  .journey-summary small,
+  .travel-detail-nav-card__meta,
+  .discover-results__eyebrow,
+  .discover-results header span,
+  .member-card__world span,
+  .member-card__footprint strong,
+  .travel-editor__item-head strong,
+  .pb-ticket__eyebrow,
+  .travel-year-filter__label,
+  .travel-year-filter__options button,
+  .profile-archive__mobile-nav button span,
+  .mobile-trip-companion__heading span,
+  .mobile-travel-quick-nav small,
+  .plan-itinerary__progress strong
+) {
+  font-family: var(--font-sans) !important;
+  letter-spacing: 0 !important;
+  font-variant-numeric: tabular-nums;
+}

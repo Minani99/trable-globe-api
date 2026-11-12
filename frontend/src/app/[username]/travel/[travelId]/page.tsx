@@ -144,6 +144,7 @@ export default async function TravelDetailPage(
     ?? (currentMember ? null : await fetchTravelSocial(id).catch(() => null))
     ?? emptySocial;
   const ownerName = publicDisplayName(travel.owner.displayName);
+  const isOwner = currentMember?.username === travel.owner.username;
   const journeyUrl = new URL(travelPath(travel.owner.username, travel.id), getSiteUrl()).toString();
   const ownerUrl = new URL(profilePath(travel.owner.username), getSiteUrl()).toString();
 
@@ -181,12 +182,13 @@ export default async function TravelDetailPage(
           </nav>
 
           <header className="travel-detail-hero">
-            <div className="travel-detail-hero__media">
+            <div className={`travel-detail-hero__media${travel.coverImageUrl ? "" : " travel-detail-hero__media--placeholder"}`}>
               <TravelImage
                 src={travel.coverImageUrl}
                 alt={`${travel.title} 대표 이미지`}
                 fallbackLabel={countryCodes[0] ?? travel.title.slice(0, 2)}
                 priority
+                fallbackVariant="map"
                 className="h-full w-full object-cover"
               />
               <div className="travel-detail-hero__veil" aria-hidden="true" />
@@ -220,11 +222,11 @@ export default async function TravelDetailPage(
                 </div>
                 <div>
                   <dt>방문 장소</dt>
-                  <dd>{String(travel.places.length).padStart(2, "0")}</dd>
+                  <dd>{travel.places.length}곳</dd>
                 </div>
                 <div>
                   <dt>사진</dt>
-                  <dd>{String(travel.photos.length).padStart(2, "0")}</dd>
+                  <dd>{travel.photos.length > 0 ? `${travel.photos.length}장` : "없음"}</dd>
                 </div>
               </dl>
 
@@ -234,7 +236,7 @@ export default async function TravelDetailPage(
                   <span aria-hidden="true">↓</span>
                 </a>
                 <ShareJourneyButton title={travel.title} ownerName={ownerName} />
-                <SaveSharedItinerary travel={travel} signedIn={Boolean(currentMember)} isOwner={currentMember?.username === travel.owner.username} today={todayInKorea()} />
+                <SaveSharedItinerary travel={travel} signedIn={Boolean(currentMember)} isOwner={isOwner} today={todayInKorea()} />
               </div>
             </div>
           </header>
@@ -256,15 +258,22 @@ export default async function TravelDetailPage(
             )}
           </section>
 
-          <section aria-labelledby="photos-heading" className="travel-detail-section">
-            <div className="travel-detail-section__heading">
-              <div>
-                <h2 id="photos-heading">여행 사진</h2>
+          {/* Visitors cannot add photos, so an empty gallery is only shown to the owner. */}
+          {travel.photos.length > 0 || isOwner ? (
+            <section aria-labelledby="photos-heading" className="travel-detail-section">
+              <div className="travel-detail-section__heading">
+                <div>
+                  <h2 id="photos-heading">여행 사진</h2>
+                </div>
+                <p>경로의 순서에서 잠시 벗어나, 오래 남기고 싶은 순간만 모았습니다.</p>
               </div>
-              <p>경로의 순서에서 잠시 벗어나, 오래 남기고 싶은 순간만 모았습니다.</p>
-            </div>
-            <PhotoGallery photos={travel.photos} travelTitle={travel.title} />
-          </section>
+              <PhotoGallery
+                photos={travel.photos}
+                travelTitle={travel.title}
+                addPhotosHref={isOwner ? `/studio/travels/${travel.id}/edit` : undefined}
+              />
+            </section>
+          ) : null}
 
           <JourneySummary travel={travel} ownerName={ownerName} locationLabel={locationLabel} />
 
@@ -275,7 +284,7 @@ export default async function TravelDetailPage(
             initialSocial={social}
           />
 
-          <section className="travel-detail-more" aria-labelledby="more-travel-heading">
+          {travel.previousTravel || travel.nextTravel ? <section className="travel-detail-more" aria-labelledby="more-travel-heading">
             <div>
               <h2 id="more-travel-heading">다음 여행을 이어서 보세요</h2>
             </div>
@@ -291,7 +300,7 @@ export default async function TravelDetailPage(
                 direction="next"
               />
             </nav>
-          </section>
+          </section> : null}
         </article>
       </main>
 
@@ -313,17 +322,9 @@ function TravelNavCard({
   const label = isPrevious ? "이전 여행" : "다음 여행";
   const arrow = isPrevious ? "←" : "→";
 
-  if (!travel) {
-    return (
-      <div className="travel-detail-nav-card is-empty" aria-disabled="true">
-        <span className="travel-detail-nav-card__meta">{label}</span>
-        <strong>{isPrevious ? "첫 여행입니다" : "가장 최근 여행입니다"}</strong>
-        <span className="travel-detail-nav-card__arrow" aria-hidden="true">
-          {arrow}
-        </span>
-      </div>
-    );
-  }
+  // A missing neighbour is simply left out: a card with an arrow that goes nowhere reads as a broken link.
+  if (!travel) return null;
+
 
   return (
     <Link href={travelPath(username, travel.id)} className="travel-detail-nav-card">

@@ -978,7 +978,7 @@ export function TravelEditor({
               </div>
               <div id={`stop-${index}`} className="editor-stop__body" hidden={expandedPlace !== place.key}>
               <div className="travel-editor__item-head">
-                <strong>{planningMode ? `${String(activeDayPlaces.findIndex((item) => item.index === index) + 1).padStart(2, "0")}번째 일정` : `${String(index + 1).padStart(2, "0")}번째 장소`}{planningMode && place.startTime ? <time>{place.startTime}</time> : null}</strong>
+                <strong>{planningMode ? `${activeDayPlaces.findIndex((item) => item.index === index) + 1}번째 일정` : `${index + 1}번째 장소`}{planningMode && place.startTime ? <time>{place.startTime}</time> : null}</strong>
                 <div className="travel-editor__order-actions">
                   <button type="button" onClick={() => planningMode ? movePlanningPlace(index, -1) : movePlace(index, -1)} disabled={(planningMode ? activeDayPlaces[0]?.index === index : index === 0) || pending} aria-label="장소를 앞으로 이동"><Icon name="arrow-up" /><span>앞으로</span></button>
                   <button type="button" onClick={() => planningMode ? movePlanningPlace(index, 1) : movePlace(index, 1)} disabled={(planningMode ? activeDayPlaces.at(-1)?.index === index : index === places.length - 1) || pending} aria-label="장소를 뒤로 이동"><Icon name="arrow-down" /><span>뒤로</span></button>

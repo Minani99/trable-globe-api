@@ -1,5 +1,6 @@
 "use client";
 
+import { avatarInitial } from "@/lib/utils/format";
 import { ChangeEvent, FormEvent, useEffect, useState } from "react";
 
 import { Icon } from "@/components/common/Icon";
@@ -118,7 +119,7 @@ export function ProfileEditor({ member }: { member: AuthMember }) {
           <TravelImage
             src={displayImage}
             alt={`${savedMember.displayName} 프로필 이미지 미리보기`}
-            fallbackLabel={savedMember.username.slice(0, 2)}
+            fallbackLabel={avatarInitial(savedMember.displayName, savedMember.username)}
             className="account-photo__avatar"
           />
           <div className="account-photo__copy">

@@ -43,7 +43,7 @@ export function TripWeatherPanel({
   const sources = [...new Set(days.map((day) => day.source))];
 
   return (
-    <section className={`trip-weather${!days.length && state.status !== "loading" ? " is-summary" : ""}`} aria-labelledby="trip-weather-heading" aria-busy={state.status === "loading"}>
+    <section className={`trip-weather${!days.length && state.status !== "loading" ? " is-summary" : ""}${state.status === "error" ? " is-error" : ""}`} aria-labelledby="trip-weather-heading" aria-busy={state.status === "loading"}>
       <header className="trip-weather__header">
         <span className="trip-weather__badge" aria-hidden="true"><Icon name={rainyForecast.length ? "umbrella" : "weather-partly"} /></span>
         <div>
@@ -54,9 +54,9 @@ export function TripWeatherPanel({
         {advice ? (
           <a className="trip-weather__action" href="#itinerary-editor">날씨에 맞춰 일정 점검</a>
         ) : null}
+        {state.status === "error" ? <button className="trip-weather__retry" type="button" onClick={state.refresh}><Icon name="refresh" />다시 확인</button> : null}
       </header>
 
-      {state.status === "error" ? <button className="trip-weather__action" type="button" onClick={state.refresh}><Icon name="refresh" />다시 확인</button> : null}
       {state.status === "loading" ? (
         <ol className="trip-weather__days is-loading" aria-hidden="true">
           {datesBetween(startDate, endDate).slice(0, 7).map((date) => <li key={date} />)}
@@ -67,7 +67,7 @@ export function TripWeatherPanel({
         </ol>
       ) : null}
 
-      <footer className="trip-weather__footer">
+      {state.status === "error" ? null : <footer className="trip-weather__footer">
         {sources.length ? (
           <ul aria-label="날씨 기준">
             {sources.includes("forecast") ? <li><b data-source="forecast">예보</b> 약 2주 앞까지의 실제 예보</li> : null}
@@ -76,7 +76,7 @@ export function TripWeatherPanel({
           </ul>
         ) : null}
         <small>현지 시간 기준 · 날씨 데이터 <a href="https://open-meteo.com/" target="_blank" rel="noreferrer">Open-Meteo</a></small>
-      </footer>
+      </footer>}
     </section>
   );
 }
@@ -97,13 +97,13 @@ function WeatherDayCard({ day, dayNumber }: { day: WeatherDay; dayNumber: number
 
 function heading(status: string, weather: TripWeather | null): string {
   if (status === "loading" || status === "idle") return "여행 기간 날씨를 확인하고 있어요";
-  if (status === "error" || !weather) return "날씨를 잠시 불러오지 못했어요";
+  if (status === "error" || !weather) return "날씨를 불러오지 못했어요";
   return weatherSummary(weather.days);
 }
 
 function description(status: string, weather: TripWeather | null, destinationLabel: string): string {
   if (status === "loading" || status === "idle") return "날짜별 기온과 비 소식을 모으는 중입니다.";
-  if (status === "error" || !weather) return "날씨 연결을 확인하지 못했어요. 아래에서 다시 확인해 주세요.";
+  if (status === "error" || !weather) return "일정 편집에는 영향이 없어요. 잠시 후 다시 확인해 주세요.";
   if (!weather.days.length) return "여행 날짜와 장소를 확인해 주세요.";
   const maxes = weather.days.map((day) => day.temperatureMax).filter((value): value is number => value != null);
   const mins = weather.days.map((day) => day.temperatureMin).filter((value): value is number => value != null);

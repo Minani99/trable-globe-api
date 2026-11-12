@@ -537,10 +537,7 @@ export function PlanBuilder({
       {error ? <p className="pb-mobile-error" role="alert">{error}</p> : null}
       <nav className="pb-mobile-nav" aria-label="여행 계획 단계 이동">
         <button type="button" className="pb-secondary" onClick={() => moveMobileStep(-1)} disabled={mobileStep === 0 || pending}>이전</button>
-        <span className="pb-mobile-nav__status">
-          <small>{mobileStep + 1} / {MOBILE_PLAN_STEPS.length}</small>
-          <strong>{MOBILE_PLAN_STEPS[mobileStep]}</strong>
-        </span>
+        {/* The sticky progress header already names the step, so the bar holds only actions. */}
         {mobileStep < MOBILE_PLAN_STEPS.length - 1 ? (
           <button type="button" className="pb-primary" onClick={() => moveMobileStep(1)}>다음</button>
         ) : (
