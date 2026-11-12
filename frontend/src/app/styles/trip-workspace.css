@@ -15,6 +15,11 @@
 .day-route-list__heading strong { font-size: .9rem; }
 .day-route-list__heading span { color: var(--text-secondary); font-size: .75rem; }
 .day-route-map-panel { min-width: 0; padding: 0 1.25rem 1.25rem 0; }
+.day-route-follow-next { display: flex; align-items: center; gap: .6rem; width: 100%; min-height: 48px; margin-bottom: .6rem; padding: .65rem .8rem; border: 1px solid var(--border); border-radius: 8px; color: var(--accent-strong); background: var(--surface); text-align: left; }
+.day-route-follow-next > svg { flex: 0 0 20px; width: 20px; height: 20px; }
+.day-route-follow-next > span { display: grid; min-width: 0; gap: .15rem; font-size: .75rem; }
+.day-route-follow-next strong { font-size: .875rem; overflow-wrap: anywhere; }
+.day-route-follow-next:focus-visible { outline: 2px solid var(--accent-strong); outline-offset: 3px; }
 .mobile-trip-companion.is-page .day-route-stops { display: grid; gap: .65rem; margin: 0; padding: 0; overflow: visible; }
 .mobile-trip-companion.is-page .day-route-stops li { display: grid; grid-template-columns: 28px minmax(0, 1fr) 48px; align-items: start; gap: .65rem; min-width: 0; max-width: none; padding: .8rem; border: 1px solid var(--border); border-radius: 12px; background: var(--surface); }
 .mobile-trip-companion.is-page .day-route-stops li.is-selected { border-color: var(--accent); background: color-mix(in srgb, var(--accent-soft) 35%, var(--surface)); }

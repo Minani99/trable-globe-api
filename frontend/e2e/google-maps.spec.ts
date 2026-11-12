@@ -244,4 +244,10 @@ test("여행 중 지도는 다음 미완료 장소를 따르되 직접 선택한
   await page.getByRole("button", { name: "기요미즈데라 완료", exact: true }).click();
   await expect(page.getByRole("button", { name: "1번째 교토역 지도에서 선택", exact: true })).toHaveAttribute("aria-pressed", "true");
   await expect(page.getByRole("link", { name: "다음 방문 니시키 시장 · 길찾기", exact: true })).toBeVisible();
+  await page.getByRole("button", { name: /다음 방문 장소로 돌아가기.*니시키 시장/ }).click();
+  await expect(page.getByRole("button", { name: "3번째 니시키 시장 지도에서 선택", exact: true })).toHaveAttribute("aria-pressed", "true");
+  await expect.poll(async () => (await mock(page)).pans.at(-1)).toBe(35.005);
+  await expect(page.getByRole("button", { name: /다음 방문 장소로 돌아가기/ })).toHaveCount(0);
+  await page.getByRole("button", { name: "교토역 미완료로 변경", exact: true }).click();
+  await expect(page.getByRole("button", { name: "1번째 교토역 지도에서 선택", exact: true })).toHaveAttribute("aria-pressed", "true");
 });
