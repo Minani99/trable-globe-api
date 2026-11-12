@@ -102,9 +102,8 @@
 }
 
 /*
- * P2-8: the profile archive shows one view at a time on every width. Cards, the yearly
- * timeline and the country index repeat the same trips, so desktop now uses the same
- * switcher phones already had instead of stacking all three.
+ * P2-8: the profile archive no longer stacks the card grid and the yearly timeline,
+ * which repeat the same trips. Desktop now uses the switcher phones already had.
  */
 @media (min-width: 701px) {
   .profile-archive__mobile-nav {
@@ -148,6 +147,23 @@
   }
 
   .profile-archive__panel:not(.is-mobile-active) {
+    display: none;
+  }
+
+  /*
+   * The country index is a compact filter that drives the globe, not a repeat of the
+   * trips, so on desktop it always stays visible; only cards and timeline swap.
+   */
+  .profile-archive .profile-country-filter {
+    display: grid !important;
+  }
+
+  .profile-archive__mobile-nav button[aria-controls="profile-country-index"] {
+    display: none;
+  }
+
+  /* With the country tab hidden, a lone remaining button is not a switcher. */
+  .profile-archive__mobile-nav:not(:has(button[aria-controls="profile-travel-timeline"])) {
     display: none;
   }
 
