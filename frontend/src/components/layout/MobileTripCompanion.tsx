@@ -407,6 +407,11 @@ export function MobileTripCompanion({
           <div className="day-route-workspace">
           <div className="day-route-list"><div className="day-route-list__heading"><strong>방문 순서</strong><span>장소를 누르면 지도에서 보여요</span></div>{itinerary}</div>
           <div className="day-route-map-panel">
+          {focusedMapPlaceId !== null && nextLocatedPlace ? <button
+            type="button"
+            className="day-route-follow-next"
+            onClick={() => setFocusedMapPlaceId(null)}
+          ><AppIcon name="pin" /><span>다음 방문 장소로 돌아가기<strong>{nextLocatedPlace.placeName}</strong></span></button> : null}
           <DayMap key={viewDate} compact focusedPlaceId={activeMapPlaceId} onPlaceSelect={setFocusedMapPlaceId} placeNumbers={dayPlaceNumbers} places={locatedDayPlaces} />
           {selectedMapPlace ? <a className="day-route-selected" href={`https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(`${selectedMapPlace.latitude},${selectedMapPlace.longitude}`)}`} target="_blank" rel="noreferrer"><div><small>선택한 장소</small><strong>{selectedMapPlace.placeName}</strong></div><span><AppIcon name="pin" />길찾기</span></a> : null}
           <GoogleDirectionsPanel compact activeDate={viewDate} stops={dayPlaces.map((place) => ({ ...place, key: place.id }))} />
