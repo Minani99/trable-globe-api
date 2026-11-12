@@ -64,7 +64,8 @@ export function MobileTripCompanion({
   const dayPlaces = useMemo(() => placesForDay(currentTravel.places, viewDate), [viewDate, currentTravel.places]);
   const locatedDayPlaces = useMemo(() => dayPlaces.filter((place) => isDirectionsStopLocated({ ...place, key: place.id })), [dayPlaces]);
   const dayPlaceNumbers = useMemo(() => Object.fromEntries(dayPlaces.map((place, index) => [place.id, index + 1])), [dayPlaces]);
-  const activeMapPlaceId = focusedMapPlaceId ?? locatedDayPlaces[0]?.id;
+  const nextLocatedPlace = locatedDayPlaces.find(place => !place.completedAt);
+  const activeMapPlaceId = focusedMapPlaceId ?? nextLocatedPlace?.id ?? locatedDayPlaces[0]?.id;
   const selectedMapPlace = locatedDayPlaces.find((place) => place.id === activeMapPlaceId);
   const viewingToday = viewDate === today;
   const nextPlace = dayPlaces.find((place) => !place.completedAt) ?? null;
@@ -402,11 +403,11 @@ export function MobileTripCompanion({
       {variant === "page" ? <>
         {dayPlaces.length ? <section className="day-route-overview" aria-label="하루 동선 한눈에 보기">
           <header><AppIcon name="route" /><h3>하루 동선</h3><span>{dayPlaces.length}곳</span></header>
-          {nextPlace ? <a className="day-route-next" href={googleMapsUrl(nextPlace)} target="_blank" rel="noreferrer" aria-label={`다음 방문 ${nextPlace.placeName} · 지도에서 위치 보기`}><span>다음 방문</span><strong>{dayPlaces.indexOf(nextPlace) + 1}. {nextPlace.placeName}</strong><AppIcon name="pin" /></a> : null}
+          {nextPlace ? <a className="day-route-next" href={nextPlaceDirectionsUrl(nextPlace)} target="_blank" rel="noreferrer" aria-label={`다음 방문 ${nextPlace.placeName} · 길찾기`}><span>다음 방문</span><strong>{dayPlaces.indexOf(nextPlace) + 1}. {nextPlace.placeName}</strong><span>길찾기</span><AppIcon name="route" /></a> : null}
           <div className="day-route-workspace">
           <div className="day-route-list"><div className="day-route-list__heading"><strong>방문 순서</strong><span>장소를 누르면 지도에서 보여요</span></div>{itinerary}</div>
           <div className="day-route-map-panel">
-          <DayMap key={viewDate} compact focusedPlaceId={focusedMapPlaceId} onPlaceSelect={setFocusedMapPlaceId} placeNumbers={dayPlaceNumbers} places={locatedDayPlaces} />
+          <DayMap key={viewDate} compact focusedPlaceId={activeMapPlaceId} onPlaceSelect={setFocusedMapPlaceId} placeNumbers={dayPlaceNumbers} places={locatedDayPlaces} />
           {selectedMapPlace ? <a className="day-route-selected" href={`https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(`${selectedMapPlace.latitude},${selectedMapPlace.longitude}`)}`} target="_blank" rel="noreferrer"><div><small>선택한 장소</small><strong>{selectedMapPlace.placeName}</strong></div><span><AppIcon name="pin" />길찾기</span></a> : null}
           <GoogleDirectionsPanel compact activeDate={viewDate} stops={dayPlaces.map((place) => ({ ...place, key: place.id }))} />
           </div></div>
@@ -475,6 +476,13 @@ function formatTime(value: string | null): string | null {
 function googleMapsUrl(place: TravelPlace): string {
   const query = `${place.latitude},${place.longitude} (${place.placeName})`;
   return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(query)}`;
+}
+
+function nextPlaceDirectionsUrl(place: TravelPlace): string {
+  const destination = isDirectionsStopLocated({ ...place, key: place.id })
+    ? `${place.latitude},${place.longitude}`
+    : [place.placeName, place.city?.nameKo, place.country.nameKo].filter(Boolean).join(" ");
+  return `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(destination)}`;
 }
 
 function differenceInDays(startDate: string, endDate: string): number {

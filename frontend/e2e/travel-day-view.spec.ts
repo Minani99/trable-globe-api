@@ -146,7 +146,7 @@ test("미래 여행도 여행용 보기에서 날짜별로 확인할 수 있다"
   await expect(page.getByRole("progressbar", { name: "완료한 일정" })).toHaveAttribute("value", "1");
   await page.getByRole("button", { name: "시부야 스카이 미완료로 변경" }).click();
   await expect(complete).toHaveAttribute("aria-pressed", "false");
-  await expect(page.getByRole("link", { name: /지도에서 위치 보기/ })).toHaveAttribute("href", /google\.com\/maps\/search/);
+  await expect(page.getByRole("link", { name: /다음 방문.*길찾기/ })).toHaveAttribute("href", /google\.com\/maps\/dir\//);
 
   // A delayed reconnect must not present the last online response as fresh data.
   await expect(reservations).toContainText("시부야 호텔");
