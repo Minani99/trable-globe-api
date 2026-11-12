@@ -10,6 +10,7 @@ import { TravelWorkspaceContext } from "@/components/planner/MobilePlanningWorks
 import { TravelActionIcon } from "@/components/common/TravelActionIcon";
 import { WeatherIcon } from "@/components/common/WeatherIcon";
 import { GoogleDirectionsPanel } from "@/components/travel/GoogleDirectionsPanel";
+import { googleMapsApiKey } from "@/lib/google-maps-loader";
 import { VisitOrderSuggestion } from "@/components/studio/VisitOrderSuggestion";
 import { PlanningRoutePreview } from "@/components/studio/PlanningRoutePreview";
 import { ApiError, apiMutation } from "@/lib/api/client";
@@ -170,6 +171,16 @@ export function TravelEditor({
     ? places.map((place, index) => ({ place, index })).filter(({ place }) => place.visitedAt === activePlanDate)
     : [];
   const quickNoteIndex = planningMode ? (activeDayPlaces[0]?.index ?? 0) : 0;
+  const routeStops = (planningMode ? activeDayPlaces.map(({ place }) => place) : places).map(place => ({
+    key: place.key, placeName: place.placeName, latitude: coordinate(place.latitude),
+    longitude: coordinate(place.longitude), visitedAt: place.visitedAt,
+  }));
+  const routeSignature = JSON.stringify(routeStops);
+  const [routeResult, setRouteResult] = useState<{ signature: string; route: google.maps.routes.Route | null } | null>(null);
+  const receivePlanningRoute = useCallback((route: google.maps.routes.Route | null) => {
+    setRouteResult({ signature: routeSignature, route });
+  }, [routeSignature]);
+  const planningRoute = routeResult?.signature === routeSignature ? routeResult.route : null;
   const completedPlanDays = planDays.filter((day) =>
     places.some((place) => place.visitedAt === day && !isPlanningPlaceholder(place)),
   ).length;
@@ -1024,13 +1035,12 @@ export function TravelEditor({
           stops={activeDayPlaces.map(({ place }) => ({ key: place.key, placeName: place.placeName, latitude: isPlanningPlaceholder(place) ? null : coordinate(place.latitude), longitude: coordinate(place.longitude), startTime: place.startTime }))}
           onApply={applyVisitOrder} /> : null}
         </div><aside id={`${editorTabsId}-map`} className="planning-itinerary-map">
-        {mobileEditorStep === 1 ? <PlanningRoutePreview key={planningMode ? activePlanDate : "all"} places={planningMode ? activeDayPlaces.map(({ place }) => place) : places} countries={countries} focusedKey={expandedPlace} onSelect={setExpandedPlace} /> : null}
+        {mobileEditorStep === 1 ? <PlanningRoutePreview key={planningMode ? activePlanDate : "all"} route={planningMode ? planningRoute : undefined} places={planningMode ? activeDayPlaces.map(({ place }) => place) : places} countries={countries} focusedKey={expandedPlace} onSelect={setExpandedPlace} /> : null}
         <GoogleDirectionsPanel compact
+          keepOpenOnChange
+          onRoute={planningMode && googleMapsApiKey ? receivePlanningRoute : undefined}
           activeDate={planningMode ? activePlanDate : undefined}
-          stops={(planningMode ? activeDayPlaces.map(({ place }) => place) : places).map((place) => ({
-            key: place.key, placeName: place.placeName,
-            latitude: coordinate(place.latitude), longitude: coordinate(place.longitude), visitedAt: place.visitedAt,
-          }))}
+          stops={routeStops}
         />
         </aside></div>
         {!planningMode ? <div className="travel-editor__add-row"><p>방문 순서를 바꾸면 Google Maps 경로에도 바로 반영됩니다.</p><button type="button" onClick={() => { const next = emptyPlace(places.at(-1)?.countryCode ?? "KR"); setPlaces((current) => [...current, next]); setExpandedPlace(next.key); setDirty(true); }}><Icon name="plus" /> 장소 추가</button></div> : null}
