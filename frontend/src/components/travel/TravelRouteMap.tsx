@@ -12,6 +12,7 @@ import type { TravelPlace } from "@/types";
 interface TravelRouteMapProps {
   places: TravelPlace[];
   compact?: boolean;
+  directions?: { stops: TravelPlace[]; date: string };
   placeNumbers?: Record<number, number>;
   focusedPlaceId?: number | null;
   onPlaceSelect?: (id: number) => void;
@@ -61,7 +62,7 @@ export function TravelRouteMap(props: TravelRouteMapProps) {
   </div>;
 }
 
-function TravelRouteDay({ places, compact = false, placeNumbers, focusedPlaceId, onPlaceSelect, activeDate, dayNumber }: TravelRouteMapProps & { activeDate?: string; dayNumber?: number }) {
+function TravelRouteDay({ places, compact = false, directions, placeNumbers, focusedPlaceId, onPlaceSelect, activeDate, dayNumber }: TravelRouteMapProps & { activeDate?: string; dayNumber?: number }) {
   const [route, setRoute] = useState<google.maps.routes.Route | null>(null);
   const receiveRoute = useCallback((value: google.maps.routes.Route | null) => setRoute(value), []);
   const initialView = useMemo(
@@ -153,8 +154,15 @@ function TravelRouteDay({ places, compact = false, placeNumbers, focusedPlaceId,
     places.map((place) => place.visitedAt).filter((date): date is string => Boolean(date)),
   )];
 
+  const directionsPanel = !compact || directions ? <GoogleDirectionsPanel
+    compact={compact}
+    stops={(directions?.stops ?? places).map(({ id, placeName, latitude, longitude, visitedAt }) => ({ key: id, placeName, latitude, longitude, visitedAt }))}
+    activeDate={directions?.date ?? activeDate}
+    onRoute={useGoogle && places.length > 0 ? receiveRoute : undefined}
+  /> : null;
+
   if (!selectedPlace || places.length === 0) {
-    return <p className="text-body">지도에 표시할 방문 장소가 없습니다.</p>;
+    return <>{directionsPanel}<p className="text-body">지도에 표시할 방문 장소가 없습니다.</p></>;
   }
 
   const activePlaceCard = (
@@ -251,7 +259,7 @@ function TravelRouteDay({ places, compact = false, placeNumbers, focusedPlaceId,
 
   return (
     <div className={`travel-route-explorer${compact ? " is-compact" : ""}`}>
-      {!compact ? <GoogleDirectionsPanel stops={places.map((place) => ({ ...place, key: place.id }))} activeDate={activeDate} onRoute={useGoogle ? receiveRoute : undefined} /> : null}
+      {directionsPanel}
       <div className="travel-route-map-shell">
         <div className="travel-route-map-toolbar">
           <div>
