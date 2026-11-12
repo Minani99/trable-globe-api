@@ -67,7 +67,7 @@ export function TripWeatherPanel({
         </ol>
       ) : null}
 
-      {state.status === "error" ? null : <footer className="trip-weather__footer">
+      <footer className="trip-weather__footer">
         {sources.length ? (
           <ul aria-label="날씨 기준">
             {sources.includes("forecast") ? <li><b data-source="forecast">예보</b> 약 2주 앞까지의 실제 예보</li> : null}
@@ -76,7 +76,7 @@ export function TripWeatherPanel({
           </ul>
         ) : null}
         <small>현지 시간 기준 · 날씨 데이터 <a href="https://open-meteo.com/" target="_blank" rel="noreferrer">Open-Meteo</a></small>
-      </footer>}
+      </footer>
     </section>
   );
 }

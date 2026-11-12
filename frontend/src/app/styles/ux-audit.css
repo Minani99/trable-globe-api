@@ -46,6 +46,13 @@
   }
 }
 
+/* Very short screens cannot fit intro, actions and globe at once; keep the globe whole. */
+@media (max-width: 700px) and (max-height: 700px) {
+  .landing-main--journal .landing-hero.site-shell {
+    grid-template-areas: "copy" "globe" "actions";
+  }
+}
+
 /* P1-3: the mobile year picker is a quiet control, not the heaviest thing on the screen. */
 @media (max-width: 760px) {
   .travel-year-filter__mobile select {
