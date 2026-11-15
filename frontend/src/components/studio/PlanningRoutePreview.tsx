@@ -10,8 +10,9 @@ const RouteMap = dynamic(() => import("@/components/travel/TravelRouteMap").then
   loading: () => <p className="day-map-placeholder" role="status">장소 지도를 불러오는 중…</p>,
 });
 
-export function PlanningRoutePreview({ places, countries, focusedKey, onSelect }: {
+export function PlanningRoutePreview({ places, countries, focusedKey, onSelect, route }: {
   places: PlaceDraft[]; countries: CountryOption[]; focusedKey: string | null; onSelect: (key: string) => void;
+  route?: google.maps.routes.Route | null;
 }) {
   const [open, setOpen] = useState(true);
   const mapped = useMemo(() => places.flatMap((place, index) => {
@@ -26,8 +27,8 @@ export function PlanningRoutePreview({ places, countries, focusedKey, onSelect }
     return [stop];
   }), [places, countries]);
   return <section className="planning-route-preview" aria-label="계획 중인 장소 지도">
-    <header><div><small>선택한 날짜 · 장소 {mapped.length}곳</small><strong>방문 장소</strong></div><button type="button" aria-expanded={open} onClick={() => setOpen(value => !value)}>{open ? "지도 접기" : "지도 펼치기"}</button></header>
-    {open ? mapped.length ? <RouteMap compact places={mapped} placeNumbers={Object.fromEntries(mapped.map(place => [place.id, place.id]))}
+    <header><div><small>선택한 날짜 · 장소 {mapped.length}곳</small><strong>{route ? "방문 장소와 이동 경로" : "방문 장소"}</strong></div>{!route ? <button type="button" aria-expanded={open} onClick={() => setOpen(value => !value)}>{open ? "지도 접기" : "지도 펼치기"}</button> : null}</header>
+    {open || route ? mapped.length ? <RouteMap compact displayedRoute={route} places={mapped} placeNumbers={Object.fromEntries(mapped.map(place => [place.id, place.id]))}
       focusedPlaceId={places.findIndex(place => place.key === focusedKey) + 1 || null}
       onPlaceSelect={id => { const place = places[id - 1]; if (place) onSelect(place.key); }} />
       : <p className="planning-route-preview__empty">장소를 검색해 추가하면 방문 위치가 여기에 표시됩니다.</p> : null}

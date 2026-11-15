@@ -12,6 +12,7 @@ import type { TravelPlace } from "@/types";
 interface TravelRouteMapProps {
   places: TravelPlace[];
   compact?: boolean;
+  displayedRoute?: google.maps.routes.Route | null;
   directions?: { stops: TravelPlace[]; date: string };
   placeNumbers?: Record<number, number>;
   focusedPlaceId?: number | null;
@@ -62,8 +63,9 @@ export function TravelRouteMap(props: TravelRouteMapProps) {
   </div>;
 }
 
-function TravelRouteDay({ places, compact = false, directions, placeNumbers, focusedPlaceId, onPlaceSelect, activeDate, dayNumber }: TravelRouteMapProps & { activeDate?: string; dayNumber?: number }) {
-  const [route, setRoute] = useState<google.maps.routes.Route | null>(null);
+function TravelRouteDay({ places, compact = false, directions, displayedRoute, placeNumbers, focusedPlaceId, onPlaceSelect, activeDate, dayNumber }: TravelRouteMapProps & { activeDate?: string; dayNumber?: number }) {
+  const [localRoute, setRoute] = useState<google.maps.routes.Route | null>(null);
+  const route = displayedRoute === undefined ? localRoute : displayedRoute;
   const receiveRoute = useCallback((value: google.maps.routes.Route | null) => setRoute(value), []);
   const initialView = useMemo(
     () => createInitialView(places, DEFAULT_VIEWPORT.width, DEFAULT_VIEWPORT.height),
