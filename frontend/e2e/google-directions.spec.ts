@@ -60,12 +60,12 @@ const routePlaces = [
   { placeName: "기온", latitude: 35.003, longitude: 135.778, visitedAt: "2099-10-11" },
 ];
 
-async function seed(page: Page) {
+async function seed(page: Page, startDate = "2099-10-10") {
   const username = `directions_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 5)}`;
   const registration = await page.request.post("/api/auth/register", { data: { username, displayName: "경로 여행자", email: `${username}@example.com`, password: "directions-test-password-42" } });
   expect(registration.status()).toBe(200);
   const response = await page.request.post("/api/private/travels", { data: {
-    title: "교토의 이틀 동선", description: "장소 순서대로 걷는 여행", startDate: "2099-10-10", endDate: "2099-10-11", visibility: "PRIVATE", coverImageUrl: null,
+    title: "교토의 이틀 동선", description: "장소 순서대로 걷는 여행", startDate, endDate: "2099-10-11", visibility: "PRIVATE", coverImageUrl: null,
     places: routePlaces.map((place) => ({
       ...place, country: { iso2Code: "JP", iso3Code: "JPN", nameEn: "Japan", nameKo: "일본", latitude: 36.2048, longitude: 138.2529 },
       city: null, startTime: null, durationMinutes: 60, memo: null,
@@ -136,4 +136,17 @@ test("모바일 일정의 날짜·순서·이동수단이 실제 경로에 반�
   } finally {
     await visitorContext.close();
   }
+});
+
+test("공유 일정의 일차는 첫 장소 날짜가 아니라 여행 시작일을 기준으로 표시된다", async ({ page }) => {
+  const id = await seed(page, "2099-10-08");
+  const response = await page.request.post(`/api/private/travels/${id}/share`);
+  const token = (await response.json()).data.token;
+  await page.goto(`/share/${token}`);
+  const dates = page.getByRole("group", { name: "경로 날짜 선택" });
+  await expect(dates.getByRole("button", { name: /3일차 · 10.10/ })).toHaveAttribute("aria-pressed", "true");
+  await expect(page.locator(".travel-itinerary__list")).toContainText("DAY 03");
+  await dates.getByRole("button", { name: /4일차 · 10.11/ }).click();
+  await expect(page.locator(".travel-itinerary__list")).toContainText("DAY 04");
+  await expect(page.locator(".travel-itinerary__list")).not.toContainText("DAY 02");
 });
