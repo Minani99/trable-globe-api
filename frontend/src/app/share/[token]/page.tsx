@@ -22,6 +22,6 @@ export default async function SharedPlanPage({ params }: { params: Promise<{ tok
     <header><span className="shared-plan__eyebrow">함께 나누는 여행 일정</span><h1>{travel.title}</h1><p>{publicDisplayName(travel.owner.displayName)}님의 {travel.durationDays}일 여행 · {travel.places.length}개 장소</p><p>{travel.startDate} — {travel.endDate}</p></header>
     <SaveSharedItinerary travel={travel} signedIn={Boolean(member)} isOwner={member?.username === travel.owner.username} today={todayInKorea()} returnPath={`/share/${token}`} />
     {travel.description ? <p className="shared-plan__note">{travel.description}</p> : null}
-    <TravelRouteMap places={travel.places} />
+    <TravelRouteMap places={travel.places} startDate={travel.startDate} />
   </main></>;
 }

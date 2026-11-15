@@ -11,6 +11,7 @@ import type { TravelPlace } from "@/types";
 
 interface TravelRouteMapProps {
   places: TravelPlace[];
+  startDate?: string;
   compact?: boolean;
   displayedRoute?: google.maps.routes.Route | null;
   directions?: { stops: TravelPlace[]; date: string };
@@ -51,11 +52,17 @@ export function TravelRouteMap(props: TravelRouteMapProps) {
   if (props.compact) return <TravelRouteDay {...props} />;
   const dates = [...new Set(props.places.map(place => place.visitedAt || ""))].sort((a, b) => !a ? 1 : !b ? -1 : a.localeCompare(b));
   const date = selectedDate !== null && dates.includes(selectedDate) ? selectedDate : dates[0] ?? "";
-  const day = dates.filter(Boolean).indexOf(date) + 1;
+  const dayOf = (value: string) => {
+    const start = props.startDate || dates.find(Boolean);
+    if (!start || !value) return 0;
+    const difference = Date.parse(`${value}T00:00:00Z`) - Date.parse(`${start}T00:00:00Z`);
+    return Number.isFinite(difference) ? Math.max(1, Math.round(difference / 86400000) + 1) : dates.indexOf(value) + 1;
+  };
+  const day = dayOf(date);
   return <div className="travel-route-days">
     <div className="google-directions__days travel-route-days__tabs" role="group" aria-label="경로 날짜 선택">
-      {dates.map((value, index) => <button key={value || "undated"} type="button" aria-pressed={date === value} onClick={() => setSelectedDate(value)}>
-        {value ? `${index + 1}일차 · ${Number(value.slice(5, 7))}.${Number(value.slice(8, 10))}` : "날짜 미정"}
+      {dates.map(value => <button key={value || "undated"} type="button" aria-pressed={date === value} onClick={() => setSelectedDate(value)}>
+        {value ? `${dayOf(value)}일차 · ${Number(value.slice(5, 7))}.${Number(value.slice(8, 10))}` : "날짜 미정"}
         <span> · {props.places.filter(place => (place.visitedAt || "") === value).length}곳</span>
       </button>)}
     </div>
