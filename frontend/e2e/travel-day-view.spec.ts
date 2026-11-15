@@ -63,6 +63,13 @@ test("미래 여행도 여행용 보기에서 날짜별로 확인할 수 있다"
   await expect(page.getByRole("heading", { name: "도쿄 2일 여행" })).toBeVisible();
   await expect(page.getByRole("heading", { name: "1일차 일정" })).toBeVisible();
   await expect(page.getByRole("list", { name: "도쿄 2일 여행 1일차 일정" })).toContainText("도쿄역");
+  await page.getByRole("link", { name: "방문 순서 보기", exact: true }).click();
+  const stopSection = page.locator(".day-route-list");
+  await expect(stopSection).toBeFocused();
+  await expect.poll(async () => (await stopSection.boundingBox())!.y).toBeGreaterThanOrEqual(56);
+  await page.getByRole("link", { name: "지도·경로 보기", exact: true }).click();
+  await expect(page.locator(".day-route-map-panel")).toBeFocused();
+  await expect.poll(async () => (await page.locator(".day-route-map-panel").boundingBox())!.y).toBeGreaterThanOrEqual(56);
   const reservations = page.getByRole("region", { name: "선택한 날짜 예약" });
   await expect(reservations).toContainText("예약 정보를 불러오지 못했어요");
   await expect(reservations).not.toContainText("등록한 예약이 없어요");
