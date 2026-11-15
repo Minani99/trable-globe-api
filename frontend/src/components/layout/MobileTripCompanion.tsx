@@ -9,7 +9,7 @@ import { DayReservations } from "@/components/travel/DayReservations";
 import { isDirectionsStopLocated } from "@/lib/google-directions";
 
 const DayMap = dynamic(() => import("@/components/travel/TravelRouteMap").then((module) => module.TravelRouteMap), { loading: () => <div className="day-map-placeholder" role="status">장소 지도를 불러오는 중…</div> });
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useId, useMemo, useRef, useState } from "react";
 
 import { TravelActionIcon } from "@/components/common/TravelActionIcon";
 import { ApiError, apiMutation } from "@/lib/api/client";
@@ -40,6 +40,7 @@ export function MobileTripCompanion({
   initialDate?: string;
 }) {
   const [currentTravel, setCurrentTravel] = useState(travel);
+  const routeSectionsId = useId();
   const [composer, setComposer] = useState<"note" | "photo" | null>(null);
   const [selectedPlaceId, setSelectedPlaceId] = useState<number | null>(null);
   const [note, setNote] = useState("");
@@ -404,8 +405,9 @@ export function MobileTripCompanion({
           <header><AppIcon name="route" /><h3>하루 동선</h3><span>{dayPlaces.length}곳</span></header>
           {nextPlace ? <a className="day-route-next" href={nextPlaceDirectionsUrl(nextPlace)} target="_blank" rel="noreferrer" aria-label={`다음 방문 ${nextPlace.placeName} · 길찾기`}><span>다음 방문</span><strong>{dayPlaces.indexOf(nextPlace) + 1}. {nextPlace.placeName}</strong><span>길찾기</span><AppIcon name="route" /></a> : null}
           <div className="day-route-workspace">
-          <div className="day-route-list"><div className="day-route-list__heading"><strong>방문 순서</strong><span>장소를 누르면 지도에서 보여요</span></div>{itinerary}</div>
-          <div className="day-route-map-panel">
+          <div id={`${routeSectionsId}-stops`} tabIndex={-1} className="day-route-list"><div className="day-route-list__heading"><strong>방문 순서</strong><span>장소를 누르면 지도에서 보여요</span><a className="day-route-jump" href={`#${routeSectionsId}-map`}><AppIcon name="pin" />지도·경로 보기</a></div>{itinerary}</div>
+          <div id={`${routeSectionsId}-map`} tabIndex={-1} className="day-route-map-panel">
+          <a className="day-route-jump" href={`#${routeSectionsId}-stops`}><AppIcon name="route" />방문 순서 보기</a>
           {focusedMapPlaceId !== null && nextLocatedPlace ? <button
             type="button"
             className="day-route-follow-next"
