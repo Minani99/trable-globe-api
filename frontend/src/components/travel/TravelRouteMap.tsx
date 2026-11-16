@@ -1,7 +1,7 @@
 "use client";
 
 import type { PointerEvent, WheelEvent } from "react";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useId, useMemo, useRef, useState } from "react";
 
 import { GoogleDirectionsPanel } from "@/components/travel/GoogleDirectionsPanel";
 import { GoogleRouteMapCanvas } from "@/components/travel/GoogleRouteMapCanvas";
@@ -11,7 +11,10 @@ import type { TravelPlace } from "@/types";
 
 interface TravelRouteMapProps {
   places: TravelPlace[];
+  startDate?: string;
   compact?: boolean;
+  displayedRoute?: google.maps.routes.Route | null;
+  directions?: { stops: TravelPlace[]; date: string };
   placeNumbers?: Record<number, number>;
   focusedPlaceId?: number | null;
   onPlaceSelect?: (id: number) => void;
@@ -49,12 +52,18 @@ export function TravelRouteMap(props: TravelRouteMapProps) {
   if (props.compact) return <TravelRouteDay {...props} />;
   const dates = [...new Set(props.places.map(place => place.visitedAt || ""))].sort((a, b) => !a ? 1 : !b ? -1 : a.localeCompare(b));
   const date = selectedDate !== null && dates.includes(selectedDate) ? selectedDate : dates[0] ?? "";
-  const day = dates.filter(Boolean).indexOf(date) + 1;
+  const dayOf = (value: string) => {
+    const start = props.startDate || dates.find(Boolean);
+    if (!start || !value) return 0;
+    const difference = Date.parse(`${value}T00:00:00Z`) - Date.parse(`${start}T00:00:00Z`);
+    return Number.isFinite(difference) ? Math.max(1, Math.round(difference / 86400000) + 1) : dates.indexOf(value) + 1;
+  };
+  const day = dayOf(date);
   return <div className="travel-route-days">
     {/* A one-day trip has nothing to choose between, so the selector would only add height. */}
     {dates.length > 1 ? <div className="google-directions__days travel-route-days__tabs" role="group" aria-label="경로 날짜 선택">
-      {dates.map((value, index) => <button key={value || "undated"} type="button" aria-pressed={date === value} onClick={() => setSelectedDate(value)}>
-        {value ? `${index + 1}일차 · ${Number(value.slice(5, 7))}.${Number(value.slice(8, 10))}` : "날짜 미정"}
+      {dates.map(value => <button key={value || "undated"} type="button" aria-pressed={date === value} onClick={() => setSelectedDate(value)}>
+        {value ? `${dayOf(value)}일차 · ${Number(value.slice(5, 7))}.${Number(value.slice(8, 10))}` : "날짜 미정"}
         <span> · {props.places.filter(place => (place.visitedAt || "") === value).length}곳</span>
       </button>)}
     </div> : null}
@@ -62,8 +71,12 @@ export function TravelRouteMap(props: TravelRouteMapProps) {
   </div>;
 }
 
-function TravelRouteDay({ places, compact = false, placeNumbers, focusedPlaceId, onPlaceSelect, activeDate, dayNumber }: TravelRouteMapProps & { activeDate?: string; dayNumber?: number }) {
-  const [route, setRoute] = useState<google.maps.routes.Route | null>(null);
+function TravelRouteDay({ places, compact = false, directions, displayedRoute, placeNumbers, focusedPlaceId, onPlaceSelect, activeDate, dayNumber }: TravelRouteMapProps & { activeDate?: string; dayNumber?: number }) {
+  const sectionId = useId();
+  const mapId = `${sectionId}-map`;
+  const itineraryId = `${sectionId}-itinerary`;
+  const [localRoute, setRoute] = useState<google.maps.routes.Route | null>(null);
+  const route = displayedRoute === undefined ? localRoute : displayedRoute;
   const receiveRoute = useCallback((value: google.maps.routes.Route | null) => setRoute(value), []);
   const initialView = useMemo(
     () => createInitialView(places, DEFAULT_VIEWPORT.width, DEFAULT_VIEWPORT.height),
@@ -154,8 +167,17 @@ function TravelRouteDay({ places, compact = false, placeNumbers, focusedPlaceId,
     places.map((place) => place.visitedAt).filter((date): date is string => Boolean(date)),
   )];
 
+  // The public view needs at least two stops for a route; a single place would only show
+  // an empty panel. The planner passes its own stops and keeps the panel either way.
+  const directionsPanel = directions || (!compact && places.length > 1) ? <GoogleDirectionsPanel
+    compact={compact}
+    stops={(directions?.stops ?? places).map(({ id, placeName, latitude, longitude, visitedAt }) => ({ key: id, placeName, latitude, longitude, visitedAt }))}
+    activeDate={directions?.date ?? activeDate}
+    onRoute={useGoogle && places.length > 0 ? receiveRoute : undefined}
+  /> : null;
+
   if (!selectedPlace || places.length === 0) {
-    return <p className="text-body">지도에 표시할 방문 장소가 없습니다.</p>;
+    return <>{directionsPanel}<p className="text-body">지도에 표시할 방문 장소가 없습니다.</p></>;
   }
 
   const activePlaceCard = (
@@ -252,9 +274,9 @@ function TravelRouteDay({ places, compact = false, placeNumbers, focusedPlaceId,
 
   return (
     <div className={`travel-route-explorer${compact ? " is-compact" : ""}`}>
-      {/* Directions need at least two stops; a single place would only show an empty route panel. */}
-      {!compact && places.length > 1 ? <GoogleDirectionsPanel stops={places.map((place) => ({ ...place, key: place.id }))} activeDate={activeDate} onRoute={useGoogle ? receiveRoute : undefined} /> : null}
-      <div className="travel-route-map-shell">
+      {directionsPanel}
+      <div className="travel-route-map-shell" id={mapId} tabIndex={compact ? undefined : -1}>
+        {!compact ? <a className="travel-route-jump" href={`#${itineraryId}`}>방문 순서 보기</a> : null}
         <div className="travel-route-map-toolbar">
           <div>
             <p className="travel-route-map-toolbar__hint">{route ? "Google Maps 이동 경로 · 번호는 방문 순서" : "번호는 방문 순서 · 장소를 선택해 위치를 확인하세요"}</p>
@@ -399,7 +421,8 @@ function TravelRouteDay({ places, compact = false, placeNumbers, focusedPlaceId,
         </p>
       </div>
 
-      {!compact ? <aside className="travel-itinerary" aria-label="방문 장소 일정">
+      {!compact ? <aside className="travel-itinerary" id={itineraryId} tabIndex={-1} aria-label="방문 장소 일정">
+        <a className="travel-route-jump" href={`#${mapId}`}>지도 보기</a>
         <div className="travel-itinerary__header">
           <div>
             <h3>일차별 일정</h3>

@@ -21,6 +21,17 @@ test("공개 여행 기록을 읽고 모바일에서 세로 일정과 사진을 
   await expect.poll(() => page.evaluate(() => navigator.clipboard.readText())).toContain("/traveler/travel/1");
 
   await page.setViewportSize({ width: 390, height: 844 });
+  await page.getByRole("link", { name: "방문 순서 보기", exact: true }).click();
+  const itinerarySection = page.getByRole("complementary", { name: "방문 장소 일정" });
+  await expect(itinerarySection).toBeFocused();
+  await expect.poll(async () => (await itinerarySection.boundingBox())!.y).toBeGreaterThanOrEqual(56);
+  const lastPlace = page.locator(".travel-itinerary__list button").last();
+  await lastPlace.click();
+  await expect(lastPlace).toHaveAttribute("aria-current", "step");
+  await page.getByRole("link", { name: "지도 보기", exact: true }).click();
+  await expect(page.locator(".travel-route-map-shell")).toBeFocused();
+  await expect.poll(async () => (await page.locator(".travel-route-map-shell").boundingBox())!.y).toBeGreaterThanOrEqual(56);
+  await expect(lastPlace).toHaveAttribute("aria-current", "step");
   const mobileLayout = await page.evaluate(() => {
     const itinerary = document.querySelector<HTMLElement>(".travel-itinerary__list");
     const gallery = document.querySelector<HTMLElement>(".travel-gallery");

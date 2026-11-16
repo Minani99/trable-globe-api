@@ -228,3 +228,70 @@ test("공유 일정은 기존 지도에 실제 경로를 표시하고 장소 선
   await expect.poll(state).toEqual({ maps: 1, requests: 1, lines: 0 });
   await expect(page.getByText("이동 약 3분", { exact: true })).toHaveCount(0);
 });
+
+test("여행 중 지도는 다음 미완료 장소를 따르되 직접 선택한 장소는 유지한다", async ({ page }) => {
+  await mockGoogleMaps(page);
+  const id = await seedTodayTrip(page);
+  await page.goto(`/studio/travels/${id}/go`);
+  await page.getByRole("button", { name: "교토역 완료", exact: true }).click();
+  await expect(page.getByRole("button", { name: "2번째 기요미즈데라 지도에서 선택", exact: true })).toHaveAttribute("aria-pressed", "true");
+  await expect.poll(async () => (await mock(page)).pans.at(-1)).toBe(34.9949);
+  const directions = page.getByRole("link", { name: "다음 방문 기요미즈데라 · 길찾기", exact: true });
+  const destination = new URL((await directions.getAttribute("href"))!);
+  expect(destination.pathname).toBe("/maps/dir/");
+  expect(destination.searchParams.get("destination")).toBe("34.9949,135.785");
+  await page.getByRole("button", { name: "1번째 교토역 지도에서 선택", exact: true }).click();
+  await page.getByRole("button", { name: "기요미즈데라 완료", exact: true }).click();
+  await expect(page.getByRole("button", { name: "1번째 교토역 지도에서 선택", exact: true })).toHaveAttribute("aria-pressed", "true");
+  await expect(page.getByRole("link", { name: "다음 방문 니시키 시장 · 길찾기", exact: true })).toBeVisible();
+  await page.getByRole("button", { name: /다음 방문 장소로 돌아가기.*니시키 시장/ }).click();
+  await expect(page.getByRole("button", { name: "3번째 니시키 시장 지도에서 선택", exact: true })).toHaveAttribute("aria-pressed", "true");
+  await expect.poll(async () => (await mock(page)).pans.at(-1)).toBe(35.005);
+  await expect(page.getByRole("button", { name: /다음 방문 장소로 돌아가기/ })).toHaveCount(0);
+  await page.getByRole("button", { name: "교토역 미완료로 변경", exact: true }).click();
+  await expect(page.getByRole("button", { name: "1번째 교토역 지도에서 선택", exact: true })).toHaveAttribute("aria-pressed", "true");
+});
+
+test("여행 중 경로도 지도 하나에 표시하며 완료 체크로 재조회하지 않는다", async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await mockGoogleMaps(page);
+  const id = await seedTodayTrip(page);
+  await page.goto(`/studio/travels/${id}/go`);
+  await expect(page.locator(".mock-google-map")).toHaveCount(1);
+  const state = () => page.evaluate(() => { const s = (window as unknown as { googleMapsMock: { maps: unknown[]; requests: number; lines: Array<{map: unknown}> } }).googleMapsMock; return { maps: s.maps.length, requests: s.requests, lines: s.lines.filter(line => line.map).length }; });
+  expect((await state()).requests).toBe(0);
+  await page.getByRole("button", { name: "앱에서 경로·이동시간 보기" }).click();
+  await expect.poll(state).toEqual({ maps: 1, requests: 1, lines: 1 });
+  await expect(page.getByText("이동 약 3분", { exact: true })).toBeVisible();
+  await page.getByRole("button", { name: "교토역 완료", exact: true }).click();
+  await expect(page.getByRole("button", { name: "교토역 미완료로 변경", exact: true })).toBeVisible();
+  await expect(page.getByRole("button", { name: "2번째 기요미즈데라 지도에서 선택", exact: true })).toHaveAttribute("aria-pressed", "true");
+  expect(await state()).toEqual({ maps: 1, requests: 1, lines: 1 });
+  await page.getByRole("button", { name: "경로 지도 접기" }).click();
+  await expect.poll(state).toEqual({ maps: 1, requests: 1, lines: 0 });
+  await expect(page.locator(".mock-google-map")).toHaveCount(1);
+});
+
+test("계획 편집은 기존 지도에 경로를 표시하고 장소 선택으로 재조회하지 않는다", async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await mockGoogleMaps(page);
+  const id = await seedTodayTrip(page);
+  await page.goto(`/studio/travels/${id}/edit?plan=1`);
+  await page.getByRole("tab", { name: "일정", exact: true }).click();
+  const state = () => page.evaluate(() => { const s = (window as unknown as { googleMapsMock: { maps: unknown[]; requests: number; lines: Array<{map: unknown}> } }).googleMapsMock; return { maps: s.maps.length, requests: s.requests, lines: s.lines.filter(line => line.map).length }; });
+  await expect(page.locator(".mock-google-map")).toHaveCount(1);
+  await page.getByRole("button", { name: "앱에서 경로·이동시간 보기" }).click();
+  await expect.poll(state).toEqual({ maps: 1, requests: 1, lines: 1 });
+  await expect(page.getByText("방문 장소와 이동 경로", { exact: true })).toBeVisible();
+  await page.getByRole("button", { name: /교토역.*편집/ }).click();
+  expect(await state()).toEqual({ maps: 1, requests: 1, lines: 1 });
+  await page.getByRole("button", { name: "자동차", exact: true }).click();
+  await expect.poll(state).toEqual({ maps: 1, requests: 2, lines: 1 });
+  await page.getByRole("button", { name: "경로 지도 접기" }).click();
+  await expect.poll(state).toEqual({ maps: 1, requests: 2, lines: 0 });
+  await page.getByRole("button", { name: "지도 접기", exact: true }).click();
+  await expect(page.locator(".mock-google-map")).toHaveCount(0);
+  await page.getByRole("button", { name: "앱에서 경로·이동시간 보기" }).click();
+  await expect(page.locator(".mock-google-map")).toHaveCount(1);
+  await expect.poll(state).toEqual({ maps: 2, requests: 3, lines: 1 });
+});
