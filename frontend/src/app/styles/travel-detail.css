@@ -425,12 +425,15 @@
   pointer-events: auto;
 }
 
-.travel-route-marker circle,
+.travel-route-marker path,
 .travel-route-marker text {
   transition:
     fill 0.2s ease,
     stroke 0.2s ease;
 }
+
+.travel-route-marker path { filter: drop-shadow(0 2px 2px rgb(0 0 0 / .2)); }
+.travel-route-marker:focus-visible path { stroke: var(--text-primary); stroke-width: 3; }
 
 .travel-route-map-loading {
   position: absolute;

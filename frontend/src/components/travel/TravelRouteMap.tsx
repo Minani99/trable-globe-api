@@ -8,6 +8,7 @@ import { GoogleRouteMapCanvas } from "@/components/travel/GoogleRouteMapCanvas";
 import { googleMapsApiKey } from "@/lib/google-maps-loader";
 import { formatDate } from "@/lib/utils/format";
 import type { TravelPlace } from "@/types";
+import { MAP_PIN_PATH } from "@/lib/map-pin";
 
 interface TravelRouteMapProps {
   places: TravelPlace[];
@@ -375,20 +376,16 @@ function TravelRouteDay({ places, compact = false, directions, displayedRoute, p
                       strokeDasharray="3 3"
                     />
                   ) : null}
-                  {active ? (
-                    <circle cx={point.x} cy={point.y} r="29" fill="var(--accent)" fillOpacity="0.16" />
-                  ) : null}
-                  <circle
-                    cx={point.x}
-                    cy={point.y}
-                    r={active ? 18 : 14}
+                  <path
+                    d={MAP_PIN_PATH}
+                    transform={`translate(${point.x} ${point.y}) scale(${active ? 1.15 : 1})`}
                     fill={active ? "var(--accent-strong)" : "var(--surface)"}
-                    stroke="var(--accent-strong)"
-                    strokeWidth="2.5"
+                    stroke={active ? "#ffffff" : "var(--accent-strong)"}
+                    strokeWidth="2"
                   />
                   <text
                     x={point.x}
-                    y={point.y + 4}
+                    y={point.y - 23 * (active ? 1.15 : 1) + 4}
                     textAnchor="middle"
                     fill={active ? "#ffffff" : "var(--text-primary)"}
                     fontSize="12"

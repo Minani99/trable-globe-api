@@ -71,6 +71,7 @@ async function mockGoogleMaps(page: Page, { failImport = false }: { failImport?:
     }
     class LatLngBounds { extend() {} }
     root.google = { maps: {
+      Point: class { constructor(public x: number, public y: number) {} },
       LatLngBounds,
       SymbolPath: { CIRCLE: 0 },
       importLibrary: async (name: string) => {
@@ -133,7 +134,7 @@ test("하루 동선은 Google 지도에 번호 마커로 표시되고 목록·�
 
   await route.getByRole("button", { name: "2번째 기요미즈데라 지도에서 선택", exact: true }).click();
   await expect.poll(async () => (await mock(page)).pans.at(-1)).toBe(34.9949);
-  await expect.poll(async () => (await mock(page)).markers.map((marker) => marker.scale)).toEqual([12, 15, 12]);
+  await expect.poll(async () => (await mock(page)).markers.map((marker) => marker.scale)).toEqual([1, 1.15, 1]);
 
   await page.evaluate(() => {
     const state = (window as unknown as { googleMapsMock: { markers: Array<{ listeners: { click: () => void } }> } }).googleMapsMock;
