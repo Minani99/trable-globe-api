@@ -275,6 +275,26 @@
 }
 
 /* Route explorer */
+.travel-route-jump { display: none; }
+.travel-route-map-shell, .travel-itinerary { scroll-margin-top: 5rem; }
+
+@media (max-width: 800px) {
+  .travel-route-jump {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 44px;
+    margin: .75rem;
+    padding: .5rem .75rem;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: var(--surface);
+    color: var(--accent-strong);
+    font-size: .8125rem;
+  }
+  .travel-route-jump:focus-visible { outline: 2px solid var(--accent-strong); outline-offset: 2px; }
+}
+
 .travel-route-explorer {
   display: grid;
   grid-template-columns: minmax(0, 1.65fr) minmax(18.5rem, 0.62fr);
