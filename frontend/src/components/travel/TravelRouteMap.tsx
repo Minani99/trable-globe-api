@@ -1,7 +1,7 @@
 "use client";
 
 import type { PointerEvent, WheelEvent } from "react";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useId, useMemo, useRef, useState } from "react";
 
 import { GoogleDirectionsPanel } from "@/components/travel/GoogleDirectionsPanel";
 import { GoogleRouteMapCanvas } from "@/components/travel/GoogleRouteMapCanvas";
@@ -71,6 +71,9 @@ export function TravelRouteMap(props: TravelRouteMapProps) {
 }
 
 function TravelRouteDay({ places, compact = false, directions, displayedRoute, placeNumbers, focusedPlaceId, onPlaceSelect, activeDate, dayNumber }: TravelRouteMapProps & { activeDate?: string; dayNumber?: number }) {
+  const sectionId = useId();
+  const mapId = `${sectionId}-map`;
+  const itineraryId = `${sectionId}-itinerary`;
   const [localRoute, setRoute] = useState<google.maps.routes.Route | null>(null);
   const route = displayedRoute === undefined ? localRoute : displayedRoute;
   const receiveRoute = useCallback((value: google.maps.routes.Route | null) => setRoute(value), []);
@@ -269,7 +272,8 @@ function TravelRouteDay({ places, compact = false, directions, displayedRoute, p
   return (
     <div className={`travel-route-explorer${compact ? " is-compact" : ""}`}>
       {directionsPanel}
-      <div className="travel-route-map-shell">
+      <div className="travel-route-map-shell" id={mapId} tabIndex={compact ? undefined : -1}>
+        {!compact ? <a className="travel-route-jump" href={`#${itineraryId}`}>방문 순서 보기</a> : null}
         <div className="travel-route-map-toolbar">
           <div>
             <p className="travel-route-map-toolbar__hint">{route ? "Google Maps 이동 경로 · 번호는 방문 순서" : "번호는 방문 순서 · 장소를 선택해 위치를 확인하세요"}</p>
@@ -414,7 +418,8 @@ function TravelRouteDay({ places, compact = false, directions, displayedRoute, p
         </p>
       </div>
 
-      {!compact ? <aside className="travel-itinerary" aria-label="방문 장소 일정">
+      {!compact ? <aside className="travel-itinerary" id={itineraryId} tabIndex={-1} aria-label="방문 장소 일정">
+        <a className="travel-route-jump" href={`#${mapId}`}>지도 보기</a>
         <div className="travel-itinerary__header">
           <div>
             <h3>일차별 일정</h3>

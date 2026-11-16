@@ -139,6 +139,7 @@ test("모바일 일정의 날짜·순서·이동수단이 실제 경로에 반�
 });
 
 test("공유 일정의 일차는 첫 장소 날짜가 아니라 여행 시작일을 기준으로 표시된다", async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
   const id = await seed(page, "2099-10-08");
   const response = await page.request.post(`/api/private/travels/${id}/share`);
   const token = (await response.json()).data.token;
@@ -149,4 +150,8 @@ test("공유 일정의 일차는 첫 장소 날짜가 아니라 여행 시작일
   await dates.getByRole("button", { name: /4일차 · 10.11/ }).click();
   await expect(page.locator(".travel-itinerary__list")).toContainText("DAY 04");
   await expect(page.locator(".travel-itinerary__list")).not.toContainText("DAY 02");
+  await page.getByRole("link", { name: "방문 순서 보기", exact: true }).click();
+  await expect(page.getByRole("complementary", { name: "방문 장소 일정" })).toBeFocused();
+  await page.getByRole("link", { name: "지도 보기", exact: true }).click();
+  await expect(page.locator(".travel-route-map-shell")).toBeFocused();
 });
