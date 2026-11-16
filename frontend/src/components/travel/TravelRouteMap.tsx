@@ -191,10 +191,6 @@ function TravelRouteDay({ places, compact = false, directions, displayedRoute, p
     </div>
   );
 
-  const mapLocationLabel = (
-    selectedPlace.city?.nameEn ?? selectedPlace.country.iso2Code
-  ).toUpperCase();
-
   const updateZoom = (nextZoom: number) => {
     const clamped = clamp(Math.round(nextZoom), MIN_ZOOM, MAX_ZOOM);
     if (clamped === zoom) {
@@ -408,7 +404,6 @@ function TravelRouteDay({ places, compact = false, directions, displayedRoute, p
 
           {activePlaceCard}
 
-          <p className="travel-route-map-zoom" aria-live="polite">{mapLocationLabel} · Z{zoom}</p>
           <p className="travel-route-map-attribution">
             © <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noreferrer">OpenStreetMap contributors</a>
           </p>

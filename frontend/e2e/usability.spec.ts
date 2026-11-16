@@ -118,9 +118,10 @@ for (const width of [320, 390, 768, 1280]) {
     // Rotation/resizing must preserve the focused location and zoom, not fit all stops.
     const marker = map.getByRole("button", { name: "2번째 장소 기요미즈데라", exact: true });
     const markerOffset = () => marker.evaluate((node) => {
-      const circle = node.querySelector("circle")!;
+      const pin = node.querySelector("path")!;
       const svg = node.closest("svg")!;
-      return Math.abs(Number(circle.getAttribute("cx")) - svg.viewBox.baseVal.width / 2);
+      const tipX = pin.transform.baseVal.consolidate()!.matrix.e;
+      return Math.abs(tipX - svg.viewBox.baseVal.width / 2);
     });
     await expect.poll(markerOffset).toBeLessThan(1);
     const mapWidth = await map.locator("svg").getAttribute("viewBox");
