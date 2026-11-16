@@ -8,8 +8,9 @@ import type {
 
 const base = (username: string) => `/api/profiles/${encodeURIComponent(username)}`;
 
-// Share only requests that are currently running. Completed data is never cached,
-// so returning after editing a trip still fetches the latest profile.
+// Share requests that are currently running. In the browser a completed read is never
+// kept, so returning after editing a trip asks again; the server answers from its data
+// cache, which every write clears (see `public-cache.ts`).
 const pendingReads = new Map<string, Promise<unknown>>();
 function sharedProfileRead<T>(path: string): Promise<T> {
   const pending = pendingReads.get(path);

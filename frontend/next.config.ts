@@ -70,10 +70,7 @@ const nextConfig: NextConfig = {
         source: "/api/health",
         destination: `${apiBaseUrl}/api/health`,
       },
-      {
-        source: "/api/profiles/:path*",
-        destination: `${apiBaseUrl}/api/profiles/:path*`,
-      },
+      // /api/profiles/* is served by a Route Handler that answers from the data cache.
       {
         source: "/api/travels/:path*",
         destination: `${apiBaseUrl}/api/travels/:path*`,
