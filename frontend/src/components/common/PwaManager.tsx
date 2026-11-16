@@ -11,12 +11,31 @@ interface InstallPromptEvent extends Event {
 
 const DISMISS_KEY = "travel-globe:pwa-install-dismissed";
 const DISMISS_DAYS = 14;
+/** Counted once per browser session, so the prompt never greets a first visit. */
+const VISITS_KEY = "travel-globe:workspace-visits";
+const VISIT_SESSION_KEY = "travel-globe:workspace-visit-counted";
+const MIN_VISITS = 2;
+
+function countWorkspaceVisit(): number {
+  try {
+    let visits = Number(window.localStorage.getItem(VISITS_KEY)) || 0;
+    if (!window.sessionStorage.getItem(VISIT_SESSION_KEY)) {
+      visits += 1;
+      window.localStorage.setItem(VISITS_KEY, String(visits));
+      window.sessionStorage.setItem(VISIT_SESSION_KEY, "1");
+    }
+    return visits;
+  } catch {
+    return 0;
+  }
+}
 
 export function PwaManager() {
   const pathname = usePathname();
   const [installPrompt, setInstallPrompt] = useState<InstallPromptEvent | null>(null);
   const [installed, setInstalled] = useState(false);
   const [dismissed, setDismissed] = useState(true);
+  const [returning, setReturning] = useState(false);
   const [showIosHelp, setShowIosHelp] = useState(false);
   const isIos = useMemo(() => typeof navigator !== "undefined" && /iphone|ipad|ipod/i.test(navigator.userAgent), []);
 
@@ -63,7 +82,17 @@ export function PwaManager() {
 
   const inTravelWorkspace = pathname === "/studio"
     || pathname === "/settings";
-  const canShow = !installed && !dismissed && inTravelWorkspace && (Boolean(installPrompt) || isIos);
+
+  useEffect(() => {
+    if (!inTravelWorkspace) return;
+    let active = true;
+    queueMicrotask(() => {
+      if (active) setReturning(countWorkspaceVisit() >= MIN_VISITS);
+    });
+    return () => { active = false; };
+  }, [inTravelWorkspace]);
+
+  const canShow = !installed && !dismissed && returning && inTravelWorkspace && (Boolean(installPrompt) || isIos);
   if (!canShow) return null;
 
   const dismiss = () => {

@@ -123,6 +123,8 @@ test("연도 링크를 열고 바꾸면 지구본, 기록, 리캡과 공유 주�
   for (const country of countryNames(recap2026.travels)) {
     await expect(countryList.getByRole("button", { name: new RegExp(country) })).toBeVisible();
   }
+  // The yearly timeline shares the archive switcher with the card grid.
+  await page.getByRole("navigation", { name: "프로필 기록 보기" }).getByRole("button", { name: /연도/ }).click();
   await expect(page.locator("#timeline-2026")).toBeVisible();
   await expect(page.locator("#timeline-2025")).toHaveCount(0);
 

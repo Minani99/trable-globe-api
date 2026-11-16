@@ -5,7 +5,7 @@ import Link from "next/link";
 import { TravelImage } from "@/components/common/TravelImage";
 import { FollowButton } from "@/components/discovery/FollowButton";
 import { MemberWorldPreview } from "@/components/discovery/MemberWorldPreview";
-import { formatCount } from "@/lib/utils/format";
+import { formatCount, avatarInitial } from "@/lib/utils/format";
 import { publicDisplayName } from "@/lib/utils/profile";
 import type { MemberDiscovery } from "@/types";
 
@@ -25,7 +25,7 @@ export function MemberCard({ member, viewerAuthenticated }: { member: MemberDisc
         <TravelImage
           src={member.profileImageUrl}
           alt={`${displayName} 프로필 이미지`}
-          fallbackLabel={member.username.slice(0, 2)}
+          fallbackLabel={avatarInitial(member.displayName, member.username)}
           className="member-card__avatar"
         />
         <span className="member-card__name">

@@ -2,6 +2,7 @@ import "server-only";
 
 import { NextResponse } from "next/server";
 
+import { invalidatePublicData } from "@/lib/api/public-cache";
 import { checkRateLimit } from "@/lib/api/rate-limit";
 import { getApiBaseUrl } from "@/lib/config";
 import { SESSION_COOKIE } from "@/lib/api/server-session";
@@ -90,6 +91,9 @@ export async function handleAuthStart(request: Request, action: "login" | "regis
     });
   }
 
+  // A new member can appear in public recommendations and search right away.
+  if (action === "register") await invalidatePublicData();
+
   const response = NextResponse.json(
     { ...envelope, data: envelope.data.member },
     { status: backendResponse.status, headers: forwardedResponseHeaders(backendResponse) },
@@ -149,12 +153,17 @@ export async function forwardWithSession(path: string, init: RequestInit = {}, s
     headers.set("Content-Type", "application/json");
   }
   try {
-    return await fetch(`${getApiBaseUrl()}${path}`, {
+    const response = await fetch(`${getApiBaseUrl()}${path}`, {
       ...init,
       headers,
       cache: "no-store",
       signal: AbortSignal.timeout(20_000),
     });
+    // Every signed-in write passes through here. Cached public reads are dropped before
+    // the caller sees success, so the page it navigates to next is already current.
+    const method = (init.method ?? "GET").toUpperCase();
+    if (response.ok && method !== "GET" && method !== "HEAD") await invalidatePublicData();
+    return response;
   } catch {
     return NextResponse.json(
       { success: false, data: null, message: "서버가 응답하지 않습니다. 잠시 후 다시 시도해 주세요.", error: { code: "BACKEND_UNREACHABLE" } },

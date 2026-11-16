@@ -1,3 +1,5 @@
+import Link from "next/link";
+
 import { TravelImage } from "@/components/common/TravelImage";
 import { formatDate } from "@/lib/utils/format";
 import type { TravelPhoto } from "@/types";
@@ -5,16 +7,19 @@ import type { TravelPhoto } from "@/types";
 interface PhotoGalleryProps {
   photos: TravelPhoto[];
   travelTitle: string;
+  /** Only the owner can add photos; visitors never see the empty state. */
+  addPhotosHref?: string;
 }
 
-export function PhotoGallery({ photos, travelTitle }: PhotoGalleryProps) {
+export function PhotoGallery({ photos, travelTitle, addPhotosHref }: PhotoGalleryProps) {
   if (photos.length === 0) {
     return (
       <div className="travel-photo-empty">
         <span aria-hidden="true"><i /><i /><i /></span>
         <div>
           <strong>아직 사진이 없습니다</strong>
-          <p>경로와 장소 기록은 그대로 볼 수 있습니다. 사진을 추가하면 이곳에 표시됩니다.</p>
+          <p>경로와 장소 기록은 그대로 공개됩니다. 사진을 추가하면 방문자도 이곳에서 볼 수 있어요.</p>
+          {addPhotosHref ? <Link className="travel-photo-empty__action" href={addPhotosHref}>사진 추가하기</Link> : null}
         </div>
       </div>
     );

@@ -1,5 +1,6 @@
 "use client";
 
+import { avatarInitial } from "@/lib/utils/format";
 import Link from "next/link";
 import { FormEvent, useState } from "react";
 
@@ -70,6 +71,9 @@ export function TravelSocialPanel({
       <div className="travel-social__heading">
         <div>
           <h2 id="travel-social-heading">여행 이야기를 나눠요</h2>
+          {social.commentCount === 0 && social.likeCount === 0 ? (
+            <p className="travel-social__invite">이 여행이 마음에 들었다면 첫 반응을 남겨 주세요.</p>
+          ) : null}
         </div>
         <div className="travel-social__actions">
           <button
@@ -80,7 +84,7 @@ export function TravelSocialPanel({
             onClick={() => setCommentsOpen((open) => !open)}
           >
             <span aria-hidden="true"><Icon name={commentsOpen ? "minus" : "plus"} /></span>
-            댓글 {social.commentCount}
+            {social.commentCount > 0 ? `댓글 ${social.commentCount}` : "첫 댓글 남기기"}
           </button>
           {currentMember ? (
             <button
@@ -91,11 +95,11 @@ export function TravelSocialPanel({
               aria-pressed={social.likedByCurrentMember}
             >
               <span aria-hidden="true">{social.likedByCurrentMember ? "♥" : "♡"}</span>
-              좋아요 {social.likeCount}
+              {social.likeCount > 0 ? `좋아요 ${social.likeCount}` : "좋아요"}
             </button>
           ) : (
             <Link href={loginPath} className="travel-social__like" aria-label="로그인하고 좋아요 남기기">
-              <span aria-hidden="true">♡</span> 좋아요 {social.likeCount}
+              <span aria-hidden="true">♡</span> {social.likeCount > 0 ? `좋아요 ${social.likeCount}` : "좋아요"}
             </Link>
           )}
         </div>
@@ -110,7 +114,7 @@ export function TravelSocialPanel({
               <TravelImage
                 src={currentMember.profileImageUrl}
                 alt={`${publicDisplayName(currentMember.displayName)} 프로필 이미지`}
-                fallbackLabel={currentMember.username.slice(0, 2)}
+                fallbackLabel={avatarInitial(currentMember.displayName, currentMember.username)}
                 className="travel-social__avatar"
               />
               <label>
@@ -144,7 +148,7 @@ export function TravelSocialPanel({
                       <TravelImage
                         src={comment.author.profileImageUrl}
                         alt={`${authorName} 프로필 이미지`}
-                        fallbackLabel={comment.author.username.slice(0, 2)}
+                        fallbackLabel={avatarInitial(comment.author.displayName, comment.author.username)}
                         className="travel-social__avatar"
                       />
                     </Link>

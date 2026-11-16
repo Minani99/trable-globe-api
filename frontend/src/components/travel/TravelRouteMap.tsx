@@ -60,12 +60,13 @@ export function TravelRouteMap(props: TravelRouteMapProps) {
   };
   const day = dayOf(date);
   return <div className="travel-route-days">
-    <div className="google-directions__days travel-route-days__tabs" role="group" aria-label="경로 날짜 선택">
+    {/* A one-day trip has nothing to choose between, so the selector would only add height. */}
+    {dates.length > 1 ? <div className="google-directions__days travel-route-days__tabs" role="group" aria-label="경로 날짜 선택">
       {dates.map(value => <button key={value || "undated"} type="button" aria-pressed={date === value} onClick={() => setSelectedDate(value)}>
         {value ? `${dayOf(value)}일차 · ${Number(value.slice(5, 7))}.${Number(value.slice(8, 10))}` : "날짜 미정"}
         <span> · {props.places.filter(place => (place.visitedAt || "") === value).length}곳</span>
       </button>)}
-    </div>
+    </div> : null}
     <TravelRouteDay key={date} {...props} places={props.places.filter(place => (place.visitedAt || "") === date)} activeDate={date} dayNumber={day} />
   </div>;
 }
@@ -166,7 +167,9 @@ function TravelRouteDay({ places, compact = false, directions, displayedRoute, p
     places.map((place) => place.visitedAt).filter((date): date is string => Boolean(date)),
   )];
 
-  const directionsPanel = !compact || directions ? <GoogleDirectionsPanel
+  // The public view needs at least two stops for a route; a single place would only show
+  // an empty panel. The planner passes its own stops and keeps the panel either way.
+  const directionsPanel = directions || (!compact && places.length > 1) ? <GoogleDirectionsPanel
     compact={compact}
     stops={(directions?.stops ?? places).map(({ id, placeName, latitude, longitude, visitedAt }) => ({ key: id, placeName, latitude, longitude, visitedAt }))}
     activeDate={directions?.date ?? activeDate}
@@ -424,7 +427,7 @@ function TravelRouteDay({ places, compact = false, directions, displayedRoute, p
           <div>
             <h3>일차별 일정</h3>
           </div>
-          <span>{String(places.length).padStart(2, "0")}곳</span>
+          <span>{places.length}곳</span>
         </div>
 
         <ol className="travel-itinerary__list">

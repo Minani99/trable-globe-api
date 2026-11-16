@@ -35,6 +35,12 @@ server:
     include-message: never
     include-binding-errors: never
   shutdown: graceful
+  # Trip lists and country data are tens of kilobytes of repetitive JSON; gzip cuts
+  # them to a fraction for the hop between the web host and this API.
+  compression:
+    enabled: true
+    mime-types: application/json
+    min-response-size: 1024
 
 spring.lifecycle:
   timeout-per-shutdown-phase: 20s

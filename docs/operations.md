@@ -70,7 +70,7 @@ A backup is not considered working until it has been restored successfully.
 ## Capacity guardrails
 
 - The production connection pool defaults to five connections per backend instance and no forced
-  idle connections, a 60-second idle timeout and background keepalive disabled.
+  idle connections, a four-minute idle timeout (under Neon's five-minute suspend window, so reused connections do not keep compute awake) and background keepalive disabled.
   Increase it only after measuring wait time and Neon connection usage.
 - Graceful shutdown allows in-flight requests up to 20 seconds; Render is allowed 45 seconds before
   terminating the old instance.

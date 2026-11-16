@@ -2,6 +2,8 @@
 
 import { useState } from "react";
 
+import { JourneyMapArt } from "./JourneyMapArt";
+
 interface TravelImageProps {
   src: string | null;
   alt: string;
@@ -9,6 +11,11 @@ interface TravelImageProps {
   /** Text stamped on the generated fallback - a country code or city name reads best. */
   fallbackLabel?: string;
   priority?: boolean;
+  /**
+   * `tile` (default) suits avatars and small thumbnails. `map` suits trip covers: a light
+   * route illustration that cannot be mistaken for a broken image.
+   */
+  fallbackVariant?: "tile" | "map";
 }
 
 /**
@@ -22,9 +29,17 @@ interface TravelImageProps {
  * later ones will come from arbitrary object storage, neither of which benefits from the
  * optimiser, and this keeps the remote-pattern allowlist out of the config for now.
  */
-export function TravelImage({ src, alt, className = "", fallbackLabel, priority }: TravelImageProps) {
+export function TravelImage({ src, alt, className = "", fallbackLabel, priority, fallbackVariant = "tile" }: TravelImageProps) {
   const [failed, setFailed] = useState(false);
   const showFallback = !src || failed;
+
+  if (showFallback && fallbackVariant === "map") {
+    return (
+      <div role="img" aria-label={alt} data-fallback="map" className={`relative overflow-hidden ${className}`}>
+        <JourneyMapArt seed={alt} fill />
+      </div>
+    );
+  }
 
   if (showFallback) {
     const hue = hashToHue(fallbackLabel ?? alt);
@@ -42,7 +57,7 @@ export function TravelImage({ src, alt, className = "", fallbackLabel, priority 
       >
         <span
           aria-hidden="true"
-          className="text-[0.62rem] font-medium tracking-[0.3em] text-white/25 uppercase"
+          className="text-[0.75rem] font-semibold text-white/85 uppercase"
         >
           {fallbackLabel ?? "No image"}
         </span>

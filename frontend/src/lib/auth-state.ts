@@ -43,7 +43,7 @@ export async function loadAuthMember(
   if (currentRequest) return currentRequest;
 
   const requestRevision = revision;
-  const request = fetch("/api/auth/me", {
+  const request = fetch("/api/auth/me?optional=1", {
     credentials: "same-origin",
     headers: { Accept: "application/json" },
     cache: "no-store",

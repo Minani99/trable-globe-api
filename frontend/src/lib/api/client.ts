@@ -1,3 +1,4 @@
+import { publicDataFetchCache } from "@/lib/api/public-cache";
 import { getApiBaseUrl } from "@/lib/config";
 import { notifySessionExpired } from "@/lib/session-events";
 
@@ -61,19 +62,23 @@ const SESSION_REQUEST_TIMEOUT_MS = 20_000;
 const UNREACHABLE_MESSAGE = "서버에 연결할 수 없습니다. 잠시 후 다시 시도해 주세요.";
 
 /**
- * GETs a path from the API and unwraps the response envelope.
+ * GETs an anonymous, public path from the API and unwraps the response envelope.
  *
- * Not cached: a profile is personal, frequently edited data and a stale globe is worse
- * than an extra request. Swap in `next: { revalidate: n }` once traffic justifies it.
+ * On the server the response is kept in the Next.js data cache and dropped as soon as any
+ * write goes through the BFF (see `public-cache.ts`), so repeat views of a profile or trip
+ * do not wait on the API host. Pass `cache: false` for reads with unbounded keys, such as
+ * free-text search. In the browser nothing is cached here; the same-origin route answers
+ * from the server cache.
  */
-export async function apiGet<T>(path: string): Promise<T> {
+export async function apiGet<T>(path: string, options: { cache?: boolean } = {}): Promise<T> {
   const url = `${getApiBaseUrl()}${path}`;
+  const cacheOnServer = typeof window === "undefined" && options.cache !== false;
 
   let response: Response;
   try {
     response = await fetch(url, {
       headers: { Accept: "application/json" },
-      cache: "no-store",
+      ...(cacheOnServer ? publicDataFetchCache : { cache: "no-store" as const }),
       signal: AbortSignal.timeout(SERVER_REQUEST_TIMEOUT_MS),
     });
   } catch (error) {

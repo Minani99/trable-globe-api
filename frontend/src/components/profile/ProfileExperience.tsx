@@ -389,10 +389,10 @@ export function ProfileExperience({
             <div className="profile-globe-card__meta" aria-hidden="true">
               <span>여행 기록</span>
               <span>
-                나라 {String(globeCountries.length).padStart(2, "0")}
+                나라 {globeCountries.length}
                 {timelineEngaged && activeMoment
                   ? ` · ${activeMoment.year}`
-                  : ` · 도시 ${String(selectedYear ? recap.cityCount : profile.statistics.cityCount).padStart(2, "0")}`}
+                  : ` · 도시 ${selectedYear ? recap.cityCount : profile.statistics.cityCount}`}
               </span>
             </div>
 
@@ -533,8 +533,8 @@ export function ProfileExperience({
                   필터 해제
                 </button>
               ) : (
-                <span className="text-content-faint font-mono text-[0.7rem] tracking-[0.08em]">
-                  여행 {String(scopedTravels.length).padStart(2, "0")}개
+                <span className="text-content-faint text-[0.8125rem] font-medium">
+                  여행 {scopedTravels.length}개
                 </span>
               )
             }

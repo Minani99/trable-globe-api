@@ -2,7 +2,7 @@ import Link from "next/link";
 
 import { TravelImage } from "@/components/common/TravelImage";
 import { profilePath } from "@/lib/config";
-import { formatDuration } from "@/lib/utils/format";
+import { formatDuration, avatarInitial } from "@/lib/utils/format";
 import type { TravelDetail } from "@/types";
 
 interface JourneySummaryProps {
@@ -31,7 +31,7 @@ export function JourneySummary({ travel, ownerName, locationLabel }: JourneySumm
         <TravelImage
           src={travel.owner.profileImageUrl}
           alt=""
-          fallbackLabel={travel.owner.username.slice(0, 2)}
+          fallbackLabel={avatarInitial(travel.owner.displayName, travel.owner.username)}
           className="journey-summary__avatar"
         />
         <span>

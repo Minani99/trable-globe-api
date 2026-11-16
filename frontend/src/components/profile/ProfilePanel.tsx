@@ -7,7 +7,7 @@ import { TravelImage } from "@/components/common/TravelImage";
 import { FollowButton } from "@/components/discovery/FollowButton";
 import { ProfileConnections } from "@/components/profile/ProfileConnections";
 import { ProfileSafetyActions } from "@/components/profile/ProfileSafetyActions";
-import { formatStat } from "@/lib/utils/format";
+import { formatStat, avatarInitial } from "@/lib/utils/format";
 import { publicDisplayName } from "@/lib/utils/profile";
 import type { FollowStatus, MemberSafetyStatus, UserProfile } from "@/types";
 
@@ -52,7 +52,7 @@ export function ProfilePanel({
       <TravelImage
         src={profile.profileImageUrl}
         alt={`${displayName} 프로필 이미지`}
-        fallbackLabel={profile.username.slice(0, 2)}
+        fallbackLabel={avatarInitial(profile.displayName, profile.username)}
         className="border-border-subtle h-12 w-12 shrink-0 rounded-full border object-cover"
       />
       <span className="min-w-0 flex-1">

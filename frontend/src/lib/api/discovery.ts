@@ -14,7 +14,8 @@ export function searchMembers(query: string, authenticated: boolean): Promise<Me
   const suffix = `?query=${encodeURIComponent(query)}&limit=16`;
   return authenticated
     ? apiSessionGet<MemberDiscovery[]>(`/api/private/discovery/search${suffix}`)
-    : apiGet<MemberDiscovery[]>(`/api/discovery/search${suffix}`);
+    // Free-text queries are unbounded, so they are never stored in the server cache.
+    : apiGet<MemberDiscovery[]>(`/api/discovery/search${suffix}`, { cache: false });
 }
 
 export function fetchMemberConnections(
