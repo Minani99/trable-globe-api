@@ -59,6 +59,27 @@ class TravelAuthorizationTest {
     }
 
     @Test
+    @DisplayName("편집 화면 묶음 조회는 주인에게만 여행·체크리스트·예산을 함께 준다")
+    void theWorkspaceBundleIsOwnerOnly() throws Exception {
+        Member owner = signUp();
+        long travelId = createTravel(owner.token(), "묶음 조회 여행", "PRIVATE");
+        Member stranger = signUp();
+
+        String body = okBody(get("/api/private/travels/" + travelId + "/workspace")
+                .header("Authorization", bearer(owner)));
+        assertThat(JsonPath.<String>read(body, "$.data.travel.title")).isEqualTo("묶음 조회 여행");
+        assertThat(JsonPath.<List<Object>>read(body, "$.data.tasks")).isNotNull();
+        assertThat(JsonPath.<Object>read(body, "$.data.planning")).isNotNull();
+
+        mockMvc.perform(get("/api/private/travels/" + travelId + "/workspace")
+                        .header("Authorization", bearer(stranger)))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.error.code").value("RESOURCE_NOT_FOUND"));
+        mockMvc.perform(get("/api/private/travels/" + travelId + "/workspace"))
+                .andExpect(status().isUnauthorized());
+    }
+
+    @Test
     @DisplayName("남의 여행을 수정할 수 없고, 원본도 그대로 남는다")
     void aStrangerCannotEditSomeoneElsesTravel() throws Exception {
         Member owner = signUp();

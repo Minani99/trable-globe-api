@@ -153,6 +153,8 @@ public class AuthService {
 
         boolean emailChanged = !credential.getEmail().equals(email);
         member.updateUsername(username);
+        // The remembered principal carries the old username.
+        authSessionService.forgetMember(member.getId());
         if (emailChanged) {
             credential.updateEmail(email);
             sendVerification(credential);

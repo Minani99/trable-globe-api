@@ -8,7 +8,7 @@ import { SiteFooter } from "@/components/layout/SiteFooter";
 import { SiteHeader } from "@/components/layout/SiteHeader";
 import { ProfileExperience } from "@/components/profile/ProfileExperience";
 import { ApiError } from "@/lib/api/client";
-import { authenticatedBackendGet, getCurrentMember } from "@/lib/api/server-session";
+import { authenticatedBackendGet, getCurrentMember, hasSessionCookie } from "@/lib/api/server-session";
 import {
   fetchProfile,
   fetchProfileRecaps,
@@ -92,10 +92,25 @@ export default async function ProfilePage(props: PageProps<"/[username]">) {
   const [{ username }, searchParams] = await Promise.all([props.params, props.searchParams]);
   const initialYear = parseYearParam(searchParams.year);
 
+  // Follow and safety status start together with the session check and the profile
+  // bundle, so a signed-in visitor waits one round trip instead of two. They are only
+  // used when the viewer is someone else; on your own profile the answers (a 200 and a
+  // harmless 400) are discarded. Usernames are stored lowercase.
+  const viewerRequest = getCurrentMember();
+  type Relationship = [FollowStatus | null, MemberSafetyStatus | null];
+  const noRelationship: Relationship = [null, null];
+  const handle = encodeURIComponent(username.toLowerCase());
+  const relationshipRequest: Promise<Relationship> = (await hasSessionCookie())
+    ? Promise.all([
+        authenticatedBackendGet<FollowStatus>(`/api/private/discovery/profiles/${handle}`),
+        authenticatedBackendGet<MemberSafetyStatus>(`/api/private/discovery/profiles/${handle}/safety`),
+      ]).catch(() => noRelationship)
+    : Promise.resolve(noRelationship);
+
   let data: Awaited<ReturnType<typeof loadProfileBundle>>;
   let viewer: Awaited<ReturnType<typeof getCurrentMember>> = null;
   try {
-    [data, viewer] = await Promise.all([loadProfileBundle(username), getCurrentMember()]);
+    [data, viewer] = await Promise.all([loadProfileBundle(username), viewerRequest]);
   } catch (error) {
     if (error instanceof ApiError && error.isNotFound) {
       notFound();
@@ -124,14 +139,7 @@ export default async function ProfilePage(props: PageProps<"/[username]">) {
   const { profile, countries, travels, recapCustomizations } = data;
   const profileUrl = new URL(profilePath(profile.username), getSiteUrl()).toString();
   const [relationship, safetyStatus] = viewer && viewer.username !== profile.username
-    ? await Promise.all([
-        authenticatedBackendGet<FollowStatus>(
-          `/api/private/discovery/profiles/${encodeURIComponent(profile.username)}`,
-        ),
-        authenticatedBackendGet<MemberSafetyStatus>(
-          `/api/private/discovery/profiles/${encodeURIComponent(profile.username)}/safety`,
-        ),
-      ])
+    ? await relationshipRequest
     : [null, null];
 
   return (
