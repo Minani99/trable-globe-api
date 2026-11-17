@@ -25,12 +25,8 @@ export default async function EditTravelPage(props: PageProps<"/studio/travels/[
   const searchParams = await props.searchParams;
   const id = Number(travelId);
   if (!Number.isInteger(id) || id <= 0) notFound();
-  const [member, travel, tasks, planning] = await Promise.all([
-    getCurrentMember(),
-    authenticatedBackendGet<TravelDetail>(`/api/private/travels/${id}`),
-    authenticatedBackendGet<TravelTask[]>(`/api/private/travels/${id}/tasks`),
-    authenticatedBackendGet<TravelPlanning>(`/api/private/travels/${id}/planning`),
-  ]);
+  const [member, workspace] = await Promise.all([getCurrentMember(), loadWorkspace(id)]);
+  const { travel, tasks, planning } = workspace;
   if (!member) redirect("/login?next=/studio");
   if (!travel) notFound();
   const today = todayInKorea();
@@ -83,6 +79,28 @@ export default async function EditTravelPage(props: PageProps<"/studio/travels/[
       <SiteFooter compact />
     </>
   );
+}
+
+interface TravelWorkspace {
+  travel: TravelDetail | null;
+  tasks: TravelTask[] | null;
+  planning: TravelPlanning | null;
+}
+
+/**
+ * One request for the trip, its checklist and its budget. While an older API without the
+ * bundle endpoint is still deployed (the web host usually finishes deploying first), the
+ * 404 falls back to the three separate reads, so the editor never breaks mid-rollout.
+ */
+async function loadWorkspace(id: number): Promise<TravelWorkspace> {
+  const bundle = await authenticatedBackendGet<TravelWorkspace>(`/api/private/travels/${id}/workspace`);
+  if (bundle) return bundle;
+  const [travel, tasks, planning] = await Promise.all([
+    authenticatedBackendGet<TravelDetail>(`/api/private/travels/${id}`),
+    authenticatedBackendGet<TravelTask[]>(`/api/private/travels/${id}/tasks`),
+    authenticatedBackendGet<TravelPlanning>(`/api/private/travels/${id}/planning`),
+  ]);
+  return { travel, tasks, planning };
 }
 
 function emptyPlanning(): TravelPlanning {

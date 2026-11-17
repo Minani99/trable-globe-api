@@ -307,6 +307,11 @@ class AuthApiTest {
     void logoutRevokesTheSession() throws Exception {
         String token = register(nextUsername());
 
+        // Use the session first so it is held in the short-lived authentication cache;
+        // logging out must still take effect on the very next request.
+        mockMvc.perform(get("/api/auth/me").header("Authorization", "Bearer " + token))
+                .andExpect(status().isOk());
+
         mockMvc.perform(post("/api/auth/logout").header("Authorization", "Bearer " + token))
                 .andExpect(status().isOk());
 

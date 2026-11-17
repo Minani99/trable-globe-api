@@ -10,6 +10,7 @@ import com.travelglobe.trableglobeapi.travel.dto.OwnedTravelSummaryResponse;
 import com.travelglobe.trableglobeapi.travel.dto.TravelDetailResponse;
 import com.travelglobe.trableglobeapi.travel.dto.TravelPlanningResponse;
 import com.travelglobe.trableglobeapi.travel.dto.TravelTaskResponse;
+import com.travelglobe.trableglobeapi.travel.dto.TravelWorkspaceResponse;
 import com.travelglobe.trableglobeapi.travel.dto.write.CreateTravelTaskRequest;
 import com.travelglobe.trableglobeapi.travel.dto.write.CreateTravelPhotoInTripRequest;
 import com.travelglobe.trableglobeapi.travel.dto.write.TravelExpenseWriteRequest;
@@ -21,6 +22,7 @@ import com.travelglobe.trableglobeapi.travel.dto.write.UpdateTravelBudgetRequest
 import com.travelglobe.trableglobeapi.travel.service.TravelCommandService;
 import com.travelglobe.trableglobeapi.travel.service.TravelPlanningService;
 import com.travelglobe.trableglobeapi.travel.service.TravelTaskService;
+import com.travelglobe.trableglobeapi.travel.service.TravelWorkspaceService;
 import jakarta.validation.Valid;
 import jakarta.servlet.http.HttpServletRequest;
 import java.util.List;
@@ -44,11 +46,14 @@ public class PrivateTravelController {
     private final TravelSocialService travelSocialService;
     private final TravelTaskService travelTaskService;
     private final TravelPlanningService travelPlanningService;
+    private final TravelWorkspaceService travelWorkspaceService;
 
     public PrivateTravelController(TravelCommandService travelCommandService,
                                    TravelSocialService travelSocialService,
                                    TravelTaskService travelTaskService,
-                                   TravelPlanningService travelPlanningService) {
+                                   TravelPlanningService travelPlanningService,
+                                   TravelWorkspaceService travelWorkspaceService) {
+        this.travelWorkspaceService = travelWorkspaceService;
         this.travelCommandService = travelCommandService;
         this.travelSocialService = travelSocialService;
         this.travelTaskService = travelTaskService;
@@ -68,6 +73,14 @@ public class PrivateTravelController {
             @PathVariable Long travelId) {
         MemberPrincipal principal = AuthenticatedRequest.principal(request);
         return ApiResponse.ok(travelCommandService.getMine(principal, travelId));
+    }
+
+    @GetMapping("/{travelId}/workspace")
+    public ApiResponse<TravelWorkspaceResponse> workspace(
+            HttpServletRequest request,
+            @PathVariable Long travelId) {
+        return ApiResponse.ok(travelWorkspaceService.findMine(
+                AuthenticatedRequest.principal(request), travelId));
     }
 
     @PostMapping
