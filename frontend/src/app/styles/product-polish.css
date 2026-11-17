@@ -210,3 +210,18 @@
   line-height: 1.3 !important;
   word-break: keep-all;
 }
+
+/*
+ * Scrolling targets (anchor links, focus, scrollIntoView) must land clear of the sticky
+ * header and, on phones, the fixed bottom navigation. Without this a focused button or a
+ * jumped-to section can sit underneath the navigation bar.
+ */
+html {
+  scroll-padding-top: 4.5rem;
+}
+
+@media (max-width: 700px) {
+  html {
+    scroll-padding-bottom: calc(var(--mobile-bottom-nav-height) + env(safe-area-inset-bottom) + 1rem);
+  }
+}
