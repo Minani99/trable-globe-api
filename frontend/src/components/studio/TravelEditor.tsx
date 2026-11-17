@@ -510,7 +510,7 @@ export function TravelEditor({
       }
       setWeatherProposal(proposal);
       setWeatherPlannerState("idle");
-      setActivePlanDate(rainyDay.date);
+      if (!silent) setActivePlanDate(rainyDay.date);
     } catch {
       if (silent) {
         setWeatherPlannerState("idle");

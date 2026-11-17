@@ -96,6 +96,12 @@ test("다른 여행자의 공개 일정을 새 날짜의 내 계획으로 가져
   await page.getByRole("button", { name: /내 계획으로 복사/ }).click();
   await expect(page.getByText("내 여행에 일정 복사")).toBeVisible();
   const newStartDate = new Date().toLocaleDateString("en-CA", { timeZone: "Asia/Seoul" });
+  const rainyDate = new Date(`${newStartDate}T00:00:00Z`);
+  rainyDate.setUTCDate(rainyDate.getUTCDate() + 1);
+  await page.route("**/api/weather/forecast?**", route => route.fulfill({ json: { success: true, data: {
+    available: true, availableFrom: null,
+    days: [{ date: rainyDate.toISOString().slice(0, 10), weatherCode: 61, temperatureMax: 20, temperatureMin: 15, precipitationProbability: 80, precipitationSum: 10, source: "forecast" }],
+  } } }));
   await page.getByLabel("새 출발일").fill(newStartDate);
   await expect(page.locator(".shared-itinerary-save__period")).toContainText(newStartDate);
   let requests = 0;
@@ -124,6 +130,8 @@ test("다른 여행자의 공개 일정을 새 날짜의 내 계획으로 가져
   await expect(page).toHaveURL(/\/studio\/travels\/\d+\/edit\?plan=1&source=/, { timeout: 30_000 });
   expect(requests).toBe(2);
   await expect(page.getByRole("heading", { name: "도쿄 주말 산책" })).toBeVisible();
+  await expect(page.getByRole("button", { name: "이 변경안 적용", exact: true })).toBeVisible();
+  await expect(page.getByRole("tab", { name: /DAY 1/ })).toHaveAttribute("aria-selected", "true");
   await page.getByRole("button", { name: /도쿄역.*편집/ }).click();
   await expect(page.getByRole("textbox", { name: "장소 이름" }).first()).toHaveValue("도쿄역");
   await expect(page.getByRole("textbox", { name: "메모" }).first()).toHaveValue("오전 산책");

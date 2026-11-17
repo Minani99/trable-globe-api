@@ -8,6 +8,7 @@ import { GoogleRouteMapCanvas } from "@/components/travel/GoogleRouteMapCanvas";
 import { googleMapsApiKey } from "@/lib/google-maps-loader";
 import { formatDate } from "@/lib/utils/format";
 import type { TravelPlace } from "@/types";
+import { MAP_PIN_PATH } from "@/lib/map-pin";
 
 interface TravelRouteMapProps {
   places: TravelPlace[];
@@ -190,10 +191,6 @@ function TravelRouteDay({ places, compact = false, directions, displayedRoute, p
     </div>
   );
 
-  const mapLocationLabel = (
-    selectedPlace.city?.nameEn ?? selectedPlace.country.iso2Code
-  ).toUpperCase();
-
   const updateZoom = (nextZoom: number) => {
     const clamped = clamp(Math.round(nextZoom), MIN_ZOOM, MAX_ZOOM);
     if (clamped === zoom) {
@@ -375,20 +372,16 @@ function TravelRouteDay({ places, compact = false, directions, displayedRoute, p
                       strokeDasharray="3 3"
                     />
                   ) : null}
-                  {active ? (
-                    <circle cx={point.x} cy={point.y} r="29" fill="var(--accent)" fillOpacity="0.16" />
-                  ) : null}
-                  <circle
-                    cx={point.x}
-                    cy={point.y}
-                    r={active ? 18 : 14}
+                  <path
+                    d={MAP_PIN_PATH}
+                    transform={`translate(${point.x} ${point.y}) scale(${active ? 1.15 : 1})`}
                     fill={active ? "var(--accent-strong)" : "var(--surface)"}
-                    stroke="var(--accent-strong)"
-                    strokeWidth="2.5"
+                    stroke={active ? "#ffffff" : "var(--accent-strong)"}
+                    strokeWidth="2"
                   />
                   <text
                     x={point.x}
-                    y={point.y + 4}
+                    y={point.y - 23 * (active ? 1.15 : 1) + 4}
                     textAnchor="middle"
                     fill={active ? "#ffffff" : "var(--text-primary)"}
                     fontSize="12"
@@ -411,7 +404,6 @@ function TravelRouteDay({ places, compact = false, directions, displayedRoute, p
 
           {activePlaceCard}
 
-          <p className="travel-route-map-zoom" aria-live="polite">{mapLocationLabel} · Z{zoom}</p>
           <p className="travel-route-map-attribution">
             © <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noreferrer">OpenStreetMap contributors</a>
           </p>

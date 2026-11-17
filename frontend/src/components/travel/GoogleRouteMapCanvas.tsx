@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 
 import { googleMapsApiKey, loadGoogleMaps, onGoogleMapsAuthFailure } from "@/lib/google-maps-loader";
 import type { TravelPlace } from "@/types";
+import { MAP_PIN_PATH } from "@/lib/map-pin";
 
 interface GoogleRouteMapCanvasProps {
   places: TravelPlace[];
@@ -175,12 +176,14 @@ function markerAppearance(number: number, active: boolean) {
   const accent = accentColor();
   return {
     icon: {
-      path: google.maps.SymbolPath.CIRCLE,
-      scale: active ? 15 : 12,
+      path: MAP_PIN_PATH,
+      anchor: new google.maps.Point(0, 0),
+      labelOrigin: new google.maps.Point(0, -23),
+      scale: active ? 1.15 : 1,
       fillColor: active ? accent : "#ffffff",
       fillOpacity: 1,
-      strokeColor: accent,
-      strokeWeight: 2.5,
+      strokeColor: active ? "#ffffff" : accent,
+      strokeWeight: 2,
     } satisfies google.maps.Symbol,
     label: {
       text: String(number),
