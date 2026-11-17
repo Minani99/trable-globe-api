@@ -515,7 +515,8 @@ class TravelGlobeApiTest {
                         .header("Authorization", "Bearer " + ownerToken))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.data.length()").value(6))
-                .andExpect(jsonPath("$.data[0].title").value("항공·교통편 확인"))
+                .andExpect(jsonPath("$.data[0].title").value("기차·버스·항공 또는 차량 이동 확인"))
+                .andExpect(jsonPath("$.data[4].title").value("교통카드·결제수단 준비"))
                 .andReturn().getResponse().getContentAsString();
         long firstTaskId = Long.parseLong(numberValue(tasksResponse, "id"));
 

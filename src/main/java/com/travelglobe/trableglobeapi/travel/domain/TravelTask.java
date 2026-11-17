@@ -59,6 +59,17 @@ public class TravelTask extends BaseTimeEntity {
     }
 
     public static List<TravelTask> defaultsFor(Travel travel) {
+        boolean domestic = !travel.getPlaces().isEmpty() && travel.getPlaces().stream()
+                .allMatch(place -> "KR".equals(place.getCountry().getIso2Code()));
+        if (domestic) {
+            return List.of(
+                    create(travel, "기차·버스·항공 또는 차량 이동 확인", TravelTaskCategory.RESERVATION, 0),
+                    create(travel, "숙소·주차 또는 당일 귀가편 확인", TravelTaskCategory.RESERVATION, 1),
+                    create(travel, "신분증·필요한 운전면허증 챙기기", TravelTaskCategory.DOCUMENT, 2),
+                    create(travel, "날씨에 맞는 옷·우산 준비", TravelTaskCategory.PACKING, 3),
+                    create(travel, "교통카드·결제수단 준비", TravelTaskCategory.MONEY, 4),
+                    create(travel, "충전기·보조배터리 챙기기", TravelTaskCategory.PACKING, 5));
+        }
         return List.of(
                 create(travel, "항공·교통편 확인", TravelTaskCategory.RESERVATION, 0),
                 create(travel, "숙소 예약", TravelTaskCategory.RESERVATION, 1),

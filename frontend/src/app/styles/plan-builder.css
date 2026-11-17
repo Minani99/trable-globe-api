@@ -306,6 +306,10 @@
   background: var(--surface-muted);
 }
 
+.pb-destination-scope { margin-bottom: 1rem; }
+.pb-segment[aria-label="동행"] { grid-auto-flow: row; grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.pb-segment[aria-label="동행"] button, .pb-destination-scope button { min-height: 44px; }
+
 .pb-segment button {
   min-height: calc(var(--control-h-sm) + 0.1rem);
   padding-inline: 0.5rem;
@@ -884,6 +888,7 @@
   .pb-progress {
     position: sticky;
     top: 3.5rem;
+    scroll-margin-top: 3.5rem;
     z-index: 24;
     display: grid;
     gap: 0.55rem;

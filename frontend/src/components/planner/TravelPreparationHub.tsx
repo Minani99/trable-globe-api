@@ -20,12 +20,14 @@ export function TravelPreparationHub({
   countryCode,
   destinationLabel,
   places,
+  domestic = false,
 }: {
   startDate: string;
   endDate: string;
   countryCode: string;
   destinationLabel: string;
   places: TravelPlace[];
+  domestic?: boolean;
 }) {
   const inferredDestination = useMemo(() => inferAirportCode(
     places.flatMap((place) => [place.city?.nameKo, place.city?.nameEn]),
@@ -34,6 +36,18 @@ export function TravelPreparationHub({
   const [origin, setOrigin] = useState("SEL");
   const [destination, setDestination] = useState(inferredDestination);
   const flightReady = origin.length === 3 && destination.length === 3;
+  const [transport, setTransport] = useState("기차·버스");
+
+  const transportChoices = domestic ? <div className="pb-segment" role="group" aria-label="이동수단 준비">{["기차·버스", "자가용·렌터카", "항공"].map(item => <button key={item} type="button" aria-pressed={transport === item} className={transport === item ? "is-selected" : ""} onClick={() => setTransport(item)}>{item}</button>)}</div> : null;
+  if (domestic && transport !== "항공") return <section className="trip-preparation trip-flight" aria-labelledby="trip-preparation-heading">
+    <header className="trip-preparation__heading"><div><span className="trip-flight__icon" aria-hidden="true"><Icon name="route" /></span><div><h2 id="trip-preparation-heading">여행지까지 어떻게 갈까요?</h2><p>기차·버스, 자동차, 국내선 중 필요한 교통편을 준비하세요.</p></div></div><p>{formatDateRange(startDate, endDate)} · {destinationLabel}</p></header>
+    <div className="trip-flight__body">{transportChoices}
+      <h3>{transport === "기차·버스" ? "출발역·터미널과 돌아오는 편 확인" : "운전과 주차 준비"}</h3>
+      <p>{transport === "기차·버스" ? "출발·도착 시간과 숙소까지의 이동을 함께 확인해 두세요. 당일치기는 마지막 돌아오는 편도 확인하세요." : "운전면허증, 차량 인수·반납 시간, 목적지 주차장을 확인하세요. 예산에는 주유비·통행료·주차비를 함께 잡아두세요."}</p>
+      <a className="trip-action-card__button trip-flight__search" href="#travel-budget">교통 예약·비용 기록하기</a>
+      <small>예산·예약에서 교통 예약 시간과 비용을 저장할 수 있어요.</small>
+    </div>
+  </section>;
 
   return (
     <section className="trip-preparation trip-flight" aria-labelledby="trip-preparation-heading">
@@ -46,9 +60,10 @@ export function TravelPreparationHub({
       </header>
 
       <div className="trip-flight__body">
+        {transportChoices}
         <div className="trip-flight-route">
           <AirportSearchField label="출발" value={origin} onChange={setOrigin} placeholder="예: 서울, 인천공항" />
-          <AirportSearchField label="도착" value={destination} onChange={setDestination} placeholder="예: 도쿄, 나리타" />
+          <AirportSearchField label="도착" value={destination} onChange={setDestination} placeholder={domestic ? "예: 제주, 부산" : "예: 도쿄, 나리타"} />
         </div>
         <dl className="trip-flight__dates">
           <div><dt>가는 날</dt><dd>{formatKoreanDate(startDate)}</dd></div>

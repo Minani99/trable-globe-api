@@ -42,13 +42,15 @@ export default async function EditTravelPage(props: PageProps<"/studio/travels/[
   // arriving from a day link or a copied itinerary, the itinerary matters more.
   const startOnItinerary = travel.startDate <= today || typeof searchParams.date === "string" || typeof searchParams.source === "string";
   const countryCode = travel.countries[0]?.iso2Code ?? travel.places[0]?.country.iso2Code ?? "";
+  const domestic = travel.places.length > 0 && travel.places.every(place => place.country.iso2Code === "KR");
   const destinationLabel = travel.places[0]?.city?.nameKo ?? travel.countries[0]?.nameKo ?? "여행지";
   const editor = finishMode ? <TravelFinishEditor username={member.username} travel={travel} /> : (
     planningMode ? (
       <MobilePlanningWorkspace
         travelId={travel.id}
+        domestic={domestic}
         startOnItinerary={startOnItinerary}
-        preparation={<TravelPreparationHub startDate={travel.startDate} endDate={travel.endDate} countryCode={countryCode} destinationLabel={destinationLabel} places={travel.places} />}
+        preparation={<TravelPreparationHub startDate={travel.startDate} endDate={travel.endDate} countryCode={countryCode} destinationLabel={destinationLabel} places={travel.places} domestic={domestic} />}
         checklist={<TravelChecklist travelId={travel.id} initialTasks={tasks ?? []} />}
         budget={<TravelPlanningBoard travelId={travel.id} startDate={travel.startDate} endDate={travel.endDate} initialPlanning={planning ?? emptyPlanning()} />}
         editor={<div id="itinerary-editor"><TravelEditor username={member.username} countries={countryOptions} initialTravel={travel} planningMode={planningMode} today={today} /></div>}

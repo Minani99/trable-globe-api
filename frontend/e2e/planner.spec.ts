@@ -89,6 +89,7 @@ test("몇 번의 선택으로 여행 계획을 만들고 일차별 일정으로 
   });
 
   await page.goto("/studio/plans/new");
+  await page.getByRole("button", { name: "해외여행", exact: true }).click();
   await page.setViewportSize({ width: 390, height: 844 });
   const googleImportResponse = await page.request.post("/api/locations/import-google-map", {
     data: { url: "https://www.google.com/maps/place/Tokyo+Station/@35.681236,139.767125,17z" },
@@ -105,7 +106,6 @@ test("몇 번의 선택으로 여행 계획을 만들고 일차별 일정으로 
   await page.getByRole("button", { name: "일본", exact: true }).click();
   await page.getByRole("button", { name: "2박 3일" }).click();
   await planStepNavigation.getByRole("button", { name: "다음" }).click();
-  await page.locator(".pb-preferences > summary").click();
   await page.getByRole("button", { name: "혼자" }).click();
   await page.getByRole("button", { name: "문화" }).click();
   await expect(page.getByRole("button", { name: /직접 일정 채우기/ })).toHaveAttribute("aria-pressed", "true");
