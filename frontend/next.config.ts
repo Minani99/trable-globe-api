@@ -10,6 +10,19 @@ const apiBaseUrl = (
   DEFAULT_API_BASE_URL
 ).replace(/\/+$/, "");
 
+// A production deployment without an API address would quietly send every request to
+// localhost and fail at runtime. Say so in the build log, where it is cheap to notice.
+if (
+  process.env.VERCEL_ENV === "production" &&
+  !process.env.API_BASE_URL?.trim() &&
+  !process.env.NEXT_PUBLIC_API_BASE_URL?.trim()
+) {
+  console.warn(
+    "\n[travel-globe] API_BASE_URL is not set for this production build. " +
+      `Requests will go to ${DEFAULT_API_BASE_URL} and fail. Set it in the Vercel project settings.\n`,
+  );
+}
+
 const configuredDevOrigins = (process.env.NEXT_ALLOWED_DEV_ORIGINS ?? "")
   .split(",")
   .map((origin) => origin.trim())

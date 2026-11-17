@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { LandingClosing } from "@/components/landing/LandingClosing";
 import { LandingGlobePreview } from "@/components/landing/LandingGlobePreview";
 import { LandingOverview } from "@/components/landing/LandingOverview";
 import { LandingStartAction } from "@/components/landing/LandingStartAction";
@@ -50,6 +51,7 @@ export default function LandingPage() {
         </div>
 
         <LandingOverview />
+        <LandingClosing />
       </main>
 
       <SiteFooter compact />

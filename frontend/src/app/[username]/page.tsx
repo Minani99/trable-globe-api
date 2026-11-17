@@ -19,6 +19,7 @@ import { profilePath, profileRecapImagePath, siteConfig } from "@/lib/config";
 import { presentDemoProfile } from "@/lib/demo-profile";
 import { getSiteUrl } from "@/lib/site-url";
 import { publicDisplayName } from "@/lib/utils/profile";
+import { GuestSignupBand } from "@/components/common/GuestSignupBand";
 import type { FollowStatus, MemberSafetyStatus } from "@/types";
 
 /**
@@ -172,6 +173,12 @@ export default async function ProfilePage(props: PageProps<"/[username]">) {
           initialYear={initialYear}
           initialRecapCustomizations={recapCustomizations}
         />
+        {viewer ? null : (
+          <GuestSignupBand
+            title={`나만의 여행 지구본을 만들어 보세요.`}
+            copy={`${publicDisplayName(profile.displayName)}님처럼 다녀온 나라를 색칠하고, 다음 여행 일정도 한곳에서 준비하세요.`}
+          />
+        )}
       </main>
       <SiteFooter />
     </>
