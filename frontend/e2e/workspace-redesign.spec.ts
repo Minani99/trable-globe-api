@@ -134,6 +134,7 @@ test("새 여행은 세 단계로 만들고 바로 일정을 편집한다", asyn
   await page.setViewportSize({ width: 390, height: 844 });
   await seed(page);
   await page.goto("/studio/plans/new");
+  await page.getByRole("button", { name: "해외여행", exact: true }).click();
   const navigation = page.getByRole("navigation", { name: "여행 계획 단계 이동" });
   await expect(page.getByRole("progressbar", { name: "여행 계획 작성 진행률" })).toHaveAttribute("aria-valuemax", "3");
   await navigation.getByRole("button", { name: "다음" }).click();
@@ -142,7 +143,7 @@ test("새 여행은 세 단계로 만들고 바로 일정을 편집한다", asyn
   await page.getByRole("button", { name: "2박 3일" }).click();
   await navigation.getByRole("button", { name: "다음" }).click();
   await expect(page.getByRole("button", { name: /직접 일정 채우기/ })).toHaveAttribute("aria-pressed", "true");
-  await expect(page.getByRole("button", { name: "혼자", exact: true })).toBeHidden();
+  await expect(page.getByRole("button", { name: "혼자", exact: true })).toBeVisible();
   await page.screenshot({ path: testInfo.outputPath("new-plan-mobile.png"), fullPage: true });
   await navigation.getByRole("button", { name: "다음" }).click();
   await page.getByRole("button", { name: "일정 만들기", exact: true }).click();

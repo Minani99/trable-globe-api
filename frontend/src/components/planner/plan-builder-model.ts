@@ -13,7 +13,8 @@ import type { TravelPlaceWriteInput } from "@/types";
 /* Options                                                                   */
 /* ------------------------------------------------------------------------ */
 
-export const COMPANIONS = ["혼자", "연인과", "친구와", "가족과"] as const;
+export const COMPANIONS = ["혼자", "연인과", "친구와", "가족과", "아이와", "부모님과"] as const;
+export const DOMESTIC_REGIONS = ["서울", "부산", "제주", "강릉", "속초", "경주", "전주", "여수"] as const;
 export const STYLES = ["맛집", "여유", "도시 산책", "자연", "쇼핑", "문화"] as const;
 export const PACES = [
   { id: "slow", label: "느긋하게", description: "하루 2~3곳", slots: 3 },
@@ -42,7 +43,7 @@ export const ANCHOR_MODES = [
   { id: "stay", label: "숙소", placeholder: "숙소 이름 또는 Google 지도 링크" },
   { id: "content", label: "꼭 갈 곳", placeholder: "랜드마크·공연장 또는 Google 지도 링크" },
 ] as const;
-export const MOBILE_PLAN_STEPS = ["여행지와 날짜", "일정 방식", "확인"] as const;
+export const MOBILE_PLAN_STEPS = ["여행지와 날짜", "동행과 여행 방식", "확인"] as const;
 
 export type Companion = (typeof COMPANIONS)[number];
 export type Style = (typeof STYLES)[number];
@@ -169,15 +170,16 @@ export async function searchLocation(query: string, country: CountryOption): Pro
 export async function fetchPlanRecommendations(
   anchor: PlanAnchor,
   styles: Style[],
+  companion?: Companion,
 ): Promise<Record<PlaceRecommendationCategory, PlaceRecommendation[]>> {
-  const preferences = styles.map((style) => ({
+  const preferences = [...styles.map((style) => ({
     "맛집": "food",
     "여유": "relax",
     "도시 산책": "culture",
     "자연": "nature",
     "쇼핑": "shopping",
     "문화": "culture",
-  })[style]).filter(Boolean).join(",");
+  })[style]), ...(["가족과", "아이와", "부모님과"].includes(companion ?? "") ? ["family"] : [])].filter(Boolean).join(",");
   const categories: PlaceRecommendationCategory[] = ["activity", "food", "cafe"];
   const entries = await Promise.all(categories.map(async (category) => {
     const params = new URLSearchParams({

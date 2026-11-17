@@ -4,6 +4,7 @@ import {
   addDays,
   buildAutomaticPlaces,
   buildSkeletonPlaces,
+  fetchPlanRecommendations,
   formatDuration,
   formatPlanDateLong,
   SCHEDULES,
@@ -16,6 +17,21 @@ const japan: CountryOption = {
   iso2Code: "JP", iso3Code: "JPN", nameEn: "Japan", nameKo: "일본", latitude: 36.2, longitude: 138.25, label: "일본 · Japan",
 };
 const anchor: PlanAnchor = { name: "교토역", city: "교토", latitude: 34.98, longitude: 135.75, source: "center" };
+
+test("아이 동행과 여행 취향은 추천 요청에 함께 반영된다", async () => {
+  const originalFetch = globalThis.fetch;
+  const requests: URL[] = [];
+  globalThis.fetch = async input => {
+    requests.push(new URL(String(input), "http://localhost"));
+    return new Response(JSON.stringify({ success: true, data: [] }), { headers: { "Content-Type": "application/json" } });
+  };
+  try {
+    await fetchPlanRecommendations(anchor, ["자연"], "아이와");
+    expect(requests).toHaveLength(3);
+    expect(requests.every(url => url.searchParams.get("preferences") === "nature,family")).toBe(true);
+    expect(requests.every(url => url.searchParams.get("lat") === String(anchor.latitude))).toBe(true);
+  } finally { globalThis.fetch = originalFetch; }
+});
 
 function recommendation(id: string, name: string): PlaceRecommendation {
   return {

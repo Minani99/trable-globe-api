@@ -24,10 +24,11 @@ function tabIndexForSection(section: number): number {
   return Number(Object.entries(EDITOR_TAB_SECTIONS).find(([, value]) => value === section)?.[0] ?? ITINERARY_TAB);
 }
 
-export function MobilePlanningWorkspace({ travelId, preparation, checklist, budget, editor, startOnItinerary = false }: {
+export function MobilePlanningWorkspace({ travelId, preparation, checklist, budget, editor, startOnItinerary = false, domestic = false }: {
   travelId: number; preparation: ReactNode; checklist: ReactNode; budget: ReactNode; editor: ReactNode;
   /** Once the trip has started the itinerary matters more than bookings. */
   startOnItinerary?: boolean;
+  domestic?: boolean;
 }) {
   const [active, setActive] = useState(startOnItinerary ? ITINERARY_TAB : 0);
   const workspaceRef = useRef<HTMLElement>(null);
@@ -62,7 +63,7 @@ export function MobilePlanningWorkspace({ travelId, preparation, checklist, budg
   }), [active, selectSection, tabsId]);
   return (
     <section ref={workspaceRef} className={styles.workspace} aria-label="여행 계획 편집">
-      <WorkspaceTabs id={tabsId} label="여행 작업" items={TABS} icons={TAB_ICONS} active={active} onChange={select} />
+      <WorkspaceTabs id={tabsId} label="여행 작업" items={domestic ? ["교통", ...TABS.slice(1)] : TABS} icons={domestic ? ["route", ...TAB_ICONS.slice(1)] : TAB_ICONS} active={active} onChange={select} />
       {[preparation, checklist, budget].map((panel, index) => (
         <div key={index} className={styles.panel} id={`${tabsId}-panel-${index}`} role="tabpanel"
           aria-labelledby={`${tabsId}-tab-${index}`} hidden={active !== index}>

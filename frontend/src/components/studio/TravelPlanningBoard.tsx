@@ -234,9 +234,9 @@ export function TravelPlanningBoard({
                 <div className="travel-plan-row-actions"><button type="button" disabled={pending} onClick={() => setEditingExpenseId(expense.id)} aria-label={`${expense.title} 수정`}>수정</button><button type="button" className="travel-plan-delete" disabled={pending} onClick={() => mutate(`${basePath}/expenses/${expense.id}`, "DELETE")} aria-label={`${expense.title} 삭제`}><AppIcon name="trash" /><span>삭제</span></button></div>
               </li>
             )
-          ))}</ul> : <p className="travel-plan-empty">항공권이나 숙소처럼 큰 비용부터 추가해 보세요.</p>}
+          ))}</ul> : <p className="travel-plan-empty">교통편이나 숙소처럼 큰 비용부터 추가해 보세요.</p>}
           <details className="travel-plan-composer"><summary>＋ 비용 추가</summary><form onSubmit={addExpense}>
-            <input disabled={pending} name="title" aria-label="새 비용 이름" placeholder="예: 왕복 항공권" maxLength={120} required />
+            <input disabled={pending} name="title" aria-label="새 비용 이름" placeholder="예: 기차표, 주유비, 항공권" maxLength={120} required />
             <input disabled={pending} name="amount" aria-label="예상 비용" type="number" min="0" step="0.01" placeholder="금액" required />
             <select disabled={pending} name="category" aria-label="비용 분류">{EXPENSE_CATEGORIES.map((item) => <option key={item.value} value={item.value}>{item.label}</option>)}</select>
             <button
@@ -268,7 +268,7 @@ export function TravelPlanningBoard({
                 <div className="travel-plan-row-actions"><button type="button" disabled={pending} onClick={() => setEditingReservationId(reservation.id)} aria-label={`${reservation.title} 수정`}>수정</button><button type="button" className="travel-plan-delete" disabled={pending} onClick={() => mutate(`${basePath}/reservations/${reservation.id}`, "DELETE")} aria-label={`${reservation.title} 삭제`}><AppIcon name="trash" /><span>삭제</span></button></div>
               </li>
             )
-          ))}</ul> : <p className="travel-plan-empty">항공·숙소 예약 날짜를 먼저 모아보세요.</p>}
+          ))}</ul> : <p className="travel-plan-empty">기차·항공·숙소 예약 날짜를 먼저 모아보세요.</p>}
           <details className="travel-plan-composer"><summary>＋ 예약 추가</summary><form onSubmit={addReservation}>
             <input disabled={pending} name="title" aria-label="새 예약 이름" placeholder="예: 시부야 호텔 체크인" maxLength={120} required />
             <input disabled={pending} name="reservationDate" aria-label="예약 이용 날짜" type="date" min={startDate} max={endDate} defaultValue={startDate} required />

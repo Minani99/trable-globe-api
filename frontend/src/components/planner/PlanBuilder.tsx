@@ -16,6 +16,7 @@ import {
   buildSkeletonPlaces,
   COMPANIONS,
   DURATION_PRESETS,
+  DOMESTIC_REGIONS,
   fetchPlanRecommendations,
   formatDuration,
   formatPlanDate,
@@ -53,10 +54,12 @@ export function PlanBuilder({
     .map((code) => countryMap.get(code))
     .filter((country): country is CountryOption => Boolean(country));
 
-  const [countryCode, setCountryCode] = useState(initialCountryCode);
+  const [countryCode, setCountryCode] = useState(initialCountryCode || "KR");
+  const [domestic, setDomestic] = useState(!initialCountryCode || initialCountryCode === "KR");
+  const [region, setRegion] = useState("");
   const [countryQuery, setCountryQuery] = useState("");
   const [startDate, setStartDate] = useState(today);
-  const [tripDays, setTripDays] = useState(4);
+  const [tripDays, setTripDays] = useState(!initialCountryCode || initialCountryCode === "KR" ? 2 : 4);
   const [companion, setCompanion] = useState<Companion>("친구와");
   const [styles, setStyles] = useState<Style[]>(["맛집", "여유"]);
   const [pace, setPace] = useState<Pace>("balanced");
@@ -75,7 +78,7 @@ export function PlanBuilder({
   const activeAnchor = ANCHOR_MODES.find((item) => item.id === anchorMode) ?? ANCHOR_MODES[0];
   const activePace = PACES.find((item) => item.id === pace) ?? PACES[1];
   const googleMapsSearchUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
-    [anchorInput.trim(), selectedCountry?.nameEn].filter(Boolean).join(" ") || "travel places",
+    [anchorInput.trim() || (domestic ? region.trim() : ""), selectedCountry?.nameEn].filter(Boolean).join(" ") || "travel places",
   )}`;
 
   const countryResults = useMemo(() => {
@@ -98,6 +101,8 @@ export function PlanBuilder({
 
   function chooseCountry(code: string) {
     setCountryCode(code);
+    setDomestic(code === "KR");
+    setAnchorInput("");
     setCountryQuery("");
     setError(null);
   }
@@ -113,6 +118,10 @@ export function PlanBuilder({
   }
 
   function validateStep(step: number): boolean {
+    if (step === 0 && domestic && region.trim().length < 2) {
+      setError("여행할 도시·지역을 입력해 주세요.");
+      return false;
+    }
     if (step === 0 && !selectedCountry) {
       setError("여행할 나라를 먼저 골라 주세요.");
       return false;
@@ -155,9 +164,9 @@ export function PlanBuilder({
       let places: TravelPlaceWriteInput[];
       let recommendationCount = 0;
       if (buildMode === "auto") {
-        const anchor = await resolvePlanAnchor(selectedCountry, anchorMode, anchorInput);
+        const anchor = await resolvePlanAnchor(selectedCountry, anchorMode, anchorInput.trim() || (domestic ? region : ""));
         setPendingLabel("주변 장소와 동선 찾는 중…");
-        const recommendations = await fetchPlanRecommendations(anchor, styles);
+        const recommendations = await fetchPlanRecommendations(anchor, styles, companion);
         const generated = buildAutomaticPlaces({
           selectedCountry,
           anchor,
@@ -171,11 +180,17 @@ export function PlanBuilder({
         recommendationCount = generated.recommendationCount;
       } else {
         places = buildSkeletonPlaces(selectedCountry, tripDays, startDate, styles, activePace.label);
+        if (domestic) {
+          setPendingLabel("여행 지역 확인 중…");
+          const anchor = await resolvePlanAnchor(selectedCountry, "center", region);
+          places = places.map(place => ({ ...place, latitude: anchor.latitude, longitude: anchor.longitude,
+            city: { nameKo: region.trim(), nameEn: anchor.city || region.trim(), latitude: anchor.latitude, longitude: anchor.longitude } }));
+        }
       }
 
       setPendingLabel("내 계획으로 저장하는 중…");
       const payload: TravelWriteInput = {
-        title: `${selectedCountry.nameKo} ${tripDays}일 여행`,
+        title: `${domestic ? region.trim() : selectedCountry.nameKo} ${tripDays}일 여행`,
         description: `${companion} 떠나는 ${styles.join(" · ") || "자유로운"} 여행 · ${activePace.label}`,
         startDate,
         endDate,
@@ -229,9 +244,17 @@ export function PlanBuilder({
       <div className="pb-form">
         {/* 01 Country */}
         <section className="pb-step" data-mobile-active={mobileStep === 0} aria-labelledby="plan-country-heading">
-          <StepHeading index={1} id="plan-country-heading" title="어디로 떠날까요?" hint="나라 이름을 검색하거나 자주 찾는 여행지를 골라주세요." />
+          <StepHeading index={1} id="plan-country-heading" title="어디로 떠날까요?" hint="가까운 주말 여행부터 해외여행까지, 목적지부터 골라주세요." />
+          <div className="pb-segment pb-destination-scope" role="group" aria-label="여행 범위">
+            <button type="button" aria-pressed={domestic} className={domestic ? "is-selected" : ""} onClick={() => { setDomestic(true); setCountryCode("KR"); setAnchorInput(""); setError(null); }}>국내여행</button>
+            <button type="button" aria-pressed={!domestic} className={!domestic ? "is-selected" : ""} onClick={() => { setDomestic(false); setCountryCode(countryCode === "KR" ? "" : countryCode); setAnchorInput(""); setError(null); }}>해외여행</button>
+          </div>
 
-          {selectedCountry ? (
+          {domestic ? <div className="pb-group">
+            <label className="pb-field"><span className="pb-field__label">여행할 도시·지역</span><input value={region} onChange={event => { setRegion(event.target.value); setError(null); }} placeholder="예: 강릉, 제주 서귀포, 가평" maxLength={80} /></label>
+            <div className="pb-chip-row" role="group" aria-label="국내 여행지 빠른 선택">{DOMESTIC_REGIONS.map(item => <button type="button" key={item} className={`pb-chip${region === item ? " is-selected" : ""}`} aria-pressed={region === item} onClick={() => setRegion(item)}>{item}</button>)}</div>
+            <p className="pb-note">입력한 지역을 기준으로 지도와 장소 검색을 준비합니다.</p>
+          </div> : selectedCountry ? (
             <div className="pb-selected-country">
               <Flag code={selectedCountry.iso2Code} size="lg" />
               <div>
@@ -333,74 +356,11 @@ export function PlanBuilder({
           {startDate ? (
             <p className="pb-note">
               <CalendarIcon />
-              <span>{formatPlanDateLong(startDate)} 출발 → {formatPlanDateLong(endDate)} 귀국</span>
+              <span>{formatPlanDateLong(startDate)} 출발 → {formatPlanDateLong(endDate)} 돌아오는 날</span>
             </p>
           ) : null}
         </section>
 
-        {/* 04 Build mode */}
-        <section className="pb-step" data-mobile-active={mobileStep === 1} aria-labelledby="plan-build-heading">
-          <StepHeading index={4} id="plan-build-heading" title="어떻게 시작할까요?" hint="직접 채우거나, 추천 장소로 초안을 받아보세요." />
-          <div className="pb-option-grid pb-option-grid--2" role="group" aria-label="계획 생성 방식">
-            {BUILD_MODES.map((item) => (
-              <button
-                key={item.id}
-                type="button"
-                className={`pb-option pb-option--build${buildMode === item.id ? " is-selected" : ""}`}
-                aria-pressed={buildMode === item.id}
-                onClick={() => { setBuildMode(item.id); setError(null); }}
-              >
-                <span className="pb-option__badge">{item.badge}</span>
-                <strong>{item.label}</strong>
-                <span>{item.description}</span>
-              </button>
-            ))}
-          </div>
-
-          {buildMode === "auto" ? (
-            <div className="pb-anchor">
-              <div className="pb-group">
-                <span className="pb-group__label">동선 기준</span>
-                <div className="pb-segment" role="group" aria-label="동선 기준">
-                  {ANCHOR_MODES.map((item) => (
-                    <button
-                      key={item.id}
-                      type="button"
-                      className={anchorMode === item.id ? "is-selected" : ""}
-                      aria-pressed={anchorMode === item.id}
-                      onClick={() => { setAnchorMode(item.id); setError(null); }}
-                    >
-                      {item.label}
-                    </button>
-                  ))}
-                </div>
-              </div>
-              <div className="pb-anchor__row">
-                <label className="pb-field pb-field--search">
-                  <span className="sr-only">{anchorMode === "center" ? "도시·지역" : activeAnchor.label}</span>
-                  <PinIcon />
-                  <input
-                    value={anchorInput}
-                    onChange={(event) => { setAnchorInput(event.target.value); setError(null); }}
-                    placeholder={activeAnchor.placeholder}
-                    inputMode="url"
-                  />
-                </label>
-                <a className="pb-secondary" href={googleMapsSearchUrl} target="_blank" rel="noopener noreferrer">
-                  Google 지도 <span aria-hidden="true"><Icon name="arrow-up-right" /></span>
-                </a>
-              </div>
-              <p className="pb-note">
-                <span>선택한 위치 주변의 장소로 일정을 제안합니다. Google 지도 공유 링크도 사용할 수 있어요.</span>
-              </p>
-            </div>
-          ) : (
-            <p className="pb-note">
-              <span>{tripDays}일치 일정표를 만듭니다. 장소는 지도로 찾거나 추천 목록에서 추가할 수 있어요.</span>
-            </p>
-          )}
-        </section>
-        <details className="pb-preferences" data-mobile-active={mobileStep === 1}><summary>취향과 일정 밀도 <span>선택 사항</span></summary>
         <section className="pb-step" data-mobile-active={mobileStep === 1} aria-labelledby="plan-style-heading">
           <StepHeading index={3} id="plan-style-heading" title="누구와, 어떤 여행인가요?" hint="추천 장소와 하루 일정의 밀도를 정하는 데 사용됩니다." />
 
@@ -464,7 +424,69 @@ export function PlanBuilder({
           </div>
         </section>
 
-        </details>
+        {/* 04 Build mode */}
+        <section className="pb-step" data-mobile-active={mobileStep === 1} aria-labelledby="plan-build-heading">
+          <StepHeading index={4} id="plan-build-heading" title="어떻게 시작할까요?" hint="직접 채우거나, 추천 장소로 초안을 받아보세요." />
+          <div className="pb-option-grid pb-option-grid--2" role="group" aria-label="계획 생성 방식">
+            {BUILD_MODES.map((item) => (
+              <button
+                key={item.id}
+                type="button"
+                className={`pb-option pb-option--build${buildMode === item.id ? " is-selected" : ""}`}
+                aria-pressed={buildMode === item.id}
+                onClick={() => { setBuildMode(item.id); setError(null); }}
+              >
+                <span className="pb-option__badge">{item.badge}</span>
+                <strong>{item.label}</strong>
+                <span>{item.description}</span>
+              </button>
+            ))}
+          </div>
+
+          {buildMode === "auto" ? (
+            <div className="pb-anchor">
+              <div className="pb-group">
+                <span className="pb-group__label">동선 기준</span>
+                <div className="pb-segment" role="group" aria-label="동선 기준">
+                  {ANCHOR_MODES.map((item) => (
+                    <button
+                      key={item.id}
+                      type="button"
+                      className={anchorMode === item.id ? "is-selected" : ""}
+                      aria-pressed={anchorMode === item.id}
+                      onClick={() => { setAnchorMode(item.id); setError(null); }}
+                    >
+                      {item.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+              <div className="pb-anchor__row">
+                <label className="pb-field pb-field--search">
+                  <span className="sr-only">{anchorMode === "center" ? "도시·지역" : activeAnchor.label}</span>
+                  <PinIcon />
+                  <input
+                    value={anchorInput}
+                    onChange={(event) => { setAnchorInput(event.target.value); setError(null); }}
+                    placeholder={domestic && anchorMode === "center" ? `예: ${region || "강릉"} (비워두면 선택 지역)` : activeAnchor.placeholder}
+                    inputMode={anchorMode === "center" ? "text" : "url"}
+                  />
+                </label>
+                <a className="pb-secondary" href={googleMapsSearchUrl} target="_blank" rel="noopener noreferrer">
+                  Google 지도 <span aria-hidden="true"><Icon name="arrow-up-right" /></span>
+                </a>
+              </div>
+              <p className="pb-note">
+                <span>선택한 위치 주변의 장소로 일정을 제안합니다. Google 지도 공유 링크도 사용할 수 있어요.</span>
+              </p>
+            </div>
+          ) : (
+            <p className="pb-note">
+              <span>{tripDays}일치 일정표를 만듭니다. 장소는 지도로 찾거나 추천 목록에서 추가할 수 있어요.</span>
+            </p>
+          )}
+        </section>
+
       </div>
 
       {/* Preview --------------------------------------------------------- */}
@@ -474,7 +496,7 @@ export function PlanBuilder({
             {selectedCountry ? <Flag code={selectedCountry.iso2Code} size="xl" /> : <span className="pb-ticket__placeholder-flag" aria-hidden="true" />}
             <div>
               <span className="pb-ticket__eyebrow">{selectedCountry ? `${selectedCountry.nameEn} · ${selectedCountry.iso2Code}` : "여행지 미선택"}</span>
-              <h2>{selectedCountry ? `${selectedCountry.nameKo} 여행` : "다음 여행을 골라보세요"}</h2>
+              <h2>{domestic ? `${region.trim() || "국내"} 여행` : selectedCountry ? `${selectedCountry.nameKo} 여행` : "다음 여행을 골라보세요"}</h2>
             </div>
           </div>
 
@@ -484,7 +506,7 @@ export function PlanBuilder({
               <dd>{startDate ? formatPlanDate(startDate) : "미정"}</dd>
             </div>
             <div>
-              <dt>귀국</dt>
+              <dt>돌아오는 날</dt>
               <dd>{startDate ? formatPlanDate(endDate) : "미정"}</dd>
             </div>
             <div>
