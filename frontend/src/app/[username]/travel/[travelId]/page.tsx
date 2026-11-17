@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { GuestSignupBand } from "@/components/common/GuestSignupBand";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { cache } from "react";
@@ -286,7 +287,7 @@ export default async function TravelDetailPage(
 
           {travel.previousTravel || travel.nextTravel ? <section className="travel-detail-more" aria-labelledby="more-travel-heading">
             <div>
-              <h2 id="more-travel-heading">다음 여행을 이어서 보세요</h2>
+              <h2 id="more-travel-heading">{ownerName}님의 다른 여행</h2>
             </div>
             <nav aria-label="이전·다음 여행" className="travel-detail-navigation">
               <TravelNavCard
@@ -302,6 +303,13 @@ export default async function TravelDetailPage(
             </nav>
           </section> : null}
         </article>
+        {currentMember ? null : (
+          <GuestSignupBand
+            title={`${ownerName}님처럼 여행을 지구본에 남겨 보세요.`}
+            copy="일정을 짜고, 다녀온 뒤에는 사진과 메모로 기록하세요. 이 여행의 일정도 가입 후 내 계획으로 복사할 수 있어요."
+            next={travelPath(travel.owner.username, travel.id)}
+          />
+        )}
       </main>
 
       <SiteFooter />

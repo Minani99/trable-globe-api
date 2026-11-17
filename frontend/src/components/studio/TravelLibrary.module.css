@@ -26,3 +26,20 @@
   .meta { grid-column: 2; text-align: left; display: flex; flex-wrap: wrap; gap: .5rem; }
   .arrow { grid-column: 3; grid-row: 1 / 3; }
 }
+
+/* Stage colours: one tone per stage, so a glance down the list tells plan from trip from record. */
+.row { --tone: var(--text-secondary); --tone-soft: var(--surface-muted); transition: background-color var(--dur) var(--ease); }
+.row[data-stage="plan"] { --tone: var(--ocean); --tone-soft: var(--ocean-soft); }
+.row[data-stage="travel"] { --tone: var(--accent-strong); --tone-soft: var(--accent-soft); }
+.row[data-stage="finish"] { --tone: var(--warning); --tone-soft: var(--warning-soft); }
+.row[data-stage="record"] { --tone: var(--success); --tone-soft: var(--success-soft); }
+.row:hover .copy strong { color: var(--accent-strong); }
+.row:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.status { display: inline-flex; align-items: center; justify-content: flex-end; gap: .4rem; }
+.chip { display: inline-flex; align-items: center; min-height: 1.6rem; padding: 0 .6rem; border-radius: var(--radius-xs); background: var(--tone-soft); color: var(--tone); font-size: .75rem; font-weight: 650; white-space: nowrap; }
+.badge { color: var(--tone); font-size: .875rem; font-weight: 750; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.copy strong { transition: color var(--dur) var(--ease); }
+@media (max-width: 700px) {
+  .status { justify-content: flex-start; }
+  .meta small { flex-basis: 100%; }
+}

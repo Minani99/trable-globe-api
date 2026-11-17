@@ -130,7 +130,10 @@ export function MobileJourneyCapture({ member, pathname }: MobileJourneyCaptureP
   }, [open]);
 
   const currentTravel = member && travelState?.username === member.username ? travelState.travel : null;
-  if (!member || !currentTravel || (pathname.includes("/studio/travels/") && pathname.endsWith("/edit"))) {
+  // Trip pages and creation forms have their own fixed bottom actions (save, next step,
+  // in-trip photo and memo). A floating button there covers form fields and repeats them.
+  const ownsBottomActions = pathname.startsWith("/studio/travels/") || pathname.startsWith("/studio/plans/");
+  if (!member || !currentTravel || ownsBottomActions) {
     return null;
   }
 

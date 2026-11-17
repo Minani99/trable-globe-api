@@ -2,16 +2,25 @@ import Link from "next/link";
 import { JourneyArtwork } from "@/components/common/JourneyArtwork";
 
 import type { JourneyNextAction } from "@/lib/journey-next-action";
+import { daysBetween } from "@/lib/trip-timing";
 import { formatDateRange } from "@/lib/utils/format";
 import styles from "./JourneyNextCard.module.css";
 
-export function JourneyNextCard({ action }: { action: JourneyNextAction }) {
+export function JourneyNextCard({ action, today }: { action: JourneyNextAction; today: string }) {
   const { trip: { travel }, phase } = action;
+  const countdown = phase === "plan"
+    ? { value: `D-${daysBetween(today, travel.startDate)}`, caption: "출발까지" }
+    : phase === "travel"
+      ? { value: `${daysBetween(travel.startDate, today) + 1}일차`, caption: `총 ${daysBetween(travel.startDate, travel.endDate) + 1}일 중` }
+      : { value: `${Math.max(1, daysBetween(travel.endDate, today))}일 전`, caption: "여행을 마쳤어요" };
   return (
     <section className={styles.card} aria-labelledby="journey-next-heading" data-phase={phase}>
       <JourneyArtwork className={styles.artwork} src={travel.coverImageUrl} label={travel.primaryCountry?.nameKo ?? "MY JOURNEY"} alt={`${travel.title} 대표 장면`} />
       <div className={styles.content}>
-      <p className={styles.label}>{phase === "travel" ? "지금 여행 중" : phase === "plan" ? "다가오는 여행" : "최근 다녀온 여행"}</p>
+      <div className={styles.top}>
+        <p className={styles.label}>{phase === "travel" ? "지금 여행 중" : phase === "plan" ? "다가오는 여행" : "최근 다녀온 여행"}</p>
+        <p className={styles.countdown}><strong>{countdown.value}</strong><span>{countdown.caption}</span></p>
+      </div>
       <div className={styles.body}>
         <div className={styles.copy}>
           <p className={styles.meta}>{travel.primaryCountry?.nameKo ?? "내 여행"} · {formatDateRange(travel.startDate, travel.endDate)}</p>
