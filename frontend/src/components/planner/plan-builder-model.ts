@@ -114,6 +114,7 @@ export async function resolvePlanAnchor(
   country: CountryOption,
   mode: AnchorMode,
   rawInput: string,
+  regionSearch = false,
 ): Promise<PlanAnchor> {
   const input = rawInput.trim();
   if (!input && mode === "center") {
@@ -143,18 +144,22 @@ export async function resolvePlanAnchor(
   }
 
   if (coordinates) return { name, city: "", ...coordinates, source: mode };
-  const result = await searchLocation(name, country);
+  const result = await searchLocation(name, country, regionSearch);
+  if (!result && regionSearch) throw new ApiError(422, `${name} 도시·지역을 확인하지 못했습니다. 시·군·구를 포함한 지역명으로 다시 입력해 주세요.`);
   if (!result) throw new ApiError(422, `${name} 위치를 찾지 못했습니다. Google 지도 공유 링크를 붙여넣어 보세요.`);
   return { ...result, source: mode };
 }
 
-export async function searchLocation(query: string, country: CountryOption): Promise<LocationResult | null> {
+export async function searchLocation(query: string, country: CountryOption, regionSearch = false): Promise<LocationResult | null> {
   const params = new URLSearchParams({
     q: query,
     country: country.iso2Code.toLowerCase(),
-    lat: String(country.latitude),
-    lng: String(country.longitude),
   });
+  if (regionSearch) params.set("purpose", "region");
+  else {
+    params.set("lat", String(country.latitude));
+    params.set("lng", String(country.longitude));
+  }
   try {
     const response = await fetch(`/api/locations/search?${params}`, {
       headers: { Accept: "application/json" },

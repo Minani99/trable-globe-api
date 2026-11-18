@@ -1,11 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
 
 import { waitForNominatimSlot } from "@/lib/nominatim";
+import { regionQuery, REGION_TYPES } from "@/lib/region-search";
 
 interface NominatimResult {
   place_id: number;
   display_name: string;
   name?: string;
+  addresstype?: string;
+  type?: string;
   lat: string;
   lon: string;
   address?: Record<string, string>;
@@ -14,6 +17,7 @@ interface NominatimResult {
 export async function GET(request: NextRequest) {
   const query = request.nextUrl.searchParams.get("q")?.trim() ?? "";
   const country = request.nextUrl.searchParams.get("country")?.trim().toLowerCase() ?? "";
+  const regionSearch = request.nextUrl.searchParams.get("purpose") === "region";
   const latitudeRaw = request.nextUrl.searchParams.get("lat");
   const longitudeRaw = request.nextUrl.searchParams.get("lng");
   const latitude = latitudeRaw === null ? null : Number(latitudeRaw);
@@ -36,14 +40,15 @@ export async function GET(request: NextRequest) {
   }
 
   const params = new URLSearchParams({
-    q: query,
+    q: regionSearch ? regionQuery(query, country) : query,
     format: "jsonv2",
     addressdetails: "1",
     limit: "5",
     "accept-language": "ko,en",
   });
   if (country) params.set("countrycodes", country);
-  if (hasProximity && latitude !== null && longitude !== null) {
+  if (regionSearch) params.set("featureType", "settlement");
+  if (!regionSearch && hasProximity && latitude !== null && longitude !== null) {
     const latitudeDelta = 0.45;
     const longitudeDelta = Math.min(1.2, 0.45 / Math.max(0.35, Math.cos((latitude * Math.PI) / 180)));
     params.set("viewbox", `${longitude - longitudeDelta},${latitude - latitudeDelta},${longitude + longitudeDelta},${latitude + latitudeDelta}`);
@@ -64,7 +69,7 @@ export async function GET(request: NextRequest) {
     if (!response.ok) throw new Error(`Geocoder returned ${response.status}`);
 
     const results = (await response.json()) as NominatimResult[];
-    const data = results.map((result) => ({
+    const data = results.filter(result => !regionSearch || REGION_TYPES.has(result.addresstype || result.type || "")).map((result) => ({
       id: String(result.place_id),
       label: result.display_name,
       name: result.name || result.display_name.split(",")[0]?.trim() || query,

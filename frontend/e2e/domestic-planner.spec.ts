@@ -11,8 +11,18 @@ for (const width of [320, 390, 1440]) {
       const params = new URL(route.request().url()).searchParams;
       expect(params.get("country")).toBe("kr");
       expect(params.get("q")).toBe("강릉");
+      expect(params.get("purpose")).toBe("region");
+      expect(params.has("lat")).toBe(false);
       locationQueries++;
-      return route.fulfill({ json: { success: true, data: [{ name: "강릉", city: "Gangneung", latitude: 37.7519, longitude: 128.8761 }] } });
+      return route.fulfill({ json: { success: true, data: [{ name: "강릉", city: "강릉", latitude: 37.7519, longitude: 128.8761 }] } });
+    });
+    let recommendations = 0;
+    await page.route("**/api/places/recommend?**", route => {
+      const params = new URL(route.request().url()).searchParams;
+      expect(params.get("lat")).toBe("37.7519");
+      expect(params.get("lng")).toBe("128.8761");
+      recommendations++;
+      return route.fulfill({ json: { success: true, data: [] } });
     });
     await page.goto("/studio/plans/new");
     await expect(page.getByRole("button", { name: "국내여행", exact: true })).toHaveAttribute("aria-pressed", "true");
@@ -23,6 +33,7 @@ for (const width of [320, 390, 1440]) {
     await page.getByRole("button", { name: "부모님과", exact: true }).click();
     await page.getByRole("button", { name: /느긋하게/ }).click();
     await page.getByRole("button", { name: "자연", exact: true }).click();
+    if (width === 390) await page.getByRole("button", { name: /추천 일정으로 시작/ }).click();
     if (width < 700) {
       await nav.getByRole("button", { name: "이전" }).click();
       await expect(page.getByLabel("여행할 도시·지역")).toHaveValue("강릉");
@@ -33,7 +44,7 @@ for (const width of [320, 390, 1440]) {
     await page.screenshot({ path: testInfo.outputPath(`domestic-setup-${width}.png`), fullPage: true });
     if (width < 700) await nav.getByRole("button", { name: "다음" }).click();
     await expect(page.getByRole("complementary", { name: "여행 계획 요약" })).toContainText("부모님과");
-    await page.getByRole("button", { name: "일정 만들기", exact: true }).click();
+    await page.getByRole("button", { name: width === 390 ? "자동 일정 만들기" : "일정 만들기", exact: true }).click();
     await expect(page).toHaveURL(/\/studio\/travels\/\d+\/edit\?plan=1$/, { timeout: 30_000 });
     const id = page.url().match(/travels\/(\d+)/)![1];
     const travel = (await (await page.request.get(`/api/private/travels/${id}`)).json()).data;
@@ -42,6 +53,7 @@ for (const width of [320, 390, 1440]) {
     expect(travel.description).toContain("느긋하게");
     expect(travel.places[0]).toMatchObject({ latitude: 37.7519, longitude: 128.8761, country: { iso2Code: "KR" }, city: { nameKo: "강릉" } });
     expect(locationQueries).toBe(1);
+    expect(recommendations).toBe(width === 390 ? 3 : 0);
     await page.reload();
     const tabs = page.getByRole("tablist", { name: "여행 작업", exact: true });
     await tabs.getByRole("tab", { name: "교통", exact: true }).click();
