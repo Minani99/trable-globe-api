@@ -42,6 +42,17 @@ for (const width of [320, 390, 1440]) {
     }
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
     await page.screenshot({ path: testInfo.outputPath(`domestic-setup-${width}.png`), fullPage: true });
+    if (width === 390) {
+      await page.getByRole("button", { name: "어두운 화면으로 전환" }).click();
+      const choice = page.getByRole("button", { name: "자연", exact: true });
+      await expect.poll(() => choice.evaluate(button => {
+        const icon = button.querySelector("svg")!;
+        return getComputedStyle(icon).stroke === getComputedStyle(button).color;
+      })).toBe(true);
+      await expect(choice).toHaveAttribute("aria-pressed", "true");
+      await page.screenshot({ path: testInfo.outputPath("mobile-choices-dark.png") });
+      await page.getByRole("button", { name: "밝은 화면으로 전환" }).click();
+    }
     if (width < 700) await nav.getByRole("button", { name: "다음" }).click();
     await expect(page.getByRole("complementary", { name: "여행 계획 요약" })).toContainText("부모님과");
     await page.getByRole("button", { name: width === 390 ? "자동 일정 만들기" : "일정 만들기", exact: true }).click();
