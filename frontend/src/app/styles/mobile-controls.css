@@ -30,6 +30,9 @@
   .studio-page .studio-primary-action,
   .editor-savebar__actions button,
   .account-page .account-button.is-primary,
+  .travel-budget-form button[type="submit"],
+  .travel-checklist__composer button,
+  .travel-plan-composer button,
   .mobile-trip-companion__composer-submit {
     min-height: 48px;
     border: 0;
@@ -66,6 +69,10 @@
   .travel-route-jump,
   .day-route-follow-next,
   .day-reservations__scope button,
+  .travel-expense-export button,
+  .place-picker__search button,
+  .place-picker__google-tools details button,
+  .travel-plan-row-actions button:not(.travel-plan-delete),
   .day-route-workspace .travel-route-map-controls button,
   .planning-route-preview .travel-route-map-controls button {
     min-height: 44px;
@@ -111,6 +118,31 @@
     color: var(--text-secondary);
     box-shadow: none;
     font-weight: 500;
+  }
+  .travel-checklist__filters button,
+  .place-picker__ideas button,
+  .place-picker__details button {
+    min-height: 44px;
+    padding-inline: .9rem;
+    border: 1px solid transparent;
+    border-radius: 999px;
+    background: var(--control-fill);
+    color: var(--text-secondary);
+    font-weight: 500;
+  }
+  .travel-checklist__filters button[aria-pressed="true"],
+  .place-picker__ideas button.is-active,
+  .place-picker__details button.is-active {
+    background: var(--control-selected);
+    color: var(--control-selected-ink);
+    border-color: var(--control-selected);
+  }
+  .google-directions__modes { background: var(--control-fill); border-radius: var(--control-radius); }
+  .google-directions__modes button { border-radius: 12px; font-weight: 500; }
+  .google-directions__modes button[aria-pressed="true"] {
+    background: var(--surface);
+    color: var(--text-primary);
+    font-weight: 650;
   }
   .plan-builder .pb-chip.is-selected {
     background: var(--control-selected);
