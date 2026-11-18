@@ -64,6 +64,8 @@
   .planning-view-links a,
   .day-route-jump,
   .travel-route-jump,
+  .day-route-follow-next,
+  .day-reservations__scope button,
   .day-route-workspace .travel-route-map-controls button,
   .planning-route-preview .travel-route-map-controls button {
     min-height: 44px;
@@ -74,13 +76,25 @@
     box-shadow: none;
     font-weight: 550;
   }
-  .studio-breadcrumb a {
+  .studio-breadcrumb a,
+  .travel-day-page .travel-day-page__nav a {
     border: 0;
     border-radius: var(--control-radius);
     background: transparent;
     padding-inline: .5rem;
     color: var(--text-secondary);
     font-weight: 500;
+  }
+  .day-route-workspace .travel-route-explorer.is-compact .travel-route-map-controls button,
+  .planning-route-preview .travel-route-explorer.is-compact .travel-route-map-controls button {
+    border: 0;
+    border-radius: 12px;
+    background: var(--surface);
+  }
+  .day-reservations__scope button[aria-pressed="true"] {
+    background: var(--control-selected);
+    color: var(--control-selected-ink);
+    border-color: transparent;
   }
   .plan-builder .pb-mobile-nav > .pb-secondary {
     background: transparent;
