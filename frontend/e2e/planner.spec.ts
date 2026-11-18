@@ -202,14 +202,17 @@ test("몇 번의 선택으로 여행 계획을 만들고 일차별 일정으로 
     return {
       titleWidth: title.clientWidth, contentWidth: title.scrollWidth,
       titleHeight: title.clientHeight, contentHeight: title.scrollHeight,
-      toggleHeight: toggle.height, toggleBottom: toggle.bottom, deleteTop: remove.top,
+      toggleHeight: toggle.height, toggleRight: toggle.right, deleteLeft: remove.left,
+      deleteWidth: remove.width, deleteHeight: remove.height,
       pageWidth: document.documentElement.scrollWidth, viewportWidth: window.innerWidth,
     };
   });
   expect(checklistLayout.contentWidth).toBeLessThanOrEqual(checklistLayout.titleWidth + 1);
   expect(checklistLayout.contentHeight).toBeLessThanOrEqual(checklistLayout.titleHeight + 1);
   expect(checklistLayout.toggleHeight).toBeGreaterThanOrEqual(44);
-  expect(checklistLayout.deleteTop).toBeGreaterThanOrEqual(checklistLayout.toggleBottom);
+  expect(checklistLayout.deleteLeft).toBeGreaterThanOrEqual(checklistLayout.toggleRight);
+  expect(checklistLayout.deleteWidth).toBeGreaterThanOrEqual(44);
+  expect(checklistLayout.deleteHeight).toBeGreaterThanOrEqual(44);
   expect(checklistLayout.pageWidth).toBeLessThanOrEqual(checklistLayout.viewportWidth + 1);
   await page.getByRole("region", { name: "여행 준비 체크리스트" }).screenshot({ path: "test-results/checklist-mobile.png" });
   await page.setViewportSize({ width: 390, height: 844 });
