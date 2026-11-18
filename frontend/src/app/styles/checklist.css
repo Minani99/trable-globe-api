@@ -134,6 +134,36 @@
   background: color-mix(in srgb, var(--accent-soft) 42%, var(--surface));
 }
 
+/* A compact mobile list keeps the task and its action together. */
+@media (max-width: 700px) {
+  .travel-checklist .travel-checklist__items { gap: 0; }
+  .travel-checklist .travel-checklist__items li {
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 0 .5rem;
+    padding: .65rem 0;
+    border: 0;
+    border-bottom: 1px solid var(--border);
+    border-radius: 0;
+    background: transparent;
+  }
+  .travel-checklist .travel-checklist__toggle { grid-column: 1; grid-row: 1; }
+  .travel-checklist .travel-checklist__toggle strong { font-size: .875rem; font-weight: 550; }
+  .travel-checklist .travel-checklist__items li > small {
+    grid-column: 1;
+    grid-row: 2;
+    justify-self: start;
+    margin-left: 2rem;
+    padding: 0;
+    background: transparent;
+  }
+  .travel-checklist .travel-checklist__delete { grid-column: 2; grid-row: 1 / 3; align-self: center; }
+  .travel-checklist .is-complete .travel-checklist__toggle > span {
+    border-color: var(--control-selected);
+    background: var(--control-selected);
+    color: var(--control-selected-ink);
+  }
+}
+
 .travel-checklist__toggle {
   display: flex;
   min-width: 0;
