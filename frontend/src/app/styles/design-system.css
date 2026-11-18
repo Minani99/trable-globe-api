@@ -880,12 +880,12 @@ main :where(button) {
 .discover-search > p { font-size: .8125rem; }
 .plan-builder .pb-form { border: 0; border-radius: 0; overflow: visible; }
 .plan-builder .pb-step { padding: 1.5rem 0 2rem; }
-.plan-builder .pb-step__heading { display: block; }
-.plan-builder .pb-step__index { display: none; }
-.plan-builder .pb-step__heading h2 { font-size: 1.125rem; font-weight: 600; }
-.plan-builder .pb-ticket { border-radius: var(--radius-sm); background: var(--surface-raised); }
+.plan-builder .pb-step__heading { display: grid; align-items: start; padding-bottom: .5rem; }
+.plan-builder .pb-step__index { display: grid; background: var(--accent-soft); color: var(--accent); border: 1px solid var(--accent-border); }
+.plan-builder .pb-step__heading h2 { font-size: 1.25rem; font-weight: 650; }
+.plan-builder .pb-ticket { border-radius: var(--radius-lg); background: var(--surface-raised); padding: 1.5rem; }
 .plan-builder .pb-ticket::before, .plan-builder .pb-ticket::after { display: none; }
-.plan-builder .pb-country-tile, .plan-builder .pb-option { border-radius: var(--radius-xs); }
+.plan-builder .pb-country-tile, .plan-builder .pb-option { border-radius: var(--radius-md); }
 .plan-builder .pb-option--build { padding: 1.25rem; }
 .plan-builder .pb-option__badge, .plan-builder .pb-option.is-selected .pb-option__badge { position: static; justify-self: start; margin-bottom: .25rem; padding: 0; background: transparent; color: var(--text-secondary); }
 .plan-builder .pb-option.is-selected .pb-option__badge { color: var(--accent-strong); }
@@ -914,6 +914,9 @@ main :where(button) {
   .studio-hero__actions a { flex: 1; justify-content: center; }
   body:has(.travel-editor) .travel-editor-shell { padding-bottom: 6rem !important; }
   .plan-builder .pb-step { padding: .75rem 0 1rem; }
+  /* Mobile already names the current step in the progress bar. */
+  .plan-builder .pb-step__heading { display: block; }
+  .plan-builder .pb-step__index { display: none; }
   .plan-builder .pb-mobile-nav { right: 0; left: 0; bottom: 0; max-width: none; padding: .75rem 1rem calc(.75rem + env(safe-area-inset-bottom)); border-radius: 0; border-inline: 0; border-bottom: 0; box-shadow: none; }
 }
 
