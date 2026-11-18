@@ -13,4 +13,9 @@
 @media (max-width: 700px) {
   .workspace > [role="tablist"] { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); overflow: visible; }
   .workspace > [role="tablist"] button { min-width: 0; padding-inline: .3rem; }
+  .workspace > [role="tablist"] { gap: .25rem; padding: .35rem; border: 0; border-radius: 16px; background: var(--control-fill); }
+  .workspace > [role="tablist"] button { min-height: 44px; border: 0; border-radius: 12px; font-weight: 500; }
+  .workspace > [role="tablist"] button[aria-selected="true"] { background: var(--surface); color: var(--text-primary); box-shadow: 0 1px 4px rgb(0 0 0 / .08); font-weight: 650; }
+  .next { border: 0; border-radius: 16px; background: var(--control-fill); color: var(--text-primary); }
+  .next:hover { background: var(--control-hover); }
 }

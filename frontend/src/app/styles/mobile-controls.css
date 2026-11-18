@@ -1,0 +1,212 @@
+/* Mobile control hierarchy. Filled brand actions, neutral utility surfaces,
+ * compact choice chips, and borderless navigation each have a distinct role.
+ * Owns these controls after the legacy page styles; does not target map pins,
+ * text fields, checkboxes, or destructive confirmations as generic buttons. */
+@media (max-width: 700px) {
+  :root {
+    --control-fill: #f2f2ef;
+    --control-hover: #e9e9e5;
+    --control-selected: #292b28;
+    --control-selected-ink: #ffffff;
+    --control-radius: 16px;
+    --accent: #bf4b28;
+    --accent-strong: #a93e20;
+    --accent-soft: #fbf1eb;
+    --accent-border: #efd4c6;
+  }
+  :root[data-theme="dark"] {
+    --control-fill: #252927;
+    --control-hover: #313733;
+    --control-selected: #e9ede8;
+    --control-selected-ink: #20251f;
+    --accent: #f28b60;
+    --accent-strong: #ffa67f;
+    --accent-soft: #30231c;
+    --accent-border: #624335;
+  }
+
+  /* Primary actions remain unmistakable without coloured drop shadows. */
+  .plan-builder .pb-primary,
+  .studio-page .studio-primary-action,
+  .editor-savebar__actions button,
+  .account-page .account-button.is-primary,
+  .mobile-trip-companion__composer-submit {
+    min-height: 48px;
+    border: 0;
+    border-radius: var(--control-radius);
+    background: var(--accent);
+    color: var(--accent-ink);
+    box-shadow: none;
+    font-size: .9375rem;
+    font-weight: 600;
+  }
+  .landing-main--journal :is(.landing-primary-cta, .landing-secondary-cta) {
+    border-radius: var(--control-radius) !important;
+    box-shadow: none !important;
+  }
+  .trip-action-card__button {
+    border-radius: var(--control-radius);
+    min-height: 48px;
+    font-weight: 600;
+    transform: none;
+  }
+  .trip-action-card__button.is-secondary {
+    border: 0;
+    background: var(--control-fill);
+    color: var(--text-primary);
+  }
+
+  /* Utilities are soft surfaces, not a grid of outlined rectangles. */
+  .plan-builder .pb-secondary,
+  .account-page .account-button.is-secondary,
+  .studio-page .studio-secondary-action,
+  .planning-route-preview > header button,
+  .planning-view-links a,
+  .day-route-jump,
+  .travel-route-jump,
+  .day-route-workspace .travel-route-map-controls button,
+  .planning-route-preview .travel-route-map-controls button {
+    min-height: 44px;
+    border: 0;
+    border-radius: var(--control-radius);
+    background: var(--control-fill);
+    color: var(--text-primary);
+    box-shadow: none;
+    font-weight: 550;
+  }
+  .studio-breadcrumb a {
+    border: 0;
+    border-radius: var(--control-radius);
+    background: transparent;
+    padding-inline: .5rem;
+    color: var(--text-secondary);
+    font-weight: 500;
+  }
+  .plan-builder .pb-mobile-nav > .pb-secondary {
+    background: transparent;
+    padding-inline: .75rem;
+  }
+
+  /* Short choices are capsules; large choices retain a calm card shape. */
+  .plan-builder .pb-chip {
+    min-height: 44px;
+    padding-inline: 1rem;
+    border: 1px solid transparent;
+    border-radius: 999px;
+    background: var(--control-fill);
+    color: var(--text-secondary);
+    box-shadow: none;
+    font-weight: 500;
+  }
+  .plan-builder .pb-chip.is-selected {
+    background: var(--control-selected);
+    color: var(--control-selected-ink);
+    border-color: var(--control-selected);
+    box-shadow: none;
+  }
+  .plan-builder .pb-segment {
+    gap: .25rem;
+    padding: .3rem;
+    border-radius: var(--control-radius);
+    background: var(--control-fill);
+  }
+  .plan-builder .pb-segment button {
+    min-height: 44px;
+    border: 0;
+    border-radius: 12px;
+    color: var(--text-secondary);
+    font-weight: 500;
+  }
+  .plan-builder .pb-segment button.is-selected {
+    background: var(--surface);
+    color: var(--text-primary);
+    box-shadow: 0 1px 4px rgb(0 0 0 / .08);
+    font-weight: 650;
+  }
+  .plan-builder .pb-option {
+    border: 1px solid transparent;
+    border-radius: var(--control-radius);
+    background: var(--control-fill);
+    padding: 1.1rem;
+  }
+  .plan-builder .pb-option.is-selected {
+    border-color: var(--text-primary);
+    background: var(--surface);
+    box-shadow: inset 0 0 0 1px var(--text-primary);
+  }
+  .plan-builder .pb-option.is-selected .pb-option__badge {
+    color: var(--text-primary);
+  }
+  .plan-builder .pb-option.is-selected .pb-option__dots i.is-on {
+    background: var(--text-primary);
+  }
+
+  /* Date selection is navigation, so it uses neutral contrast rather than orange. */
+  .travel-editor .plan-itinerary__days button,
+  .travel-day-page .mobile-trip-companion__days button,
+  .google-directions__days button {
+    border: 1px solid transparent;
+    border-radius: var(--control-radius);
+    background: var(--control-fill);
+    color: var(--text-secondary);
+    box-shadow: none;
+  }
+  .travel-editor .plan-itinerary__days button.is-active,
+  .travel-day-page .mobile-trip-companion__days button.is-active,
+  .google-directions__days button[aria-pressed="true"] {
+    border-color: var(--control-selected);
+    background: var(--control-selected);
+    color: var(--control-selected-ink);
+    box-shadow: none;
+  }
+  .travel-editor .plan-itinerary__days button.is-active :is(strong, small, span),
+  .travel-day-page .mobile-trip-companion__days button.is-active :is(strong, small, span) {
+    color: inherit;
+  }
+  .travel-day-page .mobile-trip-companion__actions :is(a, button) {
+    border: 0;
+    border-radius: var(--control-radius);
+    background: transparent;
+    color: var(--text-secondary);
+    box-shadow: none;
+    min-height: 48px;
+  }
+  .travel-day-page .mobile-trip-companion__actions button[aria-pressed="true"] {
+    background: var(--control-fill);
+    color: var(--text-primary);
+    box-shadow: none;
+  }
+  .day-route-selected {
+    border: 0;
+    border-radius: var(--control-radius);
+    background: var(--control-fill);
+  }
+  .day-route-selected > span { color: var(--text-primary); }
+  .day-route-next { color: var(--text-primary); }
+  .day-route-overview .day-route-next { background: var(--control-fill); }
+  .site-mobile-bottom-nav .site-mobile-bottom-nav__item[aria-current="page"] {
+    background: transparent;
+    color: var(--accent);
+    box-shadow: none;
+  }
+  :is(.travel-checklist__delete, .travel-plan-delete) {
+    border: 0 !important;
+    border-radius: 12px;
+    background: var(--danger-soft) !important;
+    color: var(--danger) !important;
+  }
+
+  /* Keep keyboard focus and disabled affordances distinct from visual selection. */
+  .plan-builder :is(button, a):focus-visible,
+  .planning-view-links a:focus-visible,
+  .day-route-selected:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 3px;
+  }
+  @media (hover: hover) {
+    .plan-builder .pb-secondary:hover:not(:disabled),
+    .account-page .account-button.is-secondary:hover:not(:disabled),
+    .planning-view-links a:hover,
+    .day-route-jump:hover { background: var(--control-hover); }
+  }
+}
