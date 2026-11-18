@@ -164,7 +164,7 @@ export function PlanBuilder({
       let places: TravelPlaceWriteInput[];
       let recommendationCount = 0;
       if (buildMode === "auto") {
-        const anchor = await resolvePlanAnchor(selectedCountry, anchorMode, anchorInput.trim() || (domestic ? region : ""));
+        const anchor = await resolvePlanAnchor(selectedCountry, anchorMode, anchorInput.trim() || (domestic ? region : ""), domestic && anchorMode === "center");
         setPendingLabel("주변 장소와 동선 찾는 중…");
         const recommendations = await fetchPlanRecommendations(anchor, styles, companion);
         const generated = buildAutomaticPlaces({
@@ -182,7 +182,7 @@ export function PlanBuilder({
         places = buildSkeletonPlaces(selectedCountry, tripDays, startDate, styles, activePace.label);
         if (domestic) {
           setPendingLabel("여행 지역 확인 중…");
-          const anchor = await resolvePlanAnchor(selectedCountry, "center", region);
+          const anchor = await resolvePlanAnchor(selectedCountry, "center", region, true);
           places = places.map(place => ({ ...place, latitude: anchor.latitude, longitude: anchor.longitude,
             city: { nameKo: region.trim(), nameEn: anchor.city || region.trim(), latitude: anchor.latitude, longitude: anchor.longitude } }));
         }

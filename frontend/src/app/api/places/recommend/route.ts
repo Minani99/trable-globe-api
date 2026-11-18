@@ -239,6 +239,8 @@ function rankRecommendations(
     seen.add(dedupeKey);
 
     const distanceKm = distance(latitude, longitude, itemLatitude, itemLongitude);
+    // Providers may ignore their search bounds; never turn a distant city into a nearby stop.
+    if (!Number.isFinite(distanceKm) || distanceKm > RADIUS_METERS * 2 / 1000) return [];
     const preferenceMatch = matchingPreference(category, tags, preferences);
     const detailMatch = matchingDetail(detail, tags);
     const metadataScore = Number(Boolean(tags.opening_hours)) * 5
