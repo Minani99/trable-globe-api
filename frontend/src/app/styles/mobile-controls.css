@@ -118,6 +118,7 @@
     border-color: var(--control-selected);
     box-shadow: none;
   }
+  .plan-builder .pb-chip.is-selected .pb-icon--check { color: inherit; }
   .plan-builder .pb-segment {
     gap: .25rem;
     padding: .3rem;
