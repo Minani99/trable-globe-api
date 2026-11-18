@@ -21,7 +21,7 @@ export function LandingOverview() {
           <div className={styles.copy}>
             <p className={styles.eyebrow}>여행 전</p>
             <h2 id="plan-overview-title">준비부터 동선까지.</h2>
-            <p className={styles.description}>항공권, 준비물, 예산을 챙기고 일정을 만드세요. 방문 순서에 맞는 이동 경로는 Google 지도로 확인합니다.</p>
+            <p className={styles.description}>가까운 국내 여행부터 해외 여행까지. 교통, 준비물, 예산을 챙기고 방문 순서에 맞는 이동 경로를 Google 지도로 확인하세요.</p>
           </div>
 
           <figure className={styles.preview}>

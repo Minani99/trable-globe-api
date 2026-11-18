@@ -9,13 +9,13 @@
 
 /* --- Primary actions: clearly the next step ------------------------------------ */
 :is(.landing-primary-cta, .studio-primary-action, .pb-primary, .travel-editor__primary) {
-  box-shadow: 0 10px 24px -12px color-mix(in srgb, var(--accent) 75%, transparent);
-  transition: transform var(--dur) var(--ease), box-shadow var(--dur) var(--ease), background-color var(--dur) var(--ease);
+  box-shadow: var(--shadow-sm);
+  transition: background-color var(--dur) var(--ease), border-color var(--dur) var(--ease);
 }
 
 :is(.landing-primary-cta, .studio-primary-action, .pb-primary):hover:not(:disabled) {
-  transform: translateY(-1px);
-  box-shadow: 0 14px 28px -12px color-mix(in srgb, var(--accent) 85%, transparent);
+  transform: none;
+  box-shadow: var(--shadow-sm);
 }
 
 @media (prefers-reduced-motion: reduce) {
