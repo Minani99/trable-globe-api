@@ -80,7 +80,8 @@ for (const viewport of [{ width: 360, height: 800 }, { width: 390, height: 844 }
       expect(globeBounds.height).toBeGreaterThanOrEqual(viewport.height * 0.5);
       expect(globeBounds.x).toBeGreaterThan(headingBounds.x + headingBounds.width);
       expect(photoBounds.y).toBeGreaterThan(globeBounds.y + globeBounds.height);
-      expect(photoBounds.height).toBeLessThan(globeBounds.height * 0.6);
+      // The journal photograph starts a separate spread below the first screen.
+      expect(photoBounds.y).toBeGreaterThanOrEqual(viewport.height - 1);
     }
     await page.screenshot({ path: testInfo.outputPath(`globe-first-${viewport.width}.png`), fullPage: false });
     // Opening the account flow also checks that a fixed mobile menu cannot intercept the CTA.
