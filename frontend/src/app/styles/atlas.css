@@ -1,8 +1,3 @@
-/* Display type belongs to titles. Navigation, controls and trip details use
-   the existing sans family. System faces keep the globe's loading path light. */
-:root {
-  --atlas-title: "Iowan Old Style", "AppleMyungjo", "Batang", "Noto Serif CJK KR", serif;
-}
 .landing-main--journal .landing-hero .landing-title,
 .landing-band--journal .landing-journal__copy h2,
 .discover-page .discover-hero h1,
@@ -11,9 +6,9 @@
 .account-page .account-hero h1,
 .plan-page .plan-hero h1,
 .studio-page .travel-editor-hero h1 {
-  font-family: var(--atlas-title);
-  font-weight: 600;
-  letter-spacing: -.055em;
+  font-family: var(--font-sans);
+  font-weight: 650;
+  letter-spacing: -.032em;
   word-break: keep-all;
 }
 .plan-page .plan-hero {
@@ -22,17 +17,16 @@
 }
 .landing-main--journal .landing-title-line--two { color: var(--text-primary) !important; }
 .landing-main--journal .landing-band--hero {
-  background-color: var(--journal-canvas);
-  background-image: linear-gradient(90deg, transparent calc(100% - 1px), color-mix(in srgb, var(--border-strong) 21%, transparent) 1px);
-  background-size: max(14vw, 7rem) 100%;
+  background: var(--surface);
 }
 .landing-main--journal .landing-band--hero .landing-globe-frame {
   background: transparent !important;
 }
 .landing-main--journal .landing-globe-caption {
-  border-top: 1px solid var(--border-strong);
+  justify-content: flex-end;
+  border: 0;
 }
-.landing-band--journal { background: var(--journal-paper); }
+.landing-band--journal { background: var(--surface-raised); }
 .landing-band--journal .landing-journal {
   grid-template-columns: minmax(0, 1.55fr) minmax(0, 1fr);
   gap: clamp(2rem, 6vw, 6rem);
@@ -42,7 +36,7 @@
   border-radius: 0;
 }
 .landing-band--journal .landing-journal__copy h2 {
-  font-size: clamp(2.2rem, 4.5vw, 4.25rem);
+  font-size: clamp(1.65rem, 3vw, 2.75rem);
   line-height: 1.2;
 }
 .studio-page .studio-summary {

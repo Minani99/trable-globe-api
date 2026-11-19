@@ -23,7 +23,7 @@ export default function LandingPage() {
               </h1>
 
               <p className="text-body landing-intro landing-reveal landing-reveal--body mt-7 max-w-[40ch]">
-                지구본에서 나라를 고르면 그곳의 여행 기록이 열립니다.
+                지구본을 돌려 나라별 여행 기록을 살펴보세요.
               </p>
             </div>
             <LandingGlobePreview />
@@ -37,11 +37,11 @@ export default function LandingPage() {
           <section className="landing-journal site-shell" aria-labelledby="landing-journal-heading">
             <figure className="landing-postcard">
               <JournalPhoto />
-              <figcaption><span>JAPAN · KYOTO</span><a href="https://unsplash.com/photos/a-narrow-street-with-a-pagoda-in-the-background-yQvYgnh9XEg" target="_blank" rel="noreferrer">Photo · Filipe Freitas ↗</a></figcaption>
+              <figcaption><a href="https://unsplash.com/photos/a-narrow-street-with-a-pagoda-in-the-background-yQvYgnh9XEg" target="_blank" rel="noreferrer">사진 · Filipe Freitas</a></figcaption>
             </figure>
             <div className="landing-journal__copy">
               <p className="page-caption">일본 · 교토</p>
-              <h2 id="landing-journal-heading">야사카 탑으로<br />이어지는 골목</h2>
+              <h2 id="landing-journal-heading">야사카 탑으로 이어지는 골목</h2>
               <Link href="/traveler">여행자의 기록 보기</Link>
             </div>
           </section>
