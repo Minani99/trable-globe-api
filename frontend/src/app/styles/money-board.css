@@ -250,6 +250,23 @@
   background: color-mix(in srgb, var(--accent) 5%, var(--surface));
 }
 
+@media (max-width: 700px) {
+  .travel-planning-panel :is(.travel-expense-list, .travel-reservation-list) { gap: 0; }
+  .travel-planning-panel :is(.travel-expense-list, .travel-reservation-list) > li {
+    border: 0;
+    border-bottom: 1px solid var(--border);
+    border-radius: 0;
+    background: transparent;
+    padding: .85rem 0;
+  }
+  .travel-planning-panel :is(.travel-expense-list, .travel-reservation-list) strong {
+    font-size: .875rem;
+    font-weight: 550;
+    white-space: normal;
+    overflow-wrap: anywhere;
+  }
+}
+
 .travel-plan-toggle {
   display: grid;
   place-items: center;
