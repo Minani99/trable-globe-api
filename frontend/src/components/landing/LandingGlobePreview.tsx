@@ -85,6 +85,7 @@ export function LandingGlobePreview() {
   const activePlace = activeCountry ? getWorldLandmarkPlace(activeCountry.code) : null;
   const activeVisit = world?.countries.find((country) => country.iso2Code === activeCountry?.code);
   const statistics = world?.profile.statistics;
+  const showWorldStatus = !world || (isOwnWorld && statistics?.travelCount === 0);
   const worldLabel = isOwnWorld ? `${world?.profile.displayName ?? member?.displayName}님의 지구본` : "샘플 지구본";
 
   const handleSelect = useCallback((code: string | null) => {
@@ -127,7 +128,7 @@ export function LandingGlobePreview() {
           </dl>
           </header>
 
-          <div className="landing-landmark-card" aria-live="polite">
+          {(activeCountry && activePlace || showWorldStatus) && <div className="landing-landmark-card" aria-live="polite">
             {activeCountry && activePlace ? (
               <>
                 <span className="landing-landmark-card__flag" aria-hidden="true">
@@ -171,11 +172,10 @@ export function LandingGlobePreview() {
                 </p>
               </div>
             )}
-          </div>
+          </div>}
         </div>
 
         <figcaption className="landing-globe-caption">
-          <span>지구본을 돌려보고, 나라를 눌러보세요</span>
           <Link href="/globe">크게 보기 </Link>
         </figcaption>
       </figure>
