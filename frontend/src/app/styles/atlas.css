@@ -1,0 +1,73 @@
+/* Display type belongs to titles. Navigation, controls and trip details use
+   the existing sans family. System faces keep the globe's loading path light. */
+:root {
+  --atlas-title: "Iowan Old Style", "AppleMyungjo", "Batang", "Noto Serif CJK KR", serif;
+}
+.landing-main--journal .landing-hero .landing-title,
+.landing-band--journal .landing-journal__copy h2,
+.discover-page .discover-hero h1,
+.studio-page .studio-hero h1,
+.profile-world .profile-world__intro h1,
+.account-page .account-hero h1,
+.plan-page .plan-hero h1,
+.studio-page .travel-editor-hero h1 {
+  font-family: var(--atlas-title);
+  font-weight: 600;
+  letter-spacing: -.055em;
+  word-break: keep-all;
+}
+.plan-page .plan-hero {
+  padding-inline-start: 0;
+  border-inline-start: 0;
+}
+.landing-main--journal .landing-title-line--two { color: var(--text-primary) !important; }
+.landing-main--journal .landing-band--hero {
+  background-color: var(--journal-canvas);
+  background-image: linear-gradient(90deg, transparent calc(100% - 1px), color-mix(in srgb, var(--border-strong) 21%, transparent) 1px);
+  background-size: max(14vw, 7rem) 100%;
+}
+.landing-main--journal .landing-band--hero .landing-globe-frame {
+  background: transparent !important;
+}
+.landing-main--journal .landing-globe-caption {
+  border-top: 1px solid var(--border-strong);
+}
+.landing-band--journal { background: var(--journal-paper); }
+.landing-band--journal .landing-journal {
+  grid-template-columns: minmax(0, 1.55fr) minmax(0, 1fr);
+  gap: clamp(2rem, 6vw, 6rem);
+}
+.landing-band--journal .landing-postcard {
+  height: clamp(21rem, 40vw, 34rem);
+  border-radius: 0;
+}
+.landing-band--journal .landing-journal__copy h2 {
+  font-size: clamp(2.2rem, 4.5vw, 4.25rem);
+  line-height: 1.2;
+}
+.studio-page .studio-summary {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .75rem 2rem;
+  border-block: 1px solid var(--border);
+  padding-block: 1rem;
+}
+.studio-page .studio-summary > div {
+  display: flex;
+  align-items: baseline;
+  gap: .65rem;
+  padding: 0;
+  border: 0;
+  background: transparent;
+}
+.studio-page .studio-summary dt::before { content: none; }
+.studio-page .studio-summary dd { font-size: 1.1rem; }
+.discover-page .discover-hero {
+  border-bottom: 1px solid var(--border);
+  padding-block: clamp(1rem, 4vw, 3rem);
+}
+@media (max-width: 700px) {
+  .landing-band--journal .landing-journal { grid-template-columns: 1fr; gap: 1.25rem; }
+  .landing-band--journal .landing-postcard { height: clamp(17rem, 78vw, 28rem); }
+  .studio-page .studio-summary { display: grid; grid-template-columns: 1fr 1fr; }
+}
