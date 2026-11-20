@@ -320,6 +320,14 @@ export function PlanBuilder({
                     aria-activedescendant={countryResults[resultIndex] ? `${countrySearchId}-option-${resultIndex}` : undefined}
                   />
                 </label>
+                {countryQuery.trim() && (
+                  <button type="button" className="pb-ghost pb-results-toggle"
+                    aria-expanded={resultsOpen}
+                    aria-controls={resultsOpen ? `${countrySearchId}-results` : undefined}
+                    onClick={() => { setResultsDismissed(resultsOpen); setResultIndex(-1); }}>
+                    {resultsOpen ? "목록 닫기" : "목록 열기"}
+                  </button>
+                )}
                 {resultsOpen ? (
                   <ul id={`${countrySearchId}-results`} className="pb-country-results" role="listbox" aria-label="검색 결과">
                     {countryResults.length === 0 ? (

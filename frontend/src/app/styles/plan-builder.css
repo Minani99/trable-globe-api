@@ -449,7 +449,17 @@
 .pb-country-search {
   position: relative;
   display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
   gap: 0.5rem;
+}
+
+.pb-country-search > label:only-child,
+.pb-country-search > .pb-country-results {
+  grid-column: 1 / -1;
+}
+
+.pb-country-search .pb-results-toggle {
+  min-height: 44px;
 }
 
 .pb-country-results {
