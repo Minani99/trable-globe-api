@@ -478,6 +478,7 @@
 }
 
 .pb-country-results button:hover,
+.pb-country-results [aria-selected="true"] button,
 .pb-country-results button:focus-visible {
   background: var(--surface-hover);
 }

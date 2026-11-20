@@ -59,6 +59,7 @@ export function PlanBuilder({
   const [domestic, setDomestic] = useState(!initialCountryCode || initialCountryCode === "KR");
   const [region, setRegion] = useState("");
   const [countryQuery, setCountryQuery] = useState("");
+  const [resultIndex, setResultIndex] = useState(-1);
   const [startDate, setStartDate] = useState(today);
   const [tripDays, setTripDays] = useState(!initialCountryCode || initialCountryCode === "KR" ? 2 : 4);
   const [companion, setCompanion] = useState<Companion>("친구와");
@@ -102,6 +103,7 @@ export function PlanBuilder({
   }, [error]);
 
   function chooseCountry(code: string) {
+    setResultIndex(-1);
     setCountryCode(code);
     setDomestic(code === "KR");
     setAnchorInput("");
@@ -277,12 +279,21 @@ export function PlanBuilder({
                     id={countrySearchId}
                     ref={countrySearchRef}
                     value={countryQuery}
-                    onChange={(event) => { setCountryQuery(event.target.value); setError(null); }}
+                    onChange={(event) => { setCountryQuery(event.target.value); setResultIndex(-1); setError(null); }}
                     enterKeyHint="go"
                     onKeyDown={(event) => {
-                      if (event.key !== "Enter" || event.nativeEvent.isComposing || event.nativeEvent.keyCode === 229) return;
+                      if (event.nativeEvent.isComposing || event.nativeEvent.keyCode === 229) return;
+                      if (countryResults.length && (event.key === "ArrowDown" || event.key === "ArrowUp")) {
+                        event.preventDefault();
+                        const last = countryResults.length - 1;
+                        const next = event.key === "ArrowDown" ? Math.min(resultIndex + 1, last) : resultIndex < 0 ? last : Math.max(resultIndex - 1, 0);
+                        setResultIndex(next);
+                        document.getElementById(`${countrySearchId}-option-${next}`)?.scrollIntoView({ block: "nearest" });
+                        return;
+                      }
+                      if (event.key !== "Enter") return;
                       const query = countryQuery.trim().toLowerCase();
-                      const match = countries.find(country =>
+                      const match = countryResults[resultIndex] ?? countries.find(country =>
                         [country.nameKo, country.nameEn, country.iso2Code, country.iso3Code]
                           .some(value => value.toLowerCase() === query));
                       if (match) {
@@ -296,14 +307,15 @@ export function PlanBuilder({
                     aria-expanded={Boolean(countryQuery.trim())}
                     aria-controls={countryQuery.trim() ? `${countrySearchId}-results` : undefined}
                     aria-autocomplete="list"
+                    aria-activedescendant={countryResults[resultIndex] ? `${countrySearchId}-option-${resultIndex}` : undefined}
                   />
                 </label>
                 {countryQuery.trim() ? (
                   <ul id={`${countrySearchId}-results`} className="pb-country-results" role="listbox" aria-label="검색 결과">
                     {countryResults.length === 0 ? (
                       <li className="pb-country-results__empty">검색 결과가 없어요. 영문 이름으로도 찾아보세요.</li>
-                    ) : countryResults.map((country) => (
-                      <li key={country.iso2Code} role="option" aria-selected={false}>
+                    ) : countryResults.map((country, index) => (
+                      <li key={country.iso2Code} id={`${countrySearchId}-option-${index}`} role="option" aria-selected={index === resultIndex}>
                         <button type="button" onClick={() => chooseCountry(country.iso2Code)}>
                           <Flag code={country.iso2Code} />
                           <span className="pb-country-results__name">{country.nameKo}</span>
