@@ -244,7 +244,7 @@ export function PlanBuilder({
       <div className="pb-form">
         {/* 01 Country */}
         <section className="pb-step" data-mobile-active={mobileStep === 0} aria-labelledby="plan-country-heading">
-          <StepHeading index={1} id="plan-country-heading" title="어디로 떠날까요?" hint="가까운 주말 여행부터 해외여행까지, 목적지부터 골라주세요." />
+          <h2 id="plan-country-heading" className="pb-section-title">여행지</h2>
           <div className="pb-segment pb-destination-scope" role="group" aria-label="여행 범위">
             <button type="button" aria-pressed={domestic} className={domestic ? "is-selected" : ""} onClick={() => { setDomestic(true); setCountryCode("KR"); setAnchorInput(""); setError(null); }}>국내여행</button>
             <button type="button" aria-pressed={!domestic} className={!domestic ? "is-selected" : ""} onClick={() => { setDomestic(false); setCountryCode(countryCode === "KR" ? "" : countryCode); setAnchorInput(""); setError(null); }}>해외여행</button>
@@ -253,7 +253,6 @@ export function PlanBuilder({
           {domestic ? <div className="pb-group">
             <label className="pb-field"><span className="pb-field__label">여행할 도시·지역</span><input value={region} onChange={event => { setRegion(event.target.value); setError(null); }} placeholder="예: 강릉, 제주 서귀포, 가평" maxLength={80} /></label>
             <div className="pb-chip-row" role="group" aria-label="국내 여행지 빠른 선택">{DOMESTIC_REGIONS.map(item => <button type="button" key={item} className={`pb-chip${region === item ? " is-selected" : ""}`} aria-pressed={region === item} onClick={() => setRegion(item)}>{item}</button>)}</div>
-            <p className="pb-note">입력한 지역을 기준으로 지도와 장소 검색을 준비합니다.</p>
           </div> : selectedCountry ? (
             <div className="pb-selected-country">
               <Flag code={selectedCountry.iso2Code} size="lg" />
@@ -276,8 +275,8 @@ export function PlanBuilder({
                     placeholder="나라 이름으로 검색 (예: 일본, Japan)"
                     autoComplete="off"
                     role="combobox"
-                    aria-expanded={countryResults.length > 0}
-                    aria-controls={`${countrySearchId}-results`}
+                    aria-expanded={Boolean(countryQuery.trim())}
+                    aria-controls={countryQuery.trim() ? `${countrySearchId}-results` : undefined}
                     aria-autocomplete="list"
                   />
                 </label>
@@ -298,7 +297,7 @@ export function PlanBuilder({
                 ) : null}
               </div>
 
-              <div className="pb-group">
+              {!countryQuery.trim() && <div className="pb-group">
                 <span className="pb-group__label">자주 찾는 여행지</span>
                 <div className="pb-country-grid" aria-label="인기 여행지">
                   {popularCountries.map((country) => (
@@ -313,14 +312,14 @@ export function PlanBuilder({
                     </button>
                   ))}
                 </div>
-              </div>
+              </div>}
             </>
           )}
         </section>
 
         {/* 02 Dates */}
         <section className="pb-step" data-mobile-active={mobileStep === 0} aria-labelledby="plan-date-heading">
-          <StepHeading index={2} id="plan-date-heading" title="언제, 며칠 동안 갈까요?" hint="출발일과 기간만 정하면 날짜별 일정표가 준비됩니다." />
+          <h2 id="plan-date-heading" className="pb-section-title">여행 날짜</h2>
           <div className="pb-date-grid">
             <label className="pb-field">
               <span className="pb-field__label">출발일</span>
@@ -362,7 +361,7 @@ export function PlanBuilder({
         </section>
 
         <section className="pb-step" data-mobile-active={mobileStep === 1} aria-labelledby="plan-style-heading">
-          <StepHeading index={3} id="plan-style-heading" title="누구와, 어떤 여행인가요?" hint="추천 장소와 하루 일정의 밀도를 정하는 데 사용됩니다." />
+          <h2 id="plan-style-heading" className="pb-section-title">동행과 취향</h2>
 
           <div className="pb-group">
             <span className="pb-group__label">동행</span>
@@ -426,7 +425,7 @@ export function PlanBuilder({
 
         {/* 04 Build mode */}
         <section className="pb-step" data-mobile-active={mobileStep === 1} aria-labelledby="plan-build-heading">
-          <StepHeading index={4} id="plan-build-heading" title="어떻게 시작할까요?" hint="직접 채우거나, 추천 장소로 초안을 받아보세요." />
+          <h2 id="plan-build-heading" className="pb-section-title">일정 작성 방식</h2>
           <div className="pb-option-grid pb-option-grid--2" role="group" aria-label="계획 생성 방식">
             {BUILD_MODES.map((item) => (
               <button
@@ -558,7 +557,7 @@ export function PlanBuilder({
       {/* Mobile action bar --------------------------------------------- */}
       {error ? <p className="pb-mobile-error" role="alert">{error}</p> : null}
       <nav className="pb-mobile-nav" aria-label="여행 계획 단계 이동">
-        <button type="button" className="pb-secondary" onClick={() => moveMobileStep(-1)} disabled={mobileStep === 0 || pending}>이전</button>
+        {mobileStep > 0 && <button type="button" className="pb-secondary" onClick={() => moveMobileStep(-1)} disabled={pending}>이전</button>}
         {/* The sticky progress header already names the step, so the bar holds only actions. */}
         {mobileStep < MOBILE_PLAN_STEPS.length - 1 ? (
           <button type="button" className="pb-primary" onClick={() => moveMobileStep(1)}>다음</button>
@@ -575,18 +574,6 @@ export function PlanBuilder({
 /* ------------------------------------------------------------------------ */
 /* Presentational bits                                                       */
 /* ------------------------------------------------------------------------ */
-
-function StepHeading({ index, id, title, hint }: { index: number; id: string; title: string; hint: string }) {
-  return (
-    <div className="pb-step__heading">
-      <span className="pb-step__index">{String(index).padStart(2, "0")}</span>
-      <div>
-        <h2 id={id}>{title}</h2>
-        <p>{hint}</p>
-      </div>
-    </div>
-  );
-}
 
 function Flag({ code, size = "md" }: { code: string; size?: "md" | "lg" | "xl" }) {
   const lower = code.toLowerCase();
