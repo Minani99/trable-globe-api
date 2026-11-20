@@ -278,6 +278,18 @@ export function PlanBuilder({
                     ref={countrySearchRef}
                     value={countryQuery}
                     onChange={(event) => { setCountryQuery(event.target.value); setError(null); }}
+                    enterKeyHint="go"
+                    onKeyDown={(event) => {
+                      if (event.key !== "Enter" || event.nativeEvent.isComposing || event.nativeEvent.keyCode === 229) return;
+                      const query = countryQuery.trim().toLowerCase();
+                      const match = countries.find(country =>
+                        [country.nameKo, country.nameEn, country.iso2Code, country.iso3Code]
+                          .some(value => value.toLowerCase() === query));
+                      if (match) {
+                        event.preventDefault();
+                        chooseCountry(match.iso2Code);
+                      }
+                    }}
                     placeholder="나라 이름으로 검색 (예: 일본, Japan)"
                     autoComplete="off"
                     role="combobox"
