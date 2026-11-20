@@ -60,6 +60,8 @@ export function PlanBuilder({
   const [region, setRegion] = useState("");
   const [countryQuery, setCountryQuery] = useState("");
   const [resultIndex, setResultIndex] = useState(-1);
+  const [resultsDismissed, setResultsDismissed] = useState(false);
+  const resultsOpen = Boolean(countryQuery.trim()) && !resultsDismissed;
   const [startDate, setStartDate] = useState(today);
   const [tripDays, setTripDays] = useState(!initialCountryCode || initialCountryCode === "KR" ? 2 : 4);
   const [companion, setCompanion] = useState<Companion>("친구와");
@@ -279,12 +281,20 @@ export function PlanBuilder({
                     id={countrySearchId}
                     ref={countrySearchRef}
                     value={countryQuery}
-                    onChange={(event) => { setCountryQuery(event.target.value); setResultIndex(-1); setError(null); }}
+                    onChange={(event) => { setCountryQuery(event.target.value); setResultsDismissed(false); setResultIndex(-1); setError(null); }}
+                    onClick={() => setResultsDismissed(false)}
                     enterKeyHint="go"
                     onKeyDown={(event) => {
                       if (event.nativeEvent.isComposing || event.nativeEvent.keyCode === 229) return;
+                      if (event.key === "Escape" && resultsOpen) {
+                        event.preventDefault();
+                        setResultsDismissed(true);
+                        setResultIndex(-1);
+                        return;
+                      }
                       if (countryResults.length && (event.key === "ArrowDown" || event.key === "ArrowUp")) {
                         event.preventDefault();
+                        if (resultsDismissed) flushSync(() => setResultsDismissed(false));
                         const last = countryResults.length - 1;
                         const next = event.key === "ArrowDown" ? Math.min(resultIndex + 1, last) : resultIndex < 0 ? last : Math.max(resultIndex - 1, 0);
                         setResultIndex(next);
@@ -304,13 +314,13 @@ export function PlanBuilder({
                     placeholder="나라 이름으로 검색 (예: 일본, Japan)"
                     autoComplete="off"
                     role="combobox"
-                    aria-expanded={Boolean(countryQuery.trim())}
-                    aria-controls={countryQuery.trim() ? `${countrySearchId}-results` : undefined}
+                    aria-expanded={resultsOpen}
+                    aria-controls={resultsOpen ? `${countrySearchId}-results` : undefined}
                     aria-autocomplete="list"
                     aria-activedescendant={countryResults[resultIndex] ? `${countrySearchId}-option-${resultIndex}` : undefined}
                   />
                 </label>
-                {countryQuery.trim() ? (
+                {resultsOpen ? (
                   <ul id={`${countrySearchId}-results`} className="pb-country-results" role="listbox" aria-label="검색 결과">
                     {countryResults.length === 0 ? (
                       <li className="pb-country-results__empty">검색 결과가 없어요. 영문 이름으로도 찾아보세요.</li>
