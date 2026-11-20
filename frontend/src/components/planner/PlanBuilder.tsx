@@ -76,6 +76,9 @@ export function PlanBuilder({
   const [error, setError] = useState<string | null>(null);
   const progressRef = useRef<HTMLElement>(null);
   const countrySearchId = useId();
+  const regionRef = useRef<HTMLInputElement>(null);
+  const dateRef = useRef<HTMLInputElement>(null);
+  const anchorRef = useRef<HTMLInputElement>(null);
   const countrySearchRef = useRef<HTMLInputElement>(null);
 
   const selectedCountry = countryMap.get(countryCode);
@@ -124,21 +127,26 @@ export function PlanBuilder({
   }
 
   function validateStep(step: number): boolean {
-    if (step === 0 && domestic && region.trim().length < 2) {
-      setError("여행할 도시·지역을 입력해 주세요.");
+    function showError(message: string, input: HTMLInputElement | null) {
+      flushSync(() => {
+        setMobileStep(step);
+        setError(message);
+      });
+      input?.focus();
       return false;
+    }
+
+    if (step === 0 && domestic && region.trim().length < 2) {
+      return showError("여행할 도시·지역을 입력해 주세요.", regionRef.current);
     }
     if (step === 0 && !selectedCountry) {
-      setError("여행할 나라를 먼저 골라 주세요.");
-      return false;
+      return showError("여행할 나라를 먼저 골라 주세요.", countrySearchRef.current);
     }
     if (step === 0 && (!startDate || startDate < today)) {
-      setError(startDate ? "출발일은 오늘 이후로 선택해 주세요." : "출발일을 선택해 주세요.");
-      return false;
+      return showError(startDate ? "출발일은 오늘 이후로 선택해 주세요." : "출발일을 선택해 주세요.", dateRef.current);
     }
     if (step === 1 && buildMode === "auto" && anchorMode !== "center" && anchorInput.trim().length < 2) {
-      setError(anchorMode === "stay" ? "동선의 기준이 될 숙소를 입력해 주세요." : "반드시 갈 장소를 입력해 주세요.");
-      return false;
+      return showError(anchorMode === "stay" ? "동선의 기준이 될 숙소를 입력해 주세요." : "반드시 갈 장소를 입력해 주세요.", anchorRef.current);
     }
     return true;
   }
@@ -155,10 +163,7 @@ export function PlanBuilder({
 
   async function createPlan() {
     for (const step of [0, 1]) {
-      if (!validateStep(step)) {
-        setMobileStep(step);
-        return;
-      }
+      if (!validateStep(step)) return;
     }
     if (!selectedCountry) return;
 
@@ -257,7 +262,7 @@ export function PlanBuilder({
           </div>
 
           {domestic ? <div className="pb-group">
-            <label className="pb-field"><span className="pb-field__label">여행할 도시·지역</span><input value={region} onChange={event => { setRegion(event.target.value); setError(null); }} placeholder="예: 강릉, 제주 서귀포, 가평" maxLength={80} /></label>
+            <label className="pb-field"><span className="pb-field__label">여행할 도시·지역</span><input ref={regionRef} value={region} onChange={event => { setRegion(event.target.value); setError(null); }} placeholder="예: 강릉, 제주 서귀포, 가평" maxLength={80} /></label>
             <div className="pb-chip-row" role="group" aria-label="국내 여행지 빠른 선택">{DOMESTIC_REGIONS.map(item => <button type="button" key={item} className={`pb-chip${region === item ? " is-selected" : ""}`} aria-pressed={region === item} onClick={() => { setRegion(item); setError(null); }}>{item}</button>)}</div>
           </div> : selectedCountry ? (
             <div className="pb-selected-country">
@@ -374,6 +379,7 @@ export function PlanBuilder({
               <input
                 type="date"
                 min={today}
+                ref={dateRef}
                 value={startDate}
                 onChange={(event) => { setStartDate(event.target.value); setError(null); }}
               />
@@ -513,6 +519,7 @@ export function PlanBuilder({
                   <span className="sr-only">{anchorMode === "center" ? "도시·지역" : activeAnchor.label}</span>
                   <PinIcon />
                   <input
+                    ref={anchorRef}
                     value={anchorInput}
                     onChange={(event) => { setAnchorInput(event.target.value); setError(null); }}
                     placeholder={domestic && anchorMode === "center" ? `예: ${region || "강릉"} (비워두면 선택 지역)` : activeAnchor.placeholder}
