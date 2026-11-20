@@ -27,7 +27,6 @@ export default async function NewPlanPage({ searchParams }: { searchParams: Prom
           <nav className="studio-breadcrumb" aria-label="현재 위치"><Link href="/studio">내 여행</Link></nav>
           <header className="plan-hero">
             <h1>새 여행 계획</h1>
-            <p>어디로, 언제 떠나나요? 자세한 일정은 나중에 채워도 괜찮아요.</p>
           </header>
           <PlanBuilder countries={countryOptions} today={today} initialCountryCode={initialCountryCode} />
         </div>

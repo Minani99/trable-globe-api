@@ -191,6 +191,8 @@
     grid-template-columns: auto minmax(0, 1fr) !important;
   }
 
+  .pb-mobile-nav > :only-child { grid-column: 1 / -1; }
+
   .pb-mobile-nav > .pb-primary {
     width: 100%;
   }
