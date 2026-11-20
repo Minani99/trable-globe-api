@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useId, useMemo, useRef, useState } from "react";
+import { flushSync } from "react-dom";
 import { useRouter } from "next/navigation";
 
 import { showFeedback } from "@/components/common/AppFeedback";
@@ -72,6 +73,7 @@ export function PlanBuilder({
   const [error, setError] = useState<string | null>(null);
   const progressRef = useRef<HTMLElement>(null);
   const countrySearchId = useId();
+  const countrySearchRef = useRef<HTMLInputElement>(null);
 
   const selectedCountry = countryMap.get(countryCode);
   const endDate = addDays(startDate, tripDays - 1);
@@ -260,7 +262,10 @@ export function PlanBuilder({
                 <strong>{selectedCountry.nameKo}</strong>
                 <span>{selectedCountry.nameEn} · {selectedCountry.iso2Code}</span>
               </div>
-              <button type="button" className="pb-ghost" onClick={() => { setCountryCode(""); setCountryQuery(""); }}>변경</button>
+              <button type="button" className="pb-ghost" onClick={() => {
+                flushSync(() => { setCountryCode(""); setCountryQuery(""); });
+                countrySearchRef.current?.focus();
+              }}>변경</button>
             </div>
           ) : (
             <>
@@ -270,6 +275,7 @@ export function PlanBuilder({
                   <SearchIcon />
                   <input
                     id={countrySearchId}
+                    ref={countrySearchRef}
                     value={countryQuery}
                     onChange={(event) => { setCountryQuery(event.target.value); setError(null); }}
                     placeholder="나라 이름으로 검색 (예: 일본, Japan)"
