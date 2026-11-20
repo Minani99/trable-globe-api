@@ -246,8 +246,8 @@ export function PlanBuilder({
         <section className="pb-step" data-mobile-active={mobileStep === 0} aria-labelledby="plan-country-heading">
           <h2 id="plan-country-heading" className="pb-section-title">여행지</h2>
           <div className="pb-segment pb-destination-scope" role="group" aria-label="여행 범위">
-            <button type="button" aria-pressed={domestic} className={domestic ? "is-selected" : ""} onClick={() => { setDomestic(true); setCountryCode("KR"); setAnchorInput(""); setError(null); }}>국내여행</button>
-            <button type="button" aria-pressed={!domestic} className={!domestic ? "is-selected" : ""} onClick={() => { setDomestic(false); setCountryCode(countryCode === "KR" ? "" : countryCode); setAnchorInput(""); setError(null); }}>해외여행</button>
+            <button type="button" aria-pressed={domestic} className={domestic ? "is-selected" : ""} onClick={() => { if (!domestic) chooseCountry("KR"); }}>국내여행</button>
+            <button type="button" aria-pressed={!domestic} className={!domestic ? "is-selected" : ""} onClick={() => { if (domestic) chooseCountry(""); }}>해외여행</button>
           </div>
 
           {domestic ? <div className="pb-group">
