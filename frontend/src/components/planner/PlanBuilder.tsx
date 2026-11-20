@@ -126,8 +126,8 @@ export function PlanBuilder({
       setError("여행할 나라를 먼저 골라 주세요.");
       return false;
     }
-    if (step === 0 && !startDate) {
-      setError("출발일을 선택해 주세요.");
+    if (step === 0 && (!startDate || startDate < today)) {
+      setError(startDate ? "출발일은 오늘 이후로 선택해 주세요." : "출발일을 선택해 주세요.");
       return false;
     }
     if (step === 1 && buildMode === "auto" && anchorMode !== "center" && anchorInput.trim().length < 2) {
@@ -143,7 +143,7 @@ export function PlanBuilder({
     setMobileStep(nextStep);
     setError(null);
     window.requestAnimationFrame(() => {
-      progressRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+      progressRef.current?.scrollIntoView({ behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "instant" : "smooth", block: "start" });
     });
   }
 
@@ -252,7 +252,7 @@ export function PlanBuilder({
 
           {domestic ? <div className="pb-group">
             <label className="pb-field"><span className="pb-field__label">여행할 도시·지역</span><input value={region} onChange={event => { setRegion(event.target.value); setError(null); }} placeholder="예: 강릉, 제주 서귀포, 가평" maxLength={80} /></label>
-            <div className="pb-chip-row" role="group" aria-label="국내 여행지 빠른 선택">{DOMESTIC_REGIONS.map(item => <button type="button" key={item} className={`pb-chip${region === item ? " is-selected" : ""}`} aria-pressed={region === item} onClick={() => setRegion(item)}>{item}</button>)}</div>
+            <div className="pb-chip-row" role="group" aria-label="국내 여행지 빠른 선택">{DOMESTIC_REGIONS.map(item => <button type="button" key={item} className={`pb-chip${region === item ? " is-selected" : ""}`} aria-pressed={region === item} onClick={() => { setRegion(item); setError(null); }}>{item}</button>)}</div>
           </div> : selectedCountry ? (
             <div className="pb-selected-country">
               <Flag code={selectedCountry.iso2Code} size="lg" />
@@ -355,7 +355,7 @@ export function PlanBuilder({
           {startDate ? (
             <p className="pb-note">
               <CalendarIcon />
-              <span>{formatPlanDateLong(startDate)} 출발 → {formatPlanDateLong(endDate)} 돌아오는 날</span>
+              <span>{tripDays === 1 ? `${formatPlanDateLong(startDate)} 당일 여행` : `${formatPlanDateLong(startDate)} 출발 · ${formatPlanDateLong(endDate)} 귀가`}</span>
             </p>
           ) : null}
         </section>
@@ -468,7 +468,7 @@ export function PlanBuilder({
                     value={anchorInput}
                     onChange={(event) => { setAnchorInput(event.target.value); setError(null); }}
                     placeholder={domestic && anchorMode === "center" ? `예: ${region || "강릉"} (비워두면 선택 지역)` : activeAnchor.placeholder}
-                    inputMode={anchorMode === "center" ? "text" : "url"}
+                    inputMode="text"
                   />
                 </label>
                 <a className="pb-secondary" href={googleMapsSearchUrl} target="_blank" rel="noopener noreferrer">
