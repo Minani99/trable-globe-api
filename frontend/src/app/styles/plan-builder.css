@@ -708,6 +708,18 @@
   overflow-wrap: anywhere;
 }
 
+.pb-ticket__anchor dt {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.pb-ticket__anchor dt button {
+  min-height: 44px;
+  text-decoration: underline;
+  text-underline-offset: .2em;
+}
+
 .pb-ticket__facts dd {
   font-size: var(--text-base);
   font-weight: 650;

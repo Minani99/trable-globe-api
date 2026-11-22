@@ -577,7 +577,17 @@ export function PlanBuilder({
             </div>
             {buildMode === "auto" && (
               <div className="pb-ticket__anchor">
-                <dt>동선 기준 · {activeAnchor.label}</dt>
+                <dt>
+                  동선 기준 · {activeAnchor.label}
+                  <button type="button" className="pb-ghost" aria-label="동선 기준 수정" disabled={pending} onClick={() => {
+                    flushSync(() => {
+                      setMobileStep(1);
+                      setEditingFromSummary(true);
+                      setError(null);
+                    });
+                    anchorRef.current?.focus();
+                  }}>수정</button>
+                </dt>
                 <dd>{anchorInput.trim() || (anchorMode === "center"
                   ? (domestic ? region.trim() : selectedCountry && `${selectedCountry.nameKo} 중심`) || "여행지 선택 후 결정"
                   : "미입력")}</dd>
