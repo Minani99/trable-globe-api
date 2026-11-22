@@ -71,6 +71,8 @@ export function PlanBuilder({
   const [anchorMode, setAnchorMode] = useState<AnchorMode>("center");
   const [anchorInput, setAnchorInput] = useState("");
   const [mobileStep, setMobileStep] = useState(0);
+  const [editingFromSummary, setEditingFromSummary] = useState(false);
+  const summaryStep = MOBILE_PLAN_STEPS.length - 1;
   const [pending, setPending] = useState(false);
   const [pendingLabel, setPendingLabel] = useState("계획 만드는 중…");
   const [error, setError] = useState<string | null>(null);
@@ -151,8 +153,11 @@ export function PlanBuilder({
     return true;
   }
 
-  function moveMobileStep(nextStep: number) {
-    if (nextStep > mobileStep && !validateStep(mobileStep)) return;
+  function moveMobileStep(nextStep: number, fromSummary = false) {
+    for (let step = mobileStep; step < nextStep; step++) {
+      if (!validateStep(step)) return;
+    }
+    setEditingFromSummary(fromSummary);
     setMobileStep(nextStep);
     setError(null);
     window.requestAnimationFrame(() => {
@@ -573,8 +578,8 @@ export function PlanBuilder({
           </dl>
 
           <div className="pb-summary-edits">
-            <button type="button" className="pb-ghost" disabled={pending} onClick={() => moveMobileStep(0)}>여행지·날짜 수정</button>
-            <button type="button" className="pb-ghost" disabled={pending} onClick={() => moveMobileStep(1)}>동행·취향 수정</button>
+            <button type="button" className="pb-ghost" disabled={pending} onClick={() => moveMobileStep(0, true)}>여행지·날짜 수정</button>
+            <button type="button" className="pb-ghost" disabled={pending} onClick={() => moveMobileStep(1, true)}>동행·취향 수정</button>
           </div>
 
           <div className="pb-ticket__tags">
@@ -619,7 +624,9 @@ export function PlanBuilder({
         {mobileStep > 0 && <button type="button" className="pb-secondary" onClick={() => moveMobileStep(mobileStep - 1)} disabled={pending}>이전</button>}
         {/* The sticky progress header already names the step, so the bar holds only actions. */}
         {mobileStep < MOBILE_PLAN_STEPS.length - 1 ? (
-          <button type="button" className="pb-primary" onClick={() => moveMobileStep(mobileStep + 1)}>다음</button>
+          <button type="button" className="pb-primary" onClick={() => moveMobileStep(editingFromSummary ? summaryStep : mobileStep + 1)}>
+            {editingFromSummary ? "요약으로 돌아가기" : "다음"}
+          </button>
         ) : (
           <button type="button" className="pb-primary" onClick={createPlan} disabled={pending}>
             {pending ? "만드는 중…" : submitLabel}
