@@ -151,9 +151,8 @@ export function PlanBuilder({
     return true;
   }
 
-  function moveMobileStep(direction: -1 | 1) {
-    if (direction > 0 && !validateStep(mobileStep)) return;
-    const nextStep = Math.max(0, Math.min(MOBILE_PLAN_STEPS.length - 1, mobileStep + direction));
+  function moveMobileStep(nextStep: number) {
+    if (nextStep > mobileStep && !validateStep(mobileStep)) return;
     setMobileStep(nextStep);
     setError(null);
     window.requestAnimationFrame(() => {
@@ -573,6 +572,11 @@ export function PlanBuilder({
             </div>
           </dl>
 
+          <div className="pb-summary-edits">
+            <button type="button" className="pb-ghost" disabled={pending} onClick={() => moveMobileStep(0)}>여행지·날짜 수정</button>
+            <button type="button" className="pb-ghost" disabled={pending} onClick={() => moveMobileStep(1)}>동행·취향 수정</button>
+          </div>
+
           <div className="pb-ticket__tags">
             {(styles.length ? styles : ["자유롭게"]).map((style) => <span key={style}>{style}</span>)}
             <span className="is-muted">{activePace.label}</span>
@@ -612,10 +616,10 @@ export function PlanBuilder({
       {/* Mobile action bar --------------------------------------------- */}
       {error ? <p className="pb-mobile-error" role="alert">{error}</p> : null}
       <nav className="pb-mobile-nav" aria-label="여행 계획 단계 이동">
-        {mobileStep > 0 && <button type="button" className="pb-secondary" onClick={() => moveMobileStep(-1)} disabled={pending}>이전</button>}
+        {mobileStep > 0 && <button type="button" className="pb-secondary" onClick={() => moveMobileStep(mobileStep - 1)} disabled={pending}>이전</button>}
         {/* The sticky progress header already names the step, so the bar holds only actions. */}
         {mobileStep < MOBILE_PLAN_STEPS.length - 1 ? (
-          <button type="button" className="pb-primary" onClick={() => moveMobileStep(1)}>다음</button>
+          <button type="button" className="pb-primary" onClick={() => moveMobileStep(mobileStep + 1)}>다음</button>
         ) : (
           <button type="button" className="pb-primary" onClick={createPlan} disabled={pending}>
             {pending ? "만드는 중…" : submitLabel}

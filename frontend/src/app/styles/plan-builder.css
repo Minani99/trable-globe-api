@@ -852,7 +852,20 @@
 }
 
 /* Mobile ---------------------------------------------------------------- */
+.pb-summary-edits { display: none; }
+
 @media (max-width: 800px) {
+  .pb-summary-edits {
+    display: flex;
+    flex-wrap: wrap;
+    gap: .5rem;
+  }
+
+  .pb-summary-edits button {
+    min-height: 44px;
+    text-decoration: underline;
+    text-underline-offset: .2em;
+  }
   .plan-shell {
     padding-top: 0.75rem;
   }
