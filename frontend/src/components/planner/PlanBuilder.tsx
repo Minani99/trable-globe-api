@@ -575,6 +575,14 @@ export function PlanBuilder({
               <dt>동행</dt>
               <dd>{companion}</dd>
             </div>
+            {buildMode === "auto" && (
+              <div className="pb-ticket__anchor">
+                <dt>동선 기준 · {activeAnchor.label}</dt>
+                <dd>{anchorInput.trim() || (anchorMode === "center"
+                  ? (domestic ? region.trim() : selectedCountry && `${selectedCountry.nameKo} 중심`) || "여행지 선택 후 결정"
+                  : "미입력")}</dd>
+              </div>
+            )}
           </dl>
 
           <div className="pb-summary-edits">

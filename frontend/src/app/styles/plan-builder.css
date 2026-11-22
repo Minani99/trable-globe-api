@@ -703,6 +703,11 @@
   font-weight: 600;
 }
 
+.pb-ticket__anchor {
+  grid-column: 1 / -1;
+  overflow-wrap: anywhere;
+}
+
 .pb-ticket__facts dd {
   font-size: var(--text-base);
   font-weight: 650;
