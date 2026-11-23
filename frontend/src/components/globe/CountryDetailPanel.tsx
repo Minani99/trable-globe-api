@@ -79,6 +79,9 @@ export function CountryDetailPanel({
         </Link>
       ) : null}
 
+      <Link className="country-detail__plan" href={`/studio/plans/new?country=${encodeURIComponent(country.iso2Code)}`}>
+        {country.nameKo} 여행 계획하기
+      </Link>
       <button
         type="button"
         onClick={onClear}

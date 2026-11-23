@@ -176,6 +176,9 @@ export function LandingGlobePreview() {
         </div>
 
         <figcaption className="landing-globe-caption">
+          {resolvedSelectedCountry && /^[A-Z]{2}$/.test(resolvedSelectedCountry.code) ? (
+            <Link className="landing-globe-plan" href={`/studio/plans/new?country=${resolvedSelectedCountry.code}`}>{resolvedSelectedCountry.nameKo} 여행 계획하기</Link>
+          ) : null}
           <Link href="/globe">크게 보기 </Link>
         </figcaption>
       </figure>

@@ -5,6 +5,7 @@ test("다른 여행자의 공개 일정을 새 날짜의 내 계획으로 가져
   const owner = `source_${suffix}`;
   const traveler = `fork_${suffix}`;
   const pastDate = "2025-05-10";
+  const country = { iso2Code: "JP", iso3Code: "JPN", nameEn: "Japan", nameKo: "일본", latitude: 36.204824, longitude: 138.252924 };
 
   await page.request.post("/api/auth/register", { data: {
     username: owner,
@@ -20,13 +21,16 @@ test("다른 여행자의 공개 일정을 새 날짜의 내 계획으로 가져
     coverImageUrl: null,
     visibility: "PUBLIC",
     places: [{
-      country: { iso2Code: "JP", iso3Code: "JPN", nameEn: "Japan", nameKo: "일본", latitude: 36.204824, longitude: 138.252924 },
+      country,
       city: { nameEn: "Tokyo", nameKo: "도쿄", latitude: 35.6762, longitude: 139.6503 },
       placeName: "도쿄역",
       latitude: 35.681236,
       longitude: 139.767125,
       visitedAt: pastDate,
       memo: "오전 산책",
+    }, {
+      country, city: null, placeName: "나중에 갈 서점", latitude: 35.68, longitude: 139.77,
+      visitedAt: null, memo: "날짜 미정",
     }],
     photos: [],
   } });
@@ -128,6 +132,12 @@ test("다른 여행자의 공개 일정을 새 날짜의 내 계획으로 가져
   } finally { release(); }
 
   await expect(page).toHaveURL(/\/studio\/travels\/\d+\/edit\?plan=1&source=/, { timeout: 30_000 });
+  const copiedId = new URL(page.url()).pathname.split("/")[3];
+  const copied = (await (await page.request.get(`/api/private/travels/${copiedId}`)).json()).data;
+  expect(copied.places).toEqual(expect.arrayContaining([
+    expect.objectContaining({ placeName: "도쿄역", visitedAt: newStartDate }),
+    expect.objectContaining({ placeName: "나중에 갈 서점", visitedAt: null }),
+  ]));
   expect(requests).toBe(2);
   await expect(page.getByRole("heading", { name: "도쿄 주말 산책" })).toBeVisible();
   await expect(page.getByRole("button", { name: "이 변경안 적용", exact: true })).toBeVisible();

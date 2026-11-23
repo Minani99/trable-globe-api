@@ -343,6 +343,23 @@
   font-size: var(--text-xs);
 }
 
+.country-detail__plan {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  padding-inline: .75rem;
+  color: var(--accent-strong);
+  font-weight: 600;
+  text-align: center;
+}
+
+.landing-globe-caption .landing-globe-plan {
+  min-width: 0;
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+
 .country-detail__all {
   width: 100%;
   min-height: 1.9rem;

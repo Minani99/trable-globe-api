@@ -11,13 +11,15 @@ import { todayInKorea } from "@/lib/utils/date";
 
 export const metadata: Metadata = { title: "새 여행 계획", robots: { index: false, follow: false } };
 
-export default async function NewPlanPage({ searchParams }: { searchParams: Promise<{ country?: string }> }) {
-  const member = await getCurrentMember();
-  if (!member) redirect("/login?next=%2Fstudio%2Fplans%2Fnew");
-  const { country } = await searchParams;
+export default async function NewPlanPage({ searchParams }: { searchParams: Promise<{ country?: string | string[] }> }) {
+  const [member, { country }] = await Promise.all([getCurrentMember(), searchParams]);
   const today = todayInKorea();
-  const requestedCountry = country?.toUpperCase() ?? "";
+  const requestedCountry = typeof country === "string" ? country.toUpperCase() : "";
   const initialCountryCode = countryOptions.some((option) => option.iso2Code === requestedCountry) ? requestedCountry : "";
+  if (!member) {
+    const returnPath = `/studio/plans/new${initialCountryCode ? `?country=${initialCountryCode}` : ""}`;
+    redirect(`/login?next=${encodeURIComponent(returnPath)}`);
+  }
 
   return (
     <>

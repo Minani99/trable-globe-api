@@ -5,6 +5,11 @@ test("몇 번의 선택으로 여행 계획을 만들고 일차별 일정으로 
   const suffix = Date.now().toString(36);
   const username = `planner_${suffix}`;
   const koreaToday = new Date().toLocaleDateString("en-CA", { timeZone: "Asia/Seoul" });
+  await page.goto("/studio/plans/new?country=jp");
+  const loginUrl = new URL(page.url());
+  expect(loginUrl.pathname).toBe("/login");
+  const returnPath = loginUrl.searchParams.get("next");
+  expect(returnPath).toBe("/studio/plans/new?country=JP");
   const registerResponse = await page.request.post("/api/auth/register", {
     data: {
       username,
@@ -14,6 +19,8 @@ test("몇 번의 선택으로 여행 계획을 만들고 일차별 일정으로 
     },
   });
   expect(registerResponse.status()).toBe(200);
+  await page.goto(returnPath!);
+  await expect(page.locator(".pb-selected-country")).toContainText("일본");
 
   await page.route("**/api/locations/search?**", async (route) => {
     await route.fulfill({

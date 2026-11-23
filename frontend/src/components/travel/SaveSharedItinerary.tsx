@@ -61,7 +61,7 @@ export function SaveSharedItinerary({ travel, signedIn, isOwner, today, returnPa
         placeName: place.placeName,
         latitude: place.latitude,
         longitude: place.longitude,
-        visitedAt: addDays(startDate, place.visitedAt ? daysBetween(travel.startDate, place.visitedAt) : 0),
+        visitedAt: place.visitedAt ? addDays(startDate, daysBetween(travel.startDate, place.visitedAt)) : null,
         startTime: place.startTime,
         durationMinutes: place.durationMinutes,
         memo: place.memo,
@@ -88,7 +88,8 @@ export function SaveSharedItinerary({ travel, signedIn, isOwner, today, returnPa
       {open ? <div className="shared-itinerary-save__panel" aria-busy={pending}>
         <div><strong>내 여행에 일정 복사</strong><p>{travel.places.length}개 장소의 방문 순서·시간·메모를 그대로 복사합니다. 사진·예약·예산은 포함하지 않으며, 복사본은 나만 볼 수 있어요.</p></div>
         <label><span>새 출발일</span><input type="date" min={today} value={startDate} disabled={pending} onChange={(event) => { setStartDate(event.target.value); setError(null); }} /></label>
-        {validRange ? <p className="shared-itinerary-save__period" role="status">내 여행 기간: <time dateTime={startDate}>{startDate}</time> ~ <time dateTime={endDate!}>{endDate}</time> · {travel.durationDays}일</p> : null}
+        {validRange ? <p className="shared-itinerary-save__period" role="status">내 여행 기간: <time dateTime={startDate}>{startDate}</time> ~ <time dateTime={endDate!}>{endDate}</time> · {travel.durationDays}일</p>
+          : <p className="shared-itinerary-save__error" role="status">{startDate < today && startDate ? "오늘 또는 이후 날짜를 선택해 주세요." : "복사할 여행의 출발일을 입력해 주세요."}</p>}
         <button type="button" onClick={saveToMyPlans} disabled={pending || !validRange}>{pending ? "계획에 담는 중…" : `${travel.durationDays}일 일정 복사`}</button>
         {error ? <p className="shared-itinerary-save__error" role="alert">{error}</p> : null}
         <small>{ownerName}님의 일정에서 가져온 기록임을 계획에 표시합니다.</small>
