@@ -82,13 +82,6 @@ export function CountryDetailPanel({
       <Link className="country-detail__plan" href={`/studio/plans/new?country=${encodeURIComponent(country.iso2Code)}`}>
         {country.nameKo} 여행 계획하기
       </Link>
-      <button
-        type="button"
-        onClick={onClear}
-        className="country-detail__all"
-      >
-        전체 세계로 돌아가기
-      </button>
     </aside>
   );
 }

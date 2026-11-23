@@ -360,21 +360,6 @@
   overflow-wrap: anywhere;
 }
 
-.country-detail__all {
-  width: 100%;
-  min-height: 1.9rem;
-  margin-top: 0.35rem;
-  border-radius: var(--radius-sm);
-  color: var(--text-tertiary);
-  font-size: var(--text-xs);
-  font-weight: 650;
-}
-
-.country-detail__all:hover,
-.country-detail__all:focus-visible {
-  background: var(--surface-hover);
-  color: var(--text-primary);
-}
 
 @media (max-width: 800px) {
   .profile-world-toolbar {
