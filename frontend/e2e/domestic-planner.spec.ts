@@ -55,11 +55,24 @@ for (const width of [320, 390, 1440]) {
     }
     if (width < 700) await nav.getByRole("button", { name: "다음" }).click();
     await expect(page.getByRole("complementary", { name: "여행 계획 요약" })).toContainText("부모님과");
+    if (width === 390) {
+      await page.reload();
+      await expect(page.getByText("이 탭에서 작성하던 계획을 불러왔어요.")).toBeVisible();
+      const summary = page.getByRole("complementary", { name: "여행 계획 요약" });
+      await expect(summary).toContainText("강릉 여행");
+      await expect(summary).toContainText("부모님과");
+      await summary.getByRole("button", { name: "여행지·날짜 수정" }).click();
+      await expect(page.getByLabel("여행할 도시·지역")).toHaveValue("강릉");
+      await nav.getByRole("button", { name: "요약으로 돌아가기" }).click();
+    }
     await page.getByRole("button", { name: width === 390 ? "자동 일정 만들기" : "일정 만들기", exact: true }).click();
     await expect(page).toHaveURL(/\/studio\/travels\/\d+\/edit\?plan=1$/, { timeout: 30_000 });
     const id = page.url().match(/travels\/(\d+)/)![1];
     const travel = (await (await page.request.get(`/api/private/travels/${id}`)).json()).data;
     expect(travel.title).toBe("강릉 1일 여행");
+    if (width === 390) {
+      expect(await page.evaluate(() => Object.keys(sessionStorage).some(key => key.startsWith("plan-setup.v1:")))).toBe(false);
+    }
     expect(travel.description).toContain("부모님과");
     expect(travel.description).toContain("느긋하게");
     expect(travel.places[0]).toMatchObject({ latitude: 37.7519, longitude: 128.8761, country: { iso2Code: "KR" }, city: { nameKo: "강릉" } });

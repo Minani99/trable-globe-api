@@ -59,6 +59,8 @@ export function MobileTripCompanion({
   const retrySyncRef = useRef<() => void>(() => {});
   const composerRef = useRef<HTMLFieldSetElement>(null);
   const photoInputRef = useRef<HTMLInputElement>(null);
+  const daysNavRef = useRef<HTMLElement>(null);
+  const mapPanelRef = useRef<HTMLDivElement>(null);
   const travelDates = useMemo(() => datesBetween(currentTravel.startDate, currentTravel.endDate), [currentTravel.endDate, currentTravel.startDate]);
   const dayNumber = Math.max(1, Math.min(currentTravel.durationDays, differenceInDays(currentTravel.startDate, viewDate) + 1));
   const dayPlaces = useMemo(() => placesForDay(currentTravel.places, viewDate), [viewDate, currentTravel.places]);
@@ -70,8 +72,20 @@ export function MobileTripCompanion({
   const viewingToday = viewDate === today;
   const nextPlace = dayPlaces.find((place) => !place.completedAt) ?? null;
   const selectedPlace = dayPlaces.find((place) => place.id === selectedPlaceId) ?? nextPlace ?? dayPlaces[0] ?? null;
-  const location = dayPlaces.find((place) => place.id === focusedMapPlaceId) ?? dayPlaces[0];
+  const weatherStop = locatedDayPlaces.find(place => place.id === focusedMapPlaceId) ?? locatedDayPlaces[0];
+  const plannedCity = weatherStop ? null : currentTravel.places.find(place => place.visitedAt === viewDate && place.city)?.city;
+  const location = weatherStop ?? plannedCity;
   const completedCount = dayPlaces.filter((place) => place.completedAt).length;
+
+  useEffect(() => {
+    const nav = daysNavRef.current;
+    const active = nav?.querySelector('[aria-current="date"]');
+    if (!nav || !active) return;
+    const item = active.getBoundingClientRect();
+    const strip = nav.getBoundingClientRect();
+    if (item.left < strip.left) nav.scrollLeft += item.left - strip.left;
+    else if (item.right > strip.right) nav.scrollLeft += item.right - strip.right;
+  }, [viewDate]);
 
   useEffect(() => {
     if (composer) composerRef.current?.scrollIntoView({ block: "nearest", behavior: "instant" });
@@ -330,7 +344,13 @@ export function MobileTripCompanion({
         </button>
         {variant === "page" ? <div className="day-stop-content">
           <button type="button" aria-pressed={activeMapPlaceId === place.id} aria-label={`${index + 1}번째 ${place.placeName} 지도에서 선택`}
-            disabled={!isDirectionsStopLocated({ ...place, key: place.id })} onClick={() => setFocusedMapPlaceId(place.id)}>
+            disabled={!isDirectionsStopLocated({ ...place, key: place.id })} onClick={() => {
+              setFocusedMapPlaceId(place.id);
+              if (window.matchMedia("(max-width: 700px)").matches) {
+                mapPanelRef.current?.focus({ preventScroll: true });
+                mapPanelRef.current?.scrollIntoView({ block: "start", behavior: "instant" });
+              }
+            }}>
             <strong>{place.placeName}</strong>
             <small>{[place.startTime ? formatTime(place.startTime) : null, place.city?.nameKo ?? place.country.nameKo, place.durationMinutes ? formatDuration(place.durationMinutes) : null].filter(Boolean).join(" · ")}</small>
           </button>
@@ -350,7 +370,7 @@ export function MobileTripCompanion({
       </header>
 
       {variant === "page" && travelDates.length > 1 ? (
-        <nav className="mobile-trip-companion__days" aria-label="여행 날짜 선택">
+        <nav ref={daysNavRef} className="mobile-trip-companion__days" aria-label="여행 날짜 선택">
           {travelDates.map((date, index) => (
             <button
               key={date}
@@ -359,6 +379,7 @@ export function MobileTripCompanion({
               aria-current={date === viewDate ? "date" : undefined}
               disabled={busy}
               onClick={() => {
+                if (date === viewDate) return;
                 setViewDate(date);
                 setFocusedMapPlaceId(null);
                 setSelectedPlaceId(null);
@@ -398,7 +419,7 @@ export function MobileTripCompanion({
         </div>
       ) : null}
 
-      {location ? <TripWeather compact={variant === "page"} latitude={location.latitude} longitude={location.longitude} startDate={viewDate} endDate={viewDate} label={location.placeName} /> : null}
+      {location ? <TripWeather compact={variant === "page"} latitude={location.latitude} longitude={location.longitude} startDate={viewDate} endDate={viewDate} label={"placeName" in location ? location.placeName : location.nameKo} /> : null}
 
       {variant === "page" ? <>
         {dayPlaces.length ? <section className="day-route-overview" aria-label="하루 동선 한눈에 보기">
@@ -406,7 +427,7 @@ export function MobileTripCompanion({
           {nextPlace ? <a className="day-route-next" href={nextPlaceDirectionsUrl(nextPlace)} target="_blank" rel="noreferrer" aria-label={`다음 방문 ${nextPlace.placeName} · 길찾기`}><span>다음 방문</span><strong>{dayPlaces.indexOf(nextPlace) + 1}. {nextPlace.placeName}</strong><span>길찾기</span><AppIcon name="route" /></a> : null}
           <div className="day-route-workspace">
           <div id={`${routeSectionsId}-stops`} tabIndex={-1} className="day-route-list"><div className="day-route-list__heading"><strong>방문 순서</strong><span>장소를 누르면 지도에서 보여요</span><a className="day-route-jump" href={`#${routeSectionsId}-map`}><AppIcon name="pin" />지도·경로 보기</a></div>{itinerary}</div>
-          <div id={`${routeSectionsId}-map`} tabIndex={-1} className="day-route-map-panel">
+          <div ref={mapPanelRef} id={`${routeSectionsId}-map`} tabIndex={-1} className="day-route-map-panel">
           <a className="day-route-jump" href={`#${routeSectionsId}-stops`}><AppIcon name="route" />방문 순서 보기</a>
           {focusedMapPlaceId !== null && nextLocatedPlace ? <button
             type="button"

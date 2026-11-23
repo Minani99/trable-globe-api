@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useId, useMemo, useRef, useState } from "react";
+import { useEffect, useId, useMemo, useRef, useState, useSyncExternalStore } from "react";
 import { flushSync } from "react-dom";
 import { useRouter } from "next/navigation";
 
@@ -37,15 +37,34 @@ import {
   type Style,
 } from "@/components/planner/plan-builder-model";
 
-export function PlanBuilder({
-  countries,
-  today,
-  initialCountryCode = "",
-}: {
+import { readPlanDraft, writePlanDraft } from "./plan-draft";
+
+interface PlanBuilderProps {
   countries: CountryOption[];
   today: string;
   initialCountryCode?: string;
-}) {
+  username: string;
+}
+
+const subscribeHydration = () => () => {};
+
+export function PlanBuilder(props: PlanBuilderProps) {
+  const hydrated = useSyncExternalStore(subscribeHydration, () => true, () => false);
+  const [revision, setRevision] = useState(0);
+  const draftKey = `plan-setup.v1:${encodeURIComponent(props.username)}:${props.initialCountryCode || "default"}`;
+  return <PlanForm key={`${draftKey}:${hydrated}:${revision}`} {...props} draftKey={draftKey} hydrated={hydrated} onReset={() => {
+    writePlanDraft(draftKey, null);
+    setRevision(value => value + 1);
+  }} />;
+}
+
+function PlanForm({
+  countries,
+  today,
+  initialCountryCode = "",
+  draftKey, hydrated, onReset,
+}: PlanBuilderProps & { draftKey: string; hydrated: boolean; onReset: () => void }) {
+  const [draft] = useState(() => hydrated ? readPlanDraft(draftKey) : null);
   const router = useRouter();
   const countryMap = useMemo(
     () => new Map(countries.map((country) => [country.iso2Code, country])),
@@ -55,22 +74,22 @@ export function PlanBuilder({
     .map((code) => countryMap.get(code))
     .filter((country): country is CountryOption => Boolean(country));
 
-  const [countryCode, setCountryCode] = useState(initialCountryCode || "KR");
-  const [domestic, setDomestic] = useState(!initialCountryCode || initialCountryCode === "KR");
-  const [region, setRegion] = useState("");
+  const [countryCode, setCountryCode] = useState(draft?.countryCode ?? (initialCountryCode || "KR"));
+  const domestic = countryCode === "KR";
+  const [region, setRegion] = useState(draft?.region ?? "");
   const [countryQuery, setCountryQuery] = useState("");
   const [resultIndex, setResultIndex] = useState(-1);
   const [resultsDismissed, setResultsDismissed] = useState(false);
   const resultsOpen = Boolean(countryQuery.trim()) && !resultsDismissed;
-  const [startDate, setStartDate] = useState(today);
-  const [tripDays, setTripDays] = useState(!initialCountryCode || initialCountryCode === "KR" ? 2 : 4);
-  const [companion, setCompanion] = useState<Companion>("친구와");
-  const [styles, setStyles] = useState<Style[]>(["맛집", "여유"]);
-  const [pace, setPace] = useState<Pace>("balanced");
-  const [buildMode, setBuildMode] = useState<BuildMode>("skeleton");
-  const [anchorMode, setAnchorMode] = useState<AnchorMode>("center");
-  const [anchorInput, setAnchorInput] = useState("");
-  const [mobileStep, setMobileStep] = useState(0);
+  const [startDate, setStartDate] = useState(draft?.startDate ?? today);
+  const [tripDays, setTripDays] = useState(draft?.tripDays ?? (!initialCountryCode || initialCountryCode === "KR" ? 2 : 4));
+  const [companion, setCompanion] = useState<Companion>(draft?.companion ?? "친구와");
+  const [styles, setStyles] = useState<Style[]>(draft?.styles ?? ["맛집", "여유"]);
+  const [pace, setPace] = useState<Pace>(draft?.pace ?? "balanced");
+  const [buildMode, setBuildMode] = useState<BuildMode>(draft?.buildMode ?? "skeleton");
+  const [anchorMode, setAnchorMode] = useState<AnchorMode>(draft?.anchorMode ?? "center");
+  const [anchorInput, setAnchorInput] = useState(draft?.anchorInput ?? "");
+  const [mobileStep, setMobileStep] = useState(draft?.mobileStep ?? 0);
   const [editingFromSummary, setEditingFromSummary] = useState(false);
   const summaryStep = MOBILE_PLAN_STEPS.length - 1;
   const [pending, setPending] = useState(false);
@@ -82,6 +101,16 @@ export function PlanBuilder({
   const dateRef = useRef<HTMLInputElement>(null);
   const anchorRef = useRef<HTMLInputElement>(null);
   const countrySearchRef = useRef<HTMLInputElement>(null);
+
+  const creationLock = useRef(false);
+  const lastSnapshot = useRef<string | null>(null);
+  useEffect(() => {
+    if (!hydrated || creationLock.current) return;
+    const fields = { countryCode, region, startDate, tripDays, companion, styles, pace, buildMode, anchorMode, anchorInput, mobileStep };
+    const snapshot = JSON.stringify(fields);
+    if (lastSnapshot.current !== null && lastSnapshot.current !== snapshot) writePlanDraft(draftKey, fields);
+    lastSnapshot.current = snapshot;
+  }, [hydrated, draftKey, countryCode, region, startDate, tripDays, companion, styles, pace, buildMode, anchorMode, anchorInput, mobileStep]);
 
   const selectedCountry = countryMap.get(countryCode);
   const endDate = addDays(startDate, tripDays - 1);
@@ -112,7 +141,6 @@ export function PlanBuilder({
   function chooseCountry(code: string) {
     setResultIndex(-1);
     setCountryCode(code);
-    setDomestic(code === "KR");
     setAnchorInput("");
     setCountryQuery("");
     setError(null);
@@ -169,8 +197,9 @@ export function PlanBuilder({
     for (const step of [0, 1]) {
       if (!validateStep(step)) return;
     }
-    if (!selectedCountry) return;
+    if (!selectedCountry || creationLock.current) return;
 
+    creationLock.current = true;
     setPending(true);
     setError(null);
     setPendingLabel(buildMode === "auto" ? "기준 위치 찾는 중…" : "계획 만드는 중…");
@@ -179,7 +208,7 @@ export function PlanBuilder({
       let places: TravelPlaceWriteInput[];
       let recommendationCount = 0;
       if (buildMode === "auto") {
-        const anchor = await resolvePlanAnchor(selectedCountry, anchorMode, anchorInput.trim() || (domestic ? region : ""), domestic && anchorMode === "center");
+        const anchor = await resolvePlanAnchor(selectedCountry, anchorMode, anchorInput.trim() || (domestic ? region : ""), domestic && anchorMode === "center", domestic ? region.trim() : "");
         setPendingLabel("주변 장소와 동선 찾는 중…");
         const recommendations = await fetchPlanRecommendations(anchor, styles, companion);
         const generated = buildAutomaticPlaces({
@@ -216,6 +245,7 @@ export function PlanBuilder({
       };
       const result = await apiMutation<TravelDetail>("/api/private/travels", "POST", payload);
       if (!result) throw new ApiError(500, "만든 계획을 확인할 수 없습니다.");
+      writePlanDraft(draftKey, null);
       showFeedback(
         buildMode === "auto"
           ? recommendationCount > 0
@@ -227,6 +257,7 @@ export function PlanBuilder({
       router.push(`/studio/travels/${result.id}/edit?plan=1`);
       router.refresh();
     } catch (cause) {
+      creationLock.current = false;
       setError(cause instanceof ApiError ? cause.message : "여행 계획을 만들지 못했습니다.");
       setPending(false);
     }
@@ -237,6 +268,7 @@ export function PlanBuilder({
 
   return (
     <div className="plan-builder pb" data-step={mobileStep}>
+      {draft && <div className="pb-restored"><span>이 탭에서 작성하던 계획을 불러왔어요.</span><button type="button" className="pb-ghost" disabled={pending} onClick={onReset}>새로 작성</button></div>}
       {/* Mobile progress ------------------------------------------------ */}
       <header ref={progressRef} id="mobile-plan-progress" className="pb-progress">
         <div className="pb-progress__row">
@@ -256,7 +288,7 @@ export function PlanBuilder({
       </header>
 
       {/* Form ------------------------------------------------------------ */}
-      <div className="pb-form">
+      <div className="pb-form" inert={pending}>
         {/* 01 Country */}
         <section className="pb-step" data-mobile-active={mobileStep === 0} aria-labelledby="plan-country-heading">
           <h2 id="plan-country-heading" className="pb-section-title">여행지</h2>
@@ -605,27 +637,18 @@ export function PlanBuilder({
             <span className="is-muted">{activePace.label}</span>
           </div>
 
-          <div className="pb-ticket__days" aria-label="일정 미리보기">
-            <div className="pb-ticket__days-head">
-              <span>일정표 미리보기</span>
-              <span>{buildMode === "auto" ? "장소·시간 자동 배치" : "빈 일정"}</span>
-            </div>
-            <ol>
-              {Array.from({ length: Math.min(tripDays, 5) }, (_, index) => (
-                <li key={index}>
-                  <span className="pb-ticket__day-label">D{index + 1}</span>
-                  <span className="pb-ticket__day-slots">
-                    {buildMode === "auto"
-                      ? SCHEDULES[pace].map((slot, slotIndex) => (
-                        <i key={slotIndex} className={`is-${slot.category}`} title={`${slot.startTime} ${SLOT_LABEL[slot.category]}`} />
-                      ))
-                      : <i className="is-empty" />}
-                  </span>
-                </li>
-              ))}
-              {tripDays > 5 ? <li className="pb-ticket__more">+ {tripDays - 5}일 더</li> : null}
-            </ol>
-          </div>
+          {buildMode === "auto" ? (
+            <section className="pb-ticket__days" aria-label="하루 일정 예시">
+              <div className="pb-ticket__days-head"><strong>하루 일정 예시</strong><span>{SCHEDULES[pace].length}개 일정</span></div>
+              <ol>
+                {SCHEDULES[pace].map(slot => (
+                  <li key={slot.startTime}>
+                    <time>{slot.startTime}</time><span>{SLOT_LABEL[slot.category]}</span>
+                  </li>
+                ))}
+              </ol>
+            </section>
+          ) : <p className="pb-note">{tripDays}일치 빈 일정표에 원하는 장소를 추가할 수 있어요.</p>}
 
           {error ? <p className="pb-error" role="alert">{error}</p> : null}
 
@@ -647,7 +670,7 @@ export function PlanBuilder({
           </button>
         ) : (
           <button type="button" className="pb-primary" onClick={createPlan} disabled={pending}>
-            {pending ? "만드는 중…" : submitLabel}
+            {pending ? pendingLabel : submitLabel}
           </button>
         )}
       </nav>

@@ -28,7 +28,7 @@ export default async function NewPlanPage({ searchParams }: { searchParams: Prom
           <header className="plan-hero">
             <h1>새 여행 계획</h1>
           </header>
-          <PlanBuilder countries={countryOptions} today={today} initialCountryCode={initialCountryCode} />
+          <PlanBuilder username={member.username} countries={countryOptions} today={today} initialCountryCode={initialCountryCode} />
         </div>
       </main>
       <SiteFooter />

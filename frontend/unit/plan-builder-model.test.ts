@@ -7,6 +7,7 @@ import {
   fetchPlanRecommendations,
   formatDuration,
   formatPlanDateLong,
+  resolvePlanAnchor,
   SCHEDULES,
   type PlanAnchor,
 } from "../src/components/planner/plan-builder-model";
@@ -17,6 +18,22 @@ const japan: CountryOption = {
   iso2Code: "JP", iso3Code: "JPN", nameEn: "Japan", nameKo: "일본", latitude: 36.2, longitude: 138.25, label: "일본 · Japan",
 };
 const anchor: PlanAnchor = { name: "교토역", city: "교토", latitude: 34.98, longitude: 135.75, source: "center" };
+
+test("국내 숙소를 찾을 때 선택 지역을 한 번만 포함한다", async () => {
+  const originalFetch = globalThis.fetch;
+  const queries: string[] = [];
+  globalThis.fetch = async input => {
+    queries.push(new URL(String(input), "http://localhost").searchParams.get("q") ?? "");
+    return Response.json({ success: true, data: [{ name: "바다호텔", city: "강릉", latitude: 37.8, longitude: 128.9 }] });
+  };
+  try {
+    const korea = { iso2Code: "KR", iso3Code: "KOR", nameEn: "South Korea", nameKo: "대한민국", latitude: 36, longitude: 128, label: "대한민국" };
+    for (const name of ["바다호텔", "강릉 바다호텔"]) {
+      await resolvePlanAnchor(korea, "stay", name, false, "강릉");
+    }
+    expect(queries).toEqual(["강릉 바다호텔", "강릉 바다호텔"]);
+  } finally { globalThis.fetch = originalFetch; }
+});
 
 test("아이 동행과 여행 취향은 추천 요청에 함께 반영된다", async () => {
   const originalFetch = globalThis.fetch;

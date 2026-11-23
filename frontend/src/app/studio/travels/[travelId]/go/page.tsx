@@ -27,7 +27,10 @@ export default async function TravelDayPage(props: PageProps<"/studio/travels/[t
     getCurrentMember(),
     authenticatedBackendGet<TravelDetail>(`/api/private/travels/${id}`),
   ]);
-  if (!member) redirect(`/login?next=/studio/travels/${id}/go`);
+  if (!member) {
+    const returnPath = `/studio/travels/${id}/go${initialDate ? `?date=${initialDate}` : ""}`;
+    redirect(`/login?next=${encodeURIComponent(returnPath)}`);
+  }
   if (!travel) notFound();
 
   const today = todayInKorea();
