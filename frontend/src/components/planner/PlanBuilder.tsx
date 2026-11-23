@@ -30,14 +30,10 @@ import {
   SCHEDULES,
   SLOT_LABEL,
   STYLES,
-  type AnchorMode,
-  type BuildMode,
-  type Companion,
-  type Pace,
   type Style,
 } from "@/components/planner/plan-builder-model";
 
-import { readPlanDraft, writePlanDraft } from "./plan-draft";
+import { createPlanDraftStore, writePlanDraft } from "./plan-draft";
 
 interface PlanBuilderProps {
   countries: CountryOption[];
@@ -46,10 +42,7 @@ interface PlanBuilderProps {
   username: string;
 }
 
-const subscribeHydration = () => () => {};
-
 export function PlanBuilder(props: PlanBuilderProps) {
-  const hydrated = useSyncExternalStore(subscribeHydration, () => true, () => false);
   const [revision, setRevision] = useState(0);
   const draftKey = `plan-setup.v1:${encodeURIComponent(props.username)}:${props.initialCountryCode || "default"}`;
   function resetDraft() {
@@ -57,16 +50,16 @@ export function PlanBuilder(props: PlanBuilderProps) {
     writePlanDraft(draftKey, null);
     setRevision(value => value + 1);
   }
-  return <PlanForm key={`${draftKey}:${hydrated}:${revision}`} {...props} draftKey={draftKey} hydrated={hydrated} onReset={resetDraft} />;
+  return <PlanForm key={`${draftKey}:${revision}`} {...props} draftKey={draftKey} onReset={resetDraft} />;
 }
 
 function PlanForm({
   countries,
   today,
   initialCountryCode = "",
-  draftKey, hydrated, onReset,
-}: PlanBuilderProps & { draftKey: string; hydrated: boolean; onReset: () => void }) {
-  const [draft] = useState(() => hydrated ? readPlanDraft(draftKey) : null);
+  draftKey, onReset,
+}: PlanBuilderProps & { draftKey: string; onReset: () => void }) {
+
   const router = useRouter();
   const countryMap = useMemo(
     () => new Map(countries.map((country) => [country.iso2Code, country])),
@@ -76,22 +69,19 @@ function PlanForm({
     .map((code) => countryMap.get(code))
     .filter((country): country is CountryOption => Boolean(country));
 
-  const [countryCode, setCountryCode] = useState(draft?.countryCode ?? (initialCountryCode || "KR"));
+  const [draftStore] = useState(() => createPlanDraftStore(draftKey, {
+    countryCode: initialCountryCode || "KR", region: "", startDate: today,
+    tripDays: !initialCountryCode || initialCountryCode === "KR" ? 2 : 4,
+    companion: "친구와", styles: ["맛집", "여유"], pace: "balanced",
+    buildMode: "skeleton", anchorMode: "center", anchorInput: "", mobileStep: 0,
+  }));
+  const { fields, restored } = useSyncExternalStore(draftStore.subscribe, draftStore.getSnapshot, draftStore.getServerSnapshot);
+  const { countryCode, region, startDate, tripDays, companion, styles, pace, buildMode, anchorMode, anchorInput, mobileStep } = fields;
   const domestic = countryCode === "KR";
-  const [region, setRegion] = useState(draft?.region ?? "");
   const [countryQuery, setCountryQuery] = useState("");
   const [resultIndex, setResultIndex] = useState(-1);
   const [resultsDismissed, setResultsDismissed] = useState(false);
   const resultsOpen = Boolean(countryQuery.trim()) && !resultsDismissed;
-  const [startDate, setStartDate] = useState(draft?.startDate ?? today);
-  const [tripDays, setTripDays] = useState(draft?.tripDays ?? (!initialCountryCode || initialCountryCode === "KR" ? 2 : 4));
-  const [companion, setCompanion] = useState<Companion>(draft?.companion ?? "친구와");
-  const [styles, setStyles] = useState<Style[]>(draft?.styles ?? ["맛집", "여유"]);
-  const [pace, setPace] = useState<Pace>(draft?.pace ?? "balanced");
-  const [buildMode, setBuildMode] = useState<BuildMode>(draft?.buildMode ?? "skeleton");
-  const [anchorMode, setAnchorMode] = useState<AnchorMode>(draft?.anchorMode ?? "center");
-  const [anchorInput, setAnchorInput] = useState(draft?.anchorInput ?? "");
-  const [mobileStep, setMobileStep] = useState(draft?.mobileStep ?? 0);
   const [editingFromSummary, setEditingFromSummary] = useState(false);
   const summaryStep = MOBILE_PLAN_STEPS.length - 1;
   const [pending, setPending] = useState(false);
@@ -105,14 +95,6 @@ function PlanForm({
   const countrySearchRef = useRef<HTMLInputElement>(null);
 
   const creationLock = useRef(false);
-  const lastSnapshot = useRef<string | null>(null);
-  useEffect(() => {
-    if (!hydrated || creationLock.current) return;
-    const fields = { countryCode, region, startDate, tripDays, companion, styles, pace, buildMode, anchorMode, anchorInput, mobileStep };
-    const snapshot = JSON.stringify(fields);
-    if (lastSnapshot.current !== null && lastSnapshot.current !== snapshot) writePlanDraft(draftKey, fields);
-    lastSnapshot.current = snapshot;
-  }, [hydrated, draftKey, countryCode, region, startDate, tripDays, companion, styles, pace, buildMode, anchorMode, anchorInput, mobileStep]);
 
   const selectedCountry = countryMap.get(countryCode);
   const endDate = addDays(startDate, tripDays - 1);
@@ -142,26 +124,25 @@ function PlanForm({
 
   function chooseCountry(code: string) {
     setResultIndex(-1);
-    setCountryCode(code);
-    setAnchorInput("");
+    draftStore.update({ countryCode: code, anchorInput: "" });
     setCountryQuery("");
     setError(null);
   }
 
   function toggleStyle(style: Style) {
-    setStyles((current) => current.includes(style)
-      ? current.filter((item) => item !== style)
-      : current.length < 3 ? [...current, style] : current);
+    draftStore.update({ styles: styles.includes(style)
+      ? styles.filter(item => item !== style)
+      : styles.length < 3 ? [...styles, style] : styles });
   }
 
   function changeTripDays(next: number) {
-    setTripDays(Math.max(1, Math.min(MAX_TRIP_DAYS, next)));
+    draftStore.update({ tripDays: Math.max(1, Math.min(MAX_TRIP_DAYS, next)) });
   }
 
   function validateStep(step: number): boolean {
     function showError(message: string, input: HTMLInputElement | null) {
       flushSync(() => {
-        setMobileStep(step);
+        draftStore.update({ mobileStep: step });
         setError(message);
       });
       input?.focus();
@@ -188,7 +169,7 @@ function PlanForm({
       if (!validateStep(step)) return;
     }
     setEditingFromSummary(fromSummary);
-    setMobileStep(nextStep);
+    draftStore.update({ mobileStep: nextStep });
     setError(null);
     window.requestAnimationFrame(() => {
       progressRef.current?.scrollIntoView({ behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "instant" : "smooth", block: "start" });
@@ -270,7 +251,7 @@ function PlanForm({
 
   return (
     <div className="plan-builder pb" data-step={mobileStep}>
-      {draft && <div className="pb-restored"><span>이 탭에서 작성하던 계획을 불러왔어요.</span><button type="button" className="pb-ghost" disabled={pending} onClick={onReset}>새로 작성</button></div>}
+      {restored && <div className="pb-restored"><span>이 탭에서 작성하던 계획을 불러왔어요.</span><button type="button" className="pb-ghost" disabled={pending} onClick={onReset}>새로 작성</button></div>}
       {/* Mobile progress ------------------------------------------------ */}
       <header ref={progressRef} id="mobile-plan-progress" className="pb-progress">
         <div className="pb-progress__row">
@@ -300,8 +281,8 @@ function PlanForm({
           </div>
 
           {domestic ? <div className="pb-group">
-            <label className="pb-field"><span className="pb-field__label">여행할 도시·지역</span><input ref={regionRef} value={region} onChange={event => { setRegion(event.target.value); setError(null); }} placeholder="예: 강릉, 제주 서귀포, 가평" maxLength={80} /></label>
-            <div className="pb-chip-row" role="group" aria-label="국내 여행지 빠른 선택">{DOMESTIC_REGIONS.map(item => <button type="button" key={item} className={`pb-chip${region === item ? " is-selected" : ""}`} aria-pressed={region === item} onClick={() => { setRegion(item); setError(null); }}>{item}</button>)}</div>
+            <label className="pb-field"><span className="pb-field__label">여행할 도시·지역</span><input ref={regionRef} value={region} onChange={event => { draftStore.update({ region: event.target.value }); setError(null); }} placeholder="예: 강릉, 제주 서귀포, 가평" maxLength={80} /></label>
+            <div className="pb-chip-row" role="group" aria-label="국내 여행지 빠른 선택">{DOMESTIC_REGIONS.map(item => <button type="button" key={item} className={`pb-chip${region === item ? " is-selected" : ""}`} aria-pressed={region === item} onClick={() => { draftStore.update({ region: item }); setError(null); }}>{item}</button>)}</div>
           </div> : selectedCountry ? (
             <div className="pb-selected-country">
               <Flag code={selectedCountry.iso2Code} size="lg" />
@@ -310,7 +291,7 @@ function PlanForm({
                 <span>{selectedCountry.nameEn} · {selectedCountry.iso2Code}</span>
               </div>
               <button type="button" className="pb-ghost" onClick={() => {
-                flushSync(() => { setCountryCode(""); setCountryQuery(""); });
+                flushSync(() => { draftStore.update({ countryCode: "" }); setCountryQuery(""); });
                 countrySearchRef.current?.focus();
               }}>변경</button>
             </div>
@@ -419,7 +400,7 @@ function PlanForm({
                 min={today}
                 ref={dateRef}
                 value={startDate}
-                onChange={(event) => { setStartDate(event.target.value); setError(null); }}
+                onChange={(event) => { draftStore.update({ startDate: event.target.value }); setError(null); }}
               />
             </label>
             <div className="pb-field">
@@ -464,7 +445,7 @@ function PlanForm({
                   type="button"
                   className={companion === item ? "is-selected" : ""}
                   aria-pressed={companion === item}
-                  onClick={() => setCompanion(item)}
+                  onClick={() => draftStore.update({ companion: item })}
                 >
                   {item}
                 </button>
@@ -504,7 +485,7 @@ function PlanForm({
                   type="button"
                   className={`pb-option${pace === item.id ? " is-selected" : ""}`}
                   aria-pressed={pace === item.id}
-                  onClick={() => setPace(item.id)}
+                  onClick={() => draftStore.update({ pace: item.id })}
                 >
                   <SlotDots count={item.slots} />
                   <strong>{item.label}</strong>
@@ -525,7 +506,7 @@ function PlanForm({
                 type="button"
                 className={`pb-option pb-option--build${buildMode === item.id ? " is-selected" : ""}`}
                 aria-pressed={buildMode === item.id}
-                onClick={() => { setBuildMode(item.id); setError(null); }}
+                onClick={() => { draftStore.update({ buildMode: item.id }); setError(null); }}
               >
                 <span className="pb-option__badge">{item.badge}</span>
                 <strong>{item.label}</strong>
@@ -545,7 +526,7 @@ function PlanForm({
                       type="button"
                       className={anchorMode === item.id ? "is-selected" : ""}
                       aria-pressed={anchorMode === item.id}
-                      onClick={() => { setAnchorMode(item.id); setError(null); }}
+                      onClick={() => { draftStore.update({ anchorMode: item.id }); setError(null); }}
                     >
                       {item.label}
                     </button>
@@ -559,7 +540,7 @@ function PlanForm({
                   <input
                     ref={anchorRef}
                     value={anchorInput}
-                    onChange={(event) => { setAnchorInput(event.target.value); setError(null); }}
+                    onChange={(event) => { draftStore.update({ anchorInput: event.target.value }); setError(null); }}
                     placeholder={domestic && anchorMode === "center" ? `예: ${region || "강릉"} (비워두면 선택 지역)` : activeAnchor.placeholder}
                     inputMode="text"
                   />
@@ -615,7 +596,7 @@ function PlanForm({
                   동선 기준 · {activeAnchor.label}
                   <button type="button" className="pb-ghost" aria-label="동선 기준 수정" disabled={pending} onClick={() => {
                     flushSync(() => {
-                      setMobileStep(1);
+                      draftStore.update({ mobileStep: 1 });
                       setEditingFromSummary(true);
                       setError(null);
                     });
