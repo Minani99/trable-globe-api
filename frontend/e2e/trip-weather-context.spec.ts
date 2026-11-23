@@ -32,6 +32,7 @@ test("모바일 날씨는 동선 위에서 선택 장소의 예보를 보여준�
   const routeBox = await page.getByRole("region", { name: "하루 동선 한눈에 보기" }).boundingBox();
   expect(weatherBox!.y).toBeLessThan(routeBox!.y);
   await page.getByRole("button", { name: "2번째 둘째 장소 지도에서 선택", exact: true }).click();
+  await expect(page.locator(".day-route-map-panel")).toBeFocused();
   const second = page.getByRole("region", { name: "둘째 장소 여행 날씨" });
   await expect(second).toContainText("강수 80%");
   await expect(second).toContainText("우산을 챙기고");

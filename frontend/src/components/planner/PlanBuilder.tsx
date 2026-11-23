@@ -52,10 +52,12 @@ export function PlanBuilder(props: PlanBuilderProps) {
   const hydrated = useSyncExternalStore(subscribeHydration, () => true, () => false);
   const [revision, setRevision] = useState(0);
   const draftKey = `plan-setup.v1:${encodeURIComponent(props.username)}:${props.initialCountryCode || "default"}`;
-  return <PlanForm key={`${draftKey}:${hydrated}:${revision}`} {...props} draftKey={draftKey} hydrated={hydrated} onReset={() => {
+  function resetDraft() {
+    if (!window.confirm("이 탭에서 작성하던 계획을 지우고 새로 시작할까요?")) return;
     writePlanDraft(draftKey, null);
     setRevision(value => value + 1);
-  }} />;
+  }
+  return <PlanForm key={`${draftKey}:${hydrated}:${revision}`} {...props} draftKey={draftKey} hydrated={hydrated} onReset={resetDraft} />;
 }
 
 function PlanForm({

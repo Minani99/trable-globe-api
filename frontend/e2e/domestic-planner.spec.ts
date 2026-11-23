@@ -91,5 +91,9 @@ for (const width of [320, 390, 1440]) {
     await expect(page.locator(".travel-checklist")).not.toContainText("여권");
     await expect(page.locator(".travel-checklist")).not.toContainText("환전");
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+    if (width === 320) {
+      await page.goto(`/studio/travels/${id}/go`);
+      await expect(page.getByRole("region", { name: "강릉 여행 날씨" })).toBeVisible();
+    }
   });
 }

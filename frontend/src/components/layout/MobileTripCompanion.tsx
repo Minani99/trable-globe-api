@@ -72,7 +72,7 @@ export function MobileTripCompanion({
   const viewingToday = viewDate === today;
   const nextPlace = dayPlaces.find((place) => !place.completedAt) ?? null;
   const selectedPlace = dayPlaces.find((place) => place.id === selectedPlaceId) ?? nextPlace ?? dayPlaces[0] ?? null;
-  const weatherStop = locatedDayPlaces.find(place => place.id === focusedMapPlaceId) ?? locatedDayPlaces[0];
+  const weatherStop = locatedDayPlaces.find(place => place.id === focusedMapPlaceId) ?? locatedDayPlaces.at(0);
   const plannedCity = weatherStop ? null : currentTravel.places.find(place => place.visitedAt === viewDate && place.city)?.city;
   const location = weatherStop ?? plannedCity;
   const completedCount = dayPlaces.filter((place) => place.completedAt).length;
