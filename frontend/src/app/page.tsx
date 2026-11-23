@@ -6,19 +6,15 @@ import { JournalPhoto } from "@/components/common/JournalPhoto";
 import { SiteFooter } from "@/components/layout/SiteFooter";
 import { SiteHeader } from "@/components/layout/SiteHeader";
 
-import { journalPhotos } from "@/lib/journal-photos";
+import { chooseScene } from "@/lib/country-scenes";
+import { RememberScene } from "@/components/landing/RememberScene";
 
-export const revalidate = 3600;
-
-export default function LandingPage() {
-  // This server-only edition is fixed in the ISR cache between regenerations.
-  // eslint-disable-next-line react-hooks/purity
-  const day = Math.floor((Date.now() + 9 * 3600000) / 86400000);
-  const photo = journalPhotos[day % journalPhotos.length];
-  const companion = journalPhotos[(day + 1) % journalPhotos.length];
+export default async function LandingPage() {
+  const { code, scene, example: companion } = await chooseScene();
   return (
     <>
       <SiteHeader />
+      <RememberScene code={code} example={companion.id} />
 
       <main id="main" className="landing-main landing-main--journal flex flex-1 flex-col overflow-hidden">
         {/* Each section is a full-width band so the globe, the story, planning, recording
@@ -45,19 +41,20 @@ export default function LandingPage() {
         <div className="landing-band landing-band--journal" id="landing-journal">
           <section className="landing-journal site-shell" aria-labelledby="landing-journal-heading">
             <figure className="landing-postcard">
-              <JournalPhoto photo={photo} />
-              <figcaption><a href={photo.source} target="_blank" rel="noreferrer">사진 · {photo.author}</a></figcaption>
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src={`/images/countries/${code}.webp`} width={960} height={640} loading="lazy" decoding="async" alt={`${scene.region} 여행 참고 사진`} />
+              <figcaption><Link href={`/photo-credits#${code}`}>사진 출처</Link></figcaption>
             </figure>
             <div className="landing-journal__copy">
-              <p className="page-caption">{photo.region}</p>
-              <h2 id="landing-journal-heading">{photo.title}</h2>
+              <p className="page-caption">여행 사진</p>
+              <h2 id="landing-journal-heading">{scene.region}</h2>
               <Link href="/traveler">여행자의 기록 보기</Link>
               <figure className="journal-companion"><JournalPhoto photo={companion} sizes="(max-width: 700px) 40vw, 14rem" /><figcaption>{companion.region} · <a href={companion.source} target="_blank" rel="noreferrer">{companion.author}</a></figcaption></figure>
             </div>
           </section>
         </div>
 
-        <LandingOverview />
+        <LandingOverview example={companion.id} />
       </main>
 
       <SiteFooter compact />

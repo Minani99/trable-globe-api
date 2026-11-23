@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { destinationPhoto } from "@/lib/journal-photos";
+import catalog from "@/lib/country-photo-index.json";
 import { JournalPhoto } from "./JournalPhoto";
 import { JourneyMapArt } from "./JourneyMapArt";
 
@@ -30,11 +31,18 @@ export function TravelImage({ src, alt, className = "", fallbackLabel, avatarKey
   }
 
   if (fallbackVariant === "map") {
-    const photo = destinationPhoto(city, country);
-    return <div role="img" aria-label={photo ? `${alt} · ${photo.city} 지역 참고 사진` : alt}
-      data-fallback={photo ? "destination" : "map"} className={`tg-cover-art ${className}`}>
+    const code = country?.trim().toUpperCase() ?? "";
+    const photo = destinationPhoto(city, code);
+    const countryScene = catalog.includes(code);
+    const caption = photo ? "지역 참고 사진" : "국가·지역 참고 사진";
+    return <div role="img" aria-label={photo || countryScene ? `${alt} · ${caption}` : alt}
+      data-fallback={photo || countryScene ? "destination" : "map"} className={`tg-cover-art ${className}`}>
       {photo ? <><JournalPhoto photo={photo} priority={priority} sizes="(max-width: 700px) 100vw, 50vw" />
-        <small aria-hidden="true">지역 참고 사진</small></> : <JourneyMapArt seed={alt} fill />}
+        <small aria-hidden="true">{caption}</small></> : countryScene ? <>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src={`/images/countries/${code}.webp`} alt="" loading={priority ? "eager" : "lazy"} decoding="async" />
+          <small aria-hidden="true">{caption}</small>
+        </> : <JourneyMapArt seed={alt} fill />}
     </div>;
   }
 

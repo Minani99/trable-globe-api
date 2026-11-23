@@ -876,7 +876,7 @@ export function TravelEditor({
       <section id={`${editorTabsId}-panel-${sectionTab(0)}`} role="tabpanel" aria-labelledby={`${editorTabsId}-tab-${sectionTab(0)}`} className="travel-editor__section" hidden={mobileEditorStep !== 0} data-mobile-active={mobileEditorStep === 0}>
         <div className="travel-editor__section-heading"><span>01</span><div><h2>{planningMode ? "계획 기본 정보" : "여행 기본 정보"}</h2></div></div>
         <div className="travel-editor__fields">
-          <label className="is-wide"><span>여행 제목</span><input name="title" value={title} onChange={(event) => setTitle(event.target.value)} maxLength={120} placeholder={planningMode ? "다음 여행의 이름" : "예: 교토의 가을"} required /></label>
+          <label className="is-wide"><span>여행 제목</span><input name="title" value={title} onChange={(event) => setTitle(event.target.value)} maxLength={120} placeholder={planningMode ? "다음 여행의 이름" : "여행 기록의 제목"} required /></label>
           <label><span>시작일</span><input name="startDate" type="date" value={startDate} onChange={(event) => setStartDate(event.target.value)} required /></label>
           <label><span>종료일</span><input name="endDate" type="date" value={endDate} onChange={(event) => setEndDate(event.target.value)} required /></label>
           <div className="travel-editor__cover is-wide">

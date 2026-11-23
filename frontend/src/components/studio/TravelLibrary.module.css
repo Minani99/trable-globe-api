@@ -4,7 +4,7 @@
 .heading h2 span { margin-left: .5rem; color: var(--text-tertiary); font-size: .875rem; font-weight: 400; }
 .search input { width: 15rem; min-height: 2.75rem; padding: .6rem .85rem; border: 1px solid var(--border); border-radius: var(--radius-sm); background: var(--surface); font-size: .875rem; }
 .list { display: grid; gap: .75rem; list-style: none; margin: 1rem 0 0; padding: 0; }
-.row { display: grid; grid-template-columns: 8rem minmax(0, 1fr) auto; align-items: center; gap: 1.5rem; padding: 1rem; border: 1px solid var(--border); border-radius: var(--radius-lg); background: var(--surface); }
+.row { display: grid; grid-template-columns: 8rem minmax(0, 1fr) auto; align-items: center; gap: 1.5rem; padding: .75rem 0; border: 0; background: transparent; }
 .row:hover { background: var(--surface-raised); border-color: var(--border-strong); }
 .cover { width: 8rem; height: 6.5rem; overflow: hidden; border-radius: var(--radius-md); object-fit: cover; }
 .copy { min-width: 0; display: grid; gap: .4rem; }
@@ -12,7 +12,7 @@
 .copy > span, .meta small { color: var(--text-secondary); font-size: .8125rem; }
 .meta { display: grid; gap: .35rem; text-align: right; font-size: .8125rem; }
 .arrow { color: var(--text-tertiary); }
-.empty { padding: 4rem 1rem; margin-top: 1rem; border: 1px dashed var(--border-strong); border-radius: var(--radius-lg); background: var(--surface-raised); text-align: center; }
+.empty { padding: 4rem 1rem; margin-top: 1rem; border: 0; border-radius: var(--radius-lg); background: var(--surface-raised); text-align: center; }
 .empty h3 { font-size: 1.125rem; }
 .empty p { margin: .5rem 0 1.25rem; color: var(--text-secondary); font-size: .875rem; }
 .empty a { display: inline-flex; align-items: center; min-height: 2.75rem; padding: .65rem 1rem; border-radius: var(--radius-xs); background: var(--accent); color: var(--accent-ink); font-size: .875rem; }
@@ -20,7 +20,7 @@
   .library { margin-top: 1.75rem; }
   .heading { align-items: stretch; flex-direction: column; gap: .85rem; }
   .search input { width: 100%; font-size: 1rem; }
-  .row { grid-template-columns: 4.5rem minmax(0, 1fr); gap: .65rem .85rem; padding: .85rem; border-radius: var(--radius-md); }
+  .row { grid-template-columns: 4.5rem minmax(0, 1fr); gap: .65rem .85rem; padding: .65rem 0; }
   .cover { width: 4.5rem; height: 5.5rem; grid-row: 1 / 3; align-self: start; border-radius: var(--radius-sm); }
   .copy strong { font-size: 1rem; }
   .meta { grid-column: 2; text-align: left; display: flex; flex-wrap: wrap; gap: .5rem; }
