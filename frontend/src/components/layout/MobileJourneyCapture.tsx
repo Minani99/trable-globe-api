@@ -1,7 +1,7 @@
 "use client";
 
 import { AppIcon } from "@/components/common/AppIcon";
-import { useEffect, useId, useRef, useState } from "react";
+import { useEffect, useId, useRef, useState, useSyncExternalStore } from "react";
 
 import { MobileTripCompanion } from "@/components/layout/MobileTripCompanion";
 import { apiSessionGet } from "@/lib/api/client";
@@ -21,6 +21,12 @@ interface MobileJourneyCaptureProps {
  * device cache, which the companion updates on every edit, stays the freshest copy.
  */
 const CURRENT_TRAVEL_TTL_MS = 60_000;
+const mobileQuery = "(max-width: 700px)";
+function subscribeToMobileWidth(listener: () => void) {
+  const media = window.matchMedia(mobileQuery);
+  media.addEventListener("change", listener);
+  return () => media.removeEventListener("change", listener);
+}
 let currentTravelRequest: {
   username: string;
   requestedAt: number;
@@ -61,14 +67,16 @@ export function MobileJourneyCapture({ member, pathname }: MobileJourneyCaptureP
   const [open, setOpen] = useState(false);
   const dialogRef = useRef<HTMLDialogElement>(null);
   const triggerRef = useRef<HTMLButtonElement>(null);
+  const isMobile = useSyncExternalStore(subscribeToMobileWidth, () => window.matchMedia(mobileQuery).matches, () => false);
+  const ownsBottomActions = pathname.startsWith("/studio/travels/") || pathname.startsWith("/studio/plans/");
 
   useEffect(() => {
-    if (pathname.includes("/studio/travels/")) {
+    if (ownsBottomActions) {
       // Trips are edited here, so the next page should read them again.
       currentTravelRequest = null;
       return;
     }
-    if (!member || !window.matchMedia("(max-width: 700px)").matches) {
+    if (!member || !isMobile) {
       return;
     }
 
@@ -108,7 +116,7 @@ export function MobileJourneyCapture({ member, pathname }: MobileJourneyCaptureP
     return () => {
       active = false;
     };
-  }, [member, pathname]);
+  }, [member, pathname, isMobile, ownsBottomActions]);
 
   useEffect(() => {
     if (!open) return;
@@ -132,7 +140,6 @@ export function MobileJourneyCapture({ member, pathname }: MobileJourneyCaptureP
   const currentTravel = member && travelState?.username === member.username ? travelState.travel : null;
   // Trip pages and creation forms have their own fixed bottom actions (save, next step,
   // in-trip photo and memo). A floating button there covers form fields and repeats them.
-  const ownsBottomActions = pathname.startsWith("/studio/travels/") || pathname.startsWith("/studio/plans/");
   if (!member || !currentTravel || ownsBottomActions) {
     return null;
   }

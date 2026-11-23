@@ -1,12 +1,12 @@
 "use client";
 
 import Link from "next/link";
+import dynamic from "next/dynamic";
 import { usePathname } from "next/navigation";
 import { useEffect, useSyncExternalStore } from "react";
 
 import { ThemeToggle } from "@/components/theme/ThemeToggle";
 import { AccountNavigation } from "@/components/layout/AccountNavigation";
-import { MobileJourneyCapture } from "@/components/layout/MobileJourneyCapture";
 import { TravelImage } from "@/components/common/TravelImage";
 import { avatarInitial } from "@/lib/utils/format";
 import {
@@ -19,6 +19,7 @@ import { globePath } from "@/lib/config";
 import type { AuthMember } from "@/types";
 
 const AUTH_REVALIDATE_MS = 30_000;
+const MobileJourneyCapture = dynamic(() => import("./MobileJourneyCapture").then(module => module.MobileJourneyCapture));
 
 interface HeaderNavigationProps {
   username?: string;
@@ -84,7 +85,7 @@ export function HeaderNavigation({ initialMember }: HeaderNavigationProps) {
       </nav>
 
       <ThemeToggle />
-      <MobileJourneyCapture key={pathname} pathname={pathname} member={member} />
+      {member && <MobileJourneyCapture key={pathname} pathname={pathname} member={member} />}
       <MobileBottomNavigation pathname={pathname} member={member} />
     </div>
   );

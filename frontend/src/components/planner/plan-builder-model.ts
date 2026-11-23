@@ -115,6 +115,7 @@ export async function resolvePlanAnchor(
   mode: AnchorMode,
   rawInput: string,
   regionSearch = false,
+  destinationRegion = "",
 ): Promise<PlanAnchor> {
   const input = rawInput.trim();
   if (!input && mode === "center") {
@@ -144,7 +145,9 @@ export async function resolvePlanAnchor(
   }
 
   if (coordinates) return { name, city: "", ...coordinates, source: mode };
-  const result = await searchLocation(name, country, regionSearch);
+  const query = mode !== "center" && destinationRegion && !name.includes(destinationRegion)
+    ? `${destinationRegion} ${name}` : name;
+  const result = await searchLocation(query, country, regionSearch);
   if (!result && regionSearch) throw new ApiError(422, `${name} 도시·지역을 확인하지 못했습니다. 시·군·구를 포함한 지역명으로 다시 입력해 주세요.`);
   if (!result) throw new ApiError(422, `${name} 위치를 찾지 못했습니다. Google 지도 공유 링크를 붙여넣어 보세요.`);
   return { ...result, source: mode };
