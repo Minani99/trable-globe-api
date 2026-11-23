@@ -99,6 +99,7 @@ test("샘플 국가를 선택하면 재방문 횟수가 보이고 선택 해제 
   await japan.click();
   await expect(globe).toHaveAttribute("data-auto-rotating", "false");
   await expect(page.locator(".landing-landmark-card")).toContainText("여행 5회 · 도시 6곳");
+  await expect(page.getByRole("link", { name: "일본 여행 계획하기" })).toHaveAttribute("href", "/studio/plans/new?country=JP");
   await expect(page.locator(".landing-landmark-card__action")).toBeVisible();
   await page.mouse.move(0, 0);
   await page.waitForTimeout(6_500);

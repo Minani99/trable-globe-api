@@ -689,9 +689,7 @@
 .pb-ticket__eyebrow {
   display: block;
   color: var(--text-tertiary);
-  font-family: var(--font-mono);
   font-size: var(--text-xs);
-  letter-spacing: 0.04em;
 }
 
 .pb-ticket__head h2 {

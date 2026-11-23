@@ -43,3 +43,32 @@ export function writePlanDraft(key: string, draft: PlanDraft | null) {
     // The planner also works when browser storage is unavailable.
   }
 }
+
+/** Keep one snapshot for React hydration, keyboard edits and session recovery. */
+export function createPlanDraftStore(key: string, defaults: PlanDraft) {
+  const initial = { fields: defaults, restored: false };
+  let snapshot: typeof initial | undefined;
+  const listeners = new Set<() => void>();
+  function getSnapshot() {
+    if (!snapshot) {
+      const saved = readPlanDraft(key);
+      snapshot = saved ? { fields: saved, restored: true } : initial;
+    }
+    return snapshot;
+  }
+  return {
+    getSnapshot,
+    getServerSnapshot: () => initial,
+    subscribe(listener: () => void) {
+      listeners.add(listener);
+      return () => { listeners.delete(listener); };
+    },
+    update(changes: Partial<PlanDraft>) {
+      const current = getSnapshot();
+      const fields = { ...current.fields, ...changes };
+      snapshot = { ...current, fields };
+      writePlanDraft(key, fields);
+      listeners.forEach(listener => listener());
+    },
+  };
+}
