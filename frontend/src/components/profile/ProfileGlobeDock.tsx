@@ -35,7 +35,7 @@ export function ProfileGlobeDock({
         <TravelImage
           src={profile.profileImageUrl}
           alt=""
-          fallbackLabel={avatarInitial(profile.displayName, profile.username)}
+          avatarKey={profile.username} fallbackLabel={avatarInitial(profile.displayName, profile.username)}
           className="profile-globe-dock__avatar"
         />
         <span className="profile-globe-dock__identity">

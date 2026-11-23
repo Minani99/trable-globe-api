@@ -6,7 +6,16 @@ import { JournalPhoto } from "@/components/common/JournalPhoto";
 import { SiteFooter } from "@/components/layout/SiteFooter";
 import { SiteHeader } from "@/components/layout/SiteHeader";
 
+import { journalPhotos } from "@/lib/journal-photos";
+
+export const revalidate = 3600;
+
 export default function LandingPage() {
+  // This server-only edition is fixed in the ISR cache between regenerations.
+  // eslint-disable-next-line react-hooks/purity
+  const day = Math.floor((Date.now() + 9 * 3600000) / 86400000);
+  const photo = journalPhotos[day % journalPhotos.length];
+  const companion = journalPhotos[(day + 1) % journalPhotos.length];
   return (
     <>
       <SiteHeader />
@@ -36,13 +45,14 @@ export default function LandingPage() {
         <div className="landing-band landing-band--journal" id="landing-journal">
           <section className="landing-journal site-shell" aria-labelledby="landing-journal-heading">
             <figure className="landing-postcard">
-              <JournalPhoto />
-              <figcaption><a href="https://unsplash.com/photos/a-narrow-street-with-a-pagoda-in-the-background-yQvYgnh9XEg" target="_blank" rel="noreferrer">사진 · Filipe Freitas</a></figcaption>
+              <JournalPhoto photo={photo} />
+              <figcaption><a href={photo.source} target="_blank" rel="noreferrer">사진 · {photo.author}</a></figcaption>
             </figure>
             <div className="landing-journal__copy">
-              <p className="page-caption">일본 · 교토</p>
-              <h2 id="landing-journal-heading">야사카 탑으로 이어지는 골목</h2>
+              <p className="page-caption">{photo.region}</p>
+              <h2 id="landing-journal-heading">{photo.title}</h2>
               <Link href="/traveler">여행자의 기록 보기</Link>
+              <figure className="journal-companion"><JournalPhoto photo={companion} sizes="(max-width: 700px) 40vw, 14rem" /><figcaption>{companion.region} · <a href={companion.source} target="_blank" rel="noreferrer">{companion.author}</a></figcaption></figure>
             </div>
           </section>
         </div>

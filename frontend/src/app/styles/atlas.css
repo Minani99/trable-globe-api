@@ -65,3 +65,87 @@
   .landing-band--journal .landing-postcard { height: clamp(17rem, 78vw, 28rem); }
   .studio-page .studio-summary { display: grid; grid-template-columns: 1fr 1fr; }
 }
+
+.journal-companion {
+  width: min(100%, 14rem);
+  margin: clamp(1.5rem, 4vw, 3rem) 0 0;
+}
+.journal-companion img {
+  display: block;
+  width: 100%;
+  aspect-ratio: 3 / 2;
+  height: auto;
+  object-fit: cover;
+}
+.journal-companion figcaption {
+  margin-top: .45rem;
+  color: var(--text-secondary);
+  font-size: .75rem;
+  line-height: 1.5;
+}
+.journal-companion a { text-underline-offset: .2em; text-decoration: underline; }
+.tg-cover-art { position: relative; overflow: hidden; }
+.tg-cover-art > img { width: 100%; height: 100%; object-fit: cover; }
+.tg-cover-art > small {
+  position: absolute;
+  left: .4rem;
+  top: .4rem;
+  padding: .15rem .35rem;
+  background: rgb(30 32 29 / .83);
+  color: white;
+  font-size: .625rem;
+  line-height: 1.4;
+  border-radius: 3px;
+}
+.tg-monogram {
+  display: inline-grid;
+  place-items: center;
+  container-type: inline-size;
+  overflow: hidden;
+}
+.tg-monogram > span {
+  font-family: var(--font-sans);
+  font-size: clamp(.625rem, 39cqi, 2.5rem);
+  line-height: 1;
+  font-weight: 650;
+}
+.plan-builder { --plan-action: #ad452b; --plan-choice: #f9ede6; --plan-choice-ink: #7c3823; }
+[data-theme="dark"] .plan-builder { --plan-choice: #412f29; --plan-choice-ink: #ffcab2; }
+.plan-builder .pb-primary {
+  min-height: 50px;
+  background: var(--plan-action);
+  color: white;
+  font-weight: 650;
+}
+.plan-builder .pb-primary:hover:not(:disabled) { background: #903821; color: white; }
+.plan-builder .pb-field input { font-size: 1rem; line-height: 1.5; }
+.plan-builder .pb-chip { min-height: 44px; }
+.plan-builder .pb-option.is-selected,
+.plan-builder .pb-chip.is-selected {
+  color: var(--plan-choice-ink);
+  background: var(--plan-choice);
+  border-color: var(--plan-choice-ink);
+  box-shadow: none;
+}
+.plan-builder .pb-ticket__tags span {
+  color: var(--text-secondary);
+  background: var(--surface-muted);
+  font-weight: 500;
+}
+@media (max-width: 700px) {
+  .journal-companion { width: min(62%, 14rem); margin-inline-start: auto; }
+  .plan-builder .pb-option-grid--3 {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: .375rem;
+  }
+  .plan-builder .pb-option-grid--3 .pb-option {
+    padding: .8rem .45rem;
+    min-height: 64px;
+    gap: .2rem;
+    text-align: center;
+    align-items: center;
+    justify-items: center;
+  }
+  .plan-builder .pb-option-grid--3 .pb-option strong { font-size: .875rem; }
+  .plan-builder .pb-option-grid--3 .pb-option > span { font-size: .75rem; }
+}

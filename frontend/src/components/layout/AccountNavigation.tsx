@@ -89,7 +89,7 @@ export function AccountNavigation({
             <TravelImage
               src={member.profileImageUrl}
               alt="내 프로필 편집"
-              fallbackLabel={avatarInitial(member.displayName, member.username)}
+              avatarKey={member.username} fallbackLabel={avatarInitial(member.displayName, member.username)}
               className="site-member-avatar"
             />
             <span>마이</span>
@@ -129,7 +129,7 @@ export function AccountNavigation({
           <TravelImage
             src={member.profileImageUrl}
             alt=""
-            fallbackLabel={avatarInitial(member.displayName, member.username)}
+            avatarKey={member.username} fallbackLabel={avatarInitial(member.displayName, member.username)}
             className="site-member-avatar"
           />
           <span>

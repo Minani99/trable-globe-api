@@ -21,7 +21,7 @@ export function AccountOverview({ member }: { member: AuthMember }) {
         <TravelImage
           src={current.profileImageUrl}
           alt={`${publicDisplayName(current.displayName)} 프로필 사진`}
-          fallbackLabel={avatarInitial(current.displayName, current.username)}
+          avatarKey={current.username} fallbackLabel={avatarInitial(current.displayName, current.username)}
           className="account-hero__avatar"
         />
         <div>

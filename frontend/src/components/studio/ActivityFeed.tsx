@@ -19,7 +19,7 @@ export function ActivityFeed({ events }: { events: ActivityEvent[] }) {
           {events.map((event) => (
             <li key={event.id}>
               <Link className="studio-activity__profile" href={`/${encodeURIComponent(event.actor.username)}`} aria-label={`${publicDisplayName(event.actor.displayName)} 프로필 보기`}>
-                <TravelImage src={event.actor.profileImageUrl} alt="" fallbackLabel={avatarInitial(event.actor.displayName, event.actor.username)} className="studio-activity__avatar" />
+                <TravelImage src={event.actor.profileImageUrl} alt="" avatarKey={event.actor.username} fallbackLabel={avatarInitial(event.actor.displayName, event.actor.username)} className="studio-activity__avatar" />
                 <div className="studio-activity__content">
                   <strong>{publicDisplayName(event.actor.displayName)}</strong>
                   <small>@{event.actor.username}</small>

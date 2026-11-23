@@ -31,7 +31,7 @@ export function JourneySummary({ travel, ownerName, locationLabel }: JourneySumm
         <TravelImage
           src={travel.owner.profileImageUrl}
           alt=""
-          fallbackLabel={avatarInitial(travel.owner.displayName, travel.owner.username)}
+          avatarKey={travel.owner.username} fallbackLabel={avatarInitial(travel.owner.displayName, travel.owner.username)}
           className="journey-summary__avatar"
         />
         <span>

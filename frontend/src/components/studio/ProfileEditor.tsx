@@ -119,7 +119,7 @@ export function ProfileEditor({ member }: { member: AuthMember }) {
           <TravelImage
             src={displayImage}
             alt={`${savedMember.displayName} 프로필 이미지 미리보기`}
-            fallbackLabel={avatarInitial(savedMember.displayName, savedMember.username)}
+            avatarKey={savedMember.username} fallbackLabel={avatarInitial(savedMember.displayName, savedMember.username)}
             className="account-photo__avatar"
           />
           <div className="account-photo__copy">

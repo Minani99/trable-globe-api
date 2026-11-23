@@ -32,6 +32,7 @@ export function TravelCard({ travel, username, priority }: TravelCardProps) {
             alt={`${travel.title} 대표 이미지`}
             fallbackLabel={travel.primaryCountry?.iso2Code}
             priority={priority}
+            city={travel.primaryCity?.nameKo} country={travel.primaryCountry?.iso2Code}
             fallbackVariant="map"
             className="h-full w-full object-cover transition-transform duration-700 ease-out group-hover:scale-[1.04]"
           />

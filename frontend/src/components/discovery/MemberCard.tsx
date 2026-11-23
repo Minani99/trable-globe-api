@@ -25,7 +25,7 @@ export function MemberCard({ member, viewerAuthenticated }: { member: MemberDisc
         <TravelImage
           src={member.profileImageUrl}
           alt={`${displayName} 프로필 이미지`}
-          fallbackLabel={avatarInitial(member.displayName, member.username)}
+          avatarKey={member.username} fallbackLabel={avatarInitial(member.displayName, member.username)}
           className="member-card__avatar"
         />
         <span className="member-card__name">

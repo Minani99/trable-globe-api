@@ -136,6 +136,7 @@ function MobileBottomNavigation({
         active={profileActive}
         avatar={member ? {
           src: member.profileImageUrl,
+          username: member.username,
           fallbackLabel: avatarInitial(member.displayName, member.username),
         } : undefined}
       />
@@ -156,7 +157,7 @@ function MobileNavLink({
   icon: "globe" | "trip" | "plan" | "search" | "profile";
   active: boolean;
   emphasized?: boolean;
-  avatar?: { src: string | null; fallbackLabel: string };
+  avatar?: { username: string; src: string | null; fallbackLabel: string };
 }) {
   return (
     <Link
@@ -168,7 +169,7 @@ function MobileNavLink({
         <TravelImage
           src={avatar.src}
           alt=""
-          fallbackLabel={avatar.fallbackLabel}
+          avatarKey={avatar.username} fallbackLabel={avatar.fallbackLabel}
           className="site-mobile-bottom-nav__avatar"
         />
       ) : <MobileNavIcon name={icon} />}

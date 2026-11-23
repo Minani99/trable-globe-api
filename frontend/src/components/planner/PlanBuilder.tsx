@@ -487,7 +487,6 @@ function PlanForm({
                   aria-pressed={pace === item.id}
                   onClick={() => draftStore.update({ pace: item.id })}
                 >
-                  <SlotDots count={item.slots} />
                   <strong>{item.label}</strong>
                   <span>{item.description}</span>
                 </button>
@@ -508,7 +507,6 @@ function PlanForm({
                 aria-pressed={buildMode === item.id}
                 onClick={() => { draftStore.update({ buildMode: item.id }); setError(null); }}
               >
-                <span className="pb-option__badge">{item.badge}</span>
                 <strong>{item.label}</strong>
                 <span>{item.description}</span>
               </button>
@@ -670,14 +668,6 @@ function Flag({ code, size = "md" }: { code: string; size?: "md" | "lg" | "xl" }
         decoding="async"
         onError={(event) => { event.currentTarget.style.display = "none"; }}
       />
-    </span>
-  );
-}
-
-function SlotDots({ count }: { count: number }) {
-  return (
-    <span className="pb-option__dots" aria-hidden="true">
-      {Array.from({ length: 5 }, (_, index) => <i key={index} className={index < count ? "is-on" : ""} />)}
     </span>
   );
 }
