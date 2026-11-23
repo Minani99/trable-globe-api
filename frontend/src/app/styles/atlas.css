@@ -134,4 +134,18 @@
 }
 @media (max-width: 700px) {
   .journal-companion { width: min(62%, 14rem); margin-inline-start: auto; }
+  .plan-builder .pb-option-grid--3 {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: .375rem;
+  }
+  .plan-builder .pb-option-grid--3 .pb-option {
+    padding: .8rem .45rem;
+    min-height: 64px;
+    gap: .2rem;
+    text-align: center;
+    align-items: center;
+    justify-items: center;
+  }
+  .plan-builder .pb-option-grid--3 .pb-option strong { font-size: .875rem; }
+  .plan-builder .pb-option-grid--3 .pb-option > span { font-size: .75rem; }
 }
