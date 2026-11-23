@@ -6,6 +6,7 @@ test("몇 번의 선택으로 여행 계획을 만들고 일차별 일정으로 
   const username = `planner_${suffix}`;
   const koreaToday = new Date().toLocaleDateString("en-CA", { timeZone: "Asia/Seoul" });
   await page.goto("/studio/plans/new?country=jp");
+  await expect(page).toHaveURL(/\/login\?next=/);
   const loginUrl = new URL(page.url());
   expect(loginUrl.pathname).toBe("/login");
   const returnPath = loginUrl.searchParams.get("next");
