@@ -568,23 +568,15 @@ function PlanForm({
           <div className="pb-ticket__head">
             {selectedCountry ? <Flag code={selectedCountry.iso2Code} size="xl" /> : <span className="pb-ticket__placeholder-flag" aria-hidden="true" />}
             <div>
-              <span className="pb-ticket__eyebrow">{selectedCountry ? `${selectedCountry.nameEn} · ${selectedCountry.iso2Code}` : "여행지 미선택"}</span>
+              <span className="pb-ticket__eyebrow">{domestic ? "국내여행" : "해외여행"} · {formatDuration(tripDays)}</span>
               <h2>{domestic ? `${region.trim() || "국내"} 여행` : selectedCountry ? `${selectedCountry.nameKo} 여행` : "다음 여행을 골라보세요"}</h2>
             </div>
           </div>
 
           <dl className="pb-ticket__facts">
             <div>
-              <dt>출발</dt>
-              <dd>{startDate ? formatPlanDate(startDate) : "미정"}</dd>
-            </div>
-            <div>
-              <dt>돌아오는 날</dt>
-              <dd>{startDate ? formatPlanDate(endDate) : "미정"}</dd>
-            </div>
-            <div>
-              <dt>기간</dt>
-              <dd>{formatDuration(tripDays)}</dd>
+              <dt>여행 날짜</dt>
+              <dd>{startDate ? <><time dateTime={startDate}>{formatPlanDate(startDate)}</time>{tripDays > 1 && <> – <time dateTime={endDate}>{formatPlanDate(endDate)}</time></>}</> : "미정"}</dd>
             </div>
             <div>
               <dt>동행</dt>
@@ -672,8 +664,7 @@ function Flag({ code, size = "md" }: { code: string; size?: "md" | "lg" | "xl" }
       <b>{code}</b>
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img
-        src={`https://flagcdn.com/w80/${lower}.png`}
-        srcSet={`https://flagcdn.com/w160/${lower}.png 2x`}
+        src={`/plan-flags/${lower}.webp`}
         alt=""
         loading="lazy"
         decoding="async"

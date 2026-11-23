@@ -61,6 +61,7 @@ for (const width of [320, 390, 1440]) {
       const summary = page.getByRole("complementary", { name: "여행 계획 요약" });
       await expect(summary).toContainText("강릉 여행");
       await expect(summary).toContainText("부모님과");
+      await expect.poll(() => summary.locator(".pb-flag img").evaluate(img => (img as HTMLImageElement).naturalWidth)).toBeGreaterThan(0);
       await page.screenshot({ path: testInfo.outputPath("restored-plan-summary.png"), fullPage: true });
       await summary.getByRole("button", { name: "여행지·날짜 수정" }).click();
       await expect(page.getByLabel("여행할 도시·지역")).toHaveValue("강릉");
