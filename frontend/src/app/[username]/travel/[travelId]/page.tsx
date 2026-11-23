@@ -189,6 +189,7 @@ export default async function TravelDetailPage(
                 alt={`${travel.title} 대표 이미지`}
                 fallbackLabel={countryCodes[0] ?? travel.title.slice(0, 2)}
                 priority
+                city={travel.places[0]?.city?.nameKo} country={travel.places[0]?.country.iso2Code}
                 fallbackVariant="map"
                 className="h-full w-full object-cover"
               />

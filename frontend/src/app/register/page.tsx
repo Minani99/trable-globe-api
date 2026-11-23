@@ -26,7 +26,7 @@ export default async function RegisterPage({
       <SiteHeader />
       <main id="main" className="auth-page auth-page--journal flex-1">
         <div className="auth-layout">
-        <AuthScene />
+        <AuthScene registration />
         <section className="auth-card auth-card--wide auth-card--register">
           <p className="page-caption">첫 페이지를 펼쳐보세요</p>
           <h1>계정 만들기</h1>

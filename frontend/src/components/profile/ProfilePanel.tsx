@@ -52,7 +52,7 @@ export function ProfilePanel({
       <TravelImage
         src={profile.profileImageUrl}
         alt={`${displayName} 프로필 이미지`}
-        fallbackLabel={avatarInitial(profile.displayName, profile.username)}
+        avatarKey={profile.username} fallbackLabel={avatarInitial(profile.displayName, profile.username)}
         className="border-border-subtle h-12 w-12 shrink-0 rounded-full border object-cover"
       />
       <span className="min-w-0 flex-1">

@@ -114,7 +114,7 @@ export function TravelSocialPanel({
               <TravelImage
                 src={currentMember.profileImageUrl}
                 alt={`${publicDisplayName(currentMember.displayName)} 프로필 이미지`}
-                fallbackLabel={avatarInitial(currentMember.displayName, currentMember.username)}
+                avatarKey={currentMember.username} fallbackLabel={avatarInitial(currentMember.displayName, currentMember.username)}
                 className="travel-social__avatar"
               />
               <label>
@@ -148,7 +148,7 @@ export function TravelSocialPanel({
                       <TravelImage
                         src={comment.author.profileImageUrl}
                         alt={`${authorName} 프로필 이미지`}
-                        fallbackLabel={avatarInitial(comment.author.displayName, comment.author.username)}
+                        avatarKey={comment.author.username} fallbackLabel={avatarInitial(comment.author.displayName, comment.author.username)}
                         className="travel-social__avatar"
                       />
                     </Link>

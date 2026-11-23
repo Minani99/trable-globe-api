@@ -120,7 +120,7 @@ export function ProfileConnections({
                     <TravelImage
                       src={connection.profileImageUrl}
                       alt=""
-                      fallbackLabel={avatarInitial(connection.displayName, connection.username)}
+                      avatarKey={connection.username} fallbackLabel={avatarInitial(connection.displayName, connection.username)}
                       className="profile-connection__avatar"
                     />
                     <span>
