@@ -10,9 +10,6 @@
   width: 100%;
 }
 
-.landing-band + .landing-band {
-  border-top: 1px solid var(--border);
-}
 
 .landing-band--hero {
   display: flex;

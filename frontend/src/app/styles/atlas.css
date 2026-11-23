@@ -124,7 +124,7 @@
 .plan-builder .pb-chip.is-selected {
   color: var(--plan-choice-ink);
   background: var(--plan-choice);
-  border-color: var(--plan-choice-ink);
+  border-color: transparent;
   box-shadow: none;
 }
 .plan-builder .pb-ticket__tags span {
@@ -149,3 +149,9 @@
   .plan-builder .pb-option-grid--3 .pb-option strong { font-size: .875rem; }
   .plan-builder .pb-option-grid--3 .pb-option > span { font-size: .75rem; }
 }
+
+.photo-credits { max-width: 54rem; padding-block: 3rem; overflow-wrap: anywhere; }
+.photo-credits h1 { margin-bottom: 1rem; font-size: 2rem; font-weight: 650; }
+.photo-credits h2 { margin-block: 2.5rem 1rem; font-size: 1.25rem; font-weight: 650; }
+.photo-credits li { padding-block: .7rem; scroll-margin-top: 6rem; }
+.photo-credits a { color: var(--accent-strong); text-decoration: underline; text-underline-offset: .2em; }

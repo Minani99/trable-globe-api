@@ -3,17 +3,19 @@ import Link from "next/link";
 import { profilePath, siteConfig } from "@/lib/config";
 import styles from "./LandingOverview.module.css";
 
-const EXAMPLE_STOPS = [
-  { order: "01", place: "후시미 이나리", category: "관광" },
-  { order: "02", place: "니시키 시장", category: "점심" },
-  { order: "03", place: "가모강", category: "산책" },
-] as const;
+const examples = {
+  gangneung: ["강릉", "오죽헌", "강릉중앙시장", "경포호"],
+  seoul: ["서울", "경복궁", "통인시장", "서촌"],
+  kyoto: ["교토", "후시미 이나리", "니시키 시장", "가모강"],
+  alps: ["쿠어 · 라이헤나우", "쿠어 구시가지", "아르카스 광장", "라이헤나우 철교"],
+} as const;
 
 /**
  * Static examples: no extra client bundle, fake controls or scroll animation. Planning,
  * recording and browsing are separate full-width bands so each reads as its own section.
  */
-export function LandingOverview() {
+export function LandingOverview({ example }: { example: keyof typeof examples }) {
+  const [city, ...stops] = examples[example];
   return (
     <>
       <section className={`landing-band landing-band--plan ${styles.band}`} aria-labelledby="plan-overview-title">
@@ -27,7 +29,7 @@ export function LandingOverview() {
           <figure className={styles.preview}>
             <figcaption className={styles.previewHeading}>
               <span className={styles.exampleLabel}>일정 예시</span>
-              <strong>교토 · 2박 3일</strong>
+              <strong>{city} · 2박 3일</strong>
             </figcaption>
             <div className={styles.days} aria-label="1일차 일정 예시">
               <span className={styles.activeDay}>1일차</span>
@@ -35,11 +37,11 @@ export function LandingOverview() {
               <span>3일차</span>
             </div>
             <ol className={styles.schedule}>
-              {EXAMPLE_STOPS.map((stop) => (
-                <li key={stop.order}>
-                  <span className={styles.time}>{stop.order}</span>
-                  <span>{stop.place}</span>
-                  <span className={styles.category}>{stop.category}</span>
+              {stops.map((stop, index) => (
+                <li key={stop}>
+                  <span className={styles.time}>{String(index + 1).padStart(2, "0")}</span>
+                  <span>{stop}</span>
+                  <span className={styles.category}>{["관광", "점심", "산책"][index]}</span>
                 </li>
               ))}
             </ol>
@@ -62,15 +64,15 @@ export function LandingOverview() {
           <figure className={styles.preview}>
             <figcaption className={styles.previewHeading}>
               <span className={styles.exampleLabel}>기록 예시</span>
-              <strong>교토 · 2박 3일</strong>
+              <strong>{city} · 2박 3일</strong>
             </figcaption>
             <span className={styles.visibility}>공개</span>
             <p className={styles.recordDate}>5월 14일 — 16일</p>
             <ol className={styles.route} aria-label="여행 경로 예시">
-              {EXAMPLE_STOPS.map((stop) => (
-                <li key={stop.place}>
+              {stops.map((stop) => (
+                <li key={stop}>
                   <span className={styles.routeDot} aria-hidden="true" />
-                  <span>{stop.place}</span>
+                  <span>{stop}</span>
                 </li>
               ))}
             </ol>

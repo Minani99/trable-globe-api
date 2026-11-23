@@ -1,4 +1,4 @@
-.card { display: grid; grid-template-columns: minmax(12rem, .8fr) minmax(0, 1.7fr); margin-block: .5rem 2.5rem; overflow: hidden; border: 1px solid var(--border); border-radius: var(--radius-lg); background: var(--surface); }
+.card { display: grid; grid-template-columns: minmax(12rem, .8fr) minmax(0, 1.7fr); margin-block: .5rem 2.5rem; overflow: hidden; border: 0; background: var(--surface); }
 .artwork { min-height: 15rem; }
 .content { min-width: 0; padding: 1.75rem 2rem; }
 .label { margin-bottom: 1.25rem; color: var(--accent-strong); font-size: .8125rem; font-weight: 650; }
@@ -13,8 +13,8 @@
 @media (max-width: 700px) { .card { grid-template-columns: 1fr; margin-bottom: 2rem; } .artwork { min-height: 0; height: 10rem; } .content { padding: 1.25rem; } .label { margin-bottom: .7rem; } .copy h2 { font-size: 1.5rem; } .action { min-height: 3rem; } }
 
 /* The countdown is the first thing to read on the hub: how soon, or how far in. */
-.card { box-shadow: var(--shadow-md); }
-.card[data-phase="travel"] { border-color: var(--accent-border); }
+
+
 .top { display: flex; align-items: flex-start; justify-content: space-between; gap: 1rem; margin-bottom: 1.25rem; }
 .top .label { margin-bottom: 0; }
 .countdown { display: grid; justify-items: end; gap: .1rem; text-align: right; }

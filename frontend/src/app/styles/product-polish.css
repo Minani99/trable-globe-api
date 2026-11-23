@@ -77,21 +77,6 @@
   .studio-summary dd { font-size: 1.45rem; }
 }
 
-/* --- Cards that open something lift on hover ------------------------------------ */
-.travel-card {
-  transition: transform 220ms var(--ease), box-shadow 220ms var(--ease), border-color 220ms var(--ease);
-}
-
-.travel-card:hover {
-  transform: translateY(-3px);
-  border-color: var(--border-strong);
-  box-shadow: var(--shadow-md);
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .travel-card:hover { transform: none; }
-}
-
 /* --- Figures that summarise a world read as figures ----------------------------- */
 .profile-world-summary__stats dd,
 .travel-detail-stats dd {

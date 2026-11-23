@@ -163,7 +163,7 @@ export function TravelYearRecap({
                     <TravelImage
                       src={travel.coverImageUrl}
                       alt=""
-                      fallbackLabel={travel.primaryCountry?.iso2Code}
+                      fallbackVariant="map" country={travel.primaryCountry?.iso2Code}
                     />
                     <span>
                       <strong>{travel.title}</strong>
@@ -328,7 +328,7 @@ export function TravelYearRecap({
               <TravelImage
                 src={travel.coverImageUrl}
                 alt={`${travel.title} 대표 이미지`}
-                fallbackLabel={travel.primaryCountry?.iso2Code}
+                fallbackVariant="map" country={travel.primaryCountry?.iso2Code}
                 className="travel-recap__memory-image"
               />
               <span className="travel-recap__memory-shade" aria-hidden="true" />

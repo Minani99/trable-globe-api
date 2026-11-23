@@ -7,6 +7,18 @@ test("여행 사진은 모바일에서 로드되고 로그인 동작을 가리�
   await photo.scrollIntoViewIfNeeded();
   await expect(photo).toBeVisible();
   await expect.poll(() => photo.evaluate((image: HTMLImageElement) => image.naturalWidth)).toBeGreaterThan(0);
+  const first = await photo.getAttribute("src");
+  const sample = page.locator(".landing-band--plan figcaption strong");
+  const firstExample = await sample.textContent();
+  await expect.poll(() => page.evaluate(() => document.cookie.includes("tg_scene="))).toBe(true);
+  await page.reload();
+  await expect(photo).not.toHaveAttribute("src", first!);
+  await expect(sample).not.toHaveText(firstExample!);
+  await photo.scrollIntoViewIfNeeded();
+  const credit = await page.locator(".landing-postcard figcaption a").getAttribute("href");
+  const response = await page.request.get("/photo-credits");
+  expect(response.ok()).toBe(true);
+  expect(await response.text()).toContain(`id="${credit!.split("#")[1]}"`);
   await page.screenshot({ path: testInfo.outputPath("journal-home-mobile.png"), fullPage: true });
   await page.goto("/login?next=%2Fstudio");
   await expect(page.locator(".auth-scene img")).toBeVisible();
