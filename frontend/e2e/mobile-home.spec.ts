@@ -49,7 +49,7 @@ for (const viewport of [{ width: 360, height: 800 }, { width: 390, height: 844 }
     await page.goto("/", { waitUntil: "domcontentloaded" });
     const heading = page.getByRole("heading", { name: "여행이 쌓이는, 나만의 지구본." });
     const canvas = page.locator(".landing-globe-live canvas").first();
-    const primaryAction = page.locator(".landing-reveal--actions").getByRole("link", { name: "계정 만들기" });
+    const primaryAction = page.locator(".landing-reveal--actions").getByRole("link", { name: "첫 여행 계획하기" });
     await expect(heading).toBeVisible();
     await expect(canvas).toBeInViewport({ ratio: 0.95, timeout: 45000 });
     await expect(primaryAction).toBeVisible();
@@ -86,6 +86,16 @@ for (const viewport of [{ width: 360, height: 800 }, { width: 390, height: 844 }
     await page.screenshot({ path: testInfo.outputPath(`globe-first-${viewport.width}.png`), fullPage: false });
     // Opening the account flow also checks that a fixed mobile menu cannot intercept the CTA.
     await primaryAction.click();
-    await expect(page).toHaveURL(/\/register\?next=%2Fstudio$/);
+    await expect(page).toHaveURL(/\/register\?next=%2Fstudio%2Fplans%2Fnew$/);
+    if (viewport.width === 390) {
+      const username = `first_${Date.now().toString(36)}`;
+      await page.getByLabel("보여질 이름", { exact: true }).fill("첫 여행자");
+      await page.getByLabel("사용자명", { exact: true }).fill(username);
+      await page.getByLabel("이메일", { exact: true }).fill(`${username}@example.com`);
+      await page.locator('input[name="password"]').fill("first-plan-test-42");
+      await page.getByRole("button", { name: "계정 만들기" }).click();
+      await expect(page).toHaveURL(/\/studio\/plans\/new$/);
+      await expect(page.getByRole("heading", { name: "새 여행 계획" })).toBeVisible();
+    }
   });
 }
