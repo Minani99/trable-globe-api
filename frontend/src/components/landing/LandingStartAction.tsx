@@ -46,24 +46,16 @@ export function LandingStartAction() {
     return () => { active = false; controller?.abort(); document.removeEventListener("visibilitychange", refresh); };
   }, [member]);
 
-  if (member === undefined) {
-    return (
-      <span className="landing-primary-cta is-loading" aria-label="계정 상태 확인 중">
-        <span>계정 확인 중…</span>
-      </span>
-    );
-  }
-
   const loaded = member && journey?.username === member.username;
   const action = loaded ? journey.action : null;
   return (
     <>
     <Link
-      href={member ? action?.href ?? (loaded ? "/studio/plans/new" : "/studio") : "/register?next=%2Fstudio"}
+      href={member ? action?.href ?? (loaded ? "/studio/plans/new" : "/studio") : "/register?next=%2Fstudio%2Fplans%2Fnew"}
       className="landing-primary-cta group"
       title={action?.trip.travel.title}
     >
-      <span>{member ? action?.label ?? (loaded ? "새 여행 계획" : "내 여행 열기") : "계정 만들기"}</span>
+      <span>{member ? action?.label ?? (loaded ? "새 여행 계획" : "내 여행 열기") : "첫 여행 계획하기"}</span>
 
     </Link>
     <Link href={member ? "/studio" : profilePath(siteConfig.demoUsername)} className="landing-secondary-cta">
