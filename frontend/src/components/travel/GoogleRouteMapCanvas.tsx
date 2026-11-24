@@ -42,6 +42,7 @@ export function GoogleRouteMapCanvas({
   const elementRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<google.maps.Map | null>(null);
   const markersRef = useRef(new Map<number, { marker: google.maps.Marker; number: number }>());
+  const painted = useRef<{ selected: number | null; accent: string }>({ selected: null, accent: "" });
   const [ready, setReady] = useState(false);
   // Callbacks and the numbering are read from refs so a parent re-render never rebuilds the map.
   const latest = useRef({ onSelect, onUnavailable, numberOf });
@@ -84,13 +85,15 @@ export function GoogleRouteMapCanvas({
         gestureHandling: cooperative ? "cooperative" : "auto",
       });
       mapRef.current = map;
+      const accent = accentColor();
+      painted.current = { selected: null, accent };
       stops.forEach((place, index) => {
         const number = latest.current.numberOf(place, index);
         const marker = new Marker({
           map,
           position: { lat: place.latitude, lng: place.longitude },
           title: `${number}번째 장소 ${place.placeName}`,
-          ...markerAppearance(number, false),
+          ...markerAppearance(number, false, accent),
         });
         listeners.push(marker.addListener("click", () => latest.current.onSelect(place)));
         markers.set(place.id, { marker, number });
@@ -116,13 +119,22 @@ export function GoogleRouteMapCanvas({
 
   useEffect(() => {
     if (!ready) return;
-    markersRef.current.forEach(({ marker, number }, id) => {
+    const accent = accentColor();
+    const previous = painted.current;
+    const markers = markersRef.current;
+    const changed = previous.accent === accent ? [previous.selected, selectedId] : markers.keys();
+    for (const id of changed) {
+      if (id === null) continue;
+      const entry = markers.get(id);
+      if (!entry) continue;
+      const { marker, number } = entry;
       const active = id === selectedId;
-      const appearance = markerAppearance(number, active);
+      const appearance = markerAppearance(number, active, accent);
       marker.setIcon(appearance.icon);
       marker.setLabel(appearance.label);
       marker.setZIndex(appearance.zIndex);
-    });
+    }
+    painted.current = { selected: selectedId, accent };
   }, [ready, selectedId]);
 
   useEffect(() => {
@@ -172,8 +184,7 @@ function fitPlaces(map: google.maps.Map, places: TravelPlace[]) {
   map.fitBounds(bounds, 48);
 }
 
-function markerAppearance(number: number, active: boolean) {
-  const accent = accentColor();
+function markerAppearance(number: number, active: boolean, accent: string) {
   return {
     icon: {
       path: MAP_PIN_PATH,

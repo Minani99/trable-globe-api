@@ -53,6 +53,7 @@ async function mockGoogleMaps(page: Page, { failImport = false }: { failImport?:
     class Marker {
       options: Record<string, unknown>;
       icon: { scale: number };
+      iconUpdates = 0;
       listeners: Record<string, Listener> = {};
       constructor(options: Record<string, unknown>) {
         this.options = options;
@@ -64,7 +65,7 @@ async function mockGoogleMaps(page: Page, { failImport = false }: { failImport?:
         return { remove: () => undefined };
       }
       getPosition() { return this.options.position; }
-      setIcon(icon: { scale: number }) { this.icon = icon; }
+      setIcon(icon: { scale: number }) { this.icon = icon; this.iconUpdates += 1; }
       setLabel() {}
       setZIndex() {}
       setMap(map: unknown) { this.options.map = map; }
@@ -135,6 +136,11 @@ test("하루 동선은 Google 지도에 번호 마커로 표시되고 목록·�
   await route.getByRole("button", { name: "2번째 기요미즈데라 지도에서 선택", exact: true }).click();
   await expect.poll(async () => (await mock(page)).pans.at(-1)).toBe(34.9949);
   await expect.poll(async () => (await mock(page)).markers.map((marker) => marker.scale)).toEqual([1, 1.15, 1]);
+  const untouched = await page.evaluate(() => {
+    const { markers } = (window as unknown as { googleMapsMock: { markers: Array<{ iconUpdates: number; options: { map: unknown } }> } }).googleMapsMock;
+    return markers.filter(marker => marker.options.map)[2].iconUpdates;
+  });
+  expect(untouched).toBe(0);
 
   await page.evaluate(() => {
     const state = (window as unknown as { googleMapsMock: { markers: Array<{ listeners: { click: () => void } }> } }).googleMapsMock;

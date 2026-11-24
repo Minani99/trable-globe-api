@@ -49,9 +49,23 @@ const MAX_ZOOM = 18;
 
 /** A city map for place locations, paired with Google Maps travel directions. */
 export function TravelRouteMap(props: TravelRouteMapProps) {
-  const [selectedDate, setSelectedDate] = useState<string | null>(null);
   if (props.compact) return <TravelRouteDay {...props} />;
-  const dates = [...new Set(props.places.map(place => place.visitedAt || ""))].sort((a, b) => !a ? 1 : !b ? -1 : a.localeCompare(b));
+  return <TravelRouteDays {...props} />;
+}
+
+function TravelRouteDays(props: TravelRouteMapProps) {
+  const [selectedDate, setSelectedDate] = useState<string | null>(null);
+  const { days, dates } = useMemo(() => {
+    const days = new Map<string, TravelPlace[]>();
+    for (const place of props.places) {
+      const key = place.visitedAt || "";
+      const group = days.get(key);
+      if (group) group.push(place);
+      else days.set(key, [place]);
+    }
+    const dates = [...days.keys()].sort((a, b) => !a ? 1 : !b ? -1 : a.localeCompare(b));
+    return { days, dates };
+  }, [props.places]);
   const date = selectedDate !== null && dates.includes(selectedDate) ? selectedDate : dates[0] ?? "";
   const dayOf = (value: string) => {
     const start = props.startDate || dates.find(Boolean);
@@ -65,10 +79,10 @@ export function TravelRouteMap(props: TravelRouteMapProps) {
     {dates.length > 1 ? <div className="google-directions__days travel-route-days__tabs" role="group" aria-label="경로 날짜 선택">
       {dates.map(value => <button key={value || "undated"} type="button" aria-pressed={date === value} onClick={() => setSelectedDate(value)}>
         {value ? `${dayOf(value)}일차 · ${Number(value.slice(5, 7))}.${Number(value.slice(8, 10))}` : "날짜 미정"}
-        <span> · {props.places.filter(place => (place.visitedAt || "") === value).length}곳</span>
+        <span> · {days.get(value)?.length}곳</span>
       </button>)}
     </div> : null}
-    <TravelRouteDay key={date} {...props} places={props.places.filter(place => (place.visitedAt || "") === date)} activeDate={date} dayNumber={day} />
+    <TravelRouteDay key={date} {...props} places={days.get(date) ?? []} activeDate={date} dayNumber={day} />
   </div>;
 }
 
@@ -89,7 +103,7 @@ function TravelRouteDay({ places, compact = false, directions, displayedRoute, p
   const [viewportSize, setViewportSize] = useState(DEFAULT_VIEWPORT);
   const [measured, setMeasured] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
-  const [loadedTileCount, setLoadedTileCount] = useState(0);
+  const [tileSettled, setTileSettled] = useState(false);
   const [allowMapMove, setAllowMapMove] = useState(false);
   // Google is the map whenever a key is configured; the tile map below remains the fallback
   // for builds without a key and for a key Google rejects at runtime.
@@ -159,8 +173,8 @@ function TravelRouteDay({ places, compact = false, directions, displayedRoute, p
   }, [places, compact, allowMapMove, useGoogle]);
 
   const viewport = useMemo(
-    () => buildViewport(places, center.x, center.y, zoom, viewportSize.width, viewportSize.height),
-    [places, center.x, center.y, zoom, viewportSize.width, viewportSize.height],
+    () => useGoogle ? null : buildViewport(places, center.x, center.y, zoom, viewportSize.width, viewportSize.height),
+    [useGoogle, places, center.x, center.y, zoom, viewportSize.width, viewportSize.height],
   );
   const selectedIndex = Math.max(0, places.findIndex((place) => place.id === selectedId));
   const selectedPlace = places[selectedIndex] ?? places[0];
@@ -318,7 +332,7 @@ function TravelRouteDay({ places, compact = false, directions, displayedRoute, p
           onPointerCancel={finishPointer}
         >
           <div className="travel-route-map-tiles" aria-hidden="true">
-            {measured && viewport.tiles.map((tile) => (
+            {measured && viewport?.tiles.map((tile) => (
               // The OSM policy requires this canonical HTTPS tile URL and browser caching.
               // eslint-disable-next-line @next/next/no-img-element
               <img
@@ -329,8 +343,8 @@ function TravelRouteDay({ places, compact = false, directions, displayedRoute, p
                 width={tile.size}
                 height={tile.size}
                 style={{ left: tile.left, top: tile.top, width: tile.size, height: tile.size }}
-                onLoad={() => setLoadedTileCount((count) => count + 1)}
-                onError={() => setLoadedTileCount((count) => count + 1)}
+                onLoad={tileSettled ? undefined : () => setTileSettled(true)}
+                onError={tileSettled ? undefined : () => setTileSettled(true)}
               />
             ))}
           </div>
@@ -340,7 +354,7 @@ function TravelRouteDay({ places, compact = false, directions, displayedRoute, p
             preserveAspectRatio="none"
             aria-label="방문 장소 위치"
           >
-            {viewport.points.map((point, index) => {
+            {viewport?.points.map((point, index) => {
               const active = point.place.id === selectedPlace.id;
               const markerOffset = Math.hypot(point.x - point.anchorX, point.y - point.anchorY);
               return (
@@ -395,7 +409,7 @@ function TravelRouteDay({ places, compact = false, directions, displayedRoute, p
             })}
           </svg>
 
-          {loadedTileCount === 0 ? (
+          {!tileSettled ? (
             <div className="travel-route-map-loading" role="status">
               <span aria-hidden="true" />
               <p>도시 지도를 불러오는 중…</p>
