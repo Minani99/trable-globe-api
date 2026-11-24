@@ -1,3 +1,4 @@
+import { CountryPhoto } from "@/components/common/CountryPhoto";
 import Link from "next/link";
 import { LandingGlobePreview } from "@/components/landing/LandingGlobePreview";
 import { LandingOverview } from "@/components/landing/LandingOverview";
@@ -41,9 +42,8 @@ export default async function LandingPage() {
         <div className="landing-band landing-band--journal" id="landing-journal">
           <section className="landing-journal site-shell" aria-labelledby="landing-journal-heading">
             <figure className="landing-postcard">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={`/images/countries/${code}.webp`} width={960} height={640} loading="lazy" decoding="async" alt={`${scene.region} 여행 참고 사진`} />
-              <figcaption><Link href={`/photo-credits#${code}`}>사진 출처</Link></figcaption>
+              <CountryPhoto code={code} sizes="(max-width: 700px) 100vw, (max-width: 1200px) 56vw, 680px" alt={`${scene.region} 여행 참고 사진`} />
+              <figcaption><Link prefetch={false} href={`/photo-credits?q=${code}#${code}`}>사진 출처</Link></figcaption>
             </figure>
             <div className="landing-journal__copy">
               <p className="page-caption">여행 사진</p>

@@ -24,7 +24,7 @@ export function TravelLibrary({ travels, today }: { travels: OwnedTravelSummary[
         // editor, or the finish-and-publish flow for a trip that was never written up.
         const query = timing.stage === "plan" ? "?plan=1" : timing.stage === "finish" ? "?finish=1" : "";
         return <li key={travel.id}><Link href={`/studio/travels/${travel.id}/edit${query}`} className={styles.row} data-stage={timing.stage}>
-          <JourneyArtwork city={travel.primaryCity?.nameKo} country={travel.primaryCountry?.iso2Code} className={styles.cover} src={travel.coverImageUrl} label={travel.primaryCountry?.iso2Code ?? "TR"} alt={`${travel.title} 대표 장면`} />
+          <JourneyArtwork city={travel.primaryCity?.nameKo} country={travel.primaryCountry?.iso2Code} className={styles.cover} src={travel.coverImageUrl} sizes="(max-width: 700px) 72px, 128px" alt={`${travel.title} 대표 장면`} />
           <span className={styles.copy}><strong>{travel.title}</strong><span>{travel.primaryCountry?.nameKo ?? "여행"} · {formatDateRange(travel.startDate, travel.endDate)}</span></span>
           <span className={styles.meta}>
             <span className={styles.status}>

@@ -15,7 +15,7 @@ export function JourneyNextCard({ action, today }: { action: JourneyNextAction; 
       : { value: `${Math.max(1, daysBetween(travel.endDate, today))}일 전`, caption: "여행을 마쳤어요" };
   return (
     <section className={styles.card} aria-labelledby="journey-next-heading" data-phase={phase}>
-      <JourneyArtwork city={travel.primaryCity?.nameKo} country={travel.primaryCountry?.iso2Code} className={styles.artwork} src={travel.coverImageUrl} label={travel.primaryCountry?.nameKo ?? "MY JOURNEY"} alt={`${travel.title} 대표 장면`} />
+      <JourneyArtwork city={travel.primaryCity?.nameKo} country={travel.primaryCountry?.iso2Code} className={styles.artwork} src={travel.coverImageUrl} sizes="(max-width: 700px) 100vw, 33vw" alt={`${travel.title} 대표 장면`} />
       <div className={styles.content}>
       <div className={styles.top}>
         <p className={styles.label}>{phase === "travel" ? "지금 여행 중" : phase === "plan" ? "다가오는 여행" : "최근 다녀온 여행"}</p>
