@@ -320,6 +320,10 @@
   opacity: 0.55;
 }
 
+#copy-plan { scroll-margin-top: 5rem; }
+.shared-itinerary-save__auth { display: flex; align-items: center; flex-wrap: wrap; gap: .5rem 1rem; }
+.shared-itinerary-save__auth a { display: inline-flex; align-items: center; min-height: 44px; }
+
 .shared-itinerary-save__error {
   color: var(--accent-strong) !important;
 }
