@@ -127,7 +127,7 @@ test("다른 여행자의 공개 일정을 새 날짜의 내 계획으로 가져
     await copy.click();
     await expect.poll(() => requests).toBe(2);
     await expect(page.getByLabel("새 출발일")).toBeDisabled();
-    await expect(page.getByRole("button", { name: /내 계획으로 복사/ })).toBeDisabled();
+    await expect(page.getByRole("button", { name: "복사 옵션 접기" })).toBeDisabled();
     await expect(page.getByRole("button", { name: "계획에 담는 중…" })).toBeDisabled();
   } finally { release(); }
 

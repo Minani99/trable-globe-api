@@ -298,16 +298,17 @@
 
 .shared-itinerary-save__panel select,
 .shared-itinerary-save__panel input {
-  min-height: 2.7rem;
+  width: 100%;
+  min-width: 0;
+  min-height: 44px;
   padding-inline: 0.75rem;
   border: 1px solid var(--border-strong);
   border-radius: var(--radius-sm);
   background: var(--surface);
   color: var(--text-primary);
-  font-size: var(--text-xs);
+  font-size: 1rem;
 }
 
-.shared-itinerary-save__panel select { width: 100%; min-width: 0; min-height: 44px; font-size: 1rem; }
 .shared-itinerary-save__stops { margin: 0; padding-inline-start: 1.75rem; list-style: decimal; font-size: .875rem; line-height: 1.7; overflow-wrap: anywhere; }
 
 .shared-itinerary-save__panel > button {
