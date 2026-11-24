@@ -22,6 +22,7 @@ export function SaveSharedItinerary({ travel, signedIn, isOwner, today, returnPa
   const [error, setError] = useState<string | null>(null);
   const saving = useRef(false);
   const dateInput = useRef<HTMLInputElement>(null);
+  const routeTrigger = useRef<HTMLButtonElement>(null);
   const validStart = isStartDate(startDate, today);
   const endDate = validStart ? (sourceDay ? startDate : addDays(startDate, daysBetween(travel.startDate, travel.endDate))) : null;
   const validRange = Boolean(endDate && /^\d{4}-\d{2}-\d{2}$/.test(endDate));
@@ -83,6 +84,7 @@ export function SaveSharedItinerary({ travel, signedIn, isOwner, today, returnPa
       event.preventDefault();
       const button = (event.nativeEvent as SubmitEvent).submitter;
       if (saving.current || !(button instanceof HTMLButtonElement) || button.name !== "sourceDay" || !dates.includes(button.value)) return;
+      routeTrigger.current = button;
       setOpen(true);
       setSourceDay(button.value);
       setError(null);
@@ -91,7 +93,14 @@ export function SaveSharedItinerary({ travel, signedIn, isOwner, today, returnPa
         dateInput.current?.closest("form")?.scrollIntoView({ block: "start" });
       });
     }}>
-      <button type="button" className="shared-itinerary-cta" disabled={pending} onClick={() => setOpen((current) => !current)} aria-expanded={open}>
+      <button type="button" className="shared-itinerary-cta" disabled={pending} onClick={() => {
+        setOpen(!open);
+        const trigger = routeTrigger.current;
+        routeTrigger.current = null;
+        if (open && trigger) requestAnimationFrame(() => {
+          if (trigger.isConnected) trigger.focus();
+        });
+      }} aria-expanded={open}>
         {open ? "복사 옵션 접기" : "내 계획으로 복사"}
         <span aria-hidden="true">{open ? "−" : "＋"}</span>
       </button>
