@@ -78,7 +78,7 @@ export async function generateMetadata(
 export default async function TravelDetailPage(
   props: PageProps<"/[username]/travel/[travelId]">,
 ) {
-  const [{ username, travelId }, { copyDate }] = await Promise.all([props.params, props.searchParams]);
+  const [{ username, travelId }, { copyDate, copyDay }] = await Promise.all([props.params, props.searchParams]);
   const id = Number(travelId);
 
   if (!Number.isInteger(id) || id <= 0) {
@@ -238,7 +238,7 @@ export default async function TravelDetailPage(
                   <span aria-hidden="true">↓</span>
                 </a>
                 <ShareJourneyButton title={travel.title} ownerName={ownerName} />
-                <SaveSharedItinerary travel={travel} signedIn={Boolean(currentMember)} isOwner={isOwner} today={todayInKorea()} copyDate={copyDate} />
+                <SaveSharedItinerary travel={travel} signedIn={Boolean(currentMember)} isOwner={isOwner} today={todayInKorea()} copyDate={copyDate} copyDay={copyDay} />
               </div>
             </div>
           </header>
