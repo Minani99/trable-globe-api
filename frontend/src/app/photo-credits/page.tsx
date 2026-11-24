@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { SiteHeader } from "@/components/layout/SiteHeader";
 import { SiteFooter } from "@/components/layout/SiteFooter";
 import { countryCredits } from "@/lib/country-scenes";
@@ -32,7 +33,7 @@ export default async function PhotoCreditsPage({ searchParams }: {
         <input id="photo-region" name="q" type="search" defaultValue={query} placeholder="예: 강릉, 프랑스, FR" />
         <button type="submit">검색</button>
       </form>
-      {query && <p>{photos.length + scenes.length}개 검색 결과 · <a href="/photo-credits">전체 보기</a></p>}
+      {query && <p>{photos.length + scenes.length}개 검색 결과 · <Link prefetch={false} href="/photo-credits">전체 보기</Link></p>}
       {photos.length > 0 && <><h2>여행지 촬영 사진</h2>
       <ul>{photos.map(photo => <li key={photo.id}>
         <strong>{photo.region}</strong> · {photo.author} · <a href={photo.source}>원본 사진</a> · <a href="https://unsplash.com/license">Unsplash License</a>
