@@ -91,6 +91,10 @@ test("미래의 비공개 계획을 링크로 공유·복사하고 공유를 끈
   await expect(visitor.getByLabel("새 출발일")).toBeFocused();
   await expect(visitor.getByRole("list", { name: "선택한 하루의 방문 순서" })).toHaveText("다음날 산책");
   await visitor.getByLabel("새 출발일").fill("2099-11-10");
+  await expect(visitor.locator("#copy-date-summary time")).toHaveCount(1);
+  await visitor.getByRole("button", { name: "복사 옵션 접기" }).click();
+  await visitor.getByRole("button", { name: /내 계획으로 복사/ }).click();
+  await expect(visitor.getByLabel("새 출발일")).toHaveValue("2099-11-10");
   const login = visitor.getByRole("link", { name: "로그인하고 계속" });
   await expect(login).toHaveAttribute("href", /next=%2Fshare%2F/);
   await visitor.getByRole("link", { name: "가입하고 계속" }).click();
