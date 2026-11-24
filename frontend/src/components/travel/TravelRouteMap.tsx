@@ -12,6 +12,7 @@ import { MAP_PIN_PATH } from "@/lib/map-pin";
 
 interface TravelRouteMapProps {
   places: TravelPlace[];
+  copyFormId?: string;
   startDate?: string;
   compact?: boolean;
   displayedRoute?: google.maps.routes.Route | null;
@@ -83,6 +84,8 @@ function TravelRouteDays(props: TravelRouteMapProps) {
       </button>)}
     </div> : null}
     <TravelRouteDay key={date} {...props} places={days.get(date) ?? []} activeDate={date} dayNumber={day} />
+    {props.copyFormId && date && <button className="day-course-import" type="submit" form={props.copyFormId}
+      formNoValidate name="sourceDay" value={date}>{day}일차 코스 가져오기</button>}
   </div>;
 }
 

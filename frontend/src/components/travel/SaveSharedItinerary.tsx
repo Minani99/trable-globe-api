@@ -21,6 +21,7 @@ export function SaveSharedItinerary({ travel, signedIn, isOwner, today, returnPa
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const saving = useRef(false);
+  const dateInput = useRef<HTMLInputElement>(null);
   const validStart = isStartDate(startDate, today);
   const endDate = validStart ? (sourceDay ? startDate : addDays(startDate, daysBetween(travel.startDate, travel.endDate))) : null;
   const validRange = Boolean(endDate && /^\d{4}-\d{2}-\d{2}$/.test(endDate));
@@ -78,7 +79,18 @@ export function SaveSharedItinerary({ travel, signedIn, isOwner, today, returnPa
   }
 
   return (
-    <div className="shared-itinerary-save" id="copy-plan">
+    <form className="shared-itinerary-save" id="copy-plan" onSubmit={event => {
+      event.preventDefault();
+      const button = (event.nativeEvent as SubmitEvent).submitter;
+      if (saving.current || !(button instanceof HTMLButtonElement) || button.name !== "sourceDay" || !dates.includes(button.value)) return;
+      setOpen(true);
+      setSourceDay(button.value);
+      setError(null);
+      requestAnimationFrame(() => {
+        dateInput.current?.focus({ preventScroll: true });
+        dateInput.current?.closest("form")?.scrollIntoView({ block: "start" });
+      });
+    }}>
       <button type="button" className="shared-itinerary-cta" disabled={pending} onClick={() => setOpen((current) => !current)} aria-expanded={open}>내 계획으로 복사 <span aria-hidden="true">＋</span></button>
       {!open ? <p className="shared-itinerary-save__note">내 출발일로 방문 순서와 메모를 가져와요. 사진·예약·예산은 포함하지 않습니다.</p> : null}
       {open ? <div className="shared-itinerary-save__panel" aria-busy={pending}>
@@ -91,7 +103,7 @@ export function SaveSharedItinerary({ travel, signedIn, isOwner, today, returnPa
           </select>
         </label>}
         {sourceDay && <ol className="shared-itinerary-save__stops" aria-label="선택한 하루의 방문 순서">{places.map(place => <li key={place.id}>{place.placeName}</li>)}</ol>}
-        <label><span>새 출발일</span><input type="date" min={today} value={startDate} disabled={pending} onChange={(event) => { setStartDate(event.target.value); setError(null); }} /></label>
+        <label><span>새 출발일</span><input ref={dateInput} type="date" min={today} value={startDate} disabled={pending} onChange={(event) => { setStartDate(event.target.value); setError(null); }} /></label>
         {validRange ? <p className="shared-itinerary-save__period" role="status">내 여행 기간: <time dateTime={startDate}>{startDate}</time> ~ <time dateTime={endDate!}>{endDate}</time> · {duration}일</p>
           : <p className="shared-itinerary-save__error" role="status">{startDate < today && startDate ? "오늘 또는 이후 날짜를 선택해 주세요." : "복사할 여행의 출발일을 입력해 주세요."}</p>}
         {signedIn ? <button type="button" onClick={saveToMyPlans} disabled={pending || !validRange}>{pending ? "계획에 담는 중…" : `${duration}일 일정 복사`}</button> :
@@ -102,7 +114,7 @@ export function SaveSharedItinerary({ travel, signedIn, isOwner, today, returnPa
         {error ? <p className="shared-itinerary-save__error" role="alert">{error}</p> : null}
         <small>{ownerName}님의 일정에서 가져온 기록임을 계획에 표시합니다.</small>
       </div> : null}
-    </div>
+    </form>
   );
 }
 
