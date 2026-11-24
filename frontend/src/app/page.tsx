@@ -29,7 +29,7 @@ export default async function LandingPage() {
               </h1>
 
               <p className="text-body landing-intro landing-reveal landing-reveal--body mt-7 max-w-[40ch]">
-                지구본을 돌려 나라별 여행 기록을 살펴보세요.
+                지구본에서 여행을 발견하고, 마음에 든 하루를 내 일정으로 가져오세요.
               </p>
             </div>
             <LandingGlobePreview />

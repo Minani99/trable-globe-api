@@ -9,16 +9,20 @@ import { ApiError, apiMutation } from "@/lib/api/client";
 import { publicDisplayName } from "@/lib/utils/profile";
 import type { TravelDetail, TravelWriteInput } from "@/types";
 
-export function SaveSharedItinerary({ travel, signedIn, isOwner, today, returnPath, copyDate }: { travel: TravelDetail; signedIn: boolean; isOwner: boolean; today: string; returnPath?: string; copyDate?: string | string[] }) {
+export function SaveSharedItinerary({ travel, signedIn, isOwner, today, returnPath, copyDate, copyDay }: { travel: TravelDetail; signedIn: boolean; isOwner: boolean; today: string; returnPath?: string; copyDate?: string | string[]; copyDay?: string | string[] }) {
   const router = useRouter();
   const resumeDate = typeof copyDate === "string" && isStartDate(copyDate, today) ? copyDate : null;
   const [open, setOpen] = useState(Boolean(resumeDate));
   const [startDate, setStartDate] = useState(resumeDate ?? today);
+  const dates = [...new Set(travel.places.flatMap(place => place.visitedAt ? [place.visitedAt] : []))].sort();
+  const [sourceDay, setSourceDay] = useState(typeof copyDay === "string" && dates.includes(copyDay) ? copyDay : "");
+  const places = sourceDay ? travel.places.filter(place => place.visitedAt === sourceDay) : travel.places;
+  const duration = sourceDay ? 1 : travel.durationDays;
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const saving = useRef(false);
   const validStart = isStartDate(startDate, today);
-  const endDate = validStart ? addDays(startDate, daysBetween(travel.startDate, travel.endDate)) : null;
+  const endDate = validStart ? (sourceDay ? startDate : addDays(startDate, daysBetween(travel.startDate, travel.endDate))) : null;
   const validRange = Boolean(endDate && /^\d{4}-\d{2}-\d{2}$/.test(endDate));
   const ownerName = publicDisplayName(travel.owner.displayName);
 
@@ -27,7 +31,7 @@ export function SaveSharedItinerary({ travel, signedIn, isOwner, today, returnPa
   }
 
   const path = returnPath ?? `/${travel.owner.username}/travel/${travel.id}`;
-  const next = encodeURIComponent(`${path}?copyDate=${startDate}#copy-plan`);
+  const next = encodeURIComponent(`${path}?copyDate=${startDate}${sourceDay ? `&copyDay=${sourceDay}` : ""}#copy-plan`);
 
   async function saveToMyPlans() {
     if (saving.current) return;
@@ -35,15 +39,14 @@ export function SaveSharedItinerary({ travel, signedIn, isOwner, today, returnPa
     saving.current = true;
     setPending(true);
     setError(null);
-    const durationOffset = daysBetween(travel.startDate, travel.endDate);
     const payload: TravelWriteInput = {
       title: travel.title,
       description: `${ownerName}님의 일정에서 복사했습니다.\n${travel.description ?? ""}`.slice(0, 2000),
       startDate,
-      endDate: addDays(startDate, durationOffset),
+      endDate: endDate!,
       coverImageUrl: null,
       visibility: "PRIVATE",
-      places: travel.places.map((place) => ({
+      places: places.map((place) => ({
         country: place.country,
         city: place.city ? {
           nameEn: place.city.nameEn,
@@ -54,7 +57,7 @@ export function SaveSharedItinerary({ travel, signedIn, isOwner, today, returnPa
         placeName: place.placeName,
         latitude: place.latitude,
         longitude: place.longitude,
-        visitedAt: place.visitedAt ? addDays(startDate, daysBetween(travel.startDate, place.visitedAt)) : null,
+        visitedAt: place.visitedAt ? addDays(startDate, daysBetween(sourceDay || travel.startDate, place.visitedAt)) : null,
         startTime: place.startTime,
         durationMinutes: place.durationMinutes,
         memo: place.memo,
@@ -79,11 +82,19 @@ export function SaveSharedItinerary({ travel, signedIn, isOwner, today, returnPa
       <button type="button" className="shared-itinerary-cta" disabled={pending} onClick={() => setOpen((current) => !current)} aria-expanded={open}>내 계획으로 복사 <span aria-hidden="true">＋</span></button>
       {!open ? <p className="shared-itinerary-save__note">내 출발일로 방문 순서와 메모를 가져와요. 사진·예약·예산은 포함하지 않습니다.</p> : null}
       {open ? <div className="shared-itinerary-save__panel" aria-busy={pending}>
-        <div><strong>내 여행에 일정 복사</strong><p>{travel.places.length}개 장소의 방문 순서·시간·메모를 그대로 복사합니다. 사진·예약·예산은 포함하지 않으며, 복사본은 나만 볼 수 있어요.</p></div>
+        <div><strong>내 여행에 일정 복사</strong><p>{places.length}개 장소의 방문 순서·시간·메모를 내 비공개 계획에 담아요. 사진·예약·예산은 포함하지 않습니다.</p></div>
+        {dates.length > 0 && (travel.durationDays > 1 || travel.places.some(place => !place.visitedAt)) && <label>
+          <span>가져올 코스</span>
+          <select value={sourceDay} disabled={pending} onChange={event => { setSourceDay(event.target.value); setError(null); }}>
+            <option value="">전체 일정 · {travel.durationDays}일</option>
+            {dates.map(date => <option key={date} value={date}>{daysBetween(travel.startDate, date) + 1}일차 · {date}</option>)}
+          </select>
+        </label>}
+        {sourceDay && <ol className="shared-itinerary-save__stops" aria-label="선택한 하루의 방문 순서">{places.map(place => <li key={place.id}>{place.placeName}</li>)}</ol>}
         <label><span>새 출발일</span><input type="date" min={today} value={startDate} disabled={pending} onChange={(event) => { setStartDate(event.target.value); setError(null); }} /></label>
-        {validRange ? <p className="shared-itinerary-save__period" role="status">내 여행 기간: <time dateTime={startDate}>{startDate}</time> ~ <time dateTime={endDate!}>{endDate}</time> · {travel.durationDays}일</p>
+        {validRange ? <p className="shared-itinerary-save__period" role="status">내 여행 기간: <time dateTime={startDate}>{startDate}</time> ~ <time dateTime={endDate!}>{endDate}</time> · {duration}일</p>
           : <p className="shared-itinerary-save__error" role="status">{startDate < today && startDate ? "오늘 또는 이후 날짜를 선택해 주세요." : "복사할 여행의 출발일을 입력해 주세요."}</p>}
-        {signedIn ? <button type="button" onClick={saveToMyPlans} disabled={pending || !validRange}>{pending ? "계획에 담는 중…" : `${travel.durationDays}일 일정 복사`}</button> :
+        {signedIn ? <button type="button" onClick={saveToMyPlans} disabled={pending || !validRange}>{pending ? "계획에 담는 중…" : `${duration}일 일정 복사`}</button> :
           validRange && <div className="shared-itinerary-save__auth">
             <Link prefetch={false} href={`/register?next=${next}`} className="shared-itinerary-cta">가입하고 계속</Link>
             <Link prefetch={false} href={`/login?next=${next}`}>로그인하고 계속</Link>

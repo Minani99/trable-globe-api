@@ -87,6 +87,8 @@ test("미래의 비공개 계획을 링크로 공유·복사하고 공유를 끈
   await visitor.goto(url);
   await expect(visitor.getByRole("heading", { name: "교토의 세 장소", exact: true })).toBeVisible();
   await visitor.getByRole("button", { name: /내 계획으로 복사/ }).click();
+  await visitor.getByLabel("가져올 코스").selectOption("2099-10-11");
+  await expect(visitor.getByRole("list", { name: "선택한 하루의 방문 순서" })).toHaveText("다음날 산책");
   await visitor.getByLabel("새 출발일").fill("2099-11-10");
   const login = visitor.getByRole("link", { name: "로그인하고 계속" });
   await expect(login).toHaveAttribute("href", /next=%2Fshare%2F/);
@@ -98,13 +100,14 @@ test("미래의 비공개 계획을 링크로 공유·복사하고 공유를 끈
   await visitor.locator('input[name="password"]').fill("shared-trip-test-42");
   await visitor.getByRole("button", { name: "계정 만들기" }).click();
   await expect(visitor.getByLabel("새 출발일")).toHaveValue("2099-11-10", { timeout: 30_000 });
-  await visitor.getByRole("button", { name: "2일 일정 복사", exact: true }).click();
+  await expect(visitor.getByLabel("가져올 코스")).toHaveValue("2099-10-11");
+  await visitor.getByRole("button", { name: "1일 일정 복사", exact: true }).click();
   await expect(visitor).toHaveURL(/\/studio\/travels\/\d+\/edit\?plan=1/);
   const copyId = visitor.url().match(/travels\/(\d+)/)![1];
   const copy = (await (await visitor.request.get(`/api/private/travels/${copyId}`)).json()).data;
-  expect(copy.places.map((place: { placeName: string }) => place.placeName)).toEqual(["교토역", "니시키 시장", "가모강", "다음날 산책"]);
-  expect(copy.places[0]).toMatchObject({ memo: "메모 0", startTime: "09:00:00", durationMinutes: 60, visitedAt: "2099-11-10" });
-  expect(copy.places[3].visitedAt).toBe("2099-11-11");
+  expect(copy).toMatchObject({ startDate: "2099-11-10", endDate: "2099-11-10" });
+  expect(copy.places).toHaveLength(1);
+  expect(copy.places[0]).toMatchObject({ placeName: "다음날 산책", memo: "메모 3", startTime: "12:00:00", durationMinutes: 60, visitedAt: "2099-11-10" });
   expect(copy.photos).toEqual([]); expect(copy.visibility).toBe("PRIVATE");
   expect((await page.request.get(`/api/travels/${id}`)).status()).toBe(404);
   await page.getByRole("button", { name: "공유 끄기", exact: true }).click();
