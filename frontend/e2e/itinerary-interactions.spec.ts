@@ -86,8 +86,9 @@ test("미래의 비공개 계획을 링크로 공유·복사하고 공유를 끈
   const visitor = await visitorContext.newPage();
   await visitor.goto(url);
   await expect(visitor.getByRole("heading", { name: "교토의 세 장소", exact: true })).toBeVisible();
-  await visitor.getByRole("button", { name: /내 계획으로 복사/ }).click();
-  await visitor.getByLabel("가져올 코스").selectOption("2099-10-11");
+  await visitor.getByRole("group", { name: "경로 날짜 선택" }).getByRole("button", { name: /2일차/ }).click();
+  await visitor.getByRole("button", { name: "2일차 코스 가져오기" }).click();
+  await expect(visitor.getByLabel("새 출발일")).toBeFocused();
   await expect(visitor.getByRole("list", { name: "선택한 하루의 방문 순서" })).toHaveText("다음날 산책");
   await visitor.getByLabel("새 출발일").fill("2099-11-10");
   const login = visitor.getByRole("link", { name: "로그인하고 계속" });

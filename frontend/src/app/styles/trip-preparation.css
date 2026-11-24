@@ -325,6 +325,16 @@
 }
 
 #copy-plan { scroll-margin-top: 5rem; }
+.day-course-import {
+  justify-self: start;
+  min-height: 44px;
+  padding-inline: 1rem;
+  margin-top: .75rem;
+  border-radius: var(--radius-sm);
+  color: var(--accent-strong);
+  background: var(--accent-soft);
+  font-weight: 600;
+}
 .shared-itinerary-save__auth { display: flex; align-items: center; flex-wrap: wrap; gap: .5rem 1rem; }
 .shared-itinerary-save__auth a { display: inline-flex; align-items: center; min-height: 44px; }
 
