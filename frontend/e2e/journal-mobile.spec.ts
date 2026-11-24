@@ -16,9 +16,10 @@ test("여행 사진은 모바일에서 로드되고 로그인 동작을 가리�
   await expect(sample).not.toHaveText(firstExample!);
   await photo.scrollIntoViewIfNeeded();
   const credit = await page.locator(".landing-postcard figcaption a").getAttribute("href");
-  const response = await page.request.get("/photo-credits");
+  const response = await page.request.get(credit!);
   expect(response.ok()).toBe(true);
   expect(await response.text()).toContain(`id="${credit!.split("#")[1]}"`);
+  expect((await response.text()).match(/<li id="[A-Z]{2}"/g)).toHaveLength(1);
   await page.screenshot({ path: testInfo.outputPath("journal-home-mobile.png"), fullPage: true });
   await page.goto("/login?next=%2Fstudio");
   await expect(page.locator(".auth-scene img")).toBeVisible();

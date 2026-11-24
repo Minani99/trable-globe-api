@@ -155,3 +155,13 @@
 .photo-credits h2 { margin-block: 2.5rem 1rem; font-size: 1.25rem; font-weight: 650; }
 .photo-credits li { padding-block: .7rem; scroll-margin-top: 6rem; }
 .photo-credits a { color: var(--accent-strong); text-decoration: underline; text-underline-offset: .2em; }
+.photo-credit-search {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: .5rem;
+  max-width: 30rem;
+  margin-block: 1.5rem 1rem;
+}
+.photo-credit-search label { grid-column: 1 / -1; font-weight: 600; }
+.photo-credit-search input { min-width: 0; padding: .65rem .8rem; border: 1px solid var(--border); border-radius: var(--radius-sm); font-size: 1rem; }
+.photo-credit-search button { min-height: 44px; padding-inline: 1rem; border-radius: var(--radius-sm); background: var(--text-primary); color: var(--surface); }

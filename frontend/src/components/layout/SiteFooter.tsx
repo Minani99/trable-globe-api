@@ -41,7 +41,7 @@ export function SiteFooter({ compact = false }: { compact?: boolean }) {
                 베타 이용 안내
               </Link>
             </li>
-            <li><Link href="/photo-credits">사진 출처</Link></li>
+            <li><Link prefetch={false} href="/photo-credits">사진 출처</Link></li>
             <FooterAccountLinks />
           </ul>
         </nav>
