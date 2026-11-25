@@ -1,5 +1,6 @@
 package com.travelglobe.trableglobeapi.travel.service;
 
+import com.travelglobe.trableglobeapi.travel.domain.CourseDay;
 import com.travelglobe.trableglobeapi.auth.security.MemberPrincipal;
 import com.travelglobe.trableglobeapi.global.exception.InvalidRequestException;
 import com.travelglobe.trableglobeapi.global.exception.ResourceNotFoundException;
@@ -123,6 +124,22 @@ public class TravelCommandService {
         Travel saved = travelRepository.saveAndFlush(travel);
         List<TravelPhoto> photos = savePhotos(saved, request.photos());
         return TravelDetailResponse.of(saved, photos, null, null);
+    }
+
+    @Transactional
+    public CourseDay saveCourseDay(MemberPrincipal principal, Long travelId, LocalDate date, CourseDay input) {
+        Travel travel = travelRepository.findOwnedForSharing(travelId, principal.memberId())
+                .orElseThrow(() -> ResourceNotFoundException.travel(travelId));
+        if (travel.getPlaces().stream().noneMatch(place -> date.equals(place.getVisitedAt()))) {
+            throw new IllegalArgumentException("해당 날짜에 등록된 장소가 없습니다.");
+        }
+        CourseDay day = new CourseDay(input.companion(), input.transport(), emptyToNull(input.reflection()));
+        if (day.companion() == null && day.transport() == null && day.reflection() == null) {
+            travel.getCourseDays().remove(date);
+        } else {
+            travel.getCourseDays().put(date, day);
+        }
+        return day;
     }
 
     @Transactional

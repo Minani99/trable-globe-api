@@ -17,11 +17,11 @@ export default async function SharedPlanPage({ params, searchParams }: PageProps
   let travel: TravelDetail;
   try { travel = await apiGet<TravelDetail>(`/api/shared/itineraries/${encodeURIComponent(token)}`); }
   catch (error) { if (error instanceof ApiError && error.isNotFound) notFound(); throw error; }
-  const [member, { copyDate, copyDay }] = await Promise.all([getCurrentMember(), searchParams]);
+  const [member, { copyDate, copyDay, skipStops }] = await Promise.all([getCurrentMember(), searchParams]);
   return <><SiteHeader /><main id="main" className="shared-plan site-shell">
     <header><span className="shared-plan__eyebrow">함께 나누는 여행 일정</span><h1>{travel.title}</h1><p>{publicDisplayName(travel.owner.displayName)}님의 {travel.durationDays}일 여행 · {travel.places.length}개 장소</p><p>{travel.startDate} — {travel.endDate}</p></header>
-    <SaveSharedItinerary travel={travel} signedIn={Boolean(member)} isOwner={member?.username === travel.owner.username} today={todayInKorea()} returnPath={`/share/${token}`} copyDate={copyDate} copyDay={copyDay} />
+    <SaveSharedItinerary travel={travel} signedIn={Boolean(member)} isOwner={member?.username === travel.owner.username} today={todayInKorea()} returnPath={`/share/${token}`} copyDate={copyDate} copyDay={copyDay} skipStops={skipStops} />
     {travel.description ? <p className="shared-plan__note">{travel.description}</p> : null}
-    <TravelRouteMap places={travel.places} startDate={travel.startDate} copyFormId={member?.username === travel.owner.username ? undefined : "copy-plan"} />
+    <TravelRouteMap places={travel.places} startDate={travel.startDate} courseDays={travel.courseDays} description={travel.description} copyFormId={member?.username === travel.owner.username ? undefined : "copy-plan"} />
   </main></>;
 }

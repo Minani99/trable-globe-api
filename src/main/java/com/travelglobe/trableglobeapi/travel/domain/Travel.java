@@ -2,6 +2,11 @@ package com.travelglobe.trableglobeapi.travel.domain;
 
 import com.travelglobe.trableglobeapi.global.domain.BaseTimeEntity;
 import com.travelglobe.trableglobeapi.member.domain.Member;
+import java.util.HashMap;
+import java.util.Map;
+import jakarta.persistence.ElementCollection;
+import jakarta.persistence.CollectionTable;
+import jakarta.persistence.MapKeyColumn;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -70,6 +75,11 @@ public class Travel extends BaseTimeEntity {
     @Column(name = "share_token", length = 64, unique = true)
     private String shareToken;
 
+    @ElementCollection
+    @CollectionTable(name = "travel_course_days", joinColumns = @JoinColumn(name = "travel_id"))
+    @MapKeyColumn(name = "course_date")
+    private Map<LocalDate, CourseDay> courseDays = new HashMap<>();
+
     public String enableSharing() {
         if (shareToken == null) shareToken = java.util.UUID.randomUUID().toString();
         return shareToken;
@@ -118,6 +128,7 @@ public class Travel extends BaseTimeEntity {
     public void replacePlaces(List<TravelPlace> newPlaces) {
         places.clear();
         newPlaces.forEach(this::addPlace);
+        courseDays.keySet().retainAll(newPlaces.stream().map(TravelPlace::getVisitedAt).toList());
     }
 
     public List<TravelPlace> getPlaces() {

@@ -1,5 +1,6 @@
 package com.travelglobe.trableglobeapi.travel.controller;
 
+import com.travelglobe.trableglobeapi.travel.domain.CourseDay;
 import com.travelglobe.trableglobeapi.auth.security.MemberPrincipal;
 import com.travelglobe.trableglobeapi.auth.security.AuthenticatedRequest;
 import com.travelglobe.trableglobeapi.global.response.ApiResponse;
@@ -25,6 +26,7 @@ import com.travelglobe.trableglobeapi.travel.service.TravelTaskService;
 import com.travelglobe.trableglobeapi.travel.service.TravelWorkspaceService;
 import jakarta.validation.Valid;
 import jakarta.servlet.http.HttpServletRequest;
+import java.time.LocalDate;
 import java.util.List;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -99,6 +101,13 @@ public class PrivateTravelController {
             @Valid @RequestBody TravelWriteRequest request) {
         MemberPrincipal principal = AuthenticatedRequest.principal(servletRequest);
         return ApiResponse.ok(travelCommandService.update(principal, travelId, request), "여행을 저장했습니다.");
+    }
+
+    @PutMapping("/{travelId}/course-days/{date}")
+    public ApiResponse<CourseDay> saveCourseDay(HttpServletRequest request, @PathVariable Long travelId,
+            @PathVariable LocalDate date, @Valid @RequestBody CourseDay body) {
+        return ApiResponse.ok(travelCommandService.saveCourseDay(
+                AuthenticatedRequest.principal(request), travelId, date, body));
     }
 
     @PatchMapping("/{travelId}/places/{placeId}")

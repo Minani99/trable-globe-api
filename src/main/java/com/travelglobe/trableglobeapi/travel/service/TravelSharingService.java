@@ -45,6 +45,6 @@ public class TravelSharingService {
                 p.visitedAt(), p.startTime(), p.durationMinutes(), p.memo(), null, p.sortOrder())).toList();
         return new TravelDetailResponse(detail.id(), detail.title(), detail.description(),
                 detail.startDate(), detail.endDate(), detail.durationDays(), null, detail.visibility(),
-                detail.owner(), detail.countries(), places, List.of(), null, null);
+                detail.owner(), detail.countries(), places, List.of(), null, null, detail.courseDays());
     }
 }
