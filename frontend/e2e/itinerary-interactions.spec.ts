@@ -6,11 +6,11 @@ async function register(page: Page) {
   expect((await page.request.post("/api/auth/register", { data: { username, displayName: "일정 여행자", email: `${username}@example.com`, password: "itinerary-test-password-42" } })).status()).toBe(200);
   return username;
 }
-async function seed(page: Page) {
+async function seed(page: Page, extraStops: string[] = []) {
   await register(page);
   const response = await page.request.post("/api/private/travels", { data: {
     title: "교토의 세 장소", description: "천천히 걷는 여행", startDate: "2099-10-10", endDate: "2099-10-11", visibility: "PRIVATE", coverImageUrl: null,
-    places: ["교토역", "니시키 시장", "가모강", "다음날 산책"].map((placeName, index) => ({ country, city: null, placeName, latitude: 35.01 + index * .01, longitude: 135.76, visitedAt: index === 3 ? "2099-10-11" : "2099-10-10", startTime: `${9 + index}:00`.padStart(5, "0"), durationMinutes: 60, memo: `메모 ${index}` })),
+    places: ["교토역", "니시키 시장", "가모강", "다음날 산책", ...extraStops].map((placeName, index) => ({ country, city: null, placeName, latitude: 35.01 + index * .01, longitude: 135.76, visitedAt: index >= 3 ? "2099-10-11" : "2099-10-10", startTime: `${9 + index}:00`.padStart(5, "0"), durationMinutes: 60, memo: `메모 ${index}` })),
     photos: [{ imageUrl: "https://images.example.com/kyoto.jpg", caption: "교토역 사진", takenAt: "2099-10-10", placeIndex: 0 }],
   } });
   expect(response.status()).toBe(201);
@@ -73,7 +73,7 @@ for (const width of [390, 1280]) {
 }
 
 test("미래의 비공개 계획을 링크로 공유·복사하고 공유를 끈다", async ({ page, browser }) => {
-  const id = await seed(page);
+  const id = await seed(page, ["이미 가본 카페"]);
   await page.goto(`/studio/travels/${id}/edit?plan=1`);
   await page.getByRole("tablist", { name: "여행 작업", exact: true }).getByRole("tab", { name: "일정", exact: true }).click();
   await page.locator(".plan-share-panel summary").click();
@@ -81,15 +81,27 @@ test("미래의 비공개 계획을 링크로 공유·복사하고 공유를 끈
   const input = page.getByRole("textbox", { name: "공유 링크", exact: true });
   await expect(input).toHaveValue(/\/share\//);
   const url = await input.inputValue();
+  const dayPage = await page.context().newPage();
+  await dayPage.goto("/studio/travels/" + id + "/go?date=2099-10-11");
+  await dayPage.getByText("이날의 동행·이동수단과 한 줄 후기", { exact: true }).click();
+  await dayPage.getByLabel("누구와 갔나요?").selectOption("부모님과");
+  await dayPage.getByLabel("이동수단", { exact: true }).selectOption("도보");
+  await dayPage.getByLabel("다시 간다면", { exact: true }).fill("다음에는 강변부터 걸을래요.");
+  await dayPage.getByRole("button", { name: "코스 정보 저장" }).click();
+  await expect(dayPage.locator(".course-day-editor")).toContainText("저장했습니다.");
+  await dayPage.close();
   const visitorContext = await browser.newContext({ viewport: { width: 390, height: 844 } });
   await blockGoogleMaps(visitorContext);
   const visitor = await visitorContext.newPage();
   await visitor.goto(url);
   await expect(visitor.getByRole("heading", { name: "교토의 세 장소", exact: true })).toBeVisible();
   await visitor.getByRole("group", { name: "경로 날짜 선택" }).getByRole("button", { name: /2일차/ }).click();
+  await expect(visitor.getByText("부모님과 · 도보", { exact: true })).toBeVisible();
+  await expect(visitor.getByText("다음에는 강변부터 걸을래요.", { exact: false })).toBeVisible();
   await visitor.getByRole("button", { name: "2일차 코스 가져오기" }).click();
   await expect(visitor.getByLabel("새 출발일")).toBeFocused();
-  await expect(visitor.getByRole("list", { name: "선택한 하루의 방문 순서" })).toHaveText("다음날 산책");
+  await expect(visitor.getByRole("list", { name: "선택한 하루의 방문 순서" })).toContainText("다음날 산책");
+  await visitor.getByRole("checkbox", { name: "이미 가본 카페" }).uncheck();
   await visitor.getByLabel("새 출발일").fill("2099-11-10");
   await expect(visitor.locator("#copy-date-summary time")).toHaveCount(1);
   await visitor.getByRole("button", { name: "복사 옵션 접기" }).click();

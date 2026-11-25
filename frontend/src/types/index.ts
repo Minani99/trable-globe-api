@@ -118,7 +118,14 @@ export interface TravelNavigationLink {
   startDate: string;
 }
 
+export interface CourseDay {
+  companion: string | null;
+  transport: string | null;
+  reflection: string | null;
+}
+
 export interface TravelDetail {
+  courseDays?: Record<string, CourseDay>;
   id: number;
   title: string;
   description: string | null;

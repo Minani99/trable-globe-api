@@ -7,12 +7,15 @@ import { GoogleDirectionsPanel } from "@/components/travel/GoogleDirectionsPanel
 import { GoogleRouteMapCanvas } from "@/components/travel/GoogleRouteMapCanvas";
 import { googleMapsApiKey } from "@/lib/google-maps-loader";
 import { formatDate } from "@/lib/utils/format";
-import type { TravelPlace } from "@/types";
+import { courseCompanion } from "@/lib/course-day";
+import type { CourseDay, TravelPlace } from "@/types";
 import { MAP_PIN_PATH } from "@/lib/map-pin";
 
 interface TravelRouteMapProps {
   places: TravelPlace[];
   copyFormId?: string;
+  courseDays?: Record<string, CourseDay>;
+  description?: string | null;
   startDate?: string;
   compact?: boolean;
   displayedRoute?: google.maps.routes.Route | null;
@@ -75,6 +78,8 @@ function TravelRouteDays(props: TravelRouteMapProps) {
     return Number.isFinite(difference) ? Math.max(1, Math.round(difference / 86400000) + 1) : dates.indexOf(value) + 1;
   };
   const day = dayOf(date);
+  const context = props.courseDays?.[date];
+  const conditions = [context?.companion || courseCompanion(props.description), context?.transport].filter(Boolean).join(" · ");
   return <div className="travel-route-days">
     {/* A one-day trip has nothing to choose between, so the selector would only add height. */}
     {dates.length > 1 ? <div className="google-directions__days travel-route-days__tabs" role="group" aria-label="경로 날짜 선택">
@@ -83,7 +88,9 @@ function TravelRouteDays(props: TravelRouteMapProps) {
         <span> · {days.get(value)?.length}곳</span>
       </button>)}
     </div> : null}
+    {conditions && <p className="course-day-conditions">{conditions}</p>}
     <TravelRouteDay key={date} {...props} places={days.get(date) ?? []} activeDate={date} dayNumber={day} />
+    {context?.reflection && <p className="course-day-reflection"><strong>다시 간다면</strong>{context.reflection}</p>}
     {props.copyFormId && date && <button className="day-course-import" type="submit" form={props.copyFormId}
       formNoValidate name="sourceDay" value={date}>{day}일차 코스 가져오기</button>}
   </div>;

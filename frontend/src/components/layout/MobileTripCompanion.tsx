@@ -5,6 +5,7 @@ import Link from "next/link";
 import dynamic from "next/dynamic";
 import { TripWeather } from "@/components/travel/TripWeather";
 import { DayItineraryCopy } from "@/components/travel/DayItineraryCopy";
+import { CourseDayEditor } from "@/components/travel/CourseDayEditor";
 import { DayReservations } from "@/components/travel/DayReservations";
 import { isDirectionsStopLocated } from "@/lib/google-directions";
 
@@ -461,6 +462,10 @@ export function MobileTripCompanion({
 
       {variant === "sheet" ? itinerary : null}
 
+      {variant === "page" && dayPlaces.length > 0 && <CourseDayEditor key={currentTravel.id + viewDate}
+        travel={currentTravel} date={viewDate} online={online} onSaved={day => setCurrentTravel(previous => ({
+          ...previous, courseDays: { ...previous.courseDays, [viewDate]: day },
+        }))} />}
       {variant === "page" ? <DayReservations key={`${username}:${currentTravel.id}`} travelId={currentTravel.id} date={viewDate} online={online} /> : null}
       {variant === "page" && dayPlaces.length ? <DayItineraryCopy key={viewDate} title={currentTravel.title} date={viewDate} places={dayPlaces} /> : null}
 

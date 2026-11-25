@@ -297,7 +297,7 @@
 }
 
 .shared-itinerary-save__panel select,
-.shared-itinerary-save__panel input {
+.shared-itinerary-save__panel input[type="date"] {
   width: 100%;
   min-width: 0;
   min-height: 44px;
@@ -325,6 +325,16 @@
   opacity: 0.55;
 }
 
+.shared-itinerary-save__stops li label { display: flex; align-items: center; gap: .6rem; min-height: 44px; }
+.shared-itinerary-save__stops input { width: 1.1rem; height: 1.1rem; flex: none; accent-color: var(--accent-strong); }
+.course-day-conditions, .course-day-reflection { margin-block: .75rem; overflow-wrap: anywhere; }
+.course-day-conditions { font-size: .875rem; color: var(--text-secondary); }
+.course-day-reflection strong { display: block; margin-bottom: .25rem; }
+.course-day-editor summary { padding-block: .85rem; cursor: pointer; font-weight: 600; }
+.course-day-editor fieldset, .course-day-editor label { display: grid; gap: .5rem; min-width: 0; }
+.course-day-editor fieldset { gap: .85rem; }
+.course-day-editor :is(select, textarea) { width: 100%; min-height: 44px; padding: .5rem; font-size: 1rem; background: var(--surface); color: var(--text-primary); border: 1px solid var(--border-strong); border-radius: var(--radius-sm); }
+.course-day-editor button { justify-self: start; padding-inline: 1rem; min-height: 44px; color: var(--accent-strong); background: var(--accent-soft); border-radius: var(--radius-sm); }
 #copy-plan { scroll-margin-top: 5rem; }
 .day-course-import {
   justify-self: start;

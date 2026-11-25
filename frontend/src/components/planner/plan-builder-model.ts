@@ -1,3 +1,4 @@
+import { COMPANIONS } from "@/lib/course-day";
 import { ApiError, readEnvelope } from "@/lib/api/client";
 import type { CountryOption } from "@/lib/countries";
 import type { PlaceRecommendation, PlaceRecommendationCategory } from "@/lib/place-recommendations";
@@ -13,7 +14,7 @@ import type { TravelPlaceWriteInput } from "@/types";
 /* Options                                                                   */
 /* ------------------------------------------------------------------------ */
 
-export const COMPANIONS = ["혼자", "연인과", "친구와", "가족과", "아이와", "부모님과"] as const;
+export { COMPANIONS } from "@/lib/course-day";
 export const DOMESTIC_REGIONS = ["서울", "부산", "제주", "강릉", "속초", "경주", "전주", "여수"] as const;
 export const STYLES = ["맛집", "여유", "도시 산책", "자연", "쇼핑", "문화"] as const;
 export const PACES = [

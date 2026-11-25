@@ -1,10 +1,12 @@
 package com.travelglobe.trableglobeapi.travel.dto;
 
+import com.travelglobe.trableglobeapi.travel.domain.CourseDay;
 import com.travelglobe.trableglobeapi.travel.domain.Travel;
 import com.travelglobe.trableglobeapi.travel.domain.TravelPhoto;
 import com.travelglobe.trableglobeapi.travel.domain.TravelPlace;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Everything the travel detail page renders in one payload.
@@ -23,7 +25,8 @@ public record TravelDetailResponse(
         List<TravelPlaceResponse> places,
         List<TravelPhotoResponse> photos,
         TravelNavigationLink previousTravel,
-        TravelNavigationLink nextTravel) {
+        TravelNavigationLink nextTravel,
+        Map<LocalDate, CourseDay> courseDays) {
 
     /** Minimal author identity - enough to link back to the profile. */
     public record TravelOwner(String username, String displayName, String profileImageUrl) {
@@ -52,6 +55,6 @@ public record TravelDetailResponse(
                 places.stream().map(TravelPlaceResponse::from).toList(),
                 photos.stream().map(TravelPhotoResponse::from).toList(),
                 previousTravel,
-                nextTravel);
+                nextTravel, Map.copyOf(travel.getCourseDays()));
     }
 }
