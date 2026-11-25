@@ -6,10 +6,15 @@
 
 .journey-share {
   display: flex;
+  flex-wrap: wrap;
   min-height: 2.75rem;
   align-items: center;
   gap: 0.75rem;
 }
+
+#course-map { scroll-margin-block-start: 5rem; }
+.travel-route-days > .journey-share { margin-block-start: .5rem; }
+.journey-share > input { width: 100%; min-width: 0; min-height: 44px; font-size: 1rem; }
 
 .journey-share > button {
   display: inline-flex;

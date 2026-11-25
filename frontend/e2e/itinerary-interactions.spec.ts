@@ -114,6 +114,15 @@ test("미래의 비공개 계획을 링크로 공유·복사하고 공유를 끈
   await visitor.goto(url);
   await expect(visitor.getByRole("heading", { name: "교토의 세 장소", exact: true })).toBeVisible();
   await visitor.getByRole("group", { name: "경로 날짜 선택" }).getByRole("button", { name: /2일차.*후기/ }).click();
+  await visitor.evaluate(() => {
+    Object.defineProperty(navigator, "share", { configurable: true, value: undefined });
+    Object.defineProperty(navigator, "clipboard", { configurable: true, value: undefined });
+  });
+  await visitor.getByRole("button", { name: "2일차 링크 공유" }).click();
+  const dayUrl = await visitor.getByLabel("복사할 공유 링크").inputValue();
+  expect(dayUrl).toBe(url + "?routeDay=2099-10-11#course-map");
+  await visitor.goto(dayUrl);
+  await expect(visitor.getByRole("group", { name: "경로 날짜 선택" }).getByRole("button", { name: /2일차/ })).toHaveAttribute("aria-pressed", "true");
   await expect(visitor.getByRole("link", { name: /코스 정보 수정/ })).toHaveCount(0);
   await expect(visitor.getByText("부모님과 · 도보", { exact: true })).toBeVisible();
   await expect(visitor.getByText("다음에는 강변부터 걸을래요.", { exact: false })).toBeVisible();
@@ -151,7 +160,7 @@ test("미래의 비공개 계획을 링크로 공유·복사하고 공유를 끈
   expect((await page.request.get(`/api/travels/${id}`)).status()).toBe(404);
   await page.getByRole("button", { name: "공유 끄기", exact: true }).click();
   await expect(page.getByText("공유를 껐습니다.", { exact: false })).toBeVisible();
-  await visitor.goto(url);
+  await visitor.goto(dayUrl);
   await expect(visitor.getByRole("heading", { name: "공유가 종료된 일정입니다" })).toBeVisible();
   expect((await visitor.request.get(`/api/private/travels/${copyId}`)).status()).toBe(200);
   await visitorContext.close();
