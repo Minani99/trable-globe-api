@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useCallback, useEffect, useId, useMemo, useRef, useState } from "react";
 
 import { GoogleDirectionsPanel } from "@/components/travel/GoogleDirectionsPanel";
+import { ShareJourneyButton } from "@/components/travel/ShareJourneyButton";
 import { GoogleRouteMapCanvas } from "@/components/travel/GoogleRouteMapCanvas";
 import { googleMapsApiKey } from "@/lib/google-maps-loader";
 import { formatDate } from "@/lib/utils/format";
@@ -15,6 +16,7 @@ import { MAP_PIN_PATH } from "@/lib/map-pin";
 interface TravelRouteMapProps {
   places: TravelPlace[];
   copyFormId?: string;
+  sharing?: { title: string; ownerName: string; initialDate?: string };
   ownedTravelId?: number;
   courseDays?: Record<string, CourseDay>;
   description?: string | null;
@@ -60,7 +62,7 @@ export function TravelRouteMap(props: TravelRouteMapProps) {
 }
 
 function TravelRouteDays(props: TravelRouteMapProps) {
-  const [selectedDate, setSelectedDate] = useState<string | null>(null);
+  const [selectedDate, setSelectedDate] = useState<string | null>(props.sharing?.initialDate ?? null);
   const { days, dates } = useMemo(() => {
     const days = new Map<string, TravelPlace[]>();
     for (const place of props.places) {
@@ -82,7 +84,7 @@ function TravelRouteDays(props: TravelRouteMapProps) {
   const day = dayOf(date);
   const context = props.courseDays?.[date];
   const conditions = [context?.companion || courseCompanion(props.description), context?.transport].filter(Boolean).join(" · ");
-  return <div className="travel-route-days">
+  return <div className="travel-route-days" id={props.sharing ? "course-map" : undefined}>
     {/* A one-day trip has nothing to choose between, so the selector would only add height. */}
     {dates.length > 1 ? <div className="google-directions__days travel-route-days__tabs" role="group" aria-label="경로 날짜 선택">
       {dates.map(value => <button key={value || "undated"} type="button" aria-pressed={date === value} onClick={() => setSelectedDate(value)}>
@@ -100,6 +102,8 @@ function TravelRouteDays(props: TravelRouteMapProps) {
     </Link>}
     {props.copyFormId && date && <button className="day-course-import" type="submit" form={props.copyFormId}
       formNoValidate name="sourceDay" value={date}>{day}일차 코스 가져오기</button>}
+    {props.sharing && date && <ShareJourneyButton key={date} title={props.sharing.title}
+      ownerName={props.sharing.ownerName} course={{ date, day }} />}
   </div>;
 }
 

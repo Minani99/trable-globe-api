@@ -78,7 +78,7 @@ export async function generateMetadata(
 export default async function TravelDetailPage(
   props: PageProps<"/[username]/travel/[travelId]">,
 ) {
-  const [{ username, travelId }, { copyDate, copyDay, skipStops }] = await Promise.all([props.params, props.searchParams]);
+  const [{ username, travelId }, { copyDate, copyDay, skipStops, routeDay }] = await Promise.all([props.params, props.searchParams]);
   const id = Number(travelId);
 
   if (!Number.isInteger(id) || id <= 0) {
@@ -254,7 +254,7 @@ export default async function TravelDetailPage(
             </div>
 
             {travel.places.length > 0 ? (
-              <TravelRouteMap key={travel.id} places={travel.places} startDate={travel.startDate} courseDays={travel.courseDays} description={travel.description} ownedTravelId={isOwner ? travel.id : undefined} copyFormId={isOwner ? undefined : "copy-plan"} />
+              <TravelRouteMap key={travel.id} sharing={{ title: travel.title, ownerName: ownerName, initialDate: typeof routeDay === "string" ? routeDay : undefined }} places={travel.places} startDate={travel.startDate} courseDays={travel.courseDays} description={travel.description} ownedTravelId={isOwner ? travel.id : undefined} copyFormId={isOwner ? undefined : "copy-plan"} />
             ) : (
               <div className="travel-detail-empty">아직 기록된 방문 장소가 없습니다.</div>
             )}
