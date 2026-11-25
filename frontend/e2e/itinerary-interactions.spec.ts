@@ -81,7 +81,7 @@ test("미래의 비공개 계획을 링크로 공유·복사하고 공유를 끈
   const input = page.getByRole("textbox", { name: "공유 링크", exact: true });
   await expect(input).toHaveValue(/\/share\//);
   const url = await input.inputValue();
-  const visitorContext = await browser.newContext();
+  const visitorContext = await browser.newContext({ viewport: { width: 390, height: 844 } });
   await blockGoogleMaps(visitorContext);
   const visitor = await visitorContext.newPage();
   await visitor.goto(url);
@@ -93,6 +93,9 @@ test("미래의 비공개 계획을 링크로 공유·복사하고 공유를 끈
   await visitor.getByLabel("새 출발일").fill("2099-11-10");
   await expect(visitor.locator("#copy-date-summary time")).toHaveCount(1);
   await visitor.getByRole("button", { name: "복사 옵션 접기" }).click();
+  const routeTrigger = visitor.getByRole("button", { name: "2일차 코스 가져오기" });
+  await expect(routeTrigger).toBeFocused();
+  await expect(routeTrigger).toBeInViewport();
   await visitor.getByRole("button", { name: /내 계획으로 복사/ }).click();
   await expect(visitor.getByLabel("새 출발일")).toHaveValue("2099-11-10");
   const login = visitor.getByRole("link", { name: "로그인하고 계속" });
