@@ -326,6 +326,9 @@
 }
 
 .shared-itinerary-save__stops li label { display: flex; align-items: center; gap: .6rem; min-height: 44px; }
+.shared-itinerary-save__selection { display: flex; align-items: center; justify-content: space-between; gap: .5rem; font-size: .875rem; }
+.shared-itinerary-save__selection button { min-height: 44px; padding-inline: .5rem; color: var(--accent-strong); font-weight: 600; }
+.shared-itinerary-save__selection button:disabled { color: var(--text-tertiary); }
 .shared-itinerary-save__stops input { width: 1.1rem; height: 1.1rem; flex: none; accent-color: var(--accent-strong); }
 .course-day-conditions, .course-day-reflection { margin-block: .75rem; overflow-wrap: anywhere; }
 .course-day-conditions { font-size: .875rem; color: var(--text-secondary); }
