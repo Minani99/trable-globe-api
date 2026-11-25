@@ -121,6 +121,10 @@ export function SaveSharedItinerary({ travel, signedIn, isOwner, today, returnPa
             {dates.map(date => <option key={date} value={date}>{daysBetween(travel.startDate, date) + 1}일차 · {date}</option>)}
           </select>
         </label>}
+        {sourceDay && dayPlaces.length > 1 && <div className="shared-itinerary-save__selection">
+          <span role="status">{dayPlaces.length}곳 중 {places.length}곳 선택</span>
+          <button type="button" disabled={pending || places.length === dayPlaces.length} onClick={() => setSkipped([])}>전체 선택</button>
+        </div>}
         {sourceDay && <ol className="shared-itinerary-save__stops" aria-label="선택한 하루의 방문 순서">
           {dayPlaces.map(place => <li key={place.id}>
             <label>
