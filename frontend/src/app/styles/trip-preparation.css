@@ -337,6 +337,9 @@
 .course-day-editor fieldset { gap: .85rem; }
 .course-day-editor :is(select, textarea) { width: 100%; min-height: 44px; padding: .5rem; font-size: 1rem; background: var(--surface); color: var(--text-primary); border: 1px solid var(--border-strong); border-radius: var(--radius-sm); }
 .course-day-editor button { justify-self: start; padding-inline: 1rem; min-height: 44px; color: var(--accent-strong); background: var(--accent-soft); border-radius: var(--radius-sm); }
+.course-day-actions { display: flex; flex-wrap: wrap; gap: .25rem .5rem; }
+.course-day-editor .course-day-secondary { background: transparent; color: var(--text-secondary); text-decoration: underline; text-underline-offset: .2em; }
+.course-day-editor button:disabled { opacity: .55; }
 #copy-plan { scroll-margin-top: 5rem; }
 .day-course-import {
   justify-self: start;
