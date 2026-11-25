@@ -22,6 +22,7 @@ export function SaveSharedItinerary({ travel, signedIn, isOwner, today, returnPa
   });
   const dayPlaces = sourceDay ? travel.places.filter(place => place.visitedAt === sourceDay) : travel.places;
   const places = sourceDay ? dayPlaces.filter(place => !skipped.includes(place.id)) : dayPlaces;
+  const allSelected = places.length === dayPlaces.length;
   const canCopy = !sourceDay || places.length > 0;
   const duration = sourceDay ? 1 : travel.durationDays;
   const [pending, setPending] = useState(false);
@@ -123,7 +124,9 @@ export function SaveSharedItinerary({ travel, signedIn, isOwner, today, returnPa
         </label>}
         {sourceDay && dayPlaces.length > 1 && <div className="shared-itinerary-save__selection">
           <span role="status">{dayPlaces.length}곳 중 {places.length}곳 선택</span>
-          <button type="button" disabled={pending || places.length === dayPlaces.length} onClick={() => setSkipped([])}>전체 선택</button>
+          <button type="button" disabled={pending} onClick={() => setSkipped(allSelected ? dayPlaces.map(place => place.id) : [])}>
+            {allSelected ? "전체 해제" : "전체 선택"}
+          </button>
         </div>}
         {sourceDay && <ol className="shared-itinerary-save__stops" aria-label="선택한 하루의 방문 순서">
           {dayPlaces.map(place => <li key={place.id}>

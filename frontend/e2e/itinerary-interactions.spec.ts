@@ -129,13 +129,14 @@ test("미래의 비공개 계획을 링크로 공유·복사하고 공유를 끈
   await visitor.getByRole("button", { name: "2일차 코스 가져오기" }).click();
   await expect(visitor.getByLabel("새 출발일")).toBeFocused();
   await expect(visitor.getByRole("list", { name: "선택한 하루의 방문 순서" })).toContainText("다음날 산책");
-  await visitor.getByRole("checkbox", { name: "이미 가본 카페" }).uncheck();
-  await visitor.getByRole("checkbox", { name: "다음날 산책" }).uncheck();
+  await visitor.getByRole("button", { name: "전체 해제", exact: true }).click();
   await expect(visitor.getByText("2곳 중 0곳 선택")).toBeVisible();
+  await expect(visitor.getByRole("link", { name: "가입하고 계속" })).toHaveCount(0);
   await visitor.getByRole("button", { name: "전체 선택", exact: true }).click();
   await expect(visitor.getByText("2곳 중 2곳 선택")).toBeVisible();
   await expect(visitor.getByRole("checkbox", { name: "다음날 산책" })).toBeChecked();
-  await visitor.getByRole("checkbox", { name: "이미 가본 카페" }).uncheck();
+  await visitor.getByRole("button", { name: "전체 해제", exact: true }).click();
+  await visitor.getByRole("checkbox", { name: "다음날 산책" }).check();
   await visitor.getByLabel("새 출발일").fill("2099-11-10");
   await expect(visitor.locator("#copy-date-summary time")).toHaveCount(1);
   await visitor.getByRole("button", { name: "복사 옵션 접기" }).click();
