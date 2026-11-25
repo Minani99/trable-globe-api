@@ -102,7 +102,7 @@ function TravelRouteDays(props: TravelRouteMapProps) {
     </Link>}
     {props.copyFormId && date && <button className="day-course-import" type="submit" form={props.copyFormId}
       formNoValidate name="sourceDay" value={date}>{day}일차 코스 가져오기</button>}
-    {props.sharing && date && <ShareJourneyButton key={date} title={props.sharing.title}
+    {props.sharing && date && <ShareJourneyButton key={`share-${date}`} title={props.sharing.title}
       ownerName={props.sharing.ownerName} course={{ date, day }} />}
   </div>;
 }
