@@ -330,6 +330,8 @@
 .course-day-conditions, .course-day-reflection { margin-block: .75rem; overflow-wrap: anywhere; }
 .course-day-conditions { font-size: .875rem; color: var(--text-secondary); }
 .course-day-reflection strong { display: block; margin-bottom: .25rem; }
+.course-day-editor { scroll-margin-top: 5rem; }
+.day-course-edit { display: inline-flex; align-items: center; min-height: 44px; color: var(--accent-strong); text-decoration: underline; text-underline-offset: .2em; }
 .course-day-editor summary { padding-block: .85rem; cursor: pointer; font-weight: 600; }
 .course-day-editor fieldset, .course-day-editor label { display: grid; gap: .5rem; min-width: 0; }
 .course-day-editor fieldset { gap: .85rem; }

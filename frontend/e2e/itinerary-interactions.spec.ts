@@ -82,8 +82,10 @@ test("미래의 비공개 계획을 링크로 공유·복사하고 공유를 끈
   await expect(input).toHaveValue(/\/share\//);
   const url = await input.inputValue();
   const dayPage = await page.context().newPage();
-  await dayPage.goto("/studio/travels/" + id + "/go?date=2099-10-11");
-  await dayPage.getByText("이날의 동행·이동수단과 한 줄 후기", { exact: true }).click();
+  await dayPage.goto(url);
+  await dayPage.getByRole("group", { name: "경로 날짜 선택" }).getByRole("button", { name: /2일차/ }).click();
+  await dayPage.getByRole("link", { name: "2일차 코스 정보 작성" }).click();
+  await expect(dayPage.getByLabel("누구와 갔나요?")).toBeVisible();
   await dayPage.getByLabel("누구와 갔나요?").selectOption("부모님과");
   await dayPage.getByLabel("이동수단", { exact: true }).selectOption("도보");
   await dayPage.getByLabel("다시 간다면", { exact: true }).fill("다음에는 강변부터 걸을래요.");
@@ -95,7 +97,8 @@ test("미래의 비공개 계획을 링크로 공유·복사하고 공유를 끈
   const visitor = await visitorContext.newPage();
   await visitor.goto(url);
   await expect(visitor.getByRole("heading", { name: "교토의 세 장소", exact: true })).toBeVisible();
-  await visitor.getByRole("group", { name: "경로 날짜 선택" }).getByRole("button", { name: /2일차/ }).click();
+  await visitor.getByRole("group", { name: "경로 날짜 선택" }).getByRole("button", { name: /2일차.*후기/ }).click();
+  await expect(visitor.getByRole("link", { name: /코스 정보 수정/ })).toHaveCount(0);
   await expect(visitor.getByText("부모님과 · 도보", { exact: true })).toBeVisible();
   await expect(visitor.getByText("다음에는 강변부터 걸을래요.", { exact: false })).toBeVisible();
   await visitor.getByRole("button", { name: "2일차 코스 가져오기" }).click();

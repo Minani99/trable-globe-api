@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { apiMutation } from "@/lib/api/client";
 import { COMPANIONS, courseCompanion } from "@/lib/course-day";
 import type { CourseDay, TravelDetail } from "@/types";
@@ -9,6 +9,19 @@ export function CourseDayEditor({ travel, date, online, onSaved }: {
   travel: TravelDetail; date: string; online: boolean; onSaved: (day: CourseDay) => void;
 }) {
   const saved = travel.courseDays?.[date];
+  const editor = useRef<HTMLDetailsElement>(null);
+  const editorId = `course-day-${date}`;
+  useEffect(() => {
+    function openLinkedEditor() {
+      if (location.hash !== "#" + editorId || !editor.current) return;
+      editor.current.open = true;
+      editor.current.querySelector("summary")?.focus({ preventScroll: true });
+      editor.current.scrollIntoView({ block: "start" });
+    }
+    openLinkedEditor();
+    window.addEventListener("hashchange", openLinkedEditor);
+    return () => window.removeEventListener("hashchange", openLinkedEditor);
+  }, [editorId]);
   const [companion, setCompanion] = useState(saved?.companion ?? courseCompanion(travel.description));
   const [transport, setTransport] = useState(saved?.transport ?? "");
   const [reflection, setReflection] = useState(saved?.reflection ?? "");
@@ -30,7 +43,7 @@ export function CourseDayEditor({ travel, date, online, onSaved }: {
       setPending(false);
     }
   }
-  return <details className="course-day-editor">
+  return <details ref={editor} id={editorId} className="course-day-editor">
     <summary>이날의 동행·이동수단과 한 줄 후기</summary>
     <fieldset disabled={pending}>
       <label>누구와 갔나요?<select aria-label="누구와 갔나요?" value={companion} onChange={event => { setCompanion(event.target.value); setMessage(""); }}>
