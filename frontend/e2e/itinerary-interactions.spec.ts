@@ -98,6 +98,15 @@ test("미래의 비공개 계획을 링크로 공유·복사하고 공유를 끈
   await dayPage.reload();
   await expect(dayPage.getByLabel("다시 간다면", { exact: true })).toHaveValue("다음에는 강변부터 걸을래요.");
   await expect(dayPage.getByText("이 탭에 임시 저장됨")).toHaveCount(0);
+  const review = dayPage.getByLabel("다시 간다면", { exact: true });
+  await review.fill("다른 코스도 생각 중");
+  await dayPage.getByRole("button", { name: "임시 저장본 버리기" }).click();
+  await expect(review).toHaveValue("다음에는 강변부터 걸을래요.");
+  await dayPage.getByRole("button", { name: "버리기 취소" }).click();
+  await expect(review).toHaveValue("다른 코스도 생각 중");
+  await dayPage.getByRole("button", { name: "임시 저장본 버리기" }).click();
+  await dayPage.reload();
+  await expect(review).toHaveValue("다음에는 강변부터 걸을래요.");
   await dayPage.close();
   const visitorContext = await browser.newContext({ viewport: { width: 390, height: 844 } });
   await blockGoogleMaps(visitorContext);

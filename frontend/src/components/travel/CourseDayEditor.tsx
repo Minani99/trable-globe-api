@@ -42,6 +42,7 @@ export function CourseDayEditor({ travel, date, online, onSaved }: {
   const draftKey = `course-day-draft:${travel.owner.username}:${travel.id}:${date}`;
   const sessionDraft = useSyncExternalStore(subscribeToSession, () => readDraft(draftKey), noDraft);
   const [edited, setEdited] = useState<Draft | null>(null);
+  const [discarded, setDiscarded] = useState<Draft | null>(null);
   const draft = edited ?? parseDraft(sessionDraft);
   const fields = draft ?? {
     companion: saved?.companion ?? "", transport: saved?.transport ?? "", reflection: saved?.reflection ?? "",
@@ -52,8 +53,20 @@ export function CourseDayEditor({ travel, date, online, onSaved }: {
   function update(change: Partial<Draft>) {
     const next = { ...fields, ...change };
     setEdited(next);
+    setDiscarded(null);
     setMessage("");
     try { sessionStorage.setItem(draftKey, JSON.stringify(next)); } catch { /* Keep editing in memory. */ }
+  }
+  function discard() {
+    try { sessionStorage.removeItem(draftKey); } catch {
+      if (readDraft(draftKey)) {
+        setMessage("임시 저장본을 지우지 못했습니다. 다시 시도해 주세요.");
+        return;
+      }
+    }
+    setDiscarded(draft);
+    setEdited(null);
+    setMessage("임시 저장본을 버렸습니다.");
   }
   async function save() {
     setPending(true);
@@ -67,6 +80,7 @@ export function CourseDayEditor({ travel, date, online, onSaved }: {
         if (readDraft(draftKey) === JSON.stringify(fields)) sessionStorage.removeItem(draftKey);
       } catch { /* Saving to the server has already succeeded. */ }
       setEdited(null);
+      setDiscarded(null);
       onSaved(result);
       setMessage("저장했습니다.");
     } catch {
@@ -89,8 +103,12 @@ export function CourseDayEditor({ travel, date, online, onSaved }: {
       <label>다시 간다면<textarea aria-label="다시 간다면" rows={2} maxLength={240} value={reflection} onChange={event => update({ reflection: event.target.value })}
         placeholder="다시 간다면 어떤 순서로 둘러보고 싶나요?" /></label>
       <small>공개 여행이나 공유 링크에서 이날의 코스와 함께 보여요.</small>
-      <button type="button" disabled={!online} onClick={save}>{pending ? "저장 중…" : "코스 정보 저장"}</button>
-      <span role="status">{online ? message || (sessionDraft && draft ? "이 탭에 임시 저장됨" : "") : "인터넷 연결 후 저장할 수 있어요."}</span>
+      <div className="course-day-actions">
+        <button type="button" disabled={!online || !draft} onClick={save}>{pending ? "저장 중…" : "코스 정보 저장"}</button>
+        {draft && <button type="button" className="course-day-secondary" onClick={discard}>임시 저장본 버리기</button>}
+        {discarded && <button type="button" className="course-day-secondary" onClick={() => update(discarded)}>버리기 취소</button>}
+      </div>
+      <span role="status">{message || (online ? (sessionDraft && draft ? "이 탭에 임시 저장됨" : "") : "인터넷 연결 후 저장할 수 있어요.")}</span>
     </fieldset>
   </details>;
 }
