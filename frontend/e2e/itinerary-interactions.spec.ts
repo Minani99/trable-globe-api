@@ -89,8 +89,15 @@ test("미래의 비공개 계획을 링크로 공유·복사하고 공유를 끈
   await dayPage.getByLabel("누구와 갔나요?").selectOption("부모님과");
   await dayPage.getByLabel("이동수단", { exact: true }).selectOption("도보");
   await dayPage.getByLabel("다시 간다면", { exact: true }).fill("다음에는 강변부터 걸을래요.");
+  await dayPage.reload();
+  await expect(dayPage.getByLabel("다시 간다면", { exact: true })).toHaveValue("다음에는 강변부터 걸을래요.");
+  await expect(dayPage.getByLabel("이동수단", { exact: true })).toHaveValue("도보");
+  await expect(dayPage.getByLabel("누구와 갔나요?")).toHaveValue("부모님과");
   await dayPage.getByRole("button", { name: "코스 정보 저장" }).click();
   await expect(dayPage.locator(".course-day-editor")).toContainText("저장했습니다.");
+  await dayPage.reload();
+  await expect(dayPage.getByLabel("다시 간다면", { exact: true })).toHaveValue("다음에는 강변부터 걸을래요.");
+  await expect(dayPage.getByText("이 탭에 임시 저장됨")).toHaveCount(0);
   await dayPage.close();
   const visitorContext = await browser.newContext({ viewport: { width: 390, height: 844 } });
   await blockGoogleMaps(visitorContext);
