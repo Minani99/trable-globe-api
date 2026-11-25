@@ -149,6 +149,7 @@ test("미래의 비공개 계획을 링크로 공유·복사하고 공유를 끈
   await visitor.getByRole("button", { name: "계정 만들기" }).click();
   await expect(visitor.getByLabel("새 출발일")).toHaveValue("2099-11-10", { timeout: 30_000 });
   await expect(visitor.getByLabel("가져올 코스")).toHaveValue("2099-10-11");
+  await expect(visitor.getByRole("group", { name: "경로 날짜 선택" }).getByRole("button", { name: /2일차/ })).toHaveAttribute("aria-pressed", "true");
   await visitor.getByRole("button", { name: "1일 일정 복사", exact: true }).click();
   await expect(visitor).toHaveURL(/\/studio\/travels\/\d+\/edit\?plan=1/);
   const copyId = visitor.url().match(/travels\/(\d+)/)![1];
