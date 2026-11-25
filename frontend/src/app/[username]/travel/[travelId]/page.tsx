@@ -254,7 +254,7 @@ export default async function TravelDetailPage(
             </div>
 
             {travel.places.length > 0 ? (
-              <TravelRouteMap key={travel.id} places={travel.places} startDate={travel.startDate} courseDays={travel.courseDays} description={travel.description} copyFormId={isOwner ? undefined : "copy-plan"} />
+              <TravelRouteMap key={travel.id} places={travel.places} startDate={travel.startDate} courseDays={travel.courseDays} description={travel.description} ownedTravelId={isOwner ? travel.id : undefined} copyFormId={isOwner ? undefined : "copy-plan"} />
             ) : (
               <div className="travel-detail-empty">아직 기록된 방문 장소가 없습니다.</div>
             )}

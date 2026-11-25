@@ -1,6 +1,7 @@
 "use client";
 
 import type { PointerEvent, WheelEvent } from "react";
+import Link from "next/link";
 import { useCallback, useEffect, useId, useMemo, useRef, useState } from "react";
 
 import { GoogleDirectionsPanel } from "@/components/travel/GoogleDirectionsPanel";
@@ -14,6 +15,7 @@ import { MAP_PIN_PATH } from "@/lib/map-pin";
 interface TravelRouteMapProps {
   places: TravelPlace[];
   copyFormId?: string;
+  ownedTravelId?: number;
   courseDays?: Record<string, CourseDay>;
   description?: string | null;
   startDate?: string;
@@ -86,11 +88,16 @@ function TravelRouteDays(props: TravelRouteMapProps) {
       {dates.map(value => <button key={value || "undated"} type="button" aria-pressed={date === value} onClick={() => setSelectedDate(value)}>
         {value ? `${dayOf(value)}일차 · ${Number(value.slice(5, 7))}.${Number(value.slice(8, 10))}` : "날짜 미정"}
         <span> · {days.get(value)?.length}곳</span>
+        {props.courseDays?.[value]?.reflection && <span> · 후기</span>}
       </button>)}
     </div> : null}
     {conditions && <p className="course-day-conditions">{conditions}</p>}
     <TravelRouteDay key={date} {...props} places={days.get(date) ?? []} activeDate={date} dayNumber={day} />
     {context?.reflection && <p className="course-day-reflection"><strong>다시 간다면</strong>{context.reflection}</p>}
+    {props.ownedTravelId && date && <Link className="day-course-edit" prefetch={false}
+      href={`/studio/travels/${props.ownedTravelId}/go?date=${date}#course-day-${date}`}>
+      {day}일차 코스 정보 {context ? "수정" : "작성"}
+    </Link>}
     {props.copyFormId && date && <button className="day-course-import" type="submit" form={props.copyFormId}
       formNoValidate name="sourceDay" value={date}>{day}일차 코스 가져오기</button>}
   </div>;
