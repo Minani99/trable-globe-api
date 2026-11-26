@@ -26,10 +26,11 @@ export function SaveSharedItinerary({ travel, signedIn, isOwner, today, returnPa
   }, [travel.places]);
   const dates = [...byDate.keys()].filter(Boolean).sort();
   const [sourceDay, setSourceDay] = useState(typeof copyDay === "string" && dates.includes(copyDay) ? copyDay : "");
-  const [skipped, setSkipped] = useState<number[]>(() => {
+  const [skippedByDay, setSkippedByDay] = useState<Record<string, number[]>>(() => {
     const ids = new Set(typeof skipStops === "string" ? skipStops.split(",") : []);
-    return travel.places.filter(place => sourceDay && place.visitedAt === sourceDay && ids.has(String(place.id))).map(place => place.id);
+    return sourceDay ? { [sourceDay]: travel.places.filter(place => place.visitedAt === sourceDay && ids.has(String(place.id))).map(place => place.id) } : {};
   });
+  const skipped = skippedByDay[sourceDay] ?? [];
   const dayPlaces = sourceDay ? byDate.get(sourceDay) ?? [] : travel.places;
   const places = sourceDay ? dayPlaces.filter(place => !skipped.includes(place.id)) : dayPlaces;
   const allSelected = places.length === dayPlaces.length;
@@ -107,7 +108,6 @@ export function SaveSharedItinerary({ travel, signedIn, isOwner, today, returnPa
       if (saving.current || !(button instanceof HTMLButtonElement) || button.name !== "sourceDay" || !dates.includes(button.value)) return;
       routeTrigger.current = button;
       setOpen(true);
-      if (button.value !== sourceDay) setSkipped([]);
       setSourceDay(button.value);
       setError(null);
       requestAnimationFrame(() => {
@@ -131,14 +131,16 @@ export function SaveSharedItinerary({ travel, signedIn, isOwner, today, returnPa
         <div><strong>내 여행에 일정 복사</strong><p>{places.length}개 장소의 방문 순서·시간·메모를 내 비공개 계획에 담아요. 사진·예약·예산은 포함하지 않습니다.</p></div>
         {dates.length > 0 && (travel.durationDays > 1 || travel.places.some(place => !place.visitedAt)) && <label>
           <span>가져올 코스</span>
-          <select value={sourceDay} disabled={pending} onChange={event => { setSkipped([]); setSourceDay(event.target.value); setError(null); }}>
+          <select value={sourceDay} disabled={pending} onChange={event => { setSourceDay(event.target.value); setError(null); }}>
             <option value="">전체 일정 · {travel.durationDays}일</option>
             {dates.map(date => <option key={date} value={date}>{daysBetween(travel.startDate, date) + 1}일차 · {date}</option>)}
           </select>
         </label>}
         {sourceDay && dayPlaces.length > 1 && <div className="shared-itinerary-save__selection">
           <span role="status">{dayPlaces.length}곳 중 {places.length}곳 선택</span>
-          <button type="button" disabled={pending} onClick={() => setSkipped(allSelected ? dayPlaces.map(place => place.id) : [])}>
+          <button type="button" disabled={pending} onClick={() => setSkippedByDay(current => ({
+            ...current, [sourceDay]: allSelected ? dayPlaces.map(place => place.id) : [],
+          }))}>
             {allSelected ? "전체 해제" : "전체 선택"}
           </button>
         </div>}
@@ -147,7 +149,10 @@ export function SaveSharedItinerary({ travel, signedIn, isOwner, today, returnPa
             <label>
               <input type="checkbox" disabled={pending} checked={!skipped.includes(place.id)} onChange={event => {
                 const include = event.target.checked;
-                setSkipped(current => include ? current.filter(id => id !== place.id) : [...current, place.id]);
+                setSkippedByDay(current => {
+                  const day = current[sourceDay] ?? [];
+                  return { ...current, [sourceDay]: include ? day.filter(id => id !== place.id) : [...day, place.id] };
+                });
               }} />
               {place.placeName}
             </label>
