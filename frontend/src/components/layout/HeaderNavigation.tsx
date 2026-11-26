@@ -81,7 +81,7 @@ export function HeaderNavigation({ initialMember }: HeaderNavigationProps) {
             </Link>
           </>
         )}
-        <AccountNavigation member={member} onLoggedOut={() => setCachedAuthMember(null)} />
+        <AccountNavigation member={member} menuReady={cachedMember !== undefined} onLoggedOut={() => setCachedAuthMember(null)} />
       </nav>
 
       <ThemeToggle />

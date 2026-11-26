@@ -16,12 +16,14 @@ import type { AuthMember } from "@/types";
 
 export function AccountNavigation({
   member,
+  menuReady,
   mobile = false,
   compact = false,
   onNavigate,
   onLoggedOut,
 }: {
   member: AuthMember | null | undefined;
+  menuReady: boolean;
   mobile?: boolean;
   compact?: boolean;
   onNavigate?: () => void;
@@ -139,6 +141,7 @@ export function AccountNavigation({
         <button
           type="button"
           className="site-account-menu__toggle"
+          disabled={!menuReady}
           onClick={() => setMenuOpen((open) => !open)}
           aria-label={menuOpen ? "계정 메뉴 닫기" : "계정 메뉴 열기"}
           aria-expanded={menuOpen}

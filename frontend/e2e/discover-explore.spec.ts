@@ -99,7 +99,14 @@ test("둘러보기는 공개 여행이 있는 프로필만 추천하고 새 친�
   await expect(course).toContainText("3일차 · 1곳");
   await expect(course).toContainText("디화제");
   await course.click();
-  await expect(page.getByRole("group", { name: "경로 날짜 선택" }).getByRole("button", { name: /3일차/ })).toHaveAttribute("aria-pressed", "true");
+  const selectedDay = page.getByRole("group", { name: "경로 날짜 선택" }).getByRole("button", { name: /3일차/ });
+  await expect(selectedDay).toHaveAttribute("aria-pressed", "true");
+  await page.setViewportSize({ width: 320, height: 750 });
+  await expect.poll(() => selectedDay.evaluate(button => {
+    const bounds = button.parentElement!.getBoundingClientRect();
+    const active = button.getBoundingClientRect();
+    return active.left >= bounds.left - 1 && active.right <= bounds.right + 1;
+  })).toBe(true);
   const query = "?destination=" + encodeURIComponent("디화제");
   const publicResults = await page.request.get("/api/discovery/courses" + query);
   expect((await publicResults.json()).data).toEqual(expect.arrayContaining([expect.objectContaining({ username: activeUsername, day: 3 })]));
