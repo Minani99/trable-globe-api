@@ -1024,3 +1024,14 @@ a.profile-panel__identity:focus-visible {
   .discover-results > header { align-items: flex-start; }
   .discover-results h2 { font-size: 1.75rem; }
 }
+
+.discover-courses { margin-block: 1rem 2rem; min-width: 0; }
+.discover-courses h2 { font-size: 1.25rem; font-weight: 700; }
+.discover-courses form { display: flex; gap: .5rem; max-width: 36rem; margin-block: .75rem; }
+.discover-courses input { min-width: 0; flex: 1; min-height: 44px; padding-inline: .75rem; border: 1px solid var(--border-strong); border-radius: var(--radius-sm); font-size: 1rem; }
+.discover-courses button { padding-inline: 1rem; background: var(--accent-soft); color: var(--accent-strong); border-radius: var(--radius-sm); font-weight: 650; }
+.discover-courses > p, .discover-courses small, .discover-courses a span { color: var(--text-secondary); font-size: .875rem; }
+.discover-courses ul { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 17rem), 1fr)); gap: .5rem 2rem; }
+.discover-courses a { display: grid; gap: .25rem; padding-block: .85rem; overflow-wrap: anywhere; }
+.discover-courses a:is(:hover, :focus-visible) strong { text-decoration: underline; }
+.discover-courses a p { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; font-size: .875rem; }
