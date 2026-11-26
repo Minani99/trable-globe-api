@@ -91,6 +91,7 @@ export function TravelEditor({
   const [startDate, setStartDate] = useState(initialTravel?.startDate ?? "");
   const [endDate, setEndDate] = useState(initialTravel?.endDate ?? "");
   const [visibility, setVisibility] = useState<Visibility>(initialTravel?.visibility ?? "PRIVATE");
+  const visibilityOptions = useRef<HTMLFieldSetElement>(null);
   const [coverImageUrl, setCoverImageUrl] = useState(initialTravel?.coverImageUrl ?? "");
   const [places, setPlaces] = useState<PlaceDraft[]>(() =>
     initialTravel?.places.length
@@ -896,10 +897,10 @@ export function TravelEditor({
               <input type="url" value={coverImageUrl} onChange={(event) => setCoverImageUrl(event.target.value)} placeholder="https://…" />
             </details>
           </div>
-          <fieldset className="travel-editor__visibility is-wide">
-            <legend>공개 범위</legend>
-            <button type="button" className={visibility === "PRIVATE" ? "is-active" : ""} onClick={() => { setVisibility("PRIVATE"); setDirty(true); }}><strong>비공개</strong><span>나만 볼 수 있어요.</span></button>
-            <button type="button" className={visibility === "PUBLIC" ? "is-active" : ""} disabled={planningMode && !conversionReady} onClick={() => { setVisibility("PUBLIC"); setDirty(true); }}><strong>공개</strong><span>{planningMode ? (conversionReady ? "저장하면 내 지구본과 공개 프로필에 바로 반영됩니다." : "여행 완료와 실제 장소 확인 후 선택할 수 있어요.") : "내 지구본과 공개 프로필에 바로 반영됩니다."}</span></button>
+          <fieldset ref={visibilityOptions} className="travel-editor__visibility is-wide" disabled={pending}>
+            <legend>여행 기록 공개 범위</legend>
+            <button type="button" aria-pressed={visibility === "PRIVATE"} className={visibility === "PRIVATE" ? "is-active" : ""} onClick={() => { setVisibility("PRIVATE"); setDirty(true); }}><strong>비공개</strong><span>내 여행에 보관합니다. 따로 만든 일정 공유 링크는 ‘공유 끄기’ 전까지 열 수 있어요.</span></button>
+            <button type="button" aria-pressed={visibility === "PUBLIC"} className={visibility === "PUBLIC" ? "is-active" : ""} disabled={planningMode && !conversionReady} onClick={() => { setVisibility("PUBLIC"); setDirty(true); }}><strong>전체 공개</strong><span>{planningMode && !conversionReady ? "여행이 끝나고 방문 장소가 정해지면 공개할 수 있어요." : "누구나 내 프로필에서 기록을 보고, 둘러보기에서 하루 코스를 찾아 복사할 수 있어요."}</span></button>
           </fieldset>
         </div>
       </section>
@@ -1114,7 +1115,16 @@ export function TravelEditor({
 
       {initialTravel ? <PlanSharePanel travelId={initialTravel.id} dirty={dirty} pendingSave={pending} /> : null}
       <footer className="editor-savebar">
-        <div className="editor-savebar__status"><strong>{pending ? "저장 중…" : dirty ? "변경 내용이 있습니다" : editing ? "모든 변경 내용 저장됨" : "새 여행"}</strong><span aria-live="polite">{draftStatus}</span></div>
+        <div className="editor-savebar__status">
+          <button type="button" className="editor-savebar__visibility" disabled={pending} onClick={() => {
+            setMobileEditorStep(0);
+            requestAnimationFrame(() => {
+              visibilityOptions.current?.querySelector<HTMLButtonElement>('button[aria-pressed="true"]')?.focus({ preventScroll: true });
+              visibilityOptions.current?.scrollIntoView({ block: "center" });
+            });
+          }}>공개 범위 · {visibility === "PUBLIC" ? "전체 공개" : "비공개"}</button>
+          <span aria-live="polite">{pending ? "저장 중…" : draftStatus}</span>
+        </div>
         <div className="editor-savebar__actions">
           <Link href="/studio">목록</Link>
           <button type="button" onClick={() => void handleSubmit()} disabled={pending}>{pending ? "저장 중…" : "저장"}</button>
