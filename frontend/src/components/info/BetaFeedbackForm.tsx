@@ -33,6 +33,12 @@ export function BetaFeedbackForm() {
     event.preventDefault();
     const data = new FormData(event.currentTarget);
     const form = event.currentTarget;
+    const resultField = form.elements.namedItem("result");
+    if (resultField instanceof HTMLTextAreaElement && !resultField.value.trim()) {
+      resultField.setCustomValidity("어떤 문제가 있었는지 한 줄 적어 주세요.");
+      resultField.reportValidity();
+      return;
+    }
     const page = new URLSearchParams(window.location.search).get("from")?.split(/[?#]/)[0];
     const safePage = page && ["/studio", "/discover", "/traveler", "/login"].includes(page) ? page : "/feedback";
     const nextTemplate = [
@@ -114,27 +120,32 @@ export function BetaFeedbackForm() {
         </select>
       </label>
       <label>
-        <span>무엇을 하려 했나요?</span>
-        <textarea disabled={status === "sending"} maxLength={1100} name="intent" rows={3} placeholder="예: 저장해 둔 일본 여행 계획을 다시 수정하려고 했어요." />
+        <span>실제로는 어떻게 됐나요? <small>필수</small></span>
+        <textarea disabled={status === "sending"} maxLength={1100} name="result" onInput={event => event.currentTarget.setCustomValidity("")} rows={3} placeholder="예: 수정 버튼을 찾지 못했고 처음 화면으로 돌아갔어요." required />
       </label>
-      <label>
-        <span>실제로는 어떻게 됐나요?</span>
-        <textarea disabled={status === "sending"} maxLength={1100} name="result" rows={3} placeholder="예: 수정 버튼을 찾지 못했고 처음 화면으로 돌아갔어요." required />
-      </label>
-      <label>
-        <span>어떻게 되길 기대했나요?</span>
-        <textarea disabled={status === "sending"} maxLength={1100} name="expected" rows={2} placeholder="예: 최근 계획에서 바로 이어서 작성하고 싶었어요." />
-      </label>
-      <div className="beta-feedback-form__row">
-        <label>
-          <span>기기·브라우저</span>
-          <input disabled={status === "sending"} maxLength={150} name="device" placeholder="예: 아이폰 15 · Safari" />
-        </label>
-        <label>
-          <span>요청 번호</span>
-          <input disabled={status === "sending"} maxLength={150} name="requestId" placeholder="오류에 표시된 경우만" />
-        </label>
-      </div>
+      <details className="beta-feedback-form__details">
+        <summary>상황 더 적기 · 선택</summary>
+        <div>
+          <label>
+            <span>무엇을 하려 했나요?</span>
+            <textarea disabled={status === "sending"} maxLength={1100} name="intent" rows={3} placeholder="예: 저장해 둔 일본 여행 계획을 다시 수정하려고 했어요." />
+          </label>
+          <label>
+            <span>어떻게 되길 기대했나요?</span>
+            <textarea disabled={status === "sending"} maxLength={1100} name="expected" rows={2} placeholder="예: 최근 계획에서 바로 이어서 작성하고 싶었어요." />
+          </label>
+          <div className="beta-feedback-form__row">
+            <label>
+              <span>기기·브라우저</span>
+              <input disabled={status === "sending"} maxLength={150} name="device" placeholder="예: 아이폰 15 · Safari" />
+            </label>
+            <label>
+              <span>요청 번호</span>
+              <input disabled={status === "sending"} maxLength={150} name="requestId" placeholder="오류에 표시된 경우만" />
+            </label>
+          </div>
+        </div>
+      </details>
       <p className="beta-feedback-form__safety">
         비밀번호, 인증번호, 여권·예약번호, 결제정보는 적거나 캡처하지 마세요.
       </p>

@@ -201,6 +201,28 @@
   box-shadow: 0 0 0 3px var(--accent-soft);
 }
 
+.beta-feedback-form__details > summary {
+  cursor: pointer;
+  padding-block: 0.75rem;
+  color: var(--text-secondary);
+  font-size: var(--text-sm);
+}
+
+.beta-feedback-form__details > div {
+  display: grid;
+  gap: 1rem;
+}
+
+.beta-feedback-form label small {
+  margin-inline-start: 0.25rem;
+  color: var(--text-secondary);
+  font-weight: 500;
+}
+
+@media (max-width: 600px) {
+  .beta-feedback-form :is(input, select, textarea) { font-size: 1rem; }
+}
+
 .beta-feedback-form__row {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
