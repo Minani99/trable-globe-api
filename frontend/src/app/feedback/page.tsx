@@ -12,12 +12,11 @@ export default function FeedbackPage() {
   return (
     <BetaInfoPage
       eyebrow="Friends beta"
-      title="낯설거나 멈춘 순간을 알려주세요."
-      intro="버그뿐 아니라 버튼을 못 찾은 순간도 중요한 피드백입니다. 작성 내용은 서버에 저장되지 않으며 공유할 앱은 직접 선택합니다."
+      title="어디에서 불편했나요?"
+      intro="화면이 멈추거나 버튼을 찾기 어려웠다면 알려주세요. 보내기를 누르면 작성한 내용이 운영자 이메일로 전달됩니다."
     >
       <section>
-        <h2>30초 피드백</h2>
-        <p>짧게 적고 초대받은 메신저로 바로 보내 주세요.</p>
+        <h2>오류 제보</h2>
         <BetaFeedbackForm />
       </section>
     </BetaInfoPage>

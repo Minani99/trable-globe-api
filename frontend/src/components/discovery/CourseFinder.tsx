@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import Form from "next/form";
 import Link from "next/link";
 import { apiGet } from "@/lib/api/client";
@@ -8,14 +9,9 @@ interface Course {
   stops: number; firstStop: string; lastStop: string; transport: string | null; reflection: string | null;
 }
 
-export async function CourseFinder({ destination, signedIn }: { destination: string; signedIn: boolean }) {
-  const suffix = "/discovery/courses?destination=" + encodeURIComponent(destination);
-  let courses: Course[] | null;
-  try {
-    courses = signedIn ? await authenticatedBackendGet<Course[]>("/api/private" + suffix) : await apiGet<Course[]>("/api" + suffix, { cache: false });
-  } catch {
-    courses = null;
-  }
+type CourseFinderProps = { destination: string; signedIn: boolean };
+
+export function CourseFinder({ destination, signedIn }: CourseFinderProps) {
   return <section className="discover-courses" aria-labelledby="course-finder-title">
     <h2 id="course-finder-title">목적지로 하루 코스 찾기</h2>
     <Form action="/discover" role="search" aria-label="하루 코스 검색">
@@ -23,6 +19,21 @@ export async function CourseFinder({ destination, signedIn }: { destination: str
       <button type="submit">코스 찾기</button>
     </Form>
     {destination && <Link href="/discover">전체 둘러보기</Link>}
+    <Suspense key={destination} fallback={<p role="status">코스를 불러오는 중…</p>}>
+      <CourseResults destination={destination} signedIn={signedIn} />
+    </Suspense>
+  </section>;
+}
+
+async function CourseResults({ destination, signedIn }: CourseFinderProps) {
+  const suffix = "/discovery/courses?destination=" + encodeURIComponent(destination);
+  let courses: Course[] | null;
+  try {
+    courses = signedIn ? await authenticatedBackendGet<Course[]>("/api/private" + suffix) : await apiGet<Course[]>("/api" + suffix, { cache: false });
+  } catch {
+    courses = null;
+  }
+  return <>
     <p role="status">{courses === null ? "코스를 불러오지 못했습니다. 잠시 후 다시 검색해 주세요." :
       destination ? (courses.length ? `‘${destination}’에서 찾은 하루 코스` : `‘${destination}’에 해당하는 공개 코스가 없습니다. 가까운 도시 이름으로도 찾아보세요.`) :
       courses.length ? "최근 다녀온 하루 코스" : "아직 공개된 하루 코스가 없습니다."}</p>
@@ -34,5 +45,5 @@ export async function CourseFinder({ destination, signedIn }: { destination: str
         {course.reflection && <p>다시 간다면 · {course.reflection}</p>}
       </Link>
     </li>)}</ul>}
-  </section>;
+  </>;
 }
