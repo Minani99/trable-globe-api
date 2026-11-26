@@ -16,7 +16,7 @@ export function TripWeather({ latitude, longitude, startDate, endDate, label, co
     {state.status === "loading" || state.status === "idle" ? <p role="status">예보를 확인하고 있어요…</p> : state.status === "error" ? <div className="trip-forecast__error"><p role="status">날씨를 불러오지 못했어요.</p><button type="button" onClick={state.refresh}><AppIcon name="refresh" />다시 확인</button></div> : days.length ? <>
       <ul className="trip-forecast__days" aria-label="날짜별 예보">{days.map((day) => <li key={day.date} className={isRainyDay(day) ? "has-rain" : undefined}>
         <time dateTime={day.date}>{Number(day.date.slice(5, 7))}.{day.date.slice(8, 10)}</time>
-        <WeatherIcon code={day.weatherCode} /><span>{weatherLabel(day.weatherCode)}</span>
+        <span className="trip-forecast__condition"><WeatherIcon code={day.weatherCode} />{weatherLabel(day.weatherCode)}</span>
         <strong>{formatTemperatureRange(day)}</strong><small>{formatRain(day) ?? "강수 미제공"}</small>
         <small>{WEATHER_SOURCE_LABEL[day.source]}</small>
       </li>)}</ul>
