@@ -133,6 +133,19 @@ test("몇 번의 선택으로 여행 계획을 만들고 일차별 일정으로 
   const weather = page.getByRole("region", { name: /비 예보 1일/ });
   await expect(weather).toBeVisible();
   await expect(weather.getByRole("list", { name: "날짜별 날씨" }).getByRole("listitem")).toHaveCount(3);
+  await page.setViewportSize({ width: 320, height: 740 });
+  const dayBadges = page.locator(".plan-itinerary__days .plan-day-weather");
+  await expect(dayBadges).toHaveCount(3);
+  for (const badge of await dayBadges.all()) {
+    const contained = await badge.evaluate(element => {
+      const tab = element.closest("button")!.getBoundingClientRect();
+      const weather = element.getBoundingClientRect();
+      return weather.left >= tab.left && weather.right <= tab.right
+        && weather.top >= tab.top && weather.bottom <= tab.bottom;
+    });
+    expect(contained).toBe(true);
+  }
+  await page.setViewportSize({ width: 390, height: 844 });
   await workspaceTabs.getByRole("tab", { name: "항공권", exact: true }).click();
   await expect(page.getByRole("heading", { name: "항공권 예약" })).toBeVisible();
   await expect(weather).toBeVisible();
