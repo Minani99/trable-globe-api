@@ -12,6 +12,7 @@ import com.travelglobe.trableglobeapi.social.dto.MemberSafetyStatusResponse;
 import com.travelglobe.trableglobeapi.social.service.MemberDiscoveryService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
+import com.travelglobe.trableglobeapi.social.service.CourseDiscoveryService;
 import java.util.List;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -28,8 +29,17 @@ public class MemberDiscoveryController {
 
     private final MemberDiscoveryService discoveryService;
 
-    public MemberDiscoveryController(MemberDiscoveryService discoveryService) {
+    private final CourseDiscoveryService courses;
+
+    public MemberDiscoveryController(MemberDiscoveryService discoveryService, CourseDiscoveryService courses) {
+        this.courses = courses;
         this.discoveryService = discoveryService;
+    }
+
+    @GetMapping("/courses")
+    public ApiResponse<List<CourseDiscoveryService.Course>> courses(
+            HttpServletRequest request, @RequestParam(defaultValue = "") String destination) {
+        return ApiResponse.ok(courses.find(destination, principal(request).memberId()));
     }
 
     @GetMapping("/search")

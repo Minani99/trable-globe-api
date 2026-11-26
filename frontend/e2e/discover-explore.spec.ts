@@ -92,6 +92,20 @@ test("둘러보기는 공개 여행이 있는 프로필만 추천하고 새 친�
     () => document.documentElement.scrollWidth > document.documentElement.clientWidth,
   );
   expect(hasPageOverflow).toBe(false);
+  await page.getByRole("searchbox", { name: "목적지 또는 장소" }).fill("타이베이");
+  await page.getByRole("button", { name: "코스 찾기" }).click();
+  const course = page.locator(`.discover-courses a[href^="/${activeUsername}/travel/"]`);
+  await expect(course).toHaveCount(1);
+  await expect(course).toContainText("3일차 · 1곳");
+  await expect(course).toContainText("디화제");
+  await course.click();
+  await expect(page.getByRole("group", { name: "경로 날짜 선택" }).getByRole("button", { name: /3일차/ })).toHaveAttribute("aria-pressed", "true");
+  const query = "?destination=" + encodeURIComponent("디화제");
+  const publicResults = await page.request.get("/api/discovery/courses" + query);
+  expect((await publicResults.json()).data).toEqual(expect.arrayContaining([expect.objectContaining({ username: activeUsername, day: 3 })]));
+  expect((await page.request.post(`/api/private/discovery/profiles/${activeUsername}/block`)).ok()).toBe(true);
+  const filtered = await page.request.get("/api/private/discovery/courses" + query);
+  expect((await filtered.json()).data).not.toEqual(expect.arrayContaining([expect.objectContaining({ username: activeUsername })]));
 });
 
 async function register(

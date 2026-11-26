@@ -4,6 +4,7 @@ import com.travelglobe.trableglobeapi.global.response.ApiResponse;
 import com.travelglobe.trableglobeapi.social.dto.MemberConnectionResponse;
 import com.travelglobe.trableglobeapi.social.dto.MemberDiscoveryResponse;
 import com.travelglobe.trableglobeapi.social.service.MemberDiscoveryService;
+import com.travelglobe.trableglobeapi.social.service.CourseDiscoveryService;
 import java.util.List;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -17,8 +18,17 @@ public class PublicDiscoveryController {
 
     private final MemberDiscoveryService discoveryService;
 
-    public PublicDiscoveryController(MemberDiscoveryService discoveryService) {
+    private final CourseDiscoveryService courses;
+
+    public PublicDiscoveryController(MemberDiscoveryService discoveryService, CourseDiscoveryService courses) {
+        this.courses = courses;
         this.discoveryService = discoveryService;
+    }
+
+    @GetMapping("/courses")
+    public ApiResponse<List<CourseDiscoveryService.Course>> courses(
+            @RequestParam(defaultValue = "") String destination) {
+        return ApiResponse.ok(courses.find(destination, -1L));
     }
 
     @GetMapping("/search")
