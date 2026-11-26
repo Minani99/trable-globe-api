@@ -1,13 +1,10 @@
 import { expect, test } from "./fixtures";
 
-test("베타 피드백은 오류 맥락과 기기를 채우고 모바일 공유로 이어진다", async ({ page }) => {
-  await page.addInitScript(() => {
-    Object.defineProperty(navigator, "share", {
-      configurable: true,
-      value: async (data: ShareData) => {
-        (window as typeof window & { sharedFeedback?: ShareData }).sharedFeedback = data;
-      },
-    });
+test("베타 피드백은 오류 맥락과 기기를 채우고 메일 전송을 재시도할 수 있다", async ({ page }) => {
+  const submissions: { text: string; submissionId: string }[] = [];
+  await page.route("**/api/feedback", async route => {
+    submissions.push(route.request().postDataJSON());
+    await route.fulfill({ status: submissions.length === 1 ? 503 : 200, json: { success: submissions.length > 1 } });
   });
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto("/feedback?area=%EC%9E%A5%EC%86%8C%C2%B7%EC%A7%80%EB%8F%84&intent=%EC%A7%80%EB%8F%84%EB%A5%BC+%EC%97%B4%EB%A0%A4%EA%B3%A0+%ED%96%88%EC%96%B4%EC%9A%94&requestId=req-123&from=%2Fstudio");
@@ -20,16 +17,17 @@ test("베타 피드백은 오류 맥락과 기기를 채우고 모바일 공유�
   await page.getByRole("textbox", { name: "실제로는 어떻게 됐나요?" }).fill("지도가 비어 있었어요.");
   await page.reload();
   await expect(page.getByRole("textbox", { name: "실제로는 어떻게 됐나요?" })).toHaveValue("지도가 비어 있었어요.");
-  await page.getByRole("button", { name: "메신저로 보내기" }).click();
-  await expect.poll(() => page.evaluate(() => (
-    window as typeof window & { sharedFeedback?: ShareData }
-  ).sharedFeedback?.text)).toContain("확인 주소: http://127.0.0.1:3000/studio");
-  await expect.poll(() => page.evaluate(() => (
-    window as typeof window & { sharedFeedback?: ShareData }
-  ).sharedFeedback?.text)).toContain("요청 번호: req-123");
-  await page.evaluate(() => Reflect.deleteProperty(navigator, "share"));
+  await page.getByRole("button", { name: "오류 제보 보내기" }).click();
+  await expect(page.getByRole("link", { name: "메일 앱 열기" })).toHaveAttribute("href", /^mailto:minhwanpark@naver.com/);
   await page.getByRole("button", { name: "내용 복사" }).click();
   await expect.poll(() => page.evaluate(() => navigator.clipboard.readText())).toContain("지도가 비어 있었어요.");
+  await page.getByRole("button", { name: "오류 제보 보내기" }).click();
+  await expect(page.getByText("제보를 보냈어요. 알려주셔서 감사합니다.")).toBeVisible();
+  expect(submissions).toHaveLength(2);
+  expect(submissions[1]).toEqual(submissions[0]);
+  expect(submissions[0].text).toContain("요청 번호: req-123");
+  await page.reload();
+  await expect(page.getByRole("textbox", { name: "실제로는 어떻게 됐나요?" })).toHaveValue("");
 
   const layout = await page.evaluate(() => ({ width: window.innerWidth, scrollWidth: document.documentElement.scrollWidth }));
   expect(layout.scrollWidth).toBeLessThanOrEqual(layout.width + 1);

@@ -43,20 +43,24 @@ public class AccountMailService {
         String url = actionUrl("/verify-email", rawToken);
         send(email, "Travel Globe 이메일을 확인해 주세요", String.join("\n",
                 displayName + "님, Travel Globe에 오신 것을 환영합니다.", "", "아래 링크에서 이메일 인증을 마쳐 주세요.", url,
-                "", "이 링크는 24시간 동안 유효합니다."), url);
+                "", "이 링크는 24시간 동안 유효합니다."), url, null);
     }
 
     public void sendPasswordReset(String email, String displayName, String rawToken) {
         String url = actionUrl("/reset-password", rawToken);
         send(email, "Travel Globe 비밀번호 재설정", String.join("\n",
                 displayName + "님, 비밀번호 재설정 요청을 받았습니다.", "", "아래 링크에서 새 비밀번호를 설정해 주세요.", url,
-                "", "이 링크는 1시간 동안 유효합니다. 요청하지 않았다면 이 메일을 무시해 주세요."), url);
+                "", "이 링크는 1시간 동안 유효합니다. 요청하지 않았다면 이 메일을 무시해 주세요."), url, null);
     }
 
-    private void send(String email, String subject, String text, String developmentUrl) {
+    public boolean sendFeedback(String text, java.util.UUID id) {
+        return send("minhwanpark@naver.com", "[Travel Globe] 베타 오류 제보", text, null, "feedback/" + id);
+    }
+
+    private boolean send(String email, String subject, String text, String developmentUrl, String key) {
         if (!StringUtils.hasText(apiKey)) {
-            log.info("Resend is not configured. Account action link for {}: {}", email, developmentUrl);
-            return;
+            if (developmentUrl != null) log.info("Resend is not configured. Account action link for {}: {}", email, developmentUrl);
+            return false;
         }
         try {
             String body = objectMapper.writeValueAsString(Map.of(
@@ -64,23 +68,27 @@ public class AccountMailService {
                     "to", List.of(email),
                     "subject", subject,
                     "text", text));
-            HttpRequest request = HttpRequest.newBuilder(RESEND_EMAILS)
+            HttpRequest.Builder builder = HttpRequest.newBuilder(RESEND_EMAILS)
                     .timeout(Duration.ofSeconds(8))
                     .header("Authorization", "Bearer " + apiKey)
                     .header("Content-Type", "application/json")
                     .header("User-Agent", "TravelGlobe/1.0")
-                    .POST(HttpRequest.BodyPublishers.ofString(body))
-                    .build();
+                    .POST(HttpRequest.BodyPublishers.ofString(body));
+            if (key != null) builder.header("Idempotency-Key", key);
+            HttpRequest request = builder.build();
             HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
             if (response.statusCode() < 200 || response.statusCode() >= 300) {
                 log.error("Resend rejected account email to {} with status {}", email, response.statusCode());
+                return false;
             }
+            return true;
         } catch (InterruptedException ex) {
             Thread.currentThread().interrupt();
             log.error("Account email to {} was interrupted", email, ex);
         } catch (Exception ex) {
             log.error("Could not send account email to {}", email, ex);
         }
+        return false;
     }
 
     private String actionUrl(String path, String rawToken) {

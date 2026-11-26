@@ -30,7 +30,11 @@ public class CourseDiscoveryService {
                        (select p.place_name from travel_places p where p.travel_id=d.travel_id
                          and p.visited_at=d.visited_at order by p.sort_order desc, p.id desc limit 1) as last_stop
                   from (
-                    select t.id as travel_id, t.title, m.username, t.start_date, p.visited_at, count(*) as stops
+                    select t.id as travel_id, t.title, m.username, t.start_date, p.visited_at, count(*) as stops,
+                           case when :query='' then row_number() over (
+                               partition by t.id order by case when count(*) > 1 then 0 else 1 end,
+                               p.visited_at desc) else 1 end as trip_rank,
+                           case when :query='' and count(*) > 1 then 0 else 1 end as stop_rank
                       from travels t join members m on m.id=t.member_id
                       join travel_places p on p.travel_id=t.id
                       join countries co on co.id=p.country_id left join cities ci on ci.id=p.city_id
@@ -42,9 +46,9 @@ public class CourseDiscoveryService {
                     having max(case when position(lower(:query) in lower(concat_ws(' ', p.place_name,
                                ci.name_ko, ci.name_en, co.name_ko, co.name_en))) > 0 then 1 else 0 end)=1
                         or :query=''
-                     order by p.visited_at desc, t.id desc limit 8
+                     order by trip_rank, stop_rank, p.visited_at desc, t.id desc limit 8
                   ) d left join travel_course_days cd on cd.travel_id=d.travel_id and cd.course_date=d.visited_at
-                 order by d.visited_at desc, d.travel_id desc
+                 order by d.trip_rank, d.stop_rank, d.visited_at desc, d.travel_id desc
                 """).param("query", query).param("viewer", viewerId)
                 .query((rs, row) -> {
                     LocalDate date = rs.getDate("visited_at").toLocalDate();
