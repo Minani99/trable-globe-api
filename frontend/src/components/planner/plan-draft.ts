@@ -13,6 +13,7 @@ export interface PlanDraft {
   anchorMode: AnchorMode;
   anchorInput: string;
   mobileStep: number;
+  editingFromSummary: boolean;
 }
 
 export function readPlanDraft(key: string): PlanDraft | null {
@@ -29,7 +30,7 @@ export function readPlanDraft(key: string): PlanDraft | null {
       || !d.styles.every((style: Style) => STYLES.includes(style))
       || !PACES.some(p => p.id === d.pace) || !BUILD_MODES.some(m => m.id === d.buildMode)
       || !ANCHOR_MODES.some(m => m.id === d.anchorMode)) return null;
-    return d;
+    return { ...d, editingFromSummary: d.editingFromSummary === true };
   } catch {
     return null;
   }
