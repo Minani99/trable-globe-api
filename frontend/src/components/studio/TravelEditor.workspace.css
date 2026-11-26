@@ -37,6 +37,7 @@
 .editor-notice { margin: .75rem 0; padding: .8rem 1rem; border-left: 3px solid var(--danger); background: var(--danger-soft); color: var(--text-primary); font-size: .875rem; }
 .editor-savebar { position: sticky; bottom: 0; z-index: 28; display: flex; align-items: center; justify-content: space-between; gap: 1rem; padding: 1rem 0; border-top: 1px solid var(--border); background: var(--surface); }
 .editor-savebar__status { display: grid; gap: .2rem; min-width: 0; }
+.editor-savebar__visibility { justify-self: start; min-height: 44px; font-size: .875rem; font-weight: 600; text-align: start; text-decoration: underline; text-underline-offset: .2em; }
 .editor-savebar__status strong { font-size: .8125rem; font-weight: 500; }
 .editor-savebar__status span { color: var(--text-secondary); font-size: .75rem; }
 .editor-savebar__actions { display: flex; align-items: center; gap: 1.25rem; flex-shrink: 0; font-size: .875rem; }
