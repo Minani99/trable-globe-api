@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useRef, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 
 import { showFeedback } from "@/components/common/AppFeedback";
 import { ApiError, apiMutation } from "@/lib/api/client";
@@ -14,13 +14,23 @@ export function SaveSharedItinerary({ travel, signedIn, isOwner, today, returnPa
   const resumeDate = typeof copyDate === "string" && isStartDate(copyDate, today) ? copyDate : null;
   const [open, setOpen] = useState(Boolean(resumeDate));
   const [startDate, setStartDate] = useState(resumeDate ?? today);
-  const dates = [...new Set(travel.places.flatMap(place => place.visitedAt ? [place.visitedAt] : []))].sort();
+  const byDate = useMemo(() => {
+    const groups = new Map<string, TravelDetail["places"]>();
+    for (const place of travel.places) {
+      const key = place.visitedAt || "";
+      const group = groups.get(key);
+      if (group) group.push(place);
+      else groups.set(key, [place]);
+    }
+    return groups;
+  }, [travel.places]);
+  const dates = [...byDate.keys()].filter(Boolean).sort();
   const [sourceDay, setSourceDay] = useState(typeof copyDay === "string" && dates.includes(copyDay) ? copyDay : "");
   const [skipped, setSkipped] = useState<number[]>(() => {
     const ids = new Set(typeof skipStops === "string" ? skipStops.split(",") : []);
     return travel.places.filter(place => sourceDay && place.visitedAt === sourceDay && ids.has(String(place.id))).map(place => place.id);
   });
-  const dayPlaces = sourceDay ? travel.places.filter(place => place.visitedAt === sourceDay) : travel.places;
+  const dayPlaces = sourceDay ? byDate.get(sourceDay) ?? [] : travel.places;
   const places = sourceDay ? dayPlaces.filter(place => !skipped.includes(place.id)) : dayPlaces;
   const allSelected = places.length === dayPlaces.length;
   const canCopy = !sourceDay || places.length > 0;
@@ -41,6 +51,10 @@ export function SaveSharedItinerary({ travel, signedIn, isOwner, today, returnPa
 
   const path = returnPath ?? `/${travel.owner.username}/travel/${travel.id}`;
   const next = encodeURIComponent(`${path}?copyDate=${startDate}${sourceDay ? `&copyDay=${sourceDay}` : ""}${sourceDay && skipped.length ? "&skipStops=" + skipped.join(",") : ""}#copy-plan`);
+
+  function copiedDate(date: string) {
+    return addDays(startDate, daysBetween(sourceDay || travel.startDate, date));
+  }
 
   async function saveToMyPlans() {
     if (saving.current || !canCopy) return;
@@ -66,7 +80,7 @@ export function SaveSharedItinerary({ travel, signedIn, isOwner, today, returnPa
         placeName: place.placeName,
         latitude: place.latitude,
         longitude: place.longitude,
-        visitedAt: place.visitedAt ? addDays(startDate, daysBetween(sourceDay || travel.startDate, place.visitedAt)) : null,
+        visitedAt: place.visitedAt ? copiedDate(place.visitedAt) : null,
         startTime: place.startTime,
         durationMinutes: place.durationMinutes,
         memo: place.memo,
@@ -142,6 +156,13 @@ export function SaveSharedItinerary({ travel, signedIn, isOwner, today, returnPa
         <label><span>새 출발일</span><input ref={dateInput} type="date" min={today} value={startDate} disabled={pending} aria-invalid={!validRange} aria-describedby="copy-date-summary" onChange={(event) => { setStartDate(event.target.value); setError(null); }} /></label>
         {validRange ? <p id="copy-date-summary" className="shared-itinerary-save__period" role="status">내 여행 기간 · <time dateTime={startDate}>{startDate}</time>{endDate !== startDate && <> ~ <time dateTime={endDate!}>{endDate}</time></>} · {duration}일</p>
           : <p id="copy-date-summary" className="shared-itinerary-save__error" role="status">{startDate < today && startDate ? "오늘 또는 이후 날짜를 선택해 주세요." : "복사할 여행의 출발일을 입력해 주세요."}</p>}
+        {validRange && !sourceDay && places.length > 0 && <details className="shared-itinerary-save__preview">
+          <summary>내 날짜로 방문 순서 보기</summary>
+          {[...dates, ...(byDate.has("") ? [""] : [])].map(date => <div key={date}>
+            <strong>{date ? <time dateTime={copiedDate(date)}>{copiedDate(date)}</time> : "날짜 미정"}</strong>
+            <ol>{byDate.get(date)?.map(place => <li key={place.id}>{place.placeName}</li>)}</ol>
+          </div>)}
+        </details>}
         {!canCopy && <p role="status">가져올 장소를 한 곳 이상 선택해 주세요.</p>}
         {signedIn ? <button type="button" onClick={saveToMyPlans} disabled={pending || !validRange || !canCopy}>{pending ? "계획에 담는 중…" : `${duration}일 일정 복사`}</button> :
           validRange && canCopy && <div className="shared-itinerary-save__auth">

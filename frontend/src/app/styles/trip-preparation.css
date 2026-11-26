@@ -1477,3 +1477,7 @@
     right: 1rem;
   }
 }
+.shared-itinerary-save__preview { min-width: 0; font-size: .875rem; overflow-wrap: anywhere; }
+.shared-itinerary-save__preview summary { padding-block: .75rem; cursor: pointer; }
+.shared-itinerary-save__preview > div { padding-block: .35rem; }
+.shared-itinerary-save__preview ol { margin: .25rem 0; padding-inline-start: 1.5rem; list-style: decimal; }

@@ -122,6 +122,10 @@ test("다른 여행자의 공개 일정을 새 날짜의 내 계획으로 가져
   } } }));
   await page.getByLabel("새 출발일").fill(newStartDate);
   await expect(page.locator(".shared-itinerary-save__period")).toContainText(newStartDate);
+  await page.getByText("내 날짜로 방문 순서 보기").click();
+  const preview = page.locator(".shared-itinerary-save__preview");
+  await expect(preview.locator("div").filter({ hasText: "도쿄역" }).locator("time")).toHaveAttribute("datetime", newStartDate);
+  await expect(preview.locator("div").filter({ hasText: "나중에 갈 서점" })).toContainText("날짜 미정");
   let requests = 0;
   let release = () => {};
   const gate = new Promise<void>(resolve => { release = resolve; });
