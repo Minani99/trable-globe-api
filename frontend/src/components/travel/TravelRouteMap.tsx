@@ -2,7 +2,7 @@
 
 import type { PointerEvent, WheelEvent } from "react";
 import Link from "next/link";
-import { useCallback, useEffect, useId, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useId, useLayoutEffect, useMemo, useRef, useState } from "react";
 
 import { GoogleDirectionsPanel } from "@/components/travel/GoogleDirectionsPanel";
 import { ShareJourneyButton } from "@/components/travel/ShareJourneyButton";
@@ -75,6 +75,23 @@ function TravelRouteDays(props: TravelRouteMapProps) {
     return { days, dates };
   }, [props.places]);
   const date = selectedDate !== null && dates.includes(selectedDate) ? selectedDate : dates[0] ?? "";
+  const activeDayRef = useRef<HTMLButtonElement>(null);
+  useLayoutEffect(() => {
+    const button = activeDayRef.current;
+    const strip = button?.parentElement;
+    if (!button || !strip) return;
+    const revealDay = () => {
+      const bounds = strip.getBoundingClientRect();
+      const active = button.getBoundingClientRect();
+      if (active.right > bounds.right) strip.scrollLeft += active.right - bounds.right;
+      else if (active.left < bounds.left) strip.scrollLeft += active.left - bounds.left;
+    };
+    revealDay();
+    const observer = new ResizeObserver(revealDay);
+    observer.observe(strip);
+    observer.observe(button);
+    return () => observer.disconnect();
+  }, [date, dates.length]);
   const dayOf = (value: string) => {
     const start = props.startDate || dates.find(Boolean);
     if (!start || !value) return 0;
@@ -87,7 +104,7 @@ function TravelRouteDays(props: TravelRouteMapProps) {
   return <div className="travel-route-days" id={props.sharing ? "course-map" : undefined}>
     {/* A one-day trip has nothing to choose between, so the selector would only add height. */}
     {dates.length > 1 ? <div className="google-directions__days travel-route-days__tabs" role="group" aria-label="경로 날짜 선택">
-      {dates.map(value => <button key={value || "undated"} type="button" aria-pressed={date === value} onClick={() => setSelectedDate(value)}>
+      {dates.map(value => <button key={value || "undated"} type="button" ref={date === value ? activeDayRef : undefined} aria-pressed={date === value} onClick={() => setSelectedDate(value)}>
         {value ? `${dayOf(value)}일차 · ${Number(value.slice(5, 7))}.${Number(value.slice(8, 10))}` : "날짜 미정"}
         <span> · {days.get(value)?.length}곳</span>
         {props.courseDays?.[value]?.reflection && <span> · 후기</span>}
