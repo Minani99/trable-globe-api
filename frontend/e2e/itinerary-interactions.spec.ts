@@ -137,6 +137,10 @@ test("미래의 비공개 계획을 링크로 공유·복사하고 공유를 끈
   await expect(visitor.getByRole("checkbox", { name: "다음날 산책" })).toBeChecked();
   await visitor.getByRole("button", { name: "전체 해제", exact: true }).click();
   await visitor.getByRole("checkbox", { name: "다음날 산책" }).check();
+  const courseSelect = visitor.getByLabel("가져올 코스");
+  await courseSelect.selectOption("");
+  await courseSelect.selectOption("2099-10-11");
+  await expect(visitor.getByText("2곳 중 1곳 선택")).toBeVisible();
   await visitor.getByLabel("새 출발일").fill("2099-11-10");
   await expect(visitor.locator("#copy-date-summary time")).toHaveCount(1);
   await visitor.getByRole("button", { name: "복사 옵션 접기" }).click();
