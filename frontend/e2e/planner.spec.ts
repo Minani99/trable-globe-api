@@ -433,7 +433,7 @@ test("몇 번의 선택으로 여행 계획을 만들고 일차별 일정으로 
   await finishingTrip.getByRole("link", { name: /오늘 일정 보기/ }).click();
   await page.getByRole("link", { name: "계획 편집", exact: true }).click();
   await page.getByRole("tablist", { name: "여행 작업", exact: true }).getByRole("tab", { name: "여행 정보", exact: true }).click();
-  await page.getByRole("button", { name: /^공개/ }).click();
+  await page.getByRole("group", { name: "여행 기록 공개 범위" }).getByRole("button", { name: /^전체 공개/ }).click();
   await page.locator(".editor-savebar").getByRole("button", { name: "저장", exact: true }).click();
   await expect(page.getByText("서버에 저장됨", { exact: true })).toBeVisible();
   await page.getByRole("link", { name: /공개 기록 보기/ }).click();
