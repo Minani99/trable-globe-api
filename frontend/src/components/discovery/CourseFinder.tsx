@@ -36,7 +36,7 @@ async function CourseResults({ destination, signedIn }: CourseFinderProps) {
   return <>
     <p role="status">{courses === null ? "코스를 불러오지 못했습니다. 잠시 후 다시 검색해 주세요." :
       destination ? (courses.length ? `‘${destination}’에서 찾은 하루 코스` : `‘${destination}’에 해당하는 공개 코스가 없습니다. 가까운 도시 이름으로도 찾아보세요.`) :
-      courses.length ? "최근 다녀온 하루 코스" : "아직 공개된 하루 코스가 없습니다."}</p>
+      courses.length ? "여행별 하루 코스" : "아직 공개된 하루 코스가 없습니다."}</p>
     {courses && courses.length > 0 && <ul>{courses.map(course => <li key={course.travelId + ":" + course.date}>
       <Link prefetch={false} href={`/${encodeURIComponent(course.username)}/travel/${course.travelId}?routeDay=${course.date}#course-map`}>
         <small>{course.day}일차 · {course.stops}곳{course.transport && " · " + course.transport}</small>
