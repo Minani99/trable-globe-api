@@ -89,6 +89,7 @@ function PlanForm({
   const [error, setError] = useState<string | null>(null);
   const progressRef = useRef<HTMLElement>(null);
   const countrySearchId = useId();
+  const styleHintId = useId();
   const regionRef = useRef<HTMLInputElement>(null);
   const dateRef = useRef<HTMLInputElement>(null);
   const anchorRef = useRef<HTMLInputElement>(null);
@@ -454,7 +455,7 @@ function PlanForm({
 
           <div className="pb-group">
             <span className="pb-group__label">취향 <em>{styles.length} / 3</em></span>
-            <div className="pb-chip-row" role="group" aria-label="여행 취향">
+            <div className="pb-chip-row" role="group" aria-label="여행 취향" aria-describedby={styleHintId}>
               {STYLES.map((item) => {
                 const selected = styles.includes(item);
                 const disabled = !selected && styles.length >= 3;
@@ -464,7 +465,7 @@ function PlanForm({
                     type="button"
                     className={`pb-chip${selected ? " is-selected" : ""}`}
                     aria-pressed={selected}
-                    aria-disabled={disabled}
+                    disabled={disabled}
                     onClick={() => toggleStyle(item)}
                   >
                     {selected ? <CheckIcon /> : null}
@@ -473,6 +474,9 @@ function PlanForm({
                 );
               })}
             </div>
+            <small id={styleHintId} className="pb-style-hint" role="status">
+              {styles.length >= 3 ? "다른 취향을 고르려면 선택한 취향 하나를 먼저 해제하세요." : "여행 취향은 최대 3개까지 고를 수 있어요."}
+            </small>
           </div>
 
           <div className="pb-group">
