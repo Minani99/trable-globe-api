@@ -7,7 +7,7 @@ import { TripWeather } from "@/components/travel/TripWeather";
 import { DayItineraryCopy } from "@/components/travel/DayItineraryCopy";
 import { CourseDayEditor } from "@/components/travel/CourseDayEditor";
 import { DayReservations } from "@/components/travel/DayReservations";
-import { isDirectionsStopLocated } from "@/lib/google-directions";
+import { isDirectionsStopLocated, placeDirectionsUrl } from "@/lib/google-directions";
 
 const DayMap = dynamic(() => import("@/components/travel/TravelRouteMap").then((module) => module.TravelRouteMap), { loading: () => <div className="day-map-placeholder" role="status">장소 지도를 불러오는 중…</div> });
 import { useEffect, useId, useMemo, useRef, useState } from "react";
@@ -425,7 +425,7 @@ export function MobileTripCompanion({
       {variant === "page" ? <>
         {dayPlaces.length ? <section className="day-route-overview" aria-label="하루 동선 한눈에 보기">
           <header><AppIcon name="route" /><h3>하루 동선</h3><span>{dayPlaces.length}곳</span></header>
-          {nextPlace ? <a className="day-route-next" href={nextPlaceDirectionsUrl(nextPlace)} target="_blank" rel="noreferrer" aria-label={`다음 방문 ${nextPlace.placeName} · 길찾기`}><span>다음 방문</span><strong>{dayPlaces.indexOf(nextPlace) + 1}. {nextPlace.placeName}</strong><span>길찾기</span><AppIcon name="route" /></a> : null}
+          {nextPlace ? <a className="day-route-next" href={placeDirectionsUrl(nextPlace)} target="_blank" rel="noreferrer" aria-label={`다음 방문 ${nextPlace.placeName} · 길찾기`}><span>다음 방문</span><strong>{dayPlaces.indexOf(nextPlace) + 1}. {nextPlace.placeName}</strong><span>길찾기</span><AppIcon name="route" /></a> : null}
           <div className="day-route-workspace">
           <div id={`${routeSectionsId}-stops`} tabIndex={-1} className="day-route-list"><div className="day-route-list__heading"><strong>방문 순서</strong><span>장소를 누르면 지도에서 보여요</span><a className="day-route-jump" href={`#${routeSectionsId}-map`}><AppIcon name="pin" />지도·경로 보기</a></div>{itinerary}</div>
           <div ref={mapPanelRef} id={`${routeSectionsId}-map`} tabIndex={-1} className="day-route-map-panel">
@@ -436,7 +436,7 @@ export function MobileTripCompanion({
             onClick={() => setFocusedMapPlaceId(null)}
           ><AppIcon name="pin" /><span>다음 방문 장소로 돌아가기<strong>{nextLocatedPlace.placeName}</strong></span></button> : null}
           <DayMap key={viewDate} compact directions={{ stops: dayPlaces, date: viewDate }} focusedPlaceId={activeMapPlaceId} onPlaceSelect={setFocusedMapPlaceId} placeNumbers={dayPlaceNumbers} places={locatedDayPlaces} />
-          {selectedMapPlace ? <a className="day-route-selected" href={`https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(`${selectedMapPlace.latitude},${selectedMapPlace.longitude}`)}`} target="_blank" rel="noreferrer"><div><small>선택한 장소</small><strong>{selectedMapPlace.placeName}</strong></div><span><AppIcon name="pin" />길찾기</span></a> : null}
+          {selectedMapPlace ? <a className="day-route-selected" href={placeDirectionsUrl(selectedMapPlace)} target="_blank" rel="noreferrer"><div><small>선택한 장소</small><strong>{selectedMapPlace.placeName}</strong></div><span><AppIcon name="pin" />길찾기</span></a> : null}
           </div></div>
         </section> : null}
       </> : null}
@@ -507,13 +507,6 @@ function formatTime(value: string | null): string | null {
 function googleMapsUrl(place: TravelPlace): string {
   const query = `${place.latitude},${place.longitude} (${place.placeName})`;
   return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(query)}`;
-}
-
-function nextPlaceDirectionsUrl(place: TravelPlace): string {
-  const destination = isDirectionsStopLocated({ ...place, key: place.id })
-    ? `${place.latitude},${place.longitude}`
-    : [place.placeName, place.city?.nameKo, place.country.nameKo].filter(Boolean).join(" ");
-  return `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(destination)}`;
 }
 
 function differenceInDays(startDate: string, endDate: string): number {
