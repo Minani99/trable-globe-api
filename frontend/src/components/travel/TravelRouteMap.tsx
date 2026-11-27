@@ -7,6 +7,8 @@ import { useCallback, useEffect, useId, useLayoutEffect, useMemo, useRef, useSta
 import { GoogleDirectionsPanel } from "@/components/travel/GoogleDirectionsPanel";
 import { ShareJourneyButton } from "@/components/travel/ShareJourneyButton";
 import { GoogleRouteMapCanvas } from "@/components/travel/GoogleRouteMapCanvas";
+import { isDirectionsStopLocated, placeDirectionsUrl } from "@/lib/google-directions";
+import { AppIcon } from "@/components/common/AppIcon";
 import { googleMapsApiKey } from "@/lib/google-maps-loader";
 import { formatDate } from "@/lib/utils/format";
 import { courseCompanion } from "@/lib/course-day";
@@ -324,6 +326,11 @@ function TravelRouteDay({ places, compact = false, directions, displayedRoute, p
   return (
     <div className={`travel-route-explorer${compact ? " is-compact" : ""}`}>
       {directionsPanel}
+      {!compact && places.length === 1 && isDirectionsStopLocated({ ...selectedPlace, key: selectedPlace.id }) &&
+        <a className="google-directions__route" href={placeDirectionsUrl(selectedPlace)} target="_blank" rel="noopener noreferrer">
+          <span className="google-directions__route-copy"><strong>Google Maps에서 길찾기</strong><span>{selectedPlace.placeName}</span></span>
+          <AppIcon name="route" /><span className="sr-only">새 창</span>
+        </a>}
       <div className="travel-route-map-shell" id={mapId} tabIndex={compact ? undefined : -1}>
         {!compact ? <a className="travel-route-jump" href={`#${itineraryId}`}>방문 순서 보기</a> : null}
         <div className="travel-route-map-toolbar">

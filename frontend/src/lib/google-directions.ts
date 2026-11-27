@@ -1,3 +1,4 @@
+import type { TravelPlace } from "@/types";
 import { isPlaceholderPlaceName } from "@/lib/travel-placeholders";
 
 export type GoogleTravelMode = "walking" | "driving" | "transit";
@@ -64,4 +65,11 @@ export function buildGoogleDirectionsSegments(stops: GoogleDirectionsStop[], mod
   }
   flush();
   return { segments, skipped };
+}
+
+export function placeDirectionsUrl(place: TravelPlace): string {
+  const destination = isDirectionsStopLocated({ ...place, key: place.id })
+    ? `${place.latitude},${place.longitude}`
+    : [place.placeName, place.city?.nameKo, place.country.nameKo].filter(Boolean).join(" ");
+  return `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(destination)}`;
 }

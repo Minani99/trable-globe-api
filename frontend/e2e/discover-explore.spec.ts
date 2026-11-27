@@ -101,6 +101,12 @@ test("둘러보기는 공개 여행이 있는 프로필만 추천하고 새 친�
   await course.click();
   const selectedDay = page.getByRole("group", { name: "경로 날짜 선택" }).getByRole("button", { name: /3일차/ });
   await expect(selectedDay).toHaveAttribute("aria-pressed", "true");
+  const directions = page.getByRole("link", { name: /Google Maps에서 길찾기.*디화제/ });
+  await expect(directions).toBeVisible();
+  const route = new URL((await directions.getAttribute("href"))!);
+  expect(route.origin + route.pathname).toBe("https://www.google.com/maps/dir/");
+  expect(route.searchParams.get("destination")).toBe("25.0554,121.51");
+  expect(route.searchParams.has("origin")).toBe(false);
   await page.setViewportSize({ width: 320, height: 750 });
   await expect.poll(() => selectedDay.evaluate(button => {
     const bounds = button.parentElement!.getBoundingClientRect();
