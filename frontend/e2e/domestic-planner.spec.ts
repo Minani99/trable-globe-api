@@ -33,6 +33,14 @@ for (const width of [320, 390, 1440]) {
     await page.getByRole("button", { name: "부모님과", exact: true }).click();
     await page.getByRole("button", { name: /느긋하게/ }).click();
     await page.getByRole("button", { name: "자연", exact: true }).click();
+    if (width === 320) {
+      const styles = page.getByRole("group", { name: "여행 취향" });
+      await expect(styles).toHaveAccessibleDescription(/하나를 먼저 해제/);
+      await expect(styles.getByRole("button", { name: "문화" })).toBeDisabled();
+      await styles.getByRole("button", { name: "여유" }).click();
+      await styles.getByRole("button", { name: "문화" }).click();
+      await expect(styles.getByRole("button", { name: "문화" })).toHaveAttribute("aria-pressed", "true");
+    }
     if (width === 390) await page.getByRole("button", { name: /추천 일정으로 시작/ }).click();
     if (width < 700) {
       await nav.getByRole("button", { name: "이전" }).click();
