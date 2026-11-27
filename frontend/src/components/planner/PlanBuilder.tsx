@@ -73,7 +73,7 @@ function PlanForm({
     countryCode: initialCountryCode || "KR", region: "", startDate: today,
     tripDays: !initialCountryCode || initialCountryCode === "KR" ? 2 : 4,
     companion: "친구와", styles: ["맛집", "여유"], pace: "balanced",
-    buildMode: "skeleton", anchorMode: "center", anchorInput: "", mobileStep: 0,
+    buildMode: "skeleton", anchorMode: "center", anchorInput: "", mobileStep: 0, editingFromSummary: false,
   }));
   const { fields, restored } = useSyncExternalStore(draftStore.subscribe, draftStore.getSnapshot, draftStore.getServerSnapshot);
   const { countryCode, region, startDate, tripDays, companion, styles, pace, buildMode, anchorMode, anchorInput, mobileStep } = fields;
@@ -82,7 +82,7 @@ function PlanForm({
   const [resultIndex, setResultIndex] = useState(-1);
   const [resultsDismissed, setResultsDismissed] = useState(false);
   const resultsOpen = Boolean(countryQuery.trim()) && !resultsDismissed;
-  const [editingFromSummary, setEditingFromSummary] = useState(false);
+  const { editingFromSummary } = fields;
   const summaryStep = MOBILE_PLAN_STEPS.length - 1;
   const [pending, setPending] = useState(false);
   const [pendingLabel, setPendingLabel] = useState("계획 만드는 중…");
@@ -168,8 +168,7 @@ function PlanForm({
     for (let step = mobileStep; step < nextStep; step++) {
       if (!validateStep(step)) return;
     }
-    setEditingFromSummary(fromSummary);
-    draftStore.update({ mobileStep: nextStep });
+    draftStore.update({ mobileStep: nextStep, editingFromSummary: fromSummary });
     setError(null);
     window.requestAnimationFrame(() => {
       progressRef.current?.scrollIntoView({ behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "instant" : "smooth", block: "start" });
@@ -586,8 +585,7 @@ function PlanForm({
                   동선 기준 · {activeAnchor.label}
                   <button type="button" className="pb-ghost" aria-label="동선 기준 수정" disabled={pending} onClick={() => {
                     flushSync(() => {
-                      draftStore.update({ mobileStep: 1 });
-                      setEditingFromSummary(true);
+                      draftStore.update({ mobileStep: 1, editingFromSummary: true });
                       setError(null);
                     });
                     anchorRef.current?.focus();
