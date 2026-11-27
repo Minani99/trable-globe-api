@@ -73,7 +73,7 @@ export async function GET(request: NextRequest) {
 
   const [recent, later, older] = await Promise.allSettled([
     recentDates.length ? fetchForecast(lat, lon, recentDates[0], recentDates.at(-1)!) : Promise.resolve([]),
-    laterDates.length ? fetchClimateOutlook(lat, lon, laterDates) : Promise.resolve([]),
+    laterDates.length ? fetchClimateOutlook(lat, lon, laterDates, today) : Promise.resolve([]),
     olderDates.length ? fetchArchive(lat, lon, olderDates[0], olderDates.at(-1)!) : Promise.resolve([]),
   ]);
 
@@ -130,9 +130,13 @@ async function fetchArchive(latitude: number, longitude: number, startDate: stri
 }
 
 /** Averages the same trip dates over the previous years, aligned by day offset. */
-async function fetchClimateOutlook(latitude: number, longitude: number, dates: string[]): Promise<DailyRow[]> {
+async function fetchClimateOutlook(latitude: number, longitude: number, dates: string[], today: string): Promise<DailyRow[]> {
+  // Anchor samples to completed seasons even when a trip is planned several years ahead.
+  const archiveThrough = addDays(today, -7);
+  let yearOffset = Number(today.slice(0, 4)) - Number(dates[0].slice(0, 4));
+  if (addDays(shiftYears(dates[0], yearOffset), dates.length - 1) > archiveThrough) yearOffset--;
   const years = await Promise.allSettled(Array.from({ length: CLIMATE_YEARS }, (_, index) => {
-    const start = shiftYears(dates[0], -(index + 1));
+    const start = shiftYears(dates[0], yearOffset - index);
     return fetchArchive(latitude, longitude, start, addDays(start, dates.length - 1));
   }));
   const samples = years.flatMap((year) => year.status === "fulfilled" ? [year.value] : []);
