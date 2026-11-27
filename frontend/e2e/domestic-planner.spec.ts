@@ -29,6 +29,17 @@ for (const width of [320, 390, 1440]) {
     await page.getByRole("button", { name: "강릉", exact: true }).click();
     await page.getByRole("button", { name: "당일", exact: true }).click();
     const nav = page.getByRole("navigation", { name: "여행 계획 단계 이동" });
+    if (width === 320) {
+      const departure = page.getByLabel("출발일", { exact: true });
+      const today = await departure.getAttribute("min");
+      await departure.fill("2000-01-01");
+      await nav.getByRole("button", { name: "다음" }).click();
+      await expect(departure).toBeFocused();
+      await expect(departure).toHaveAccessibleDescription("오늘 또는 이후 날짜를 선택해 주세요.");
+      await page.getByRole("button", { name: "오늘로 설정" }).click();
+      await expect(departure).toHaveValue(today!);
+      await expect(departure).toHaveAttribute("aria-invalid", "false");
+    }
     if (width < 700) await nav.getByRole("button", { name: "다음" }).click();
     await page.getByRole("button", { name: "부모님과", exact: true }).click();
     await page.getByRole("button", { name: /느긋하게/ }).click();

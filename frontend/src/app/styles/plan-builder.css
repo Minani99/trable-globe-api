@@ -1088,3 +1088,5 @@
   }
 }
 
+.pb-date-recovery { display: flex; flex-wrap: wrap; align-items: center; gap: .25rem .75rem; font-size: .875rem; }
+.pb-date-recovery button { min-height: 44px; color: var(--accent-strong); text-decoration: underline; text-underline-offset: 3px; }

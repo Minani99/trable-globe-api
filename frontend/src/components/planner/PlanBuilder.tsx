@@ -92,13 +92,17 @@ function PlanForm({
   const styleHintId = useId();
   const regionRef = useRef<HTMLInputElement>(null);
   const dateRef = useRef<HTMLInputElement>(null);
+  const dateHintId = useId();
   const anchorRef = useRef<HTMLInputElement>(null);
   const countrySearchRef = useRef<HTMLInputElement>(null);
 
   const creationLock = useRef(false);
 
   const selectedCountry = countryMap.get(countryCode);
-  const endDate = addDays(startDate, tripDays - 1);
+  const endDate = /^\d{4}-\d{2}-\d{2}$/.test(startDate) ? addDays(startDate, tripDays - 1) : "";
+  const dateError = !startDate ? "출발일을 선택해 주세요."
+    : startDate < today ? "오늘 또는 이후 날짜를 선택해 주세요."
+    : !/^\d{4}-\d{2}-\d{2}$/.test(endDate) ? "여행 마지막 날이 9999년을 넘지 않도록 출발일이나 기간을 조정해 주세요." : "";
   const activeAnchor = ANCHOR_MODES.find((item) => item.id === anchorMode) ?? ANCHOR_MODES[0];
   const activePace = PACES.find((item) => item.id === pace) ?? PACES[1];
   const googleMapsSearchUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
@@ -156,8 +160,8 @@ function PlanForm({
     if (step === 0 && !selectedCountry) {
       return showError("여행할 나라를 먼저 골라 주세요.", countrySearchRef.current);
     }
-    if (step === 0 && (!startDate || startDate < today)) {
-      return showError(startDate ? "출발일은 오늘 이후로 선택해 주세요." : "출발일을 선택해 주세요.", dateRef.current);
+    if (step === 0 && dateError) {
+      return showError(dateError, dateRef.current);
     }
     if (step === 1 && buildMode === "auto" && anchorMode !== "center" && anchorInput.trim().length < 2) {
       return showError(anchorMode === "stay" ? "동선의 기준이 될 숙소를 입력해 주세요." : "반드시 갈 장소를 입력해 주세요.", anchorRef.current);
@@ -398,6 +402,9 @@ function PlanForm({
               <input
                 type="date"
                 min={today}
+                max="9999-12-31"
+                aria-invalid={Boolean(dateError)}
+                aria-describedby={dateHintId}
                 ref={dateRef}
                 value={startDate}
                 onChange={(event) => { draftStore.update({ startDate: event.target.value }); setError(null); }}
@@ -425,12 +432,21 @@ function PlanForm({
               </button>
             ))}
           </div>
-          {startDate ? (
-            <p className="pb-note">
+          {dateError ? (
+            <div className="pb-date-recovery">
+              <span id={dateHintId}>{dateError}</span>
+              <button type="button" onClick={() => {
+                draftStore.update({ startDate: today });
+                setError(null);
+                dateRef.current?.focus();
+              }}>오늘로 설정</button>
+            </div>
+          ) : (
+            <p className="pb-note" id={dateHintId}>
               <CalendarIcon />
               <span>{tripDays === 1 ? `${formatPlanDateLong(startDate)} 당일 여행` : `${formatPlanDateLong(startDate)} 출발 · ${formatPlanDateLong(endDate)} 귀가`}</span>
             </p>
-          ) : null}
+          )}
         </section>
 
         <section className="pb-step" data-mobile-active={mobileStep === 1} aria-labelledby="plan-style-heading">
@@ -577,7 +593,7 @@ function PlanForm({
           <dl className="pb-ticket__facts">
             <div>
               <dt>여행 날짜</dt>
-              <dd>{startDate ? <><time dateTime={startDate}>{formatPlanDate(startDate)}</time>{tripDays > 1 && <> – <time dateTime={endDate}>{formatPlanDate(endDate)}</time></>}</> : "미정"}</dd>
+              <dd>{!dateError ? <><time dateTime={startDate}>{formatPlanDate(startDate)}</time>{tripDays > 1 && <> – <time dateTime={endDate}>{formatPlanDate(endDate)}</time></>}</> : "미정"}</dd>
             </div>
             <div>
               <dt>동행</dt>
